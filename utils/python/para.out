@@ -1,0 +1,14 @@
+nx=1
+ny=4
+nz=224
+dt=0.010
+nt=201
+tinterval=1000
+nspec=1
+xmax=1.
+ymax=4.
+zmax=224.
+wspec=[1.]
+npes=112
+ifshow=False
+run_name="1d"

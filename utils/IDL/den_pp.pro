@@ -1,0 +1,11 @@
+nx=64
+ny=64 
+nz=64 
+tmp=fltarr(nx,ny,nz)
+openr,1,'../../data/bx_300.gda'
+readu,1,tmp
+close,1
+plot,tmp(*,32,32)
+oplot,tmp(32,*,32)
+oplot,tmp(32,32,*)
+end

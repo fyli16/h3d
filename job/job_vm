@@ -1,0 +1,16 @@
+#/bin/csh
+setenv DATA_DIRECTORY ./data
+setenv RESTART_DIRECTORY ./restart_files
+setenv INPUT_DIRECTORY ./
+setenv SOURCE_DIRECTORY ./
+mkdir -p $DATA_DIRECTORY
+mkdir -p $RESTART_DIRECTORY
+
+cd ./
+cp finput.dat $DATA_DIRECTORY/
+
+set verbose
+setenv MPI_TYPE_MAX 65536
+setenv MPI_REQUEST_MAX 65536
+
+mpirun -np 4 ./3dh > output-vm &

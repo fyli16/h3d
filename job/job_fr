@@ -1,0 +1,28 @@
+#!/bin/bash
+#SBATCH -p normal
+#SBATCH -t 2:00:00
+#SBATCH -N 2
+#SBATCH -n 112
+#SBATCH -J h3d
+#SBATCH -o output-fr
+##SBATCH -A
+
+# Shell commands
+  date
+  echo '*** Staring Parallel Job ***'
+  module purge
+  module load gcc mvapich2-x
+  export OMP_NUM_THREADS=1
+  export DATA_DIRECTORY=./data
+  export RESTART_DIRECTORY=./restart_files
+  export INPUT_DIRECTORY=./
+  export SOURCE_DIRECTORY=./
+  mkdir -p $DATA_DIRECTORY
+  mkdir -p $RESTART_DIRECTORY
+  cp finput.dat $DATA_DIRECTORY/
+
+  ibrun -np 112 ./3dh
+
+  date
+  echo '*** All Done ***'
+#

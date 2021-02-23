@@ -1,0 +1,166 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;; -*- Mode: Fundamental -*- ;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ALIRE --- Description et utilisation des modules Fortran VTR et VTK.
+;; 
+;; Auteur          : Jalel Chergui (LIMSI-CNRS) <Jalel.Chergui@limsi.fr>
+;; Créé le         : Wed Aug 22 19:23:27 2007
+;; Dern. mod. par  : Jalel Chergui (LIMSI-CNRS) <Jalel.Chergui@limsi.fr>
+;; Dern. mod. le   : Wed Sep 16 14:37:13 2009
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+En résumé
+=========
+
+Le but des modules Fortran VTR et VTK, présentés brièvement dans ce document,
+est de permettre l'écriture, au format ParaView, d'un champ 2D ou 3D de
+données scalaire ou vectoriel. Pour cela, il suffit de :
+
+  1- télécharger le fichier suivant :
+
+           <http://perso.limsi.fr/chergui/pv/pv-1.6.tar.gz>
+
+  2- suivre les indications ci-dessous une fois ce fichier décompressé et
+     déployé sur la machine de votre choix.
+
+Contenu du répertoire
+=====================
+     Ce répertoire contient trois fichiers :
+
+     0/ ALIRE
+     1/ VTR_mod.f90
+     2/ VTK_mod.f90
+     3/ Makefile
+
+Description
+===========
+
+     Les fichiers VTR_mod.f90 et VTK_mod.f90 permettent d'écrire des champs
+     scalaires et vectoriels 3D définis sur un maillage CARTÉSIEN. Le but étant
+     de pouvoir visualiser ces champs avec ParaView.
+
+     1/ Le fichier VTR_mod.f90 définit un module "VTR" contenant 5
+        sous-programmes Fortran qui permettent d'écrire des données ASCII
+        directement au nouveau format XML de VTK.
+
+     2/ Le fichier VTK_mod.f90 définit un module "VTK" contenant 5
+        sous-programmes Fortran qui permettent d'écrire des données BINAIRE
+        au format VTK natif. L' avantage majeur de ce format binaire
+        est que les fichiers restent de taille sensiblement plus réduite que
+        ceux au format ASCII. Il est cependant possible de convertir ce format
+        binaire natif de VTK en format binaire XML de VTK avec la commande
+        "vtk2xml.py" installée, en particulier, sur les grappes "turing" et
+        "stokes".
+
+Utilisation dans un code Fortran
+================================
+
+  Les exemples suivants utilisent le module "VTR" pour :
+
+    a) Créer un fichier par iteration (et par processus pour les codes parallèles).
+    b) Enregistrer le maillage dont les coordonnées sont définies dans les
+       vecteurs x, y et z.
+    c) Enregistrer un champ vectoriel 3D de composantes u, v, et w.
+    d) Enregistrer un champ p scalaire 3D.
+    e) Fermer le fichier.
+    f) Collecter la liste des fichiers créés au cours des itérations dans un
+       fichier unique dont l'extension sera ".pvd".
+
+  1/ Code monoprocesseur
+     -------------------
+
+        !********
+        program calcul
+          USE VTR
+          type(VTR_file_handle) :: fd
+          ...
+          real(kind=8), dimension(15)       :: x, y, z    ! maillage
+          real(kind=8), dimension(15,15,15) :: u, v, w, p ! Champs
+          integer :: t, max_time_iter
+          ...
+
+          do t = 1, max_time_iter
+             ...
+
+  (a)        call VTR_open_file(PREFIX="projet", FD=fd)
+  (b)        call VTR_write_mesh(FD=fd, X=x, Y=y, Z=z)
+  (c)        call VTR_write_var(FD=fd, NAME="Vitesse", VX=u, VY=v, VZ=w)
+  (d)        call VTR_write_var(FD=fd, NAME="Pression", FIELD=p)
+  (e)        call VTR_close_file(FD=fd)
+
+             ...
+          end do
+
+  (f)     call VTR_collect_file(fd)  ! Produit un fichier "projet.pvd".
+          ...
+        end program calcul
+        !********
+
+  2/ Code multi-processeurs
+     ----------------------
+
+        !********
+        program calcul
+          USE VTR
+          include "mpif.h"
+          type(VTR_file_handle) :: fd
+          ...
+          real(kind=8), dimension(11)       :: x, y, z    ! maillage
+          real(kind=8), dimension(11,11,11) :: u, v, w, p ! Champs
+          integer :: fd, t, max_time_iter, code, rank, nb_procs
+          ...
+          call MPI_Init(code)
+          call MPI_Comm_size(MPI_COMM_WORLD, nb_procs, code)
+          call MPI_Comm_rank(MPI_COMM_WORLD, rank, code)
+
+          do t = 1, max_time_iter
+             ...
+
+  (a)        call VTR_open_file(PREFIX="projet", PROC_RANK=rank, NUM_PROCS=nb_procs, FD=fd)
+  (b)        call VTR_write_mesh(FD=fd, X=x, Y=y, Z=z)
+  (c)        call VTR_write_var(FD=fd, NAME="Vitesse", VX=u, VY=v, VZ=w)
+  (d)        call VTR_write_var(FD=fd, NAME="Pression", FIELD=p)
+  (e)        call VTR_close_file(FD=fd)
+
+             ...
+          end do
+
+  (f)     call VTR_collect_file(fd)  ! Produit un fichier "projet.pvd".
+          ...
+          call MPI_Finalize(code)
+        end program calcul
+        !********
+     
+  3- Remarques
+     ---------
+     i- Pour utiliser le module "VTK", il suffit de remplacer la chaine "VTR"
+        par "VTK" dans le programme précédent.
+    ii- Si le maillage est décalé, penser à centrer les champs vectoriels sur
+        la maille avant de les enregister.
+
+Compilation et édition de liens.
+================================
+
+   Compiler, en premier lieu, les fichiers "VTR_mod.f90" et
+   "VTK_mod.f90". Compiler ensuite le programme faisant "USE VTR" (ou "VTK").
+
+   Pour générer l'exécutable, il suffit de fournir à l'éditeur de liens, 
+   entre autres, les fichiers "VTR_mod.o" ou/et "VTK_mod.o". Voici un exemple
+   avec le compilateur "ifort" :
+
+       ifort -c VTR_mod.f90 VTK_mod.f90
+       ifort -O3 -c monprog.f90
+       ifort -o prog.x monprog.o VTR_mod.o VTK_mod.o
+       ./prog.x
+
+Visualisation graphique
+=======================
+
+    En fin d'exécution du programme de calcul, celui-ci aura généré autant de
+    fichiers ".vtr" ou ".vtk" qu'il y eu d'itérations (ou modulo) par
+    processus dans le programme de calcul. Celui-ci aura aussi
+    généré un unique fichier ".pvd" qui servira comme unique point d'entrée à
+    ParaView pour réaliser l'animation de l'écoulement.
+
+Auteur
+======
+   (c) 2009 LIMSI-CNRS, Jalel Chergui <Jalel.Chergui@limsi.fr>.
+ 

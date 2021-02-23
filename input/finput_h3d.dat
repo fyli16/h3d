@@ -1,0 +1,39 @@
+&datum
+
+      MPI_IO_format = .true.
+      denmin=0.05,  resis=1.e-6,  iterb=5,
+      wpiwci=100.,
+      testorbt=.f., norbskip=1,
+      restrt_write = 1,
+      btspec=0.005,0.005,0.005,0.005, 0.005,
+      bete=0.005,
+      fxsho=1.0,  nxcel=4,
+      ieta=0,etamin=1.0e-6,etamax=5.0e-5,
+      netax=10,  netay=2, netaz=5,
+      ave1 = 100.0, ave2 = 50.,
+      phib = 180.0,
+      nspec=5,
+      nx=32, xmax=32.,   ny=32, ymax=32.,   nz=32, zmax=32.,
+      npx=64,32,32,32,32   npy=64,32,32,32,32 npz=64,32,32,32,32
+      xaa=0.,  xbb=32.    ,  nax=0  , nbx=32
+      yaa=0.,  ybb=32.    ,  nay=0  , nby=32
+      zaa=0. , zbb=32.    ,  naz=0  , nbz=32
+      n_subcycles=0
+      qspec=1.,2.,2.,7.,20.,    wspec=1.,4.,3.,16.,56.,
+      nskipx=1,  nskipy=1,  nskipz=1,
+      maximum_simulation_time =10.0,  t_begin=0.0, t_end=10.0, dtwci=0.025,
+      nprint=100, nwrtdata=100, nwrtrestart=20000, NWRTPARTICLE=200,
+      xbox_l=0., xbox_r=10., ybox_l=0., ybox_r=32., zbox_l=0., zbox_r=32.,
+      frac=0.9,0.09985,3e-5,5e-5,7e-5
+      anisot=1.0,1.0,1.0,1.0,1.0, gama=1.66667,
+      Yee=.false.,
+      global=.true.,
+      eta_par=0
+      QUOTA=24.0,
+      buffer_zone = 0.,
+      moat_zone=3.
+      profile_power = 0
+      uniform_loading_in_logical_grid = .false.,
+      smoothing=.false.,
+      smooth_coef=0.
+$
