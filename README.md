@@ -1,1 +1,1 @@
-# Hybrid 3D code for studying plasma physics
+# A hybrid 3D code for studying plasma physics
