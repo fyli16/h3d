@@ -157,10 +157,9 @@
       kymin = two*pi/ymax
       kzmin = two*pi/zmax
       
-    
       kx = zero
       ky = zero
-      kz = num_cycles*kzmin  ! num_cycles is got from input
+      kz = num_cycles*kzmin  ! num_cycles is taken from input
       
       !VR: end wave parameters
 

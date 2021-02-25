@@ -16,7 +16,7 @@
       integer :: seed_size
       integer,allocatable :: seed(:)
 
-      real(kind=8) dB_B0, x_pos,y_pos,z_pos, B0, VA, dB0, dn_n0, dx, f_tot
+      real(kind=8) :: x_pos,y_pos,z_pos, B0, VA, dB0, dn_n0, dx, f_tot
 
       real(kind=8) :: kx,ky,kz,kxmin,kymin,kzmin,dvx_,dvy_,dvz_,sin_factor
       real(kind=8) :: loaded_percentage, print_percentage

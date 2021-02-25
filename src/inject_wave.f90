@@ -13,8 +13,8 @@
       integer*8 ip,ipb1,ipb2,is,ixe,iye,ize,j,k,l, iixe,iiye, iize
       double precision vxa,vya,vza,vmag,th,ranval(4)
 
-      real(kind=8) dB_B0, x_pos,y_pos,z_pos, B0, VA
-      real(kind=8) bx_,by_,bz_, ex_,ey_,ez_
+      real(kind=8) :: x_pos,y_pos,z_pos, B0, VA
+      real(kind=8) :: bx_,by_,bz_, ex_,ey_,ez_
 
       real(kind=8) :: kx,ky,kz,kxmin,kymin,kzmin,dvx_,dvy_,dvz_,sin_factor
       real(kind=8) :: loaded_percentage, print_percentage
@@ -37,7 +37,7 @@
  
       !VR: initialize wave parameters
 
-      dB_B0 = 0.1                ! RMS amplitude of the pertubation [B0=RMS(B)]
+      ! dB_B0 = 0.1                ! RMS amplitude of the pertubation [B0=RMS(B)]
       B0 = one/wpiwci
       !VR Alfven speed
       VA = one/wpiwci      
@@ -48,7 +48,7 @@
     
       kx = zero
       ky = zero
-      kz = 10*kzmin
+      kz = num_cycles * kzmin
       
       !VR: end wave parameters
 
