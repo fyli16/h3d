@@ -59,7 +59,7 @@
        Yee, global, harris, fxsho, nxcel, & 
        rcorr, ishape, teti, setup_mesh, post_process
        
-       
+
         time_elapsed=0.; time_begin_array=0; time_end_array=0
         buffer_zone=0.  ! set to 0 anyway despite contained in input
         notime=1 ! notime=0 will output detailed timing
@@ -176,9 +176,6 @@
       call MPI_BCAST(etamin                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
       call MPI_BCAST(etamax                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
       call MPI_BCAST(eta_par                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-      ! call MPI_BCAST(Yee                    ,1     ,MPI_LOGICAL,0,MPI_COMM_WORLD,IERR) ! redundant
-      ! call MPI_BCAST(global                 ,1     ,MPI_LOGICAL,0,MPI_COMM_WORLD,IERR)
-      ! call MPI_BCAST(harris                 ,1     ,MPI_LOGICAL,0,MPI_COMM_WORLD,IERR)
       call MPI_BCAST(nwrtrestart            ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
       call MPI_BCAST(QUOTA                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
       call MPI_BCAST(maximum_simulation_time,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
@@ -214,12 +211,10 @@
       call MPI_BCAST(nwrtparticle           ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
       call MPI_BCAST(nodey                  ,1     ,MPI_INTEGER         ,0,MPI_COMM_WORLD,IERR)
       call MPI_BCAST(nodez                  ,1     ,MPI_INTEGER         ,0,MPI_COMM_WORLD,IERR)
-!
-! 
-!
-!
-       dt=dtwci*wpiwci
 
+      ! In input.f90, dt is in units of 1/wci, 
+      !   now inside the code it is converted to units of 1/wpi
+      dt=dtwci*wpiwci
 
 ! hxv - 12/02/2008 -Automatic restart
        if (restart .and. myid == 0) then
