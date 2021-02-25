@@ -34,24 +34,34 @@
 !
 !***********************************************************************
 !
-       namelist /datum/ denmin,resis,iterb,testorbt,norbskip                &
-       ,restart,nspec,nx,xmax,ny,ymax,nz,zmax,npx,npy,npz                   &
-       ,dt,nprint,nwrtdata,qspec,wspec,nskipx                               &
-       ,nskipy,nskipz,frac,anisot             &
-       ,btspec,bete,fxsho,nxcel,phib,netax,netay,netaz,ave1,ave2            &
-       ,wpiwci,restrt_write,Yee,global,dtwci              &
-       ,harris,rcorr,ishape,teti,nwrtrestart,ieta,etamin,etamax             &
-       ,eta_par,gama,QUOTA                                                  &
-       ,maximum_simulation_time,n_subcycles,buffer_zone                     &
-       ,xaa,xbb,nax,nbx,yaa,ybb,nay,nby,zaa,zbb,naz,nbz,setup_mesh          &
-       ,profile_power,uniform_loading_in_logical_grid,moat_zone             &
-       ,MPI_IO_format,smoothing               &
-       ,smooth_coef,post_process         &
-       ,xbox_l,xbox_r,ybox_l,ybox_r,zbox_l,zbox_r,t_begin,t_end,nwrtparticle &
-       ,nodey, nodez
-
-        time_elapsed=0.;time_begin_array=0;time_end_array=0
-        buffer_zone=0.
+       namelist /datum/ &
+       ! global simulation info
+       maximum_simulation_time, t_begin, t_end, dtwci, restart, &
+       restrt_write, quota, MPI_IO_format, &
+       ! simulation domain
+       nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, &
+       nodey, nodez, &
+       xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
+       uniform_loading_in_logical_grid, &
+       buffer_zone, moat_zone, profile_power, &
+       ! field solver
+       n_subcycles, nskipx, nskipy, nskipz, iterb, testorbt, norbskip, &
+       ! plasma setup
+       nspec, qspec, wspec, frac, denmin, wpiwci, btspec, bete, &
+       ieta, resis, netax, netay, netaz, etamin, etamax, eta_par, &
+       anisot, gama, ave1, ave2, phib, smoothing, smooth_coef, &
+       ! init waves
+       dB_B0, num_cycles, &
+       ! diagnostic control
+       nprint, nwrtdata, nwrtrestart, nwrtparticle, &
+       xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
+       ! others
+       Yee, global, harris, fxsho, nxcel, & 
+       rcorr, ishape, teti, setup_mesh, post_process
+       
+       
+        time_elapsed=0.; time_begin_array=0; time_end_array=0
+        buffer_zone=0.  ! set to 0 anyway despite contained in input
         notime=1 ! notime=0 will output detailed timing
         !tracking_binary=.false.
 !
@@ -85,8 +95,8 @@
         call get_environment_variable2(restart_directory,len(restart_directory))
         restart_directory=trim(adjustl(restart_directory))//'/'
         write(6,*)
-        write(6,*) " I/O DATA_DIRECTORY = ",trim(adjustl(data_directory))
-        write(6,*) " RESTART_DIRECTORY  = ",trim(adjustl(restart_directory))
+        write(6,*) "I/O DATA_DIRECTORY = ",trim(adjustl(data_directory))
+        write(6,*) "RESTART_DIRECTORY  = ",trim(adjustl(restart_directory))
         write(6,*)
       endif
       call MPI_BCAST(data_directory,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
@@ -101,14 +111,12 @@
 !***********************************************************************
 !
 !  set default values
-!
       iwt=0; nskipx=1; nskipy=1; nskipz=1; testorbt=.false.; pi=acos(-1.d+00); frac=0.d+00; t_stopped=0.
 !
 !***********************************************************************
 !
       if (myid == 0) then
-!         open (5,file='finput.dat',form='formatted',status='old')
-         open (5,file=trim(adjustl(data_directory))//'finput.f90',form='formatted',status='old')
+         open (5,file=trim(adjustl(data_directory))//'input.f90',form='formatted',status='old')
          read(5,nml=datum,iostat=input_error)
          write(6, datum)
       endif
