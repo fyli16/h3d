@@ -99,7 +99,8 @@ def snapshot(ts, data):
 
 def spectrum(ts, data):
     mean = np.mean(data, axis=0)
-    f, F = FFT(z, mean-1)
+    if 'den' in a.fieldname: mean-=1.
+    f, F = FFT(z, mean)
     fig, ax1 = plt.subplots(1,1, figsize=a.figsize)
     ax1.set_title('%s, t = %.2f'%(a.fieldname, ts*dt))
     ax1.plot(f, F)

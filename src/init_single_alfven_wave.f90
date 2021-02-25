@@ -159,7 +159,7 @@
     
       kx = zero
       ky = zero
-      kz = 5*kzmin
+      kz = 5*kzmin  ! 5 AW lengths
       
       !VR: end wave parameters
 

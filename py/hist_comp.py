@@ -33,13 +33,6 @@ def load_input(path):
     times = timesteps * dt
     return
 
-# def get_snapshot_data(path, field, ts):
-#     fname = '%s_%d.gda' % (field, ts)
-#     fname = join(path, 'data', fname)
-#     data = np.fromfile(fname, dtype=np.float32)
-#     data = data.reshape(nz, ny).transpose()
-#     return (data)
-
 def get_snapshot_data(ts, path, field):
     # fname = a.path+'/data/'+a.field+'_'+str(ts)+'.gda'
     fname = '%s_%d.gda' % (field, ts)
@@ -164,12 +157,6 @@ elif comp=='combine':
         tperp[i]=np.mean(data[i,:,8])
 
     fig, axes = plt.subplots(3,1, figsize=[5,7], sharex=True)
-    # # ax1.set_title(a.fieldname)
-    # # ax1.plot(times, delta_rho, label=r'$\delta\rho$')
-    # ax1.plot(times, bperp2, )
-    # # ax1.legend()
-    # ax1.set_xlabel(r'$\omega_{ci} t$')
-    # # ax1.set_ylabel(r'$\sqrt{\langle(\rho-1)^2\rangle}$')
     ax1=axes[0]
     ax1.plot(times, delta_rho, label=r'$\sqrt{(\delta\rho)^2}$'); 
     ax1.legend()#loc='lower right')
@@ -179,11 +166,7 @@ elif comp=='combine':
     ax1.legend()#loc='lower right')
     ax1=axes[2]
     ax1.plot(times, bperp2, label=r'$\frac{1}{2}\langle B_\perp^2\rangle$'); 
-    # ax1.plot(times, delta_bz2, label=r'$(\delta B_z)^2$'); 
-    # ax1.legend(loc='lower left')
-    # ax1=axes[2]; 
     ax1.plot(times, eperp2, label=r'$\frac{1}{2}\langle E_\perp^2\rangle$'); 
-    # ax1.plot(times, ez2, label=r'$E_z^2$'); 
     ax1.legend()#loc='upper right')
     ax1.set_ylim(2e-3, 6e-3)
     ax1.set_xlabel(r'$\omega_{ci} t$')
