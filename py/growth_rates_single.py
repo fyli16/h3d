@@ -5,7 +5,7 @@ def load_input(path):
         tmax, dt, nwrtdata, y, z, \
         ndumps, timesteps, times 
 
-    nml = f90nml.read(path + '/data/finput.f90')
+    nml = f90nml.read(path + '/data/input.f90')
     denmin = nml['datum']['denmin']
     nspec = nml['datum']['nspec']
     nx = nml['datum']['nx']
@@ -72,7 +72,8 @@ def get_spectral_max(path, spec_rho, spec_rho_max, k_pos):
 # path = '1d-resis0.1'
 # path = 'test-ppc64'
 # path = '1d-b0.01'
-path = 'test-z2240'
+# path = 'test-z2240'
+path = 'h3d'
 
 #            0      1      2    3     4     5     6       7        8
 field_list=['den', 'bx', 'by', 'bz', 'ex', 'ey', 'ez', 'tpar_1', 'tperp_1']

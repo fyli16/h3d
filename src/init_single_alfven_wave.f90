@@ -143,7 +143,11 @@
 
       !VR: initialize wave parameters
       ! RMS amplitude of the pertubation [B0=RMS(B)]
-      ! dB_B0=0.1  ! now get it from input            
+      ! dB_B0=0.1  ! now get it from input  
+      write(6,*) 
+      write(6,*) "dB_B0 = ", dB_B0  
+      write(6,*) "num_cycles = ", num_cycles   
+      write(6,*)      
       B0 = one/wpiwci
       !VR Alfven speed
       mi=0.
