@@ -161,7 +161,7 @@ def load_input(path):
         tmax, dt, nwrtdata, y, z, \
         ndumps, timesteps, times 
 
-    nml = f90nml.read(path + '/data/finput.f90')
+    nml = f90nml.read(path + '/data/input.f90')
     denmin = nml['datum']['denmin']
     nspec = nml['datum']['nspec']
     nx = nml['datum']['nx']

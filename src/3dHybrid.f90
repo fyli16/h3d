@@ -214,7 +214,7 @@
 
       ! In input.f90, dt is in units of 1/wci, 
       !   now inside the code it is converted to units of 1/wpi
-      dt=dtwci*wpiwci
+      dt = dtwci * wpiwci
 
 ! hxv - 12/02/2008 -Automatic restart
        if (restart .and. myid == 0) then
