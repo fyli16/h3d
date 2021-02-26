@@ -16,7 +16,7 @@
       integer :: seed_size
       integer,allocatable :: seed(:)
 
-      real(kind=8) :: dB_B0, num_cycles, x_pos,y_pos,z_pos, B0, VA, dB0, mi
+      real(kind=8) :: x_pos,y_pos,z_pos, B0, VA, dB0, mi
       real(kind=8) :: bx_,by_,bz_, ex_,ey_,ez_
 
       real(kind=8) :: kx,ky,kz,kxmin,kymin,kzmin,dvx_,dvy_,dvz_,sin_factor
