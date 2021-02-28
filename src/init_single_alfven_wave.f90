@@ -55,7 +55,6 @@
       call MPI_BCAST(seed,seed_size,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)  ! propagate master process's version
       call random_seed(put=myid*seed) ! set current seed
 
-      ! pi=acos(-one)
       it=0
       itfin = 0
       nx1=nx+1
