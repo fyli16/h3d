@@ -928,9 +928,10 @@
           write(file_unit_time,"(i4,' begin    ',f15.3)") it,real(clock_time-clock_time_init)
         endif
         if (myid == 0.and.mod(it,10_8) == 0) then
-          print *,"it = ",it
-          print *,'system time (delta) = ',real(clock_time - clock_time_old)
-          print *,'system time (total) = ',real(clock_time - clock_time_init)
+          ! print *,"it = ",it
+          ! print *,'system time (delta) = ',real(clock_time - clock_time_old)
+          ! print *,'system time (total) = ',real(clock_time - clock_time_init)
+          print *, 'it=', it, ', delta_time=', real(clock_time - clock_time_old), ', tot_time=', real(clock_time - clock_time_init)
           clock_time_old = clock_time
         endif
 

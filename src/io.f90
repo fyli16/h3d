@@ -301,7 +301,6 @@
  
  
       if (rw == +1.0) then
- 
         t_stopped = t_stopped + (it-itstart+1)*dtwci
         f_unit=215+myid
 !        open(unit=f_unit,file='restfld_'//trim(adjustl(myid_char))//'.bin'//restart_index_suffix(restart_index)&
