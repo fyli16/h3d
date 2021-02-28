@@ -10,8 +10,7 @@ clean:
 	-rm restart/*
 	-rm mesh_vertices.dat
 	-rm sim_id.txt
-	cd src; make clean;
-	# -rm 3dh
+	cd src; make clean
 
 cleanall: clean
 	cd src; make clean; make cleanall
