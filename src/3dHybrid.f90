@@ -867,7 +867,7 @@
       time_elapsed=0.;time_begin_array=0;time_end_array=0
 
       !------------------------------------------------------!
-      !                 main time loop
+      !                 Start of main time loop
       !------------------------------------------------------!
       do while(it <= itfinish)
 
@@ -879,8 +879,8 @@
           WRITE(6,*) "DT = ", DT, ", T_STOPPED = ", T_STOPPED
         endif
 
-        final_time=MPI_Wtime()
-        wall_clock_elapsed= final_time-initial_time
+        final_time = MPI_Wtime()
+        wall_clock_elapsed = final_time-initial_time
         if (wall_clock_elapsed >= quota*3600. .and. myid == 0) then
           cleanup_status = 'CLEANUP_STATUS=TRUE'
           write(6,*) " "
@@ -1096,67 +1096,67 @@
            if (cleanup_status == 'CLEANUP_STATUS=TRUE') goto 999
         endif
 
-      ! max_sim_time
-      ! if (restrt_write == 1.and.mod(it,nwrtrestart)==0) then
-      if (restrt_write == 1.and.(mod( int(it,8) ,nwrtrestart)==0 .or. it == itfinish)) then
-        if (myid == 0) then
-          WRITE(6,*)
-          WRITE(6,*) 'WRITING THE RESTART FILE'
-          WRITE(6,*)
+        ! if (restrt_write == 1 .and.mod(it,nwrtrestart)==0) then
+        if (restrt_write == 1.and.(mod( int(it,8) ,nwrtrestart)==0 .or. it == itfinish)) then
+          if (myid == 0) then
+            WRITE(6,*)
+            WRITE(6,*) 'WRITING THE RESTART FILE'
+            WRITE(6,*)
+          endif
+
+          itfin = it
+
+          do iwrite = 0,npes_over_60  
+          if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
+            call restrtrw(1.0,itstart)
+          endif
+          call MPI_BARRIER(MPI_COMM_WORLD,IERR)
+          enddo
+
+          if (myid == 0) then
+          open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='unknown')
+            write(222,*) restart_index,itfin
+            close(222)
+          endif
+
+          if (restart_index == 1) then
+            restart_index=2
+          else
+            restart_index=1
+          endif
         endif
 
-        itfin = it
+        if (notime == 0) then
+          call date_and_time(values=time_end)
+          clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
+          write(file_unit_time,"(i4,' end      ',f15.3)") it,real(clock_time-clock_time_init)
+        endif
+        ! if (it == 1 ) then
+        !   CALL MPI_FINALIZE(IERR)
+        !   STOP
+        ! endif
 
-        do iwrite = 0,npes_over_60  
-         if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
-           call restrtrw(1.0,itstart)
-         endif
-         call MPI_BARRIER(MPI_COMM_WORLD,IERR)
+        time=time+dt
+        it = it + 1
+
+
+        ! VR: removed orientation of BZ flip
+
+        call date_and_time(values=time_end_array(:,1))
+
+        do j=1,5
+          call accumulate_time_difference(time_begin_array(1,j),time_end_array(1,j),time_elapsed(j))
         enddo
 
-        if (myid == 0) then
-        open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='unknown')
-          write(222,*) restart_index,itfin
-          close(222)
-        endif
+        ! if (it == 1 ) then
+        !   CALL MPI_FINALIZE(IERR)
+        !   STOP
+        ! ENDIF
 
-        if (restart_index == 1) then
-          restart_index=2
-        else
-          restart_index=1
-        endif
-
-      endif
-
-      if (notime == 0) then
-        call date_and_time(values=time_end)
-        clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
-        write(file_unit_time,"(i4,' end      ',f15.3)") it,real(clock_time-clock_time_init)
-      endif
-      ! if (it == 1 ) then
-      !   CALL MPI_FINALIZE(IERR)
-      !   STOP
-      ! endif
-
-      time=time+dt
-      it = it + 1
-
-
-      ! VR: removed orientation of BZ flip
-
-      call date_and_time(values=time_end_array(:,1))
-
-      do j=1,5
-        call accumulate_time_difference(time_begin_array(1,j),time_end_array(1,j),time_elapsed(j))
       enddo
-
-      ! if (it == 1 ) then
-      !   CALL MPI_FINALIZE(IERR)
-      !   STOP
-      ! ENDIF
-
-    enddo    ! while it loop
-    ! END of main time loop
+      !------------------------------------------------------!
+      !                 End of main time loop
+      !------------------------------------------------------!
 
       if (myid == 0) then
         close(unit=11)
@@ -1165,14 +1165,12 @@
         close(unit=14)
       endif
       if (tracking_mpi) then
-     !  call MPI_File_close(tracking_fh,ierr)
+      ! call MPI_File_close(tracking_fh,ierr)
       close(unit=13)
       endif
       
  999  if (notime == 0) close(file_unit_time)
-!
-!***********************************************************************
-!
+
       if (myid==0) then
         write(6,*) " "
         write(6,*) " "
@@ -1245,15 +1243,16 @@
         write(6,*) "  subroutine xreal                      (%) =" &
         ,100.*time_elapsed(24)/time_elapsed(1)
       endif
-!
+
       call MPI_FINALIZE(IERR)
       stop
+
     end program H3D
 
-!=======================================================================
-!>   computes velocities?
-!!    what is the difference between vxs and vix?
-!=======================================================================
+    !------------------------------------------------------!
+    ! computes velocities?
+    ! what is the difference between vxs and vix?
+    !------------------------------------------------------!
       subroutine trans        
       use parameter_mod
       use MESH2D
@@ -1290,14 +1289,12 @@
         enddo
       enddo
  
- 
       if (notime == 0) then
         call date_and_time(values=time_end)
         clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
         write(file_unit_time,"(i4,' parmov   ',f15.3)") it,real(clock_time-clock_time_init)
       endif
       call date_and_time(values=time_begin_array(:,7))
-
   
       if (ndim /= 1) then
          call parmov
@@ -1315,29 +1312,25 @@
         do k=kb-1,ke+1
           do j=jb-1,je+1
             do i=1,nx2
-
-!             Nonuniform mesh
+              ! Nonuniform mesh
               cell_volume_ratio = hx*hy*hz/(meshX%dxc(i)*meshY%dxc(j+1)*meshZ%dxc(k+1))
-
               dns_tmp=dnsh(i,j,k,is)
+              ! Uniform mesh - Same as is in version 5.0
+              ! if (dns_tmp <= denmin) dns_tmp=1.d+10
 
-!             Uniform mesh - Same as is in version 5.0
-!              if (dns_tmp <= denmin) dns_tmp=1.d+10
-
-!             Nonuniform mesh
-!              if (dns_tmp*cell_volume_ratio <= denmin) dns_tmp=1.d+10
+              ! Nonuniform mesh
+              ! if (dns_tmp*cell_volume_ratio <= denmin) dns_tmp=1.d+10
               if (dns_tmp*cell_volume_ratio <= denmin) dns_tmp=denmin/cell_volume_ratio ! July 21, 2010
 
               vxs(i,j,k,is)=vxs(i,j,k,is)/dns_tmp
               vys(i,j,k,is)=vys(i,j,k,is)/dns_tmp
               vzs(i,j,k,is)=vzs(i,j,k,is)/dns_tmp
 
-!             Uniform mesh - Same as is in version 5.0
-!              dns(i,j,k,is)=dns(i,j,k,is)
+              ! Uniform mesh - Same as is in version 5.0
+              ! dns(i,j,k,is)=dns(i,j,k,is)
 
-!             Nonuniform mesh
-!              dns(i,j,k,is)=dns(i,j,k,is)*cell_volume_ratio
-
+              ! Nonuniform mesh
+              ! dns(i,j,k,is)=dns(i,j,k,is)*cell_volume_ratio
             enddo
           enddo
         enddo
@@ -1361,7 +1354,7 @@
         enddo
       enddo
 
-!     Apply Boundary Conditions
+      ! Apply Boundary Conditions
       if (ndim /= 1) then
       call XREALBCC(DEN,1_8,NX,NY,NZ)
       call XREALBCC(DENH,1_8,NX,NY,NZ)
@@ -1376,7 +1369,7 @@
       call XREALBCC_2D(VIZ,1_8,NX,NY,NZ)
       endif
 
-!     smooth density and velocity
+      ! smooth density and velocity
       if (smoothing) then
         if (ndim /=1) then
           call nsmth(DEN)
@@ -1416,15 +1409,12 @@
  
       call date_and_time(values=time_end_array(:,8))
       call accumulate_time_difference(time_begin_array(1,8),time_end_array(1,8),time_elapsed(8))
- 
- 
-       kbmin = kb-1
-       kbmax = ke+1
- 
- 
-       jbmin = jb-1
-       jbmax = je+1
- 
+
+      kbmin = kb-1
+      kbmax = ke+1
+
+      jbmin = jb-1
+      jbmax = je+1
  
       call date_and_time(values=time_end_array(:,20))
       call accumulate_time_difference(time_begin_array(1,20),time_end_array(1,20),time_elapsed(20))
@@ -1432,9 +1422,9 @@
       return
     end subroutine trans
 
-!=======================================================================
-!>    compute perp and par temperature and pressure tensor
-!=======================================================================
+    !------------------------------------------------------!
+    ! compute perp and par temperature and pressure tensor
+    !------------------------------------------------------!
       subroutine caltemp2_global
  
       use parameter_mod
@@ -1475,24 +1465,23 @@
             DO IIXE = 1, NX1
               NP=IPHEAD(IIXE,IIYE,IIZE,IS)
 
-!  begin advance of particle position and velocity
-!  If dt=0, skip
-!
+              ! begin advance of particle position and velocity
+              ! If dt=0, skip
               DO WHILE (NP.NE.0)
                 L=NP
 
-!               Uniform mesh - Same as is in version 5.0
-!                rx=hxi*x(l)+1.5000000000000001
-!                ry=hyi*y(l)+0.5000000000000001d+00
-!                rz=hzi*z(l)+0.5000000000000001d+00
-!                ix=rx
-!                iy=ry
-!                iz=rz
-!                fx=rx-ix
-!                fy=ry-iy
-!                fz=rz-iz
+                ! Uniform mesh - Same as is in version 5.0
+                ! rx=hxi*x(l)+1.5000000000000001
+                ! ry=hyi*y(l)+0.5000000000000001d+00
+                ! rz=hzi*z(l)+0.5000000000000001d+00
+                ! ix=rx
+                ! iy=ry
+                ! iz=rz
+                ! fx=rx-ix
+                ! fy=ry-iy
+                ! fz=rz-iz
 
-!               Nonuniform mesh - using MESH_UNMAP
+                ! Nonuniform mesh - using MESH_UNMAP
                 rx=dtxi*MESH_UNMAP(meshX,x(l))+1.50000000000d+00
                 ry=dtyi*MESH_UNMAP(meshY,y(l))+1.50000000000d+00
                 rz=dtzi*MESH_UNMAP(meshZ,z(l))+1.50000000000d+00
@@ -1502,8 +1491,8 @@
                 fx=rx-ix
                 fy=ry-iy
                 fz=rz-iz
-                iy=iy-1             ! integer index in y direction starts at 0
-                iz=iz-1             ! integer index in z direction starts at 0
+                iy=iy-1   ! integer index in y direction starts at 0
+                iz=iz-1   ! integer index in z direction starts at 0
 
                 ixp1 = ix+1
                 iyp1 = iy+1
@@ -1695,75 +1684,75 @@
           ENDDO
         ENDDO
 
-!        p_xx(:,:,:,is)=p_xx(:,:,:,is)/(tx0(is)*frac(is))
-!        p_xy(:,:,:,is)=p_xy(:,:,:,is)/(tx0(is)*frac(is))
-!        p_xz(:,:,:,is)=p_xz(:,:,:,is)/(tx0(is)*frac(is))
-!        p_yy(:,:,:,is)=p_yy(:,:,:,is)/(tx0(is)*frac(is))
-!        p_yz(:,:,:,is)=p_yz(:,:,:,is)/(tx0(is)*frac(is))
-!        p_zz(:,:,:,is)=p_zz(:,:,:,is)/(tx0(is)*frac(is))
+        ! p_xx(:,:,:,is)=p_xx(:,:,:,is)/(tx0(is)*frac(is))
+        ! p_xy(:,:,:,is)=p_xy(:,:,:,is)/(tx0(is)*frac(is))
+        ! p_xz(:,:,:,is)=p_xz(:,:,:,is)/(tx0(is)*frac(is))
+        ! p_yy(:,:,:,is)=p_yy(:,:,:,is)/(tx0(is)*frac(is))
+        ! p_yz(:,:,:,is)=p_yz(:,:,:,is)/(tx0(is)*frac(is))
+        ! p_zz(:,:,:,is)=p_zz(:,:,:,is)/(tx0(is)*frac(is))
 
       ENDDO
+
       call date_and_time(values=time_end_array(:,26))
       call accumulate_time_difference(time_begin_array(1,26) &
-     &                               ,time_end_array(1,26) &
-     &                                ,time_elapsed(26))
+                                    ,time_end_array(1,26) &
+                                    ,time_elapsed(26))
+
+      ! do is=1,nspec
+      !   call date_and_time(values=time_begin_array(:,24))
+      !   call XREAL(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
+      !   call XREAL(tperp(1,jb-1,kb-1,is),NX,NY,NZ)
+      !   call date_and_time(values=time_end_array(:,24))
+      !   call accumulate_time_difference(time_begin_array(1,24) &
+      !                                  ,time_end_array(1,24) &
+      !                                  ,time_elapsed(24))
+
+      !   call date_and_time(values=time_begin_array(:,25))
+      !   call XREALBCC(tpar (1,jb-1,kb-1,is),1,NX,NY,NZ)
+      !   call XREALBCC(tperp(1,jb-1,kb-1,is),1,NX,NY,NZ)
+      !   call date_and_time(values=time_end_array(:,25))
+      !   call accumulate_time_difference(time_begin_array(1,25) &
+      !                                  ,time_end_array(1,25) &
+      !                                  ,time_elapsed(25))
+
+      ! enddo
+
+
+      ! call date_and_time(values=time_begin_array(:,26))
+      ! do is=1,nspec
+      !   do k=kb-1,ke+1
+      !     do j = jb-1,je+1
+      !       do i=1,nx2
+      !         if (is == 1) then
+      !           dns1=dns(i,j,k,1)/(dfac(1)*frac(1))
+      !           dns2=0.
+      !           denum=dns1+rfrac*dns2
+      !         else
+      !           denum=dns(i,j,k,is)/(dfac(is)*frac(is))
+      !         endif
+      !         if (denum < denmin)  then
+      !           tpar(i,j,k,is)=1.e-5
+      !           tperp(i,j,k,is)=1.e-5
+      !         else
+      !           denum=denum*tx0(is)
+      !           tpar(i,j,k,is)=tpar(i,j,k,is)*wspec(is)/denum
+      !           tperp(i,j,k,is)=0.5*tperp(i,j,k,is)*wspec(is)/denum
+      !         endif
+      !       enddo
+      !     enddo
+      !   enddo
+      ! enddo
+      ! call date_and_time(values=time_end_array(:,26))
+      ! call accumulate_time_difference(time_begin_array(1,26) &
+      ! &                               ,time_end_array(1,26) &
+      ! &                               ,time_elapsed(26))
+
  
-
-!      do is=1,nspec
-!        call date_and_time(values=time_begin_array(:,24))
-!        call XREAL(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
-!        call XREAL(tperp(1,jb-1,kb-1,is),NX,NY,NZ)
-!        call date_and_time(values=time_end_array(:,24))
-!        call accumulate_time_difference(time_begin_array(1,24) &
-!     &                                 ,time_end_array(1,24) &
-!     &                                 ,time_elapsed(24))
-! 
-!        call date_and_time(values=time_begin_array(:,25))
-!        call XREALBCC(tpar (1,jb-1,kb-1,is),1,NX,NY,NZ)
-!        call XREALBCC(tperp(1,jb-1,kb-1,is),1,NX,NY,NZ)
-!        call date_and_time(values=time_end_array(:,25))
-!        call accumulate_time_difference(time_begin_array(1,25) &
-!     &                                 ,time_end_array(1,25) &
-!     &                                 ,time_elapsed(25))
-! 
-!      enddo
-
-
-!      call date_and_time(values=time_begin_array(:,26))
-!      do is=1,nspec
-!        do k=kb-1,ke+1
-!          do j = jb-1,je+1
-!            do i=1,nx2
-!              if (is == 1) then
-!                dns1=dns(i,j,k,1)/(dfac(1)*frac(1))
-!                dns2=0.
-!                denum=dns1+rfrac*dns2
-!              else
-!                denum=dns(i,j,k,is)/(dfac(is)*frac(is))
-!              endif
-!              if (denum < denmin)  then
-!               tpar(i,j,k,is)=1.e-5
-!               tperp(i,j,k,is)=1.e-5
-!              else
-!               denum=denum*tx0(is)
-!               tpar(i,j,k,is)=tpar(i,j,k,is)*wspec(is)/denum
-!               tperp(i,j,k,is)=0.5*tperp(i,j,k,is)*wspec(is)/denum
-!              endif
-!            enddo
-!          enddo
-!        enddo
-!      enddo
-!      call date_and_time(values=time_end_array(:,26))
-!      call accumulate_time_difference(time_begin_array(1,26) &
-!     &                               ,time_end_array(1,26) &
-!     &                               ,time_elapsed(26))
-
- 
-       call date_and_time(values=time_end_array(:,23))
-       call accumulate_time_difference(time_begin_array(1,23) &
-     &                                ,time_end_array(1,23) &
-     &                                ,time_elapsed(23))
- 
+      call date_and_time(values=time_end_array(:,23))
+      call accumulate_time_difference(time_begin_array(1,23) &
+                                    ,time_end_array(1,23) &
+                                    ,time_elapsed(23))
+                                    
       return
     end subroutine caltemp2_global
 
