@@ -14,7 +14,7 @@ def load_input(path):
     xmax = nml['datum']['xmax']
     ymax = nml['datum']['ymax']
     zmax = nml['datum']['zmax']
-    tmax = nml['datum']['maximum_simulation_time']
+    tmax = nml['datum']['max_sim_time']
     dt = nml['datum']['dtwci']
     nwrtdata = nml['datum']['nwrtdata']
     #@ box axes
@@ -72,8 +72,8 @@ def get_spectral_max(path, spec_rho, spec_rho_max, k_pos):
 # path = '1d-resis0.1'
 # path = 'test-ppc64'
 # path = '1d-b0.01'
-# path = 'test-z2240'
-path = 'h3d'
+path = 'test-z2240'
+# path = 'h3d'
 
 #            0      1      2    3     4     5     6       7        8
 field_list=['den', 'bx', 'by', 'bz', 'ex', 'ey', 'ez', 'tpar_1', 'tperp_1']
