@@ -8,7 +8,7 @@
 !                                                                          *
 !***************************************************************************
 
-      program hybrid 
+      program H3D 
       use parameter_mod
       use functions_f90
       use MESH2D
@@ -82,7 +82,7 @@
 !
 !***********************************************************************
 !
-      if (myid == 0) write(6,*) " 3DHYB is starting"
+      if (myid == 0) write(6,*) " H3D is starting"
 !
 !***********************************************************************
 !
@@ -1338,7 +1338,8 @@
 !
       call MPI_FINALIZE(IERR)
       stop
-    end program hybrid
+    end program H3D
+
 !=======================================================================
 !>   computes velocities?
 !!    what is the difference between vxs and vix?

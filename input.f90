@@ -1,11 +1,11 @@
 &datum
 
-
 ! ------------------ global simulation info -----------!
-maximum_simulation_time=2000.0, ! max sim. time, in units of 1/wci
+max_sim_time=2000.0, ! max sim. time, in units of 1/wci
 t_begin=0.0, t_end=2000.0, 
 dtwci=0.01,  ! dt normalized to 1/wci (should be treated as dt*wci)
 restart=.false.,  ! whether to restart the simulation from restart directory
+                    ! the code now does auto restart by inspecting if 'restart/restart_index.dat' exists
 restrt_write=1,
 quota=24.0,  ! walltime quota?
 MPI_IO_format = .true. ! use MPI IO instead of traditional binary output
