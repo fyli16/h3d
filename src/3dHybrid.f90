@@ -34,7 +34,7 @@
 
       namelist /datum/ &
       ! global simulation info
-      max_sim_time, t_begin, t_end, dtwci, dt, restart, &
+      tmax, t_begin, t_end, dtwci, dt, restart, &
       restrt_write, quota, MPI_IO_format, &
       ! simulation domain
       nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, &
@@ -72,9 +72,7 @@
 
       ! time stamp
       !  call date_and_time(values=wall_clock_begin)
-      initial_time=MPI_Wtime()
-
-      if (myid == 0) write(6,*) "H3D is starting"
+      initial_time = MPI_Wtime()
 
       ! get the i/o data directory name from the environment variable
       ! DATA_DIRECTORY
@@ -93,7 +91,7 @@
       restart_index_suffix(1)='.1'
       restart_index_suffix(2)='.2'
 
-      my_short_int=myid
+      my_short_int = myid
       call integer_to_character(myid_char,len(myid_char),my_short_int)
       if (myid_char == '') myid_char='0'
 
@@ -109,10 +107,10 @@
       endif
  
       ! hxv - 12/02/2008 -Automatic restart
-      inquire(file=trim(adjustl(restart_directory))//'restart_index.dat',exist=restart)
+      ! inquire(file=trim(adjustl(restart_directory))//'restart_index.dat',exist=restart)
 
       ! global sim. info
-      call MPI_BCAST(max_sim_time           ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+      call MPI_BCAST(tmax                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
       call MPI_BCAST(t_begin                ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
       call MPI_BCAST(t_end                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
       call MPI_BCAST(dtwci                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
@@ -719,9 +717,9 @@
         call makelist
          
         if (myid == 0) then
-          !          open(unit=222,file='restart_index.dat' ,status='old')
+          ! open(unit=222,file='restart_index.dat' ,status='old')
           open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='old')
-          read(222,*) restart_index,itfin
+          read(222,*) restart_index, itfin
           close(222)
         endif
 
@@ -741,7 +739,7 @@
               call restrtrw(-1.0,itstart)
               call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
           endif
-          !         call MPI_BARRIER(MPI_COMM_WORLD,IERR)
+          ! call MPI_BARRIER(MPI_COMM_WORLD,IERR)
         enddo
          
         if (restart_index == 1) then
@@ -866,7 +864,7 @@
       itstart = itfin+1
 
       ! change how itfinish is computed
-      itfinish = (max_sim_time-t_stopped)/dtwci+itstart-1
+      itfinish = (tmax-t_stopped)/dtwci+itstart-1
 
       if (myid == 0) write(6,*) 't_stopped = ',t_stopped
       if (myid == 0) write(6,*) 'itstart, itfinish = ',itstart,' ',itfinish
@@ -921,7 +919,7 @@
            
            if (myid == 0) then
               open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='unknown')
-              write(222,*) restart_index,itfin
+              write(222,*) restart_index, itfin
               close(222)
            endif
            goto 998
@@ -1106,28 +1104,26 @@
            if (cleanup_status == 'CLEANUP_STATUS=TRUE') goto 999
         endif
 
-        ! max_sim_time
-        ! if (restrt_write == 1.and.mod(it,nwrtrestart)==0) then
-        if (restrt_write == 1.and.(mod( int(it,8) ,nwrtrestart)==0 .or. it == itfinish)) then
-
+        ! write restart files at specified steps or at the end of sim.
+        if (restrt_write == 1.and.(mod(int(it,8), nwrtrestart)==0 .or. it == itfinish)) then
           if (myid == 0) then
             WRITE(6,*)
-            WRITE(6,*) 'WRITING THE RESTART FILE'
+            WRITE(6,*) 'WRITING RESTART FILES'
             WRITE(6,*)
           endif
 
           itfin = it
 
-        do iwrite = 0,npes_over_60  
-         if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
-           call restrtrw(1.0,itstart)
-         endif
-         call MPI_BARRIER(MPI_COMM_WORLD,IERR)
-        enddo
+          do iwrite = 0,npes_over_60  
+            if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
+              call restrtrw(1.0,itstart)
+            endif
+            call MPI_BARRIER(MPI_COMM_WORLD,IERR)
+          enddo
 
           if (myid == 0) then
           open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='unknown')
-            write(222,*) restart_index,itfin
+            write(222,*) restart_index, itfin
             close(222)
           endif
 
@@ -1443,7 +1439,7 @@
       return
     end subroutine trans
 
-    
+
 !=======================================================================
 !>    compute perp and par temperature and pressure tensor
 !=======================================================================

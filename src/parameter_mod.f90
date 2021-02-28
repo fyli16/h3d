@@ -60,7 +60,7 @@
       double precision, dimension(5):: btspec,qspec,wspec,frac,anisot
       double precision :: denmin, resis, wpiwci, bete, fxsho,ave1,ave2,phib,demin2,xmax,ymax,zmax,dt&
            ,gama,dtwci                                                                    &
-           ,quota,wall_clock_elapsed,max_sim_time,buffer_zone                  &
+           ,quota,wall_clock_elapsed,tmax,buffer_zone                  &
            ,xaa,xbb,yaa,ybb,zaa,zbb,t_stopped
       integer*8::        nax,nbx,nay,nby,naz,nbz
       integer*8, dimension(8) :: wall_clock_begin,wall_clock_end
