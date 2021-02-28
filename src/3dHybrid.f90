@@ -88,8 +88,7 @@
 
       ! read input deck
       !  set default values first
-      iwt=0; nskipx=1; nskipy=1; nskipz=1; testorbt=.false.; 
-      pi=acos(-1.d+00); frac=0.d+00; t_stopped=0.
+      iwt=0; t_stopped=0.
       if (myid == 0) then
          open(5,file='input.f90',form='formatted',status='old')
          read(5,nml=datum,iostat=input_error)

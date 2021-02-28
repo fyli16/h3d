@@ -29,7 +29,7 @@ profile_power=0,  ! seems not implemented
 
 ! ------------------ field solver ----------------!
 n_subcycles=0
-nskipx=1,  nskipy=1,  nskipz=1,
+nskipx=1,  nskipy=1,  nskipz=1, ! not implemented?
 
 iterb=5,  ! ion push can use a larger step than field advance
 testorbt=.false., 

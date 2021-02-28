@@ -13,14 +13,14 @@ OPTFLAGS2   = -O3 -ffree-line-length-none -fimplicit-none
 LIBS        = 
 
 # Define dependecies
-EFILE        = h3d
-OBJS         =  parameter_mod.of90 \
+EFILE = h3d
+OBJS =  parameter_mod.of90 \
 		mesh_class.of90 \
 		mesh2d.of90 \
 		functions.of90 \
-                init_single_alfven_wave.of90 \
-                init_ion_acoustic_wave.of90 \
-                init_lapd_alfven_wave.of90 \
+		init_single_alfven_wave.of90 \
+		init_ion_acoustic_wave.of90 \
+		init_lapd_alfven_wave.of90 \
 		io.of90\
 		utils.of90\
 	 	boundary.of90 \
