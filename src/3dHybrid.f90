@@ -27,7 +27,6 @@
       !VR : double precision, dimension(:,:,:), allocatable:: nonuniform_mesh_global
       character (len=240):: filename, filename2
       character(len=128):: tmpfname
-      ! character(len=27) :: sim_id
       integer:: iwrite
       integer:: ierr2, eStrLen
       character(len=1024):: eStr
@@ -215,28 +214,22 @@
       ! hxv - 12/02/2008 -Automatic restart
       if (restart .and. myid == 0) then
         write(6,*) " "
-        write(6,*) " "
         write(6,*) "RUN IS RESTARTED FROM "//trim(adjustl(restart_directory))
-        write(6,*) " "
         write(6,*) " "
       else
         if (myid == 0) then 
-          ! call create_id_file(sim_id)
           write(6,*) " "
           write(6,*) "NEW RUN "
-          write(6,*) " "
           write(6,*) " "
         endif
       endif
 
-      !      field subcycling
-
+      ! field subcycling
       ! n_subcycles=max(n_subcycles,1_8)
 
-      !     set MPI Cartesian geometry, define stride vector types, obtain new
-      !     ID for the processors, perform 2D decomposition of the
-      !     computational mesh, and find nearest neighbors (in y and z
-      !     directions)
+      ! set MPI Cartesian geometry, define stride vector types, obtain new
+      ! ID for the processors, perform 2D decomposition of the
+      ! computational mesh, and find nearest neighbors (in y and z directions)
 
       if (MYID.EQ.0) then
         write(6,*) "Number of processors available = ",NUMPROCS
@@ -281,7 +274,7 @@
 
       if (myid == 0) then
         do i=1,ndim
-          write(6,*) " DIMENSION = ",I," DIMS = ",DIMS(I)
+          write(6,*) "DIMENSION = ",I," DIMS = ",DIMS(I)
         enddo
       endif
       call MPI_CART_CREATE(MPI_COMM_WORLD,NDIM,DIMS,PERIODS,REORDER,COMM2D,IERR)
@@ -307,8 +300,8 @@
       enddo
 
       if (MYID == 0) then
-        write(6,*) " LOCAL ARRAY SIZE IN Y-DIRECTION = ",JE-JB+1
-        write(6,*) " LOCAL ARRAY SIZE IN Z-DIRECTION = ",KE-KB+1
+        write(6,*) "LOCAL ARRAY SIZE IN Y-DIRECTION = ",JE-JB+1
+        write(6,*) "LOCAL ARRAY SIZE IN Z-DIRECTION = ",KE-KB+1
       endif
 
 
@@ -338,13 +331,10 @@
          endif
       enddo
 
-
       !  Use CART_SHIFT to determine processor to immediate left
       ! (NBRLEFT) and right (NBRRITE) of processor MYID
       !  Since code is aperiodic in z, need to manually set the
       !  left boundary for processor 0 and right boundary for npes-1
- 
- 
       if (ndim == 2) then
         call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
         call MPI_CART_SHIFT(COMM2D,1,1,NBRBOT ,NBRTOP ,IERR)
@@ -495,33 +485,33 @@
       call MPI_ALLGATHER(ke,1,MPI_INTEGER8,keglobal,1,MPI_INTEGER8,MPI_COMM_WORLD,IERR)
 
 
-      !  !VR: what is going on here?
-      !  if (myid.ne.0) then
-      !    do k=kb,ke
-      !      do j=1,je-jb+1
-      !        jvec(j)=myid
-      !      enddo
-      !      i_length=je-jb+1
-      !      call MPI_ISEND(jvec(1),i_length,MPI_INTEGER8,0,0,MPI_COMM_WORLD,req(1),IERR)
-      !      call MPI_WAITALL(1,req,status_array,IERR)
-      !    enddo
-      !  else
-      !    do k=kbglobal(myid),keglobal(myid)
-      !       do j=jbglobal(myid),jeglobal(myid)
-      !          idmap_yz(j,k)=myid
-      !       enddo
-      !    enddo
-      !    do ipe=1,numprocs-1
-      !       jbt=jbglobal(ipe)
-      !       jet=jeglobal(ipe)
-      !       kbt=kbglobal(ipe)
-      !       ket=keglobal(ipe)
-      !       do k=kbt,ket
-      !          i_length=jet-jbt+1
-      !          call MPI_IRECV(idmap_yz(jbt,k),i_length,MPI_INTEGER8,IPE,0,MPI_COMM_WORLD,req(1),IERR)
-      !          call MPI_WAITALL(1,req,status_array,IERR)
-      !       enddo
-      !    enddo
+      ! VR: what is going on here?
+      ! if (myid.ne.0) then
+      !   do k=kb,ke
+      !     do j=1,je-jb+1
+      !       jvec(j)=myid
+      !     enddo
+      !     i_length=je-jb+1
+      !     call MPI_ISEND(jvec(1),i_length,MPI_INTEGER8,0,0,MPI_COMM_WORLD,req(1),IERR)
+      !     call MPI_WAITALL(1,req,status_array,IERR)
+      !   enddo
+      ! else
+      !   do k=kbglobal(myid),keglobal(myid)
+      !     do j=jbglobal(myid),jeglobal(myid)
+      !         idmap_yz(j,k)=myid
+      !     enddo
+      !   enddo
+      !   do ipe=1,numprocs-1
+      !     jbt=jbglobal(ipe)
+      !     jet=jeglobal(ipe)
+      !     kbt=kbglobal(ipe)
+      !     ket=keglobal(ipe)
+      !     do k=kbt,ket
+      !         i_length=jet-jbt+1
+      !         call MPI_IRECV(idmap_yz(jbt,k),i_length,MPI_INTEGER8,IPE,0,MPI_COMM_WORLD,req(1),IERR)
+      !         call MPI_WAITALL(1,req,status_array,IERR)
+      !     enddo
+      !   enddo
       ! endif
 
       !VR: again, this is much simpler than the commented block
@@ -572,10 +562,6 @@
 
       ! print *, myid, "size OF id_map is ",size(idmap_yz)
 
-      !VR
-
-
-
       call MPI_TYPE_VECTOR(int(nzl+2,4),int(nx+2,4),int((nx+2)*(nyl+2),4),MPI_DOUBLE_PRECISION,stridery,IERR)
       call MPI_TYPE_COMMIT(stridery,IERR)
       call MPI_TYPE_VECTOR(int(nyl+2,4),int(nx+2,4),int(nx+2,4)          ,MPI_DOUBLE_PRECISION,STRIDERZ,IERR)
@@ -588,7 +574,7 @@
       enddo
       if (nptotp > nplmax) then
           if (myid == 0) then
-            write(6,*) ' Increase nplmax in the input file '
+            write(6,*) 'Increase nplmax in the input file '
             write(6,*) 'nptotp = ',nptotp
           endif
           myid_stop(myid) = 1
@@ -670,20 +656,18 @@
       endif
 
       ! STOP HERE IF SETUP_MESH=.TRUE.
-
       if (setup_mesh) then
         call MPI_FINALIZE(IERR)
         STOP
       endif
 
       allocate (uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1))
-      ! VR:      allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
+      ! VR: allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
 
       call date_and_time(values=time_begin)
       clock_time_re1=(time_begin(5)*3600.+time_begin(6)*60.+time_begin(7)+time_begin(8)*0.001)
  
-
-     if (myid == 0) then
+      if (myid == 0) then
         if (restart) then
           open(unit=11,file=trim(adjustl(data_directory))//'energy.dat' ,status='old',position='append')
           open(unit=14,file=trim(adjustl(data_directory))//'time.dat' ,status='old',position='append')
@@ -707,7 +691,7 @@
             endif
           endif
         endif
-     endif
+      endif
 
       if (tracking_mpi) then
         !write(*,*)'filename=',filename
@@ -732,102 +716,96 @@
       call opendiagfiles
 
       if (restart) then
-         call makelist
+        call makelist
          
-         if (myid == 0) then
-            !          open(unit=222,file='restart_index.dat' ,status='old')
-            open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='old')
-            read(222,*) restart_index,itfin
-            close(222)
-         endif
+        if (myid == 0) then
+          !          open(unit=222,file='restart_index.dat' ,status='old')
+          open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='old')
+          read(222,*) restart_index,itfin
+          close(222)
+        endif
 
-         call MPI_BCAST(restart_index,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-         call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-         nplmax6 = 6*nplmax
-         ! hxv 01/10/2014
+        call MPI_BCAST(restart_index,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
+        call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
+        nplmax6 = 6*nplmax
+        ! hxv 01/10/2014
+        if (myid == 0) then
+          write(6,*) " "
+          write(6,*) " RESTARTED FROM SET # ",restart_index
+          write(6,*) " "
+        endif
 
-         if (myid == 0) then
-            write(6,*) " "
-            write(6,*) " RESTARTED FROM SET # ",restart_index
-            write(6,*) " "
-         endif
-
- 
         ! comment out for timing on LANL machine
-
-         do iwrite = 0,npes_over_60 
-            if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
-               call restrtrw(-1.0,itstart)
-               call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-            endif
-            !         call MPI_BARRIER(MPI_COMM_WORLD,IERR)
-         enddo
+        do iwrite = 0,npes_over_60 
+          if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
+              call restrtrw(-1.0,itstart)
+              call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
+          endif
+          !         call MPI_BARRIER(MPI_COMM_WORLD,IERR)
+        enddo
          
-         if (restart_index == 1) then
-            restart_index=2
-         else
-            restart_index=1
-         endif
+        if (restart_index == 1) then
+          restart_index=2
+        else
+          restart_index=1
+        endif
 
         ! Uniform mesh - Same as is in version 5.0
-         yb=(jb-1)*hy
-         ye= je   *hy
-         zb=(kb-1)*hz
-         ze= ke   *hz
+        yb=(jb-1)*hy
+        ye= je   *hy
+        zb=(kb-1)*hz
+        ze= ke   *hz
          
-         !       Nonuniform mesh
-         zb=meshZ%xn(kb+1)
-         ze=meshZ%xn(ke+2)
-         do ipe=0,npes-1
-            zbglobal(ipe)=meshZ%xn(kbglobal(ipe)+1)
-            zeglobal(ipe)=meshZ%xn(keglobal(ipe)+2)
-         enddo
-         yb=meshY%xn(jb+1)
-         ye=meshY%xn(je+2)
-         do ipe=0,npes-1
-            ybglobal(ipe)=meshY%xn(jbglobal(ipe)+1)
-            yeglobal(ipe)=meshY%xn(jeglobal(ipe)+2)
-         enddo
-         
-         
-         volume_fraction = (ye-yb)*(ze-zb)/(ymax*zmax)
-         
-         xb        = 0.
-         xe        = xmax
-         xb_logical=MESH_UNMAP(meshX,xb)
-         xe_logical=MESH_UNMAP(meshX,xe)
-         yb_logical=MESH_UNMAP(meshY,yb)
-         ye_logical=MESH_UNMAP(meshY,ye)
-         zb_logical=MESH_UNMAP(meshZ,zb)
-         ze_logical=MESH_UNMAP(meshZ,ze)
-         
-         
-         do is=1,nspec
-            npm=npx(is)*npy(is)*npz(is)*npes
-            dfac(is)=real(ny*nz*nx)/real(npm)
-            do ixe=1,nx2
-               do iye=jb-1,je+1
-                  do ize=kb-1,ke+1
-                     !                 qp_cell(ixe,iye,ize,is) = (meshX%dxc(ixe)*meshY%dxc(iye)*meshZ%dxc(ize)/(hx*hy*hz))*dfac(is)*frac(is)
-                     qp_cell(ixe,iye,ize,is) = meshX%dxc(ixe)*meshY%dxc(iye+1)*meshZ%dxc(ize+1)*dfac(is)*frac(is)
-                  enddo
-               enddo
-            enddo
-         enddo
-         
-         
-         do i=1,nxmax
-            xc_uniform(i) = hx*(i-1.5)
-            xv_uniform(i) = hx*(i-2.0)
-         enddo
-         do j=1,nymax
-            yc_uniform(j) = hy*(j-0.5)
-            yv_uniform(j) = hy*(j-1.0)
-         enddo
-         do k=1,nzmax
-            zc_uniform(k) = hz*(k-0.5)
-            zv_uniform(k) = hz*(k-1.0)
-         enddo
+        !       Nonuniform mesh
+        zb=meshZ%xn(kb+1)
+        ze=meshZ%xn(ke+2)
+        do ipe=0,npes-1
+          zbglobal(ipe)=meshZ%xn(kbglobal(ipe)+1)
+          zeglobal(ipe)=meshZ%xn(keglobal(ipe)+2)
+        enddo
+        yb=meshY%xn(jb+1)
+        ye=meshY%xn(je+2)
+        do ipe=0,npes-1
+          ybglobal(ipe)=meshY%xn(jbglobal(ipe)+1)
+          yeglobal(ipe)=meshY%xn(jeglobal(ipe)+2)
+        enddo
+                 
+        volume_fraction = (ye-yb)*(ze-zb)/(ymax*zmax)
+        
+        xb        = 0.
+        xe        = xmax
+        xb_logical=MESH_UNMAP(meshX,xb)
+        xe_logical=MESH_UNMAP(meshX,xe)
+        yb_logical=MESH_UNMAP(meshY,yb)
+        ye_logical=MESH_UNMAP(meshY,ye)
+        zb_logical=MESH_UNMAP(meshZ,zb)
+        ze_logical=MESH_UNMAP(meshZ,ze)
+                 
+        do is=1,nspec
+          npm=npx(is)*npy(is)*npz(is)*npes
+          dfac(is)=real(ny*nz*nx)/real(npm)
+          do ixe=1,nx2
+              do iye=jb-1,je+1
+                do ize=kb-1,ke+1
+                    !                 qp_cell(ixe,iye,ize,is) = (meshX%dxc(ixe)*meshY%dxc(iye)*meshZ%dxc(ize)/(hx*hy*hz))*dfac(is)*frac(is)
+                    qp_cell(ixe,iye,ize,is) = meshX%dxc(ixe)*meshY%dxc(iye+1)*meshZ%dxc(ize+1)*dfac(is)*frac(is)
+                enddo
+              enddo
+          enddo
+        enddo
+                
+        do i=1,nxmax
+          xc_uniform(i) = hx*(i-1.5)
+          xv_uniform(i) = hx*(i-2.0)
+        enddo
+        do j=1,nymax
+          yc_uniform(j) = hy*(j-0.5)
+          yv_uniform(j) = hy*(j-1.0)
+        enddo
+        do k=1,nzmax
+          zc_uniform(k) = hz*(k-0.5)
+          zv_uniform(k) = hz*(k-1.0)
+        enddo
          
         if (myid ==0) then
            my_short_int=it
@@ -897,16 +875,15 @@
       time_elapsed=0.;time_begin_array=0;time_end_array=0
 
 
-      !=======================================================================
-      !VR: main time loop
+      !---------------------------------------------------------
+      !         start of main time loop
+      !---------------------------------------------------------
       do while(it <= itfinish)
         call get_cleanup_status(len(cleanup_status))
 
         if ((myid == 0).and.prntinfo) then
           write(6,*) " "
-          write(6,*) " "
-          WRITE(6,*) " DT = ",DT
-          WRITE(6,*) " T_STOPPED = ",T_STOPPED
+          WRITE(6,*) "DT = ", DT, ", T_STOPPED = ",T_STOPPED
         endif
 
         final_time=MPI_Wtime()
@@ -981,23 +958,22 @@
         endif
 
         ! HXV
-
         call date_and_time(values=time_begin_array(:,3))
 
-!VR: we do not need injection from the boundary 
-!        do is=1,nspec
-!           call particle_newinject_linked_list(is)
-!        enddo
+        !VR: we do not need injection from the boundary 
+        ! do is=1,nspec
+        !   call particle_newinject_linked_list(is)
+        ! enddo
 
-!        if (it == 2 ) then
-!          CALL MPI_FINALIZE(IERR)
-!          STOP
-!        ENDIF
-!        if (notime == 0) then
-!          call date_and_time(values=time_end)
-!          clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
-!          write(file_unit_time,"(i4,' injctpar ',f15.3)") it,real(clock_time-clock_time_init)
-!        endif
+        ! if (it == 2 ) then
+        !   CALL MPI_FINALIZE(IERR)
+        !   STOP
+        ! ENDIF
+        ! if (notime == 0) then
+        !   call date_and_time(values=time_end)
+        !   clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
+        !   write(file_unit_time,"(i4,' injctpar ',f15.3)") it,real(clock_time-clock_time_init)
+        ! endif
 
         call date_and_time(values=time_end_array(:,3))
         call date_and_time(values=time_begin_array(:,2))
@@ -1073,7 +1049,7 @@
         call accumulate_time_difference(time_begin_array(1,30),time_end_array(1,30),time_elapsed(30))
         !VR: end user diagnostics
         
-!VR: this seems to be data output region        
+        !VR: this seems to be data output region        
 998     if (.not.testorbt.and.(wrtdat.or.cleanup_status == 'CLEANUP_STATUS=TRUE'.or.it == itfinish       &
              .or.it == 1)) then
            if (myid ==0) then
@@ -1111,7 +1087,7 @@
                  close(file_unit(j))
               enddo
            endif
-!
+
            ! Write particle data to file and exit if post_process=.true.
            if (myid == 0) then
               write(6,*) " t_begin,time,t_end = ",t_begin*wpiwci,time,t_end*wpiwci
@@ -1126,12 +1102,12 @@
               call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
               call particle_in_volume_write
            endif
-!
+
            if (cleanup_status == 'CLEANUP_STATUS=TRUE') goto 999
         endif
-!=======================================================================
-!       max_sim_time
-!       if (restrt_write == 1.and.mod(it,nwrtrestart)==0) then
+
+        ! max_sim_time
+        ! if (restrt_write == 1.and.mod(it,nwrtrestart)==0) then
         if (restrt_write == 1.and.(mod( int(it,8) ,nwrtrestart)==0 .or. it == itfinish)) then
 
           if (myid == 0) then
@@ -1168,42 +1144,31 @@
           clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
           write(file_unit_time,"(i4,' end      ',f15.3)") it,real(clock_time-clock_time_init)
         endif
-!        if (it == 1 ) then
-!          CALL MPI_FINALIZE(IERR)
-!          STOP
-!        ENDIF
-!
-!=======================================================================
-!
+        !  if (it == 1 ) then
+        !    CALL MPI_FINALIZE(IERR)
+        !    STOP
+        !  ENDIF
+
         time=time+dt
         it = it + 1
-!
-!=======================================================================
-!
 
+        ! VR: removed orientation of BZ flip
 
-! VR: removed orientation of BZ flip
-
-!=======================================================================
-!
         call date_and_time(values=time_end_array(:,1))
-!
-!=======================================================================
-!
+
         do j=1,5
           call accumulate_time_difference(time_begin_array(1,j),time_end_array(1,j),time_elapsed(j))
         enddo
-!
-!=======================================================================
-!
 
-!        if (it == 1 ) then
-!          CALL MPI_FINALIZE(IERR)
-!          STOP
-!        ENDIF
+        !  if (it == 1 ) then
+        !    CALL MPI_FINALIZE(IERR)
+        !    STOP
+        !  ENDIF
 
-      enddo    ! while it loop
-! END of main time loop
+      enddo  
+      !---------------------------------------------------------
+      !         start of main time loop
+      !---------------------------------------------------------
 
       if (myid == 0) then
         close(unit=11)
@@ -1217,9 +1182,7 @@
       endif
       
  999  if (notime == 0) close(file_unit_time)
-!
-!***********************************************************************
-!
+
       if (MYID.EQ.0) then
         write(6,*) " "
         write(6,*) " "
@@ -1296,6 +1259,8 @@
       call MPI_FINALIZE(IERR)
       stop
     end program H3D
+
+
 !=======================================================================
 !>   computes velocities?
 !!    what is the difference between vxs and vix?
@@ -1477,6 +1442,8 @@
  
       return
     end subroutine trans
+
+    
 !=======================================================================
 !>    compute perp and par temperature and pressure tensor
 !=======================================================================
