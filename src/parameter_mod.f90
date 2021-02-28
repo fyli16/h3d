@@ -49,15 +49,14 @@ integer*8, dimension(:),allocatable:: nescape_yz,nescape_zy,nescape_xy          
                     ,nescape_xz_global,nescape_zx_global
 double precision, dimension(:), allocatable :: qleft,qrite
 double precision, dimension(:), allocatable:: x0,x1,tx0,vpar,vper,bbal
-double precision, dimension(:,:) ,allocatable:: vbal
+double precision, dimension(:,:), allocatable:: vbal
 double precision, dimension(5):: rcorr
 integer*8, dimension(5):: ishape
 double precision, dimension(5):: btspec,qspec,wspec,frac,anisot
-double precision :: denmin, resis, wpiwci, bete, fxsho,ave1,ave2,phib,demin2 &
-     ,xmax,ymax,zmax,dt, gama,dtwci  &                                                                  &
-     ,quota,wall_clock_elapsed,tmax,buffer_zone  &
-     ,xaa,xbb,yaa,ybb,zaa,zbb,t_stopped
-integer*8::        nax,nbx,nay,nby,naz,nbz
+double precision :: denmin, resis, wpiwci, bete, fxsho,ave1,ave2,phib,demin2, &
+     xmax,ymax,zmax,dt,gama,dtwci,quota,wall_clock_elapsed,tmax,buffer_zone,  &
+     xaa,xbb,yaa,ybb,zaa,zbb,t_stopped
+integer*8:: nax,nbx,nay,nby,naz,nbz
 integer*8, dimension(8) :: wall_clock_begin,wall_clock_end
 integer*8:: eta_par,nparbuf
 integer*8, dimension(5) ::  npx,npy,npz
