@@ -76,18 +76,22 @@
 
       ! get the i/o data directory name from the environment variable
       ! DATA_DIRECTORY
-      if (myid==0) then
-        call get_environment_variable1(data_directory,len(data_directory))
+      ! if (myid==0) then
+      !   call get_environment_variable1(data_directory,len(data_directory))
+      !   data_directory=trim(adjustl(data_directory))//'/'
+      !   call get_environment_variable2(restart_directory,len(restart_directory))
+      !   restart_directory=trim(adjustl(restart_directory))//'/'
+      !   write(6,*)
+      !   write(6,*) "DATA_DIRECTORY = ",trim(adjustl(data_directory))
+      !   write(6,*) "RESTART_DIRECTORY  = ",trim(adjustl(restart_directory))
+      !   write(6,*)
+      ! endif
+      ! call MPI_BCAST(data_directory,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
+      ! call MPI_BCAST(restart_directory,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
+      call get_environment_variable1(data_directory,len(data_directory))
         data_directory=trim(adjustl(data_directory))//'/'
-        call get_environment_variable2(restart_directory,len(restart_directory))
-        restart_directory=trim(adjustl(restart_directory))//'/'
-        write(6,*)
-        write(6,*) "DATA_DIRECTORY = ",trim(adjustl(data_directory))
-        write(6,*) "RESTART_DIRECTORY  = ",trim(adjustl(restart_directory))
-        write(6,*)
-      endif
-      call MPI_BCAST(data_directory,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
-      call MPI_BCAST(restart_directory,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
+      call get_environment_variable2(restart_directory,len(restart_directory))
+      restart_directory=trim(adjustl(restart_directory))//'/'
       restart_index_suffix(1)='.1'
       restart_index_suffix(2)='.2'
 
@@ -203,15 +207,9 @@
       call MPI_BCAST(setup_mesh             ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
       call MPI_BCAST(post_process           ,1     ,MPI_LOGICAL,0,MPI_COMM_WORLD,IERR)
 
-      ! In input.f90, dt is in units of 1/wci, 
-      !   here, it is converted to units of 1/wpi
+      ! The unit of dt is 1/wci in input file, but converted to 1/wpi here
       dt = dtwci * wpiwci
 
-      ! hxv - 12/02/2008 -Automatic restart
-      ! fyli - 2/27/21 - disable auto restart, to give more definite meaning of 
-      !   the parameter 'restart' in the input deck
-      ! inquire(file=trim(adjustl(restart_directory))//'restart_index.dat',exist=restart)
-      ! print info on if 'restart'
       if (myid==0) then
         write(6,*) " "
         if (restart) then
@@ -228,27 +226,13 @@
       ! set MPI Cartesian geometry, define stride vector types, obtain new
       ! ID for the processors, perform 2D decomposition of the
       ! computational mesh, and find nearest neighbors (in y and z directions)
-
-      if (MYID.EQ.0) then
+      if (myid==0) then
         write(6,*) "Total number of processors = ",NUMPROCS
       endif
-
-      ! fyli: because of the manual specification below, this selection block is actually not functioning and thus is annotated. 
-      ! if (nz == 1.and.ny == 1) then  
-      !   ndim=1
-      !   dims(1)=1
-      !   dims(2)=1
-      ! else if (nz == 1) then
-      !   ndim=1
-      !   dims(2)=1
-      ! else
-      !   ndim=2
-      ! endif
-      ! manually specify decomposition (along y, z only; x direction is not decomposed) 
+      ! specify decomposition (along y, z only; no decomposition along x) 
       ndim=2
       dims(1)=nodey
       dims(2)=nodez
-
       ! if (ndim /= 2) then
       !    if (myid==0) then
       !       print *,"*************************************************************************"
@@ -259,7 +243,6 @@
       !    call MPI_FINALIZE(IERR)
       !    STOP         
       ! endif
-
       PERIODS = .TRUE. 
       REORDER = .TRUE.
       call MPI_DIMS_CREATE(NUMPROCS,NDIM,DIMS,IERR)
@@ -268,7 +251,6 @@
       ! now npy means number of particles in each core along y
       npy=npy/dims(1)
       npz=npz/dims(2)
-
       if (myid == 0) then
         do i=1,ndim
           write(6,*) "DIMENSION = ", I, " DIMS = ",DIMS(I)
@@ -281,7 +263,6 @@
       call MPE_DECOMP1D(NY,DIMS(1),COORDS(1),JB,JE)
       ! print domain decomposition info
       ! write(*,*)'myid=',myid,'jb,je',jb,je,'kb,ke=',kb,ke
-
       nspecm = nspec
       nxmax  = nx+2
       nymax  = ny+2
@@ -928,9 +909,6 @@
           write(file_unit_time,"(i4,' begin    ',f15.3)") it,real(clock_time-clock_time_init)
         endif
         if (myid == 0.and.mod(it,10_8) == 0) then
-          ! print *,"it = ",it
-          ! print *,'system time (delta) = ',real(clock_time - clock_time_old)
-          ! print *,'system time (total) = ',real(clock_time - clock_time_init)
           print *, 'it=', it, ', delta_time=', real(clock_time - clock_time_old), ', tot_time=', real(clock_time - clock_time_init)
           clock_time_old = clock_time
         endif
@@ -1082,10 +1060,10 @@
            endif
 
            ! Write particle data to file and exit if post_process=.true.
-           if (myid == 0) then
-              write(6,*) " t_begin,time,t_end = ",t_begin*wpiwci,time,t_end*wpiwci
-              write(6,*) "it,nwrtparticle = ",it,nwrtparticle
-           endif
+          !  if (myid == 0) then
+          !     write(6,*) " t_begin,time,t_end = ",t_begin*wpiwci,time,t_end*wpiwci
+          !     write(6,*) "it,nwrtparticle = ",it,nwrtparticle
+          !  endif
            if (t_begin*wpiwci <= time .and. time <= t_end*wpiwci .and. mod( int(it,8) ,nwrtparticle)==0 .or. it==1) then
               if (myid == 0) then
                 my_short_int=it
@@ -1140,7 +1118,7 @@
         !    STOP
         !  ENDIF
 
-        time=time+dt
+        time = time + dt
         it = it + 1
 
         ! VR: removed orientation of BZ flip
@@ -1158,7 +1136,7 @@
 
       enddo  
       !---------------------------------------------------------
-      !         start of main time loop
+      !         end of main time loop
       !---------------------------------------------------------
 
       if (myid == 0) then
@@ -1318,27 +1296,27 @@
           do j=jb-1,je+1
             do i=1,nx2
 
-!             Nonuniform mesh
+            ! Nonuniform mesh
               cell_volume_ratio = hx*hy*hz/(meshX%dxc(i)*meshY%dxc(j+1)*meshZ%dxc(k+1))
 
               dns_tmp=dnsh(i,j,k,is)
 
-!             Uniform mesh - Same as is in version 5.0
-!              if (dns_tmp <= denmin) dns_tmp=1.d+10
+            ! Uniform mesh - Same as is in version 5.0
+            !  if (dns_tmp <= denmin) dns_tmp=1.d+10
 
-!             Nonuniform mesh
-!              if (dns_tmp*cell_volume_ratio <= denmin) dns_tmp=1.d+10
+            ! Nonuniform mesh
+            !  if (dns_tmp*cell_volume_ratio <= denmin) dns_tmp=1.d+10
               if (dns_tmp*cell_volume_ratio <= denmin) dns_tmp=denmin/cell_volume_ratio ! July 21, 2010
 
               vxs(i,j,k,is)=vxs(i,j,k,is)/dns_tmp
               vys(i,j,k,is)=vys(i,j,k,is)/dns_tmp
               vzs(i,j,k,is)=vzs(i,j,k,is)/dns_tmp
 
-!             Uniform mesh - Same as is in version 5.0
-!              dns(i,j,k,is)=dns(i,j,k,is)
+            ! Uniform mesh - Same as is in version 5.0
+            !  dns(i,j,k,is)=dns(i,j,k,is)
 
-!             Nonuniform mesh
-!              dns(i,j,k,is)=dns(i,j,k,is)*cell_volume_ratio
+            ! Nonuniform mesh
+            !  dns(i,j,k,is)=dns(i,j,k,is)*cell_volume_ratio
 
             enddo
           enddo
@@ -1363,7 +1341,7 @@
         enddo
       enddo
 
-!     Apply Boundary Conditions
+    ! Apply Boundary Conditions
       if (ndim /= 1) then
       call XREALBCC(DEN,1_8,NX,NY,NZ)
       call XREALBCC(DENH,1_8,NX,NY,NZ)
@@ -1378,7 +1356,7 @@
       call XREALBCC_2D(VIZ,1_8,NX,NY,NZ)
       endif
 
-!     smooth density and velocity
+    ! smooth density and velocity
       if (smoothing) then
         if (ndim /=1) then
           call nsmth(DEN)
@@ -1485,18 +1463,18 @@
               DO WHILE (NP.NE.0)
                 L=NP
 
-!               Uniform mesh - Same as is in version 5.0
-!                rx=hxi*x(l)+1.5000000000000001
-!                ry=hyi*y(l)+0.5000000000000001d+00
-!                rz=hzi*z(l)+0.5000000000000001d+00
-!                ix=rx
-!                iy=ry
-!                iz=rz
-!                fx=rx-ix
-!                fy=ry-iy
-!                fz=rz-iz
+              ! Uniform mesh - Same as is in version 5.0
+              !  rx=hxi*x(l)+1.5000000000000001
+              !  ry=hyi*y(l)+0.5000000000000001d+00
+              !  rz=hzi*z(l)+0.5000000000000001d+00
+              !  ix=rx
+              !  iy=ry
+              !  iz=rz
+              !  fx=rx-ix
+              !  fy=ry-iy
+              !  fz=rz-iz
 
-!               Nonuniform mesh - using MESH_UNMAP
+              ! Nonuniform mesh - using MESH_UNMAP
                 rx=dtxi*MESH_UNMAP(meshX,x(l))+1.50000000000d+00
                 ry=dtyi*MESH_UNMAP(meshY,y(l))+1.50000000000d+00
                 rz=dtzi*MESH_UNMAP(meshZ,z(l))+1.50000000000d+00
@@ -1699,12 +1677,12 @@
           ENDDO
         ENDDO
 
-!        p_xx(:,:,:,is)=p_xx(:,:,:,is)/(tx0(is)*frac(is))
-!        p_xy(:,:,:,is)=p_xy(:,:,:,is)/(tx0(is)*frac(is))
-!        p_xz(:,:,:,is)=p_xz(:,:,:,is)/(tx0(is)*frac(is))
-!        p_yy(:,:,:,is)=p_yy(:,:,:,is)/(tx0(is)*frac(is))
-!        p_yz(:,:,:,is)=p_yz(:,:,:,is)/(tx0(is)*frac(is))
-!        p_zz(:,:,:,is)=p_zz(:,:,:,is)/(tx0(is)*frac(is))
+      !  p_xx(:,:,:,is)=p_xx(:,:,:,is)/(tx0(is)*frac(is))
+      !  p_xy(:,:,:,is)=p_xy(:,:,:,is)/(tx0(is)*frac(is))
+      !  p_xz(:,:,:,is)=p_xz(:,:,:,is)/(tx0(is)*frac(is))
+      !  p_yy(:,:,:,is)=p_yy(:,:,:,is)/(tx0(is)*frac(is))
+      !  p_yz(:,:,:,is)=p_yz(:,:,:,is)/(tx0(is)*frac(is))
+      !  p_zz(:,:,:,is)=p_zz(:,:,:,is)/(tx0(is)*frac(is))
 
       ENDDO
       call date_and_time(values=time_end_array(:,26))
@@ -1713,54 +1691,54 @@
      &                                ,time_elapsed(26))
  
 
-!      do is=1,nspec
-!        call date_and_time(values=time_begin_array(:,24))
-!        call XREAL(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
-!        call XREAL(tperp(1,jb-1,kb-1,is),NX,NY,NZ)
-!        call date_and_time(values=time_end_array(:,24))
-!        call accumulate_time_difference(time_begin_array(1,24) &
-!     &                                 ,time_end_array(1,24) &
-!     &                                 ,time_elapsed(24))
-! 
-!        call date_and_time(values=time_begin_array(:,25))
-!        call XREALBCC(tpar (1,jb-1,kb-1,is),1,NX,NY,NZ)
-!        call XREALBCC(tperp(1,jb-1,kb-1,is),1,NX,NY,NZ)
-!        call date_and_time(values=time_end_array(:,25))
-!        call accumulate_time_difference(time_begin_array(1,25) &
-!     &                                 ,time_end_array(1,25) &
-!     &                                 ,time_elapsed(25))
-! 
-!      enddo
+    !  do is=1,nspec
+    !    call date_and_time(values=time_begin_array(:,24))
+    !    call XREAL(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
+    !    call XREAL(tperp(1,jb-1,kb-1,is),NX,NY,NZ)
+    !    call date_and_time(values=time_end_array(:,24))
+    !    call accumulate_time_difference(time_begin_array(1,24) &
+    ! &                                 ,time_end_array(1,24) &
+    ! &                                 ,time_elapsed(24))
+
+    !    call date_and_time(values=time_begin_array(:,25))
+    !    call XREALBCC(tpar (1,jb-1,kb-1,is),1,NX,NY,NZ)
+    !    call XREALBCC(tperp(1,jb-1,kb-1,is),1,NX,NY,NZ)
+    !    call date_and_time(values=time_end_array(:,25))
+    !    call accumulate_time_difference(time_begin_array(1,25) &
+    ! &                                 ,time_end_array(1,25) &
+    ! &                                 ,time_elapsed(25))
+
+    !  enddo
 
 
-!      call date_and_time(values=time_begin_array(:,26))
-!      do is=1,nspec
-!        do k=kb-1,ke+1
-!          do j = jb-1,je+1
-!            do i=1,nx2
-!              if (is == 1) then
-!                dns1=dns(i,j,k,1)/(dfac(1)*frac(1))
-!                dns2=0.
-!                denum=dns1+rfrac*dns2
-!              else
-!                denum=dns(i,j,k,is)/(dfac(is)*frac(is))
-!              endif
-!              if (denum < denmin)  then
-!               tpar(i,j,k,is)=1.e-5
-!               tperp(i,j,k,is)=1.e-5
-!              else
-!               denum=denum*tx0(is)
-!               tpar(i,j,k,is)=tpar(i,j,k,is)*wspec(is)/denum
-!               tperp(i,j,k,is)=0.5*tperp(i,j,k,is)*wspec(is)/denum
-!              endif
-!            enddo
-!          enddo
-!        enddo
-!      enddo
-!      call date_and_time(values=time_end_array(:,26))
-!      call accumulate_time_difference(time_begin_array(1,26) &
-!     &                               ,time_end_array(1,26) &
-!     &                               ,time_elapsed(26))
+    !  call date_and_time(values=time_begin_array(:,26))
+    !  do is=1,nspec
+    !    do k=kb-1,ke+1
+    !      do j = jb-1,je+1
+    !        do i=1,nx2
+    !          if (is == 1) then
+    !            dns1=dns(i,j,k,1)/(dfac(1)*frac(1))
+    !            dns2=0.
+    !            denum=dns1+rfrac*dns2
+    !          else
+    !            denum=dns(i,j,k,is)/(dfac(is)*frac(is))
+    !          endif
+    !          if (denum < denmin)  then
+    !           tpar(i,j,k,is)=1.e-5
+    !           tperp(i,j,k,is)=1.e-5
+    !          else
+    !           denum=denum*tx0(is)
+    !           tpar(i,j,k,is)=tpar(i,j,k,is)*wspec(is)/denum
+    !           tperp(i,j,k,is)=0.5*tperp(i,j,k,is)*wspec(is)/denum
+    !          endif
+    !        enddo
+    !      enddo
+    !    enddo
+    !  enddo
+    !  call date_and_time(values=time_end_array(:,26))
+    !  call accumulate_time_difference(time_begin_array(1,26) &
+    ! &                               ,time_end_array(1,26) &
+    ! &                               ,time_elapsed(26))
 
  
        call date_and_time(values=time_end_array(:,23))
