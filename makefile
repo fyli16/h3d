@@ -6,15 +6,10 @@ all:
 	cp src/h3d .
 
 clean:
-	-rm data/*
-	-rm restart/*
-	-rm mesh_vertices.dat
-	-rm sim_id.txt
 	cd src; make clean
 
 cleanall: clean
 	cd src; make clean; make cleanall
-	# cd post-process; make clean 
 	-rm data/hist*
 	-rm data/*.gda
 	-rm data/dat/*.gda
