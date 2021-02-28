@@ -53,7 +53,7 @@ double precision, dimension(:,:) ,allocatable:: vbal
 double precision, dimension(5):: rcorr
 integer*8, dimension(5):: ishape
 double precision, dimension(5):: btspec,qspec,wspec,frac,anisot
-double precision :: denmin, resis, wpiwci, bete, fxsho,ave1,ave2,phib,demin2, &
+double precision :: denmin, resis, wpiwci, bete, fxsho,ave1,ave2,phib,demin2 &
      ,xmax,ymax,zmax,dt, gama,dtwci  &                                                                  &
      ,quota,wall_clock_elapsed,tmax,buffer_zone  &
      ,xaa,xbb,yaa,ybb,zaa,zbb,t_stopped
@@ -66,7 +66,7 @@ integer*8 :: iterb,norbskip,restrt_write,nxcel,netax,netay,netaz,nspec,nx,ny,nz,
 double precision:: etamin,etamax,moat_zone
 integer*8:: ieta,profile_power
 logical :: testorbt,restart,setup_mesh,uniform_loading_in_logical_grid,MPI_IO_format,smoothing
-double precision ::  hx,hy,hz,hxi,hyi,hzi,pi,efld,bfld,efluidt,ethermt,eptclt,time,te0
+double precision ::  hx,hy,hz,hxi,hyi,hzi,efld,bfld,efluidt,ethermt,eptclt,time,te0
 logical ::prntinfo, wrtdat
 integer :: it,notime
 integer*8 :: nsteps0,itfin,iwt,nx1,nx2,ny1,ny2,nz1,nz2,iopen,file_unit(25),file_unit_time,            &
