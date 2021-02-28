@@ -3,14 +3,15 @@ SHELL = csh
 
 all:
 	cd src; make
-	cp src/3dh .
+	cp src/h3d .
 
 clean:
+	-rm data/*
+	-rm restart/*
+	-rm mesh_vertices.dat
+	-rm sim_id.txt
 	cd src; make clean;
 	# -rm 3dh
-	# -rm data/*
-	# -rm restart_files/*
-	# -rm mesh_vertices.dat
 
 cleanall: clean
 	cd src; make clean; make cleanall

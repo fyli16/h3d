@@ -1,21 +1,19 @@
-##### Specify where the code will be run #####
+# Specify where the code will be run
 
 
-######## Choose compilers and options ########
-
+# Choose compilers and options 
 F90         = mpif90
 CC          = mpicc
-#OPTFLAGS    = -O3 
-#OPTFLAGS2   = -O3
-   OPTFLAGS    = -O3 -ffree-line-length-none -fimplicit-none -cpp
-   OPTFLAGS2   = -O3 -ffree-line-length-none -fimplicit-none  
-#   OPTFLAGS    = -Og -fbounds-check -ffree-line-length-none -fimplicit-none -g -cpp
-#   OPTFLAGS2   = -Og -fbounds-check -ffree-line-length-none -fimplicit-none -g 
-   LIBS        = 
+# OPTFLAGS    = -O3 
+# OPTFLAGS2   = -O3
+OPTFLAGS    = -O3 -ffree-line-length-none -fimplicit-none -cpp
+OPTFLAGS2   = -O3 -ffree-line-length-none -fimplicit-none  
+# OPTFLAGS    = -Og -fbounds-check -ffree-line-length-none -fimplicit-none -g -cpp
+# OPTFLAGS2   = -Og -fbounds-check -ffree-line-length-none -fimplicit-none -g 
+LIBS        = 
 
-############## Define dependecies ############
-
-EFILE        = 3dh
+# Define dependecies
+EFILE        = h3d
 OBJS         =  parameter_mod.of90 \
 		mesh_class.of90 \
 		mesh2d.of90 \
@@ -43,21 +41,19 @@ $(EFILE): $(OBJS)
 	@echo "linking..."
 	$(F90) $(OPTFLAGS2) -o $(EFILE) $(OBJS) $(LIBS)
 
-############## Compile C files ###############
-
+# Compile C files 
 %.ogcc: %.c makefile 
 	$(CC) -o $@ -c $<
 
 %.c: %.c.nashi makefile 
 	cp -f $< $@
 
-############## Compile F90 files #############
-
+# Compile F90 files
 %.of90: %.f90 makefile parameter_mod.f90
 	$(F90)  $(OPTFLAGS) -o $@ -c $< 
 
 clean:
-	-rm  *.mod *.of90 *.ogcc 3dh
+	-rm  *.mod *.of90 *.ogcc h3d
 cleanall: clean
 	-rm  restart_data.*
    
