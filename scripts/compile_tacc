@@ -18,9 +18,10 @@ module purge
 module load gcc/9.1.0 impi/19.0.9  # tacc frontera
 # module list
 
+echo ""
 echo "#--------------------- compling --------------------#"
 make
-
 echo ""
 echo "#--------------------- cleaning --------------------#"
 make clean
+echo ""
