@@ -113,9 +113,7 @@
       !
       !
       contains
-!
 !     Set global parameters and allocate global arrays
-!
         subroutine set_parameters(numprocs)
           implicit none
           integer:: numprocs

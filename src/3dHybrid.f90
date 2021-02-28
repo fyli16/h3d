@@ -101,14 +101,12 @@
 
       ! read input deck
       if (myid == 0) then
-         open (5,file='input.f90',form='formatted',status='old')
+         open(5,file='input.f90',form='formatted',status='old')
          read(5,nml=datum,iostat=input_error)
          write(6, datum)
       endif
- 
-      ! hxv - 12/02/2008 -Automatic restart
-      ! inquire(file=trim(adjustl(restart_directory))//'restart_index.dat',exist=restart)
 
+      ! Broadcast info to all ranks
       ! global sim. info
       call MPI_BCAST(tmax                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
       call MPI_BCAST(t_begin                ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
@@ -206,21 +204,23 @@
       call MPI_BCAST(post_process           ,1     ,MPI_LOGICAL,0,MPI_COMM_WORLD,IERR)
 
       ! In input.f90, dt is in units of 1/wci, 
-      !   now inside the code it is converted to units of 1/wpi
+      !   here, it is converted to units of 1/wpi
       dt = dtwci * wpiwci
 
       ! hxv - 12/02/2008 -Automatic restart
-      if (restart .and. myid == 0) then
+      ! fyli - 2/27/21 - disable auto restart, to give more definite meaning of 
+      !   the parameter 'restart' in the input deck
+      ! inquire(file=trim(adjustl(restart_directory))//'restart_index.dat',exist=restart)
+      ! print info on if 'restart'
+      if (myid==0) then
         write(6,*) " "
-        write(6,*) "RUN IS RESTARTED FROM "//trim(adjustl(restart_directory))
-        write(6,*) " "
-      else
-        if (myid == 0) then 
-          write(6,*) " "
+        if (restart) then
+          write(6,*) "RUN IS RESTARTED FROM "//trim(adjustl(restart_directory))
+        else
           write(6,*) "NEW RUN "
-          write(6,*) " "
         endif
-      endif
+        write(6,*) " "
+      endif 
 
       ! field subcycling
       ! n_subcycles=max(n_subcycles,1_8)
@@ -230,7 +230,7 @@
       ! computational mesh, and find nearest neighbors (in y and z directions)
 
       if (MYID.EQ.0) then
-        write(6,*) "Number of processors available = ",NUMPROCS
+        write(6,*) "Total number of processors = ",NUMPROCS
       endif
 
       ! fyli: because of the manual specification below, this selection block is actually not functioning and thus is annotated. 
@@ -260,19 +260,18 @@
       !    STOP         
       ! endif
 
-
-      PERIODS=.TRUE. 
-      REORDER=.TRUE.
+      PERIODS = .TRUE. 
+      REORDER = .TRUE.
       call MPI_DIMS_CREATE(NUMPROCS,NDIM,DIMS,IERR)
 
-      ! npy and npz are CHANGED here!!!!
+      ! npy and npz are changed here!
       ! now npy means number of particles in each core along y
       npy=npy/dims(1)
       npz=npz/dims(2)
 
       if (myid == 0) then
         do i=1,ndim
-          write(6,*) "DIMENSION = ",I," DIMS = ",DIMS(I)
+          write(6,*) "DIMENSION = ", I, " DIMS = ",DIMS(I)
         enddo
       endif
       call MPI_CART_CREATE(MPI_COMM_WORLD,NDIM,DIMS,PERIODS,REORDER,COMM2D,IERR)
@@ -280,10 +279,9 @@
       call MPI_CART_GET(COMM2D,NDIM,DIMS,PERIODS,COORDS,IERR)
       call MPE_DECOMP1D(NZ,DIMS(2),COORDS(2),KB,KE)
       call MPE_DECOMP1D(NY,DIMS(1),COORDS(1),JB,JE)
-      !print domain decomposition info
-      !write(*,*)'myid=',myid,'jb,je',jb,je,'kb,ke=',kb,ke
- 
- 
+      ! print domain decomposition info
+      ! write(*,*)'myid=',myid,'jb,je',jb,je,'kb,ke=',kb,ke
+
       nspecm = nspec
       nxmax  = nx+2
       nymax  = ny+2
@@ -302,7 +300,6 @@
         write(6,*) "LOCAL ARRAY SIZE IN Z-DIRECTION = ",KE-KB+1
       endif
 
-
       if (nzlmax < ke-kb+1) then
           print *,'myid = ',myid,' nzlmax lt ke-kb+1'
           print *,'myid = ',myid,' nzlmax,ke,kb= ',nzlmax,ke,kb
@@ -314,11 +311,11 @@
           myid_stop(myid) = 1
       endif
       do i = 0, npes-1
-        ! IF (myid.eq.i) THEN
+        ! if (myid.eq.i) then
         !    write(*,*)"Node no:",i,"myid_stop=",MYID_STOP(I)
-        ! ENDIF
+        ! endif
          i_i = i
-         CALL MPI_BCAST(MYID_STOP(i),1,MPI_INTEGER8,i_i,MPI_COMM_WORLD, IERR)
+         call MPI_BCAST(MYID_STOP(i),1,MPI_INTEGER8,i_i,MPI_COMM_WORLD, IERR)
       enddo
       do i = 0,npes-1
          if (myid_stop(i).ne.0) then
@@ -381,7 +378,6 @@
         irecvid(4,1)=nbrritebot
       endif
  
- 
       if (mod(coords(1)+1,2) == 0.and.mod(coords(2)  ,2) == 0) then
         isendid(2)=1
       else
@@ -404,7 +400,6 @@
         irecvid(4,2)=nbrritebot
       endif
  
- 
       if (mod(coords(1)  ,2) == 0.and.mod(coords(2)+1,2) == 0) then
         isendid(3)=1
       else
@@ -426,7 +421,6 @@
         irecvid(3,3)=nbrleftbot
         irecvid(4,3)=nbrritebot
       endif
- 
  
       if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
         isendid(4)=1
@@ -1104,8 +1098,8 @@
            if (cleanup_status == 'CLEANUP_STATUS=TRUE') goto 999
         endif
 
-        ! write restart files at specified steps or at the end of sim.
-        if (restrt_write == 1.and.(mod(int(it,8), nwrtrestart)==0 .or. it == itfinish)) then
+        ! write restart files at specified steps
+        if (restrt_write==1 .and. mod(int(it,8), nwrtrestart)==0) then
           if (myid == 0) then
             WRITE(6,*)
             WRITE(6,*) 'WRITING RESTART FILES'
