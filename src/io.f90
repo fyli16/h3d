@@ -622,10 +622,10 @@
         nskipz, testorbt, restart,etamin,etamax,ieta,eta_par
 
         read(f_unit) hx,hy,hz,hxi,hyi,hzi                            &
-       ,pi,efld,bfld,efluidt,ethermt,eptclt,time,te0                                        &
+       ,efld,bfld,efluidt,ethermt,eptclt,time,te0                                        &
        ,prntinfo,wrtdat,itfin,iwt                     &
        ,nx1,nx2,ny1,ny2,nz1,nz2,it                                   &
-!       ,ipstore,nptot,npleaving,npentering,myid_stop                 &
+      ! ,ipstore,nptot,npleaving,npentering,myid_stop                 &
        ,nptot,npleaving,npentering,myid_stop                 &
        ,iclock_speed,iopen,iseed, file_unit,file_unit_read           &
        ,file_unit_time,notime,file_unit_tmp                          &
