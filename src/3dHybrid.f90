@@ -1295,7 +1295,7 @@
 !
       call MPI_FINALIZE(IERR)
       stop
-    end program hybrid
+    end program H3D
 !=======================================================================
 !>   computes velocities?
 !!    what is the difference between vxs and vix?
