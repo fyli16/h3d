@@ -1,5 +1,4 @@
-!***********************************************************************
-!
+!---------------------------------------------------------------------
       subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,                &
                           p_xx,p_xy,p_xz,p_yy,p_yz,p_zz,fox,foy,foz, vxs,vys,vzs,                 &
                           nxmax,nymax,nzmax,file_unit,myid,                                       &
@@ -18,27 +17,23 @@
       integer*8 ny,nz,eta_par
       double precision rnorm, wpiwci
       integer*8 irecdel, ir1, ir2, irec_start , idebug,IERR
-!      double precision:: uniform_mesh(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)
+      ! double precision:: uniform_mesh(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)
       double precision:: uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1)
-!VR      double precision:: nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1)
+      ! double precision:: nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1)
       character(len=240):: fileName
       character(len=2):: specname
       character data_directory*(*)
       character cycle_ascii*(*)
       logical:: MPI_IO_format
 
- 
- 
-!      irecdel = (nz+2)*(ny+2)
+      ! irecdel = (nz+2)*(ny+2)
       irecdel = nz*ny
  
-! Now determine the starting and ending record number 
-! for a given variable and myid value.
- 
-
+      ! Now determine the starting and ending record number 
+      ! for a given variable and myid value.
       irec_start = irecnum
       rnorm = wpiwci
-!      call MESH_INTERPOLATED_3D(bx,uniform_mesh,nonuniform_mesh_global)
+      ! call MESH_INTERPOLATED_3D(bx,uniform_mesh,nonuniform_mesh_global)
       uniform_mesh=bx 
         if (MPI_IO_format) then
           fileName= trim(trim(adjustl(data_directory))//'bx_'//trim(adjustl(cycle_ascii)))//'.gda'
@@ -49,7 +44,7 @@
       idebug = 0
       if (idebug.ne.1) then
         rnorm = wpiwci
-!        call MESH_INTERPOLATED_3D(by,uniform_mesh,nonuniform_mesh_global)
+        ! call MESH_INTERPOLATED_3D(by,uniform_mesh,nonuniform_mesh_global)
         uniform_mesh=by 
         if (MPI_IO_format) then
  	  fileName= trim(trim(adjustl(data_directory))//'by_'//trim(adjustl(cycle_ascii)))//'.gda'
@@ -58,7 +53,7 @@
           call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(2),irec_start,ny,nz)
         endif
         rnorm = wpiwci
-!        call MESH_INTERPOLATED_3D(bz,uniform_mesh,nonuniform_mesh_global)
+        ! call MESH_INTERPOLATED_3D(bz,uniform_mesh,nonuniform_mesh_global)
         uniform_mesh=bz
         if (MPI_IO_format) then
           fileName= trim(trim(adjustl(data_directory))//'bz_'//trim(adjustl(cycle_ascii)))//'.gda'
@@ -67,7 +62,7 @@
           call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(3),irec_start,ny,nz)
         endif
         rnorm = 1.
-!        call MESH_INTERPOLATED_3D(den,uniform_mesh,nonuniform_mesh_global)
+        ! call MESH_INTERPOLATED_3D(den,uniform_mesh,nonuniform_mesh_global)
         uniform_mesh=den
         if (MPI_IO_format) then
           fileName= trim(trim(adjustl(data_directory))//'den_'//trim(adjustl(cycle_ascii)))//'.gda'
@@ -76,7 +71,7 @@
           call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(4),irec_start,ny,nz)
         endif
         rnorm = wpiwci**2
-!        call MESH_INTERPOLATED_3D(ex,uniform_mesh,nonuniform_mesh_global)
+        ! call MESH_INTERPOLATED_3D(ex,uniform_mesh,nonuniform_mesh_global)
         uniform_mesh=ex 
         if (MPI_IO_format) then
           fileName= trim(trim(adjustl(data_directory))//'ex_'//trim(adjustl(cycle_ascii)))//'.gda'
@@ -85,7 +80,7 @@
           call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(5),irec_start,ny,nz)
         endif
         rnorm = wpiwci**2
-!        call MESH_INTERPOLATED_3D(ey,uniform_mesh,nonuniform_mesh_global)
+        ! call MESH_INTERPOLATED_3D(ey,uniform_mesh,nonuniform_mesh_global)
         uniform_mesh=ey 
         if (MPI_IO_format) then
           fileName= trim(trim(adjustl(data_directory))//'ey_'//trim(adjustl(cycle_ascii)))//'.gda'
@@ -94,7 +89,7 @@
           call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(6),irec_start,ny,nz)
         endif
         rnorm = wpiwci**2
-!        call MESH_INTERPOLATED_3D(ez,uniform_mesh,nonuniform_mesh_global)
+        ! call MESH_INTERPOLATED_3D(ez,uniform_mesh,nonuniform_mesh_global)
         uniform_mesh=ez 
         if (MPI_IO_format) then
           fileName= trim(trim(adjustl(data_directory))//'ez_'//trim(adjustl(cycle_ascii)))//'.gda'
@@ -103,7 +98,7 @@
           call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(7),irec_start,ny,nz)
         endif
         rnorm = wpiwci
-!        call MESH_INTERPOLATED_3D(vix,uniform_mesh,nonuniform_mesh_global)
+        ! call MESH_INTERPOLATED_3D(vix,uniform_mesh,nonuniform_mesh_global)
         uniform_mesh=vix
         if (MPI_IO_format) then
           fileName= trim(trim(adjustl(data_directory))//'vix_'//trim(adjustl(cycle_ascii)))//'.gda'
@@ -112,7 +107,7 @@
           call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(8),irec_start,ny,nz)
         endif
         rnorm = wpiwci
-!        call MESH_INTERPOLATED_3D(viy,uniform_mesh,nonuniform_mesh_global)
+        ! call MESH_INTERPOLATED_3D(viy,uniform_mesh,nonuniform_mesh_global)
         uniform_mesh=viy
         if (MPI_IO_format) then
           fileName= trim(trim(adjustl(data_directory))//'viy_'//trim(adjustl(cycle_ascii)))//'.gda'
@@ -121,7 +116,7 @@
           call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(9),irec_start,ny,nz)
         endif
         rnorm = wpiwci 
-!        call MESH_INTERPOLATED_3D(viz,uniform_mesh,nonuniform_mesh_global)
+        ! call MESH_INTERPOLATED_3D(viz,uniform_mesh,nonuniform_mesh_global)
         uniform_mesh=viz
         if (MPI_IO_format) then
           fileName= trim(trim(adjustl(data_directory))//'viz_'//trim(adjustl(cycle_ascii)))//'.gda'
@@ -132,7 +127,7 @@
         do is=1,nspec
           write(specname,'(I1,A)')is,'_'
           rnorm = 1.
-  !        call MESH_INTERPOLATED_3D(tpar,uniform_mesh,nonuniform_mesh_global)
+          ! call MESH_INTERPOLATED_3D(tpar,uniform_mesh,nonuniform_mesh_global)
           uniform_mesh=tpar(:,:,:,is)
           if (MPI_IO_format) then
             fileName= trim(trim(adjustl(data_directory))//'tpar_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
@@ -141,7 +136,7 @@
             call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(11),irec_start,ny,nz)
           endif
           rnorm = 1.
-  !        call MESH_INTERPOLATED_3D(tperp,uniform_mesh,nonuniform_mesh_global)
+          ! call MESH_INTERPOLATED_3D(tperp,uniform_mesh,nonuniform_mesh_global)
           uniform_mesh=tperp(:,:,:,is)
           if (MPI_IO_format) then
             fileName= trim(trim(adjustl(data_directory))//'tperp_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
@@ -149,7 +144,6 @@
           else
             call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(12),irec_start,ny,nz)
           endif
-
 
           rnorm = wpiwci
           uniform_mesh=vxs(:,:,:,is)
@@ -177,7 +171,7 @@
           endif
 
           rnorm = one/(tx0(is)*frac(is))
-  !        call MESH_INTERPOLATED_3D(p_xx,uniform_mesh,nonuniform_mesh_global)
+          ! call MESH_INTERPOLATED_3D(p_xx,uniform_mesh,nonuniform_mesh_global)
           uniform_mesh=p_xx(:,:,:,is)
           if (MPI_IO_format) then
             fileName= trim(trim(adjustl(data_directory))//'p-xx_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
@@ -186,7 +180,7 @@
             call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(14),irec_start,ny,nz)
           endif
           rnorm = one/(tx0(is)*frac(is))
-  !        call MESH_INTERPOLATED_3D(p_xy,uniform_mesh,nonuniform_mesh_global)
+          ! call MESH_INTERPOLATED_3D(p_xy,uniform_mesh,nonuniform_mesh_global)
           uniform_mesh=p_xy(:,:,:,is)
           if (MPI_IO_format) then
             fileName= trim(trim(adjustl(data_directory))//'p-xy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
@@ -195,7 +189,7 @@
             call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(15),irec_start,ny,nz)
           endif
           rnorm = one/(tx0(is)*frac(is))
-  !        call MESH_INTERPOLATED_3D(p_xz,uniform_mesh,nonuniform_mesh_global)
+          ! call MESH_INTERPOLATED_3D(p_xz,uniform_mesh,nonuniform_mesh_global)
           uniform_mesh=p_xz(:,:,:,is)
           if (MPI_IO_format) then
             fileName= trim(trim(adjustl(data_directory))//'p-xz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
@@ -204,7 +198,7 @@
             call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(16),irec_start,ny,nz)
           endif
           rnorm = one/(tx0(is)*frac(is))
-  !        call MESH_INTERPOLATED_3D(p_yy,uniform_mesh,nonuniform_mesh_global)
+          ! call MESH_INTERPOLATED_3D(p_yy,uniform_mesh,nonuniform_mesh_global)
           uniform_mesh=p_yy(:,:,:,is)
           if (MPI_IO_format) then
             fileName= trim(trim(adjustl(data_directory))//'p-yy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
@@ -213,7 +207,7 @@
             call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(17),irec_start,ny,nz)
           endif
           rnorm = one/(tx0(is)*frac(is))
-  !        call MESH_INTERPOLATED_3D(p_yz,uniform_mesh,nonuniform_mesh_global)
+          ! call MESH_INTERPOLATED_3D(p_yz,uniform_mesh,nonuniform_mesh_global)
           uniform_mesh=p_yz(:,:,:,is)
           if (MPI_IO_format) then
             fileName= trim(trim(adjustl(data_directory))//'p-yz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
@@ -222,7 +216,7 @@
             call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(18),irec_start,ny,nz)
           endif
           rnorm = one/(tx0(is)*frac(is))
-  !        call MESH_INTERPOLATED_3D(p_zz,uniform_mesh,nonuniform_mesh_global)
+          ! call MESH_INTERPOLATED_3D(p_zz,uniform_mesh,nonuniform_mesh_global)
           uniform_mesh=p_zz(:,:,:,is)
           if (MPI_IO_format) then
             fileName= trim(trim(adjustl(data_directory))//'p-zz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
@@ -256,12 +250,9 @@
           call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(22),irec_start,ny,nz)
         endif
 
-
-
-
         if (eta_par == 0) then
           rnorm = 1.
-!          call MESH_INTERPOLATED_3D(eta,uniform_mesh,nonuniform_mesh_global)
+          ! call MESH_INTERPOLATED_3D(eta,uniform_mesh,nonuniform_mesh_global)
           uniform_mesh=eta
           if (MPI_IO_format) then
             fileName= trim(trim(adjustl(data_directory))//'eta_'//trim(adjustl(cycle_ascii)))//'.gda'
@@ -271,7 +262,7 @@
           endif
         else
           rnorm = 1.
-!          call MESH_INTERPOLATED_3D(eta_times_b_dot_j,uniform_mesh,nonuniform_mesh_global)
+          ! call MESH_INTERPOLATED_3D(eta_times_b_dot_j,uniform_mesh,nonuniform_mesh_global)
           uniform_mesh=eta_times_b_dot_j
           if (MPI_IO_format) then
             fileName= trim(trim(adjustl(data_directory))//'eta_par_'//trim(adjustl(cycle_ascii)))//'.gda'
@@ -285,20 +276,16 @@
 
       return
       end subroutine dataout
-!
-!***********************************************************************
-!
+
+
+!---------------------------------------------------------------------
       subroutine restrtrw(rw,itstart)
-!
-!=======================================================================
-!
       use parameter_mod
       implicit none
       integer*8 f_unit,itstart,np_count,is,ixe,iye,ize,noresete
       real rw
       double precision, dimension(:), allocatable:: particle_tmp_array
-      integer, dimension(:), allocatable:: particle_tmp_array2
- 
+      integer, dimension(:), allocatable:: particle_tmp_array2 
  
       if (rw == +1.0) then
         t_stopped = t_stopped + (it-itstart+1)*dtwci
@@ -674,16 +661,11 @@
       endif
       
       call sortit
-!
-!***********************************************************************
-!
       return
     end subroutine restrtrw
-!
-!***********************************************************************
 
-!***********************************************************************
-!
+
+!---------------------------------------------------------------------
       subroutine openfiles
       use parameter_mod
       implicit none
@@ -817,9 +799,9 @@
       endif
       return
       end subroutine openfiles
-!
-!***********************************************************************
-!
+
+
+!---------------------------------------------------------------------
       subroutine opendiagfiles
       use parameter_mod
       implicit none
@@ -841,9 +823,9 @@
       endif
       return
       end subroutine opendiagfiles
-!
-!***********************************************************************
-!
+
+
+!---------------------------------------------------------------------
       subroutine wrtdatum(ndatum,datum,f_unit)
       use parameter_mod
       implicit none
@@ -873,9 +855,9 @@
  
       return
     end subroutine wrtdatum
-!
-!***********************************************************************
-!
+
+
+!---------------------------------------------------------------------
       subroutine readdatum(ndatum,datum,f_unit)
       use parameter_mod
       implicit none
@@ -906,9 +888,9 @@
  
       return
     end subroutine readdatum
-!
-!#######################################################################
-!
+
+
+!---------------------------------------------------------------------
       subroutine particle_in_volume_write
  
       use parameter_mod

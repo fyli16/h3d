@@ -74,20 +74,7 @@
       !  call date_and_time(values=wall_clock_begin)
       initial_time = MPI_Wtime()
 
-      ! get the i/o data directory name from the environment variable
-      ! DATA_DIRECTORY
-      ! if (myid==0) then
-      !   call get_environment_variable1(data_directory,len(data_directory))
-      !   data_directory=trim(adjustl(data_directory))//'/'
-      !   call get_environment_variable2(restart_directory,len(restart_directory))
-      !   restart_directory=trim(adjustl(restart_directory))//'/'
-      !   write(6,*)
-      !   write(6,*) "DATA_DIRECTORY = ",trim(adjustl(data_directory))
-      !   write(6,*) "RESTART_DIRECTORY  = ",trim(adjustl(restart_directory))
-      !   write(6,*)
-      ! endif
-      ! call MPI_BCAST(data_directory,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
-      ! call MPI_BCAST(restart_directory,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
+      ! get the i/o directory names from the environment variable
       call get_environment_variable1(data_directory,len(data_directory))
         data_directory=trim(adjustl(data_directory))//'/'
       call get_environment_variable2(restart_directory,len(restart_directory))
@@ -99,11 +86,10 @@
       call integer_to_character(myid_char,len(myid_char),my_short_int)
       if (myid_char == '') myid_char='0'
 
-      !  set default values
+      ! read input deck
+      !  set default values first
       iwt=0; nskipx=1; nskipy=1; nskipz=1; testorbt=.false.; 
       pi=acos(-1.d+00); frac=0.d+00; t_stopped=0.
-
-      ! read input deck
       if (myid == 0) then
          open(5,file='input.f90',form='formatted',status='old')
          read(5,nml=datum,iostat=input_error)
@@ -211,13 +197,11 @@
       dt = dtwci * wpiwci
 
       if (myid==0) then
-        write(6,*) " "
         if (restart) then
-          write(6,*) "RUN IS RESTARTED FROM "//trim(adjustl(restart_directory))
+          write(6,*) "*** RUN IS RESTARTED FROM "//trim(adjustl(restart_directory))
         else
-          write(6,*) "NEW RUN "
+          write(6,*) "*** NEW RUN "
         endif
-        write(6,*) " "
       endif 
 
       ! field subcycling
@@ -1146,8 +1130,8 @@
         close(unit=14)
       endif
       if (tracking_mpi) then
-     !  call MPI_File_close(tracking_fh,ierr)
-      close(unit=13)
+        ! call MPI_File_close(tracking_fh,ierr)
+        close(unit=13)
       endif
       
  999  if (notime == 0) close(file_unit_time)
@@ -1224,16 +1208,16 @@
         write(6,*) "  subroutine xreal                      (%) =" &
         ,100.*time_elapsed(24)/time_elapsed(1)
       endif
-!
+
       call MPI_FINALIZE(IERR)
       stop
     end program H3D
 
 
-!=======================================================================
-!>   computes velocities?
-!!    what is the difference between vxs and vix?
-!=======================================================================
+!-----------------------------------------------------------------
+!    computes velocities?
+!    what is the difference between vxs and vix?
+!-----------------------------------------------------------------
       subroutine trans        
       use parameter_mod
       use MESH2D
@@ -1397,14 +1381,11 @@
       call date_and_time(values=time_end_array(:,8))
       call accumulate_time_difference(time_begin_array(1,8),time_end_array(1,8),time_elapsed(8))
  
- 
-       kbmin = kb-1
-       kbmax = ke+1
- 
- 
-       jbmin = jb-1
-       jbmax = je+1
- 
+      kbmin = kb-1
+      kbmax = ke+1
+
+      jbmin = jb-1
+      jbmax = je+1
  
       call date_and_time(values=time_end_array(:,20))
       call accumulate_time_difference(time_begin_array(1,20),time_end_array(1,20),time_elapsed(20))
@@ -1413,9 +1394,9 @@
     end subroutine trans
 
 
-!=======================================================================
-!>    compute perp and par temperature and pressure tensor
-!=======================================================================
+!-----------------------------------------------------------------
+!     compute perp and par temperature and pressure tensor
+!-----------------------------------------------------------------
       subroutine caltemp2_global
  
       use parameter_mod
@@ -1740,7 +1721,6 @@
     ! &                               ,time_end_array(1,26) &
     ! &                               ,time_elapsed(26))
 
- 
        call date_and_time(values=time_end_array(:,23))
        call accumulate_time_difference(time_begin_array(1,23) &
      &                                ,time_end_array(1,23) &
@@ -1748,4 +1728,3 @@
  
       return
     end subroutine caltemp2_global
-
