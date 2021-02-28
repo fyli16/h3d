@@ -1,6 +1,4 @@
-!#######################################################################
-!
-!
+!---------------------------------------------------------------
       double precision FUNCTION myranf()
  
       implicit none
@@ -48,11 +46,10 @@
       myranf=dble(mj*FAC)
  
       end function myranf
-!
-!***********************************************************************
-!
-!***********************************************************************
-!
+!---------------------------------------------------------------
+
+
+!---------------------------------------------------------------
       module gammaln_mod
       contains
         DOUBLE PRECISION FUNCTION gammln(xx)
@@ -76,9 +73,10 @@
         gammln=tmp+log(stp*ser/x)
         END FUNCTION gammln
       end module gammaln_mod
-!
-!***********************************************************************
-!
+!---------------------------------------------------------------
+
+
+!---------------------------------------------------------------
       module gcf_mod
       contains
         SUBROUTINE gcf(gammcf,a,x,gln)
@@ -111,9 +109,10 @@
 1       gammcf=exp(-x+a*log(x)-gln)*h
         END SUBROUTINE gcf
       end module gcf_mod
-!
-!***********************************************************************
-!
+!---------------------------------------------------------------
+
+
+!---------------------------------------------------------------
       module gser_mod
       contains
         SUBROUTINE gser(gamser,a,x,gln)
@@ -144,22 +143,17 @@
 1       gamser=sum*exp(-x+a*log(x)-gln)
         END SUBROUTINE gser
       end module gser_mod
+!---------------------------------------------------------------
 
-!
-!***********************************************************************
-!
+
+!---------------------------------------------------------------
       module erf_mod
         contains
           double precision function erf(x)
-!
-!=======================================================================
-!
           implicit none
           integer*8:: n,i
           double precision:: x,deltax,sqrtpi
-!
-!=======================================================================
-!
+
           sqrtpi=sqrt(acos(-1.d+00))
           if (abs(x).ge.3.0d+00) then
             erf=sign(1.d+00,x)
@@ -172,47 +166,35 @@
             enddo
             erf=sign(1.d+00,x)*erf*deltax*2./sqrtpi
           endif
-!
-!=======================================================================
-!
         end function erf
       end module erf_mod
-!
-!***********************************************************************
-!
+!---------------------------------------------------------------
+
+
+!---------------------------------------------------------------
       module sinc_mod
         contains
           double precision function sinc(x)
-!
-!=======================================================================
-!
           implicit none
           double precision:: x
-!
-!=======================================================================
-!
+
           if (x.eq.0.0) then
             sinc=1.
           else
             sinc=sin(x)/x
           endif
-!
-!=======================================================================
-!
         end function sinc
       end module sinc_mod
-!
-!***********************************************************************
-!
+!---------------------------------------------------------------
+
+
+!---------------------------------------------------------------
       module zp_mod
         contains
           double complex function zp(u)
           implicit none
           double complex:: u,z,u2,azp,azpold,usqm
           integer*8:: n,na
-!
-!=======================================================================
-!
           na=10
           if(abs(u).ge.5.0) go to 3
           usqm=-u**2
@@ -226,7 +208,7 @@
           azp=-2.*u
           do 2 n=1,100
           zp=zp+azp
-    2     azp=azp*u2/(2.*n+1.)
+   2      azp=azp*u2/(2.*n+1.)
           zp=zp+azp
           go to 11
    3      z=1./u
@@ -252,14 +234,12 @@
    25     continue
           zp=zp-azp
    11     continue
-!
-!=======================================================================
-!
         end function zp
       end module zp_mod
-!
-!***********************************************************************
-!
+!---------------------------------------------------------------
+
+
+!---------------------------------------------------------------
       module zprime_mod
         contains
           double complex function zprime(u)
@@ -269,9 +249,10 @@
           zprime=-2.*(1.+u*zp(u))
         end function zprime
       end module zprime_mod
-!
-!***********************************************************************
-!
+!---------------------------------------------------------------
+
+
+!---------------------------------------------------------------
       module z2prime_mod
         contains
           double complex function z2prime(u)
@@ -282,9 +263,10 @@
           z2prime=-2.*(u*zprime(u)+zp(u))
         end function z2prime
       end module z2prime_mod
-!
-!***********************************************************************
-!
+!---------------------------------------------------------------
+
+
+!---------------------------------------------------------------
       module f_mod
       contains
         double complex function f(omega,theta)
@@ -292,18 +274,13 @@
         implicit none
         double precision:: theta
         double complex:: omega
-!
-!=======================================================================
-!
         f=1.-0.5*theta*zprime(omega)
-!
-!=======================================================================
-!
         end function f
       end module f_mod
-!
-!***********************************************************************
-!
+!---------------------------------------------------------------
+
+
+!---------------------------------------------------------------
       module fprime_mod
       contains
         double complex function fprime(omega,theta)
@@ -311,66 +288,42 @@
         implicit none
         double precision:: theta
         double complex:: omega
-!
-!=======================================================================
-!
         fprime=-0.5*theta*z2prime(omega)
-!
-!=======================================================================
-!
         end function fprime
       end module fprime_mod
-!
-!*********************************************************************
-!
+!---------------------------------------------------------------
+
+
+!---------------------------------------------------------------
       module flux_mod
       contains
         double precision function flux(x,argum,vtherm,xran,ss)
-!
-!=====================================================================
-!
+        !  this function finds the F(v) whose zero will generate
+        !  the correct flux of particles from the left wall
         use erf_mod
         implicit none
         double precision:: argum,vtherm,x,x1,ss,xran,rat,sqrtpi
-!
-!=====================================================================
-!
-!  this function finds the F(v) whose zero will generate
-!  the correct flux of particles from the left wall
-!
-!=====================================================================
-!
         sqrtpi=sqrt(acos(-1.d+00))
         rat=argum/vtherm
         x1=(x-argum)/vtherm
         flux=ss*(1.d+00-xran) &
         +argum*sqrtpi*(erf(x1)-1.d+00)-vtherm*exp(-x1*x1)
-!
-!=====================================================================
-!
         end function flux
       end module flux_mod
-!
-!***********************************************************************
-!
+!---------------------------------------------------------------
+
+
+!---------------------------------------------------------------
       module functions_f90
       contains
-!
-!***********************************************************************
-!
         double precision function sqrnoise(rkx,rky,netot,nitot &
         ,rkdesqr,rkdisqr,dx,dy)
-!
-!=======================================================================
-!
         use sinc_mod
         implicit none
         integer*8:: netot,nitot
         double precision:: rksqr,tmpx,rkxhat,tmpy,rkyhat,rkhatsqr,s,ssqr &
         ,chiebar,chie,chii,epsbar,rkx,rky,rkdesqr,rkdisqr,dx,dy
-!
-!=======================================================================
-!
+
         rksqr=rkx**2+rky**2
         tmpx=0.5*rkx*dx
         rkxhat=rkx*sinc(tmpx)
@@ -387,17 +340,10 @@
         +(1.-ssqr)**2*chiebar**2/(nitot*(1.+chie)**2*(1.+chiebar)  &
                                   *epsbar                        ) &
                                  )*chiebar**2
-!
-!=======================================================================
-!
       end function sqrnoise
-!
-!***********************************************************************
-!
+
+
       double precision function bessj0(x)
-!
-!=======================================================================
-!
       implicit none
       double precision:: ax,xx,z,p1,p2,p3,p4,p5,q1,q2,q3,q4,q5,r1,r2,r3 &
       ,r4,r5,r6,s1,s2,s3,s4,s5,s6,y,x
@@ -412,9 +358,7 @@
          -11214424.18e0,77392.33017e0,-184.9052456e0/
       data s1,s2,s3,s4,s5,s6/57568490411.e0,1029532985.e0, &
          9494680.718e0,59272.64853e0,267.8532712e0,1.e0/
-!
-!=======================================================================
-!
+
       if (abs(x).lt.8.) then
         y=x**2
         bessj0=(r1+y*(r2+y*(r3+y*(r4+y*(r5+y*r6))))) &
@@ -428,49 +372,34 @@
         *cos(xx)*(p1+y*(p2+y*(p3+y*(p4+y*p5))))   &
         -z*sin(xx)*(q1+y*(q2+y*(q3+y*(q4+y*q5))))
       endif
-!
-!=======================================================================
-!
       end function bessj0
-!
-!***********************************************************************
-!
+
+
       double complex function shape(xix,xiy,f,rk0,xhs,yhs,xleft &
                                     ,plane_wave)
-!
-!======================================================================
-!
       implicit none
       logical:: plane_wave
       double precision:: xix,xiy,f,rk0,xhs,yhs,xleft
       double complex:: sigma2
-!
-!======================================================================
-!
+
       if (plane_wave) then
         shape=1.
       else
         sigma2=(2.*f/rk0)**2+cmplx(0.d+00,1.d+00)*(xix-xhs)/(2.*rk0)
-!
-!     3D Gaussian beam
-!
-!      shape=exp(-xiy**2/(4.*sigma2)                   &
-!                 +cmplx(0.d+00,1.d+00)*rk0*(xix-xhs)) &
-!            *(2.*f/rk0)**2/sigma2
-!
-!     2D Gaussian beam
-!
+
+      ! 3D Gaussian beam
+      ! shape=exp(-xiy**2/(4.*sigma2)                   &
+      !             +cmplx(0.d+00,1.d+00)*rk0*(xix-xhs)) &
+      !       *(2.*f/rk0)**2/sigma2
+
+      ! 2D Gaussian beam
         shape=exp(-xiy**2/(4.*sigma2)                   &
                    +cmplx(0.d+00,1.d+00)*rk0*(xix-xhs)) &
               *(2.*f/rk0)/sqrt(sigma2)
       endif
-!
-!======================================================================
-!
       end function shape
-!
-!***********************************************************************
-!
+
+
 !      double precision FUNCTION myranf()
 !      implicit none
 !      INTEGER*8 idum
@@ -515,44 +444,23 @@
 !      ma(inext)=mj
 !      myranf=dble(mj)*FAC
 !      END FUNCTION myranf
-!
-!***********************************************************************
-!
+
+
       double precision function fmaxwell(vx,vy,vthe)
-!
-!=======================================================================
-!
       implicit none
       double precision:: vx,vy,vthe,twopi
-!
-!=======================================================================
-!
       twopi=2.*acos(-1.d+00)
       fmaxwell=exp(-(vx**2+vy**2)/(2.*vthe**2))/(twopi*vthe**2)
-!
-!=======================================================================
-!
       end function fmaxwell
-!
-!***********************************************************************
-!
+
+      
       double precision function fmaxwell1d(vx,vy,vthe)
-!
-!=======================================================================
-!
       double precision:: vx,vthe,vy,sqrttwopi
-!
-!=======================================================================
-!
       sqrttwopi=sqrt(acos(-1.d+00))
       fmaxwell1d=exp(-vx**2/(2.*vthe**2))/(sqrttwopi*vthe)
-!
-!=======================================================================
-!
       end function fmaxwell1d
-!
-!***********************************************************************
-!
+  
+
       FUNCTION gammp(a,x)
       use gser_mod
       use gcf_mod
@@ -568,7 +476,6 @@
         gammp=1.-gammcf
       endif
       END FUNCTION gammp
-!
-!***********************************************************************
-!
+
       end module functions_f90
+!---------------------------------------------------------------

@@ -121,7 +121,7 @@
          write(6, datum)
       endif
  
-! hxv - 12/02/2008 -Automatic restart
+      ! hxv - 12/02/2008 - Automatic restart
       inquire(file=trim(adjustl(restart_directory))//'restart_index.dat',exist=restart)
 
       ! global sim. info
@@ -768,7 +768,7 @@
          call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
          nplmax6 = 6*nplmax
          ! hxv 01/10/2014
-!
+
          if (myid == 0) then
             write(6,*) " "
             write(6,*) " RESTARTED FROM SET # ",restart_index
@@ -862,9 +862,7 @@
         call MPI_BCAST(cycle_ascii    ,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
         call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
         
-        
-     else
-        !VR: fresh start
+     else  !VR: fresh start
         time=0.0
         call makelist
         if (myid == 0) write(6,*) " harris = ",harris
@@ -877,7 +875,6 @@
       !  call init_lapd_wave
 
      endif !VR: end of if (restart)
-
 
      !VR: removed output of the dipole field
 
