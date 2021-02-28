@@ -27,5 +27,5 @@ setenv RESTART_DIRECTORY ./restart
 mkdir -p $DATA_DIRECTORY
 mkdir -p $RESTART_DIRECTORY
 
-ibrun -np $SLURM_NTASKS ./3dh 
+ibrun -np $SLURM_NTASKS ./h3d 
 exit
