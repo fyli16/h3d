@@ -100,9 +100,10 @@
       
       ! read input deck
       if (myid == 0) then
-         open (5,file=trim(adjustl(data_directory))//'input.f90',form='formatted',status='old')
-         read(5,nml=datum,iostat=input_error)
-         write(6, datum)
+        !  open (5,file=trim(adjustl(data_directory))//'input.f90',form='formatted',status='old')
+        open (5,file='./input.f90',form='formatted',status='old')
+        read(5,nml=datum,iostat=input_error)
+        write(6, datum)
       endif
  
       ! hxv - 12/02/2008 - Automatic restart
@@ -1752,7 +1753,7 @@
       call accumulate_time_difference(time_begin_array(1,23) &
                                     ,time_end_array(1,23) &
                                     ,time_elapsed(23))
-                                    
+
       return
     end subroutine caltemp2_global
 

@@ -2,8 +2,8 @@
 #SBATCH -J h3d
 #SBATCH -o log.%j
 #SBATCH -p normal
-#SBATCH -N 2
-#SBATCH -n 112
+#SBATCH -N 1
+#SBATCH -n 56
 #SBATCH -t 01:00:00
 #SBATCH -A PHY20020     
 
@@ -11,7 +11,6 @@ date
 
 module purge
 module load gcc/9.1.0 impi/19.0.9
-make clean
 make
 make clean 
 
@@ -20,11 +19,8 @@ setenv OMP_NUM_THREADS 1
 
 setenv DATA_DIRECTORY ./data
 setenv RESTART_DIRECTORY ./restart
-setenv INPUT_DIRECTORY ./
-setenv SOURCE_DIRECTORY ./
 mkdir -p $DATA_DIRECTORY
 mkdir -p $RESTART_DIRECTORY
-cp input.dat $DATA_DIRECTORY/
 
-ibrun -np $SLURM_NTASKS $SOURCE_DIRECTORY/3dh 
-echo 'Done'
+ibrun -np $SLURM_NTASKS ./3dh 
+exit
