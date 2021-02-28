@@ -13,7 +13,9 @@ nx=1, ny=4, nz=224,  ! number of cells along each dim
 xmax=1., ymax=4., zmax=224.,  ! max lengths of each dim
 npx=10, npy=40, npz=2240,  ! number of particles along each dim over full length (not cell)
 
-nodey=2, nodez=28  ! number of nodes (cores) along y, z; (no decompostion along x)
+! number of nodes (cores) along y, z; (no decompostion along x)
+! make sure npy, npz can be divided by nodey, nodez, respectively
+nodey=2, nodez=28  
 
 ! boundaries of the uniform region
 ! setting xbb/ybb/zbb to xmax/ymax/zmax would leave only the uniform region to be simulated

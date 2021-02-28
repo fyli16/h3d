@@ -87,13 +87,12 @@
       if (myid_char == '') myid_char='0'
 
       ! read input deck
-      !  set default values first
-      iwt=0; t_stopped=0.
       if (myid == 0) then
          open(5,file='input.f90',form='formatted',status='old')
          read(5,nml=datum,iostat=input_error)
          write(6, datum)
       endif
+      iwt=0; t_stopped=0. ! set default values
 
       ! Broadcast info to all ranks
       ! global sim. info
@@ -230,13 +229,12 @@
       REORDER = .TRUE.
       call MPI_DIMS_CREATE(NUMPROCS,NDIM,DIMS,IERR)
 
-      ! npy and npz are changed here!
       ! now npy means number of particles in each core along y
       npy=npy/dims(1)
       npz=npz/dims(2)
       if (myid == 0) then
         do i=1,ndim
-          write(6,*) "DIMENSION = ", I, " DIMS = ",DIMS(I)
+          write(6,*) "DIMENSION = ", i, " DIMS = ",dims(i)
         enddo
       endif
       call MPI_CART_CREATE(MPI_COMM_WORLD,NDIM,DIMS,PERIODS,REORDER,COMM2D,IERR)
@@ -571,22 +569,21 @@
       call MESH_INDEX(meshZ,NODE,izc_2_v_map,CELL)
 
       if (myid == 0) then
-      !  write(6,*) " nl_x = ",meshX%nl
-      !  do i=1,meshX%nl+3 
-      !    write(6,*) " i, x;",i,meshX%xn(i),meshX%xc(i)
-      !  enddo
-      !  write(6,*) " nl_y = ",meshY%nl
-      !  do i=1,meshY%nl+3 
-      !    write(6,*) " i, y;",i,meshY%xn(i),meshY%xc(i)
-      !  enddo
-      !  write(6,*) " nl_z = ",meshZ%nl
-      !  do i=1,meshZ%nl+3 
-      !    write(6,*) " i, z;",i,meshZ%xn(i),meshZ%xc(i)
-      !  enddo
-
+        ! write(6,*) " nl_x = ",meshX%nl
+        ! do i=1,meshX%nl+3 
+        !   write(6,*) " i, x;",i,meshX%xn(i),meshX%xc(i)
+        ! enddo
+        ! write(6,*) " nl_y = ",meshY%nl
+        ! do i=1,meshY%nl+3 
+        !   write(6,*) " i, y;",i,meshY%xn(i),meshY%xc(i)
+        ! enddo
+        ! write(6,*) " nl_z = ",meshZ%nl
+        ! do i=1,meshZ%nl+3 
+        !   write(6,*) " i, z;",i,meshZ%xn(i),meshZ%xc(i)
+        ! enddo
         open(unit=11,file='mesh_vertices.dat',status='unknown',form='formatted')
-
         write(11,*) meshX%nl+1,meshY%nl+1,meshZ%nl+1
+
         do i=2,meshX%nl+2 
           write(11,*) meshX%xn(i)
         enddo
@@ -650,7 +647,7 @@
       endif
 
       if (tracking_mpi) then
-        !write(*,*)'filename=',filename
+        ! write(*,*)'filename=',filename
         write(filename,"(a,i4.4,a)")'tracking_',myid,'.dat'
         write(filename2,"(a,i4.4,a)")'probes_',myid,'.dat'
         if (restart) then
@@ -830,7 +827,6 @@
       it = itstart
       time_elapsed=0.;time_begin_array=0;time_end_array=0
 
-
       !---------------------------------------------------------
       !         start of main time loop
       !---------------------------------------------------------
@@ -842,9 +838,9 @@
           WRITE(6,*) "DT = ", DT, ", T_STOPPED = ",T_STOPPED
         endif
 
-        final_time=MPI_Wtime()
+        final_time = MPI_Wtime()
         wall_clock_elapsed= final_time-initial_time
-        if (wall_clock_elapsed >= QUOTA*3600. .and. myid == 0) then
+        if (wall_clock_elapsed >= quota*3600. .and. myid == 0) then
           cleanup_status = 'CLEANUP_STATUS=TRUE'
           write(6,*) " "
           write(6,*) " "
