@@ -9,12 +9,14 @@
 !***************************************************************************
 
     program H3D 
+
       use parameter_mod
       use functions_f90
       use MESH2D
+
       implicit none
-      integer*8 i,irecnum,ixe,iye,ize,j,jbt,jet,k,kbt,ket,nplmax6, &
-        nwrtparticle,nwrtrestart,nyl,nzl,numvars
+      integer*8 i,irecnum,ixe,iye,ize,j,jbt,jet,k,kbt,ket,nplmax6    &
+       ,nwrtparticle,nwrtrestart,nyl,nzl,numvars
       double precision rnorm,pifac
       integer*4:: time_begin(8),time_end(8),input_error,is
       integer*8  itstart, itfinish
@@ -25,14 +27,15 @@
       !VR : double precision, dimension(:,:,:), allocatable:: nonuniform_mesh_global
       character (len=240):: filename, filename2
       character(len=128):: tmpfname
-      character(len=27) :: sim_id
+      ! character(len=27) :: sim_id
       integer:: iwrite
       integer:: ierr2, eStrLen
       character(len=1024):: eStr
       external get_environment_variable
 
-      ! namelist to provide from input
-      namelist /datum/ max_sim_time, t_begin, t_end, dtwci, dt, restart, &
+      namelist /datum/ &
+      ! global simulation info
+      max_sim_time, t_begin, t_end, dtwci, dt, restart, &
       restrt_write, quota, MPI_IO_format, &
       ! simulation domain
       nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, &
@@ -60,28 +63,29 @@
       notime=1 ! notime=0 will output detailed timing
       !tracking_binary=.false.
 
-
       ! MPI initialization
       call MPI_INIT(IERR)
       call MPI_COMM_SIZE(MPI_COMM_WORLD,NUMPROCS,IERR)
       call MPI_COMM_RANK(MPI_COMM_WORLD,MYID,IERR)
 
       ! get_simulation_id
-      if (myid==0) call get_sim_id(sim_id)
+      ! if (myid==0) call get_sim_id(sim_id)
 
-      ! time stamp  
-      ! call date_and_time(values=wall_clock_begin)
-      initial_time = MPI_Wtime()
-      if (myid == 0) write(6,*) " H3D is starting"
+      ! time stamp
+      !  call date_and_time(values=wall_clock_begin)
+      initial_time=MPI_Wtime()
 
-      ! get the i/o data directory name from the environment variable DATA_DIRECTORY
+      if (myid == 0) write(6,*) "H3D is starting"
+
+      ! get the i/o data directory name from the environment variable
+      ! DATA_DIRECTORY
       if (myid==0) then
         call get_environment_variable1(data_directory,len(data_directory))
         data_directory=trim(adjustl(data_directory))//'/'
         call get_environment_variable2(restart_directory,len(restart_directory))
         restart_directory=trim(adjustl(restart_directory))//'/'
         write(6,*)
-        write(6,*) "I/O DATA_DIRECTORY = ",trim(adjustl(data_directory))
+        write(6,*) "DATA_DIRECTORY = ",trim(adjustl(data_directory))
         write(6,*) "RESTART_DIRECTORY  = ",trim(adjustl(restart_directory))
         write(6,*)
       endif
@@ -94,22 +98,20 @@
       call integer_to_character(myid_char,len(myid_char),my_short_int)
       if (myid_char == '') myid_char='0'
 
-      ! set default values
-      iwt=0; nskipx=1; nskipy=1; nskipz=1; testorbt=.false.
+      !  set default values
+      iwt=0; nskipx=1; nskipy=1; nskipz=1; testorbt=.false.; 
       pi=acos(-1.d+00); frac=0.d+00; t_stopped=0.
-      
+
       ! read input deck
       if (myid == 0) then
-        !  open (5,file=trim(adjustl(data_directory))//'input.f90',form='formatted',status='old')
-        open (5,file='./input.f90',form='formatted',status='old')
-        read(5,nml=datum,iostat=input_error)
-        write(6, datum)
+         open (5,file='input.f90',form='formatted',status='old')
+         read(5,nml=datum,iostat=input_error)
+         write(6, datum)
       endif
  
-      ! hxv - 12/02/2008 - Automatic restart
+      ! hxv - 12/02/2008 -Automatic restart
       inquire(file=trim(adjustl(restart_directory))//'restart_index.dat',exist=restart)
 
-      ! Broadcast variables 
       ! global sim. info
       call MPI_BCAST(max_sim_time           ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
       call MPI_BCAST(t_begin                ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
@@ -214,28 +216,30 @@
       if (restart .and. myid == 0) then
         write(6,*) " "
         write(6,*) " "
-        write(6,*) " RUN IS RESTARTED FROM "//trim(adjustl(restart_directory))
+        write(6,*) "RUN IS RESTARTED FROM "//trim(adjustl(restart_directory))
         write(6,*) " "
         write(6,*) " "
       else
         if (myid == 0) then 
-          call create_id_file(sim_id)
+          ! call create_id_file(sim_id)
           write(6,*) " "
-          write(6,*) " NEW RUN "
+          write(6,*) "NEW RUN "
           write(6,*) " "
           write(6,*) " "
         endif
       endif
 
-      ! field subcycling
+      !      field subcycling
+
       ! n_subcycles=max(n_subcycles,1_8)
 
-      ! set MPI Cartesian geometry, define stride vector types, obtain new
-      ! ID for the processors, perform 2D decomposition of the
-      ! computational mesh, and find nearest neighbors (in y and z
-      ! directions)
-      if (myid==0) then
-        write(6,*) " Number of processors available = ",NUMPROCS
+      !     set MPI Cartesian geometry, define stride vector types, obtain new
+      !     ID for the processors, perform 2D decomposition of the
+      !     computational mesh, and find nearest neighbors (in y and z
+      !     directions)
+
+      if (MYID.EQ.0) then
+        write(6,*) "Number of processors available = ",NUMPROCS
       endif
 
       ! fyli: because of the manual specification below, this selection block is actually not functioning and thus is annotated. 
@@ -265,12 +269,12 @@
       !    STOP         
       ! endif
 
-      ! Boundary conditions
-      PERIODS = .TRUE. 
-      REORDER = .TRUE.
+
+      PERIODS=.TRUE. 
+      REORDER=.TRUE.
       call MPI_DIMS_CREATE(NUMPROCS,NDIM,DIMS,IERR)
 
-      ! npy and npz are changed here!!!!
+      ! npy and npz are CHANGED here!!!!
       ! now npy means number of particles in each core along y
       npy=npy/dims(1)
       npz=npz/dims(2)
@@ -285,8 +289,9 @@
       call MPI_CART_GET(COMM2D,NDIM,DIMS,PERIODS,COORDS,IERR)
       call MPE_DECOMP1D(NZ,DIMS(2),COORDS(2),KB,KE)
       call MPE_DECOMP1D(NY,DIMS(1),COORDS(1),JB,JE)
-      ! print domain decomposition info
-      ! write(*,*)'myid=',myid,'jb,je',jb,je,'kb,ke=',kb,ke
+      !print domain decomposition info
+      !write(*,*)'myid=',myid,'jb,je',jb,je,'kb,ke=',kb,ke
+ 
  
       nspecm = nspec
       nxmax  = nx+2
@@ -301,10 +306,11 @@
          qrite(is)=0
       enddo
 
-      if (myid==0) then
+      if (MYID == 0) then
         write(6,*) " LOCAL ARRAY SIZE IN Y-DIRECTION = ",JE-JB+1
         write(6,*) " LOCAL ARRAY SIZE IN Z-DIRECTION = ",KE-KB+1
       endif
+
 
       if (nzlmax < ke-kb+1) then
           print *,'myid = ',myid,' nzlmax lt ke-kb+1'
@@ -317,9 +323,9 @@
           myid_stop(myid) = 1
       endif
       do i = 0, npes-1
-        ! if (myid.eq.i) then
-        !    write(*,*) "Node no:",i,"myid_stop=",MYID_STOP(I)
-        ! endif
+        ! IF (myid.eq.i) THEN
+        !    write(*,*)"Node no:",i,"myid_stop=",MYID_STOP(I)
+        ! ENDIF
          i_i = i
          CALL MPI_BCAST(MYID_STOP(i),1,MPI_INTEGER8,i_i,MPI_COMM_WORLD, IERR)
       enddo
@@ -332,10 +338,13 @@
          endif
       enddo
 
-      ! Use CART_SHIFT to determine processor to immediate left
+
+      !  Use CART_SHIFT to determine processor to immediate left
       ! (NBRLEFT) and right (NBRRITE) of processor MYID
-      ! Since code is aperiodic in z, need to manually set the
-      ! left boundary for processor 0 and right boundary for npes-1
+      !  Since code is aperiodic in z, need to manually set the
+      !  left boundary for processor 0 and right boundary for npes-1
+ 
+ 
       if (ndim == 2) then
         call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
         call MPI_CART_SHIFT(COMM2D,1,1,NBRBOT ,NBRTOP ,IERR)
@@ -407,6 +416,7 @@
         irecvid(4,2)=nbrritebot
       endif
  
+ 
       if (mod(coords(1)  ,2) == 0.and.mod(coords(2)+1,2) == 0) then
         isendid(3)=1
       else
@@ -428,6 +438,7 @@
         irecvid(3,3)=nbrleftbot
         irecvid(4,3)=nbrritebot
       endif
+ 
  
       if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
         isendid(4)=1
@@ -483,33 +494,34 @@
       call MPI_ALLGATHER(kb,1,MPI_INTEGER8,kbglobal,1,MPI_INTEGER8,MPI_COMM_WORLD,IERR)
       call MPI_ALLGATHER(ke,1,MPI_INTEGER8,keglobal,1,MPI_INTEGER8,MPI_COMM_WORLD,IERR)
 
-      ! VR: what is going on here?
-      ! if (myid.ne.0) then
-      !   do k=kb,ke
-      !     do j=1,je-jb+1
-      !       jvec(j)=myid
-      !     enddo
-      !     i_length=je-jb+1
-      !     call MPI_ISEND(jvec(1),i_length,MPI_INTEGER8,0,0,MPI_COMM_WORLD,req(1),IERR)
-      !     call MPI_WAITALL(1,req,status_array,IERR)
-      !   enddo
-      ! else
-      !   do k=kbglobal(myid),keglobal(myid)
+
+      !  !VR: what is going on here?
+      !  if (myid.ne.0) then
+      !    do k=kb,ke
+      !      do j=1,je-jb+1
+      !        jvec(j)=myid
+      !      enddo
+      !      i_length=je-jb+1
+      !      call MPI_ISEND(jvec(1),i_length,MPI_INTEGER8,0,0,MPI_COMM_WORLD,req(1),IERR)
+      !      call MPI_WAITALL(1,req,status_array,IERR)
+      !    enddo
+      !  else
+      !    do k=kbglobal(myid),keglobal(myid)
       !       do j=jbglobal(myid),jeglobal(myid)
-      !         idmap_yz(j,k)=myid
+      !          idmap_yz(j,k)=myid
       !       enddo
-      !   enddo
-      !   do ipe=1,numprocs-1
+      !    enddo
+      !    do ipe=1,numprocs-1
       !       jbt=jbglobal(ipe)
       !       jet=jeglobal(ipe)
       !       kbt=kbglobal(ipe)
       !       ket=keglobal(ipe)
       !       do k=kbt,ket
-      !         i_length=jet-jbt+1
-      !         call MPI_IRECV(idmap_yz(jbt,k),i_length,MPI_INTEGER8,IPE,0,MPI_COMM_WORLD,req(1),IERR)
-      !         call MPI_WAITALL(1,req,status_array,IERR)
+      !          i_length=jet-jbt+1
+      !          call MPI_IRECV(idmap_yz(jbt,k),i_length,MPI_INTEGER8,IPE,0,MPI_COMM_WORLD,req(1),IERR)
+      !          call MPI_WAITALL(1,req,status_array,IERR)
       !       enddo
-      !   enddo
+      !    enddo
       ! endif
 
       !VR: again, this is much simpler than the commented block
@@ -521,7 +533,7 @@
          enddo
       enddo
 
-      ! VR: fill in ghost cells in idmap     
+      !VR: fill in ghost cells in idmap     
       idmap_yz(1:ny,0)    = idmap_yz(1:ny,nz)
       idmap_yz(1:ny,nz+1) = idmap_yz(1:ny,1)
 
@@ -532,12 +544,15 @@
       idmap_yz(0,nz+1)    = idmap_yz(ny,1)
       idmap_yz(ny+1,0)    = idmap_yz(1,nz)
       idmap_yz(ny+1,nz+1) = idmap_yz(1,1)
-      ! VR: end fill ghost cells
+      !VR: end fill ghost cells
 
-      ! VR this is not needed since we filled the map locally on each process
+      !VR this is not needed since we filled the map locally on each process
       ! call MPI_BCAST(idmap_yz,size(idmap_yz),MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
 
-      ! VR: output neigbor info for each process & idmap
+
+
+      !VR: output neigbor info for each process & idmap
+      
       ! write(tmpfname,"(A,I0,A)") "neighbors.",myid,".dat"
       ! open(unit=512,file=TRIM(tmpfname),status='replace',action='write')
       ! write(512,"(A,I6)") "TOP=",NBRTOP
@@ -557,11 +572,16 @@
 
       ! print *, myid, "size OF id_map is ",size(idmap_yz)
 
-      ! call MPI_TYPE_VECTOR(int(nzl+2,4),int(nx+2,4),int((nx+2)*(nyl+2),4),MPI_DOUBLE_PRECISION,stridery,IERR)
-      ! call MPI_TYPE_COMMIT(stridery,IERR)
-      ! call MPI_TYPE_VECTOR(int(nyl+2,4),int(nx+2,4),int(nx+2,4)          ,MPI_DOUBLE_PRECISION,STRIDERZ,IERR)
-      ! call MPI_TYPE_COMMIT(STRIDERZ,IERR)
+      !VR
+
+
+
+      call MPI_TYPE_VECTOR(int(nzl+2,4),int(nx+2,4),int((nx+2)*(nyl+2),4),MPI_DOUBLE_PRECISION,stridery,IERR)
+      call MPI_TYPE_COMMIT(stridery,IERR)
+      call MPI_TYPE_VECTOR(int(nyl+2,4),int(nx+2,4),int(nx+2,4)          ,MPI_DOUBLE_PRECISION,STRIDERZ,IERR)
+      call MPI_TYPE_COMMIT(STRIDERZ,IERR)
  
+     
       nptotp=0
       do is=1,nspec
           nptotp=nptotp+npx(is)*npy(is)*npz(is)
@@ -587,7 +607,8 @@
         if (.not.testorbt) norbskip=1
 
       call allocate_global_arrays
-      ! call pdf_injection 
+      !  call pdf_injection
+
 
       ! Initialize nonuniform mesh
       call MESH_INIT(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh
@@ -608,18 +629,18 @@
       call MESH_INDEX(meshZ,NODE,izc_2_v_map,CELL)
 
       if (myid == 0) then
-        ! write(6,*) " nl_x = ",meshX%nl
-        ! do i=1,meshX%nl+3 
-        !   write(6,*) " i, x;",i,meshX%xn(i),meshX%xc(i)
-        ! enddo
-        ! write(6,*) " nl_y = ",meshY%nl
-        ! do i=1,meshY%nl+3 
-        !   write(6,*) " i, y;",i,meshY%xn(i),meshY%xc(i)
-        ! enddo
-        ! write(6,*) " nl_z = ",meshZ%nl
-        ! do i=1,meshZ%nl+3 
-        !   write(6,*) " i, z;",i,meshZ%xn(i),meshZ%xc(i)
-        ! enddo
+      !  write(6,*) " nl_x = ",meshX%nl
+      !  do i=1,meshX%nl+3 
+      !    write(6,*) " i, x;",i,meshX%xn(i),meshX%xc(i)
+      !  enddo
+      !  write(6,*) " nl_y = ",meshY%nl
+      !  do i=1,meshY%nl+3 
+      !    write(6,*) " i, y;",i,meshY%xn(i),meshY%xc(i)
+      !  enddo
+      !  write(6,*) " nl_z = ",meshZ%nl
+      !  do i=1,meshZ%nl+3 
+      !    write(6,*) " i, z;",i,meshZ%xn(i),meshZ%xc(i)
+      !  enddo
 
         open(unit=11,file='mesh_vertices.dat',status='unknown',form='formatted')
 
@@ -644,7 +665,7 @@
         do i=2,meshZ%nl+2 
           write(11,*) meshZ%dxc(i)
         enddo
-    
+        
         close(unit=11)
       endif
 
@@ -656,13 +677,13 @@
       endif
 
       allocate (uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1))
-      ! VR    
-      ! allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
+      ! VR:      allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
 
       call date_and_time(values=time_begin)
       clock_time_re1=(time_begin(5)*3600.+time_begin(6)*60.+time_begin(7)+time_begin(8)*0.001)
  
-      if (myid == 0) then
+
+     if (myid == 0) then
         if (restart) then
           open(unit=11,file=trim(adjustl(data_directory))//'energy.dat' ,status='old',position='append')
           open(unit=14,file=trim(adjustl(data_directory))//'time.dat' ,status='old',position='append')
@@ -686,10 +707,10 @@
             endif
           endif
         endif
-      endif
+     endif
 
       if (tracking_mpi) then
-        ! write(*,*)'filename=',filename
+        !write(*,*)'filename=',filename
         write(filename,"(a,i4.4,a)")'tracking_',myid,'.dat'
         write(filename2,"(a,i4.4,a)")'probes_',myid,'.dat'
         if (restart) then
@@ -699,7 +720,7 @@
           open(unit=12,file=trim(adjustl(data_directory))//filename2, status='unknown')
           open(unit=13,file=trim(adjustl(data_directory))//filename,form='unformatted',status='unknown')
         endif
-        ! call MPI_File_open(MPI_COMM_WORLD, trim(adjustl(data_directory))//filename, MPI_MODE_WRONLY+MPI_MODE_CREATE, MPI_INFO_NULL, tracking_fh, ierr)
+        !call MPI_File_open(MPI_COMM_WORLD, trim(adjustl(data_directory))//filename, MPI_MODE_WRONLY+MPI_MODE_CREATE, MPI_INFO_NULL, tracking_fh, ierr)
         ! if (ierr.ne.MPI_SUCCESS) then
         !   call MPI_Error_string(iErr,eStr,eStrLen,iErr2)
         !   write(0,*)'Error: Could not open file: ',filename
@@ -709,98 +730,104 @@
         ! endif
       endif
       call opendiagfiles
-   
+
       if (restart) then
-        call makelist
-        if (myid == 0) then
-          ! open(unit=222,file='restart_index.dat' ,status='old')
-          open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='old')
-          read(222,*) restart_index,itfin
-          close(222)
-        endif
-
-        call MPI_BCAST(restart_index,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-        call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-        nplmax6 = 6*nplmax
-        ! hxv 01/10/2014
-
-        if (myid == 0) then
-          write(6,*) " "
-          write(6,*) " RESTARTED FROM SET # ",restart_index
-          write(6,*) " "
-        endif
-
-        ! comment out for timing on LANL machine
-        do iwrite = 0,npes_over_60 
-          if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
-              call restrtrw(-1.0,itstart)
-              call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-          endif
-          ! call MPI_BARRIER(MPI_COMM_WORLD,IERR)
-        enddo
+         call makelist
          
-        if (restart_index == 1) then
-          restart_index=2
-        else
-          restart_index=1
-        endif
+         if (myid == 0) then
+            !          open(unit=222,file='restart_index.dat' ,status='old')
+            open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='old')
+            read(222,*) restart_index,itfin
+            close(222)
+         endif
+
+         call MPI_BCAST(restart_index,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
+         call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
+         nplmax6 = 6*nplmax
+         ! hxv 01/10/2014
+
+         if (myid == 0) then
+            write(6,*) " "
+            write(6,*) " RESTARTED FROM SET # ",restart_index
+            write(6,*) " "
+         endif
+
+ 
+        ! comment out for timing on LANL machine
+
+         do iwrite = 0,npes_over_60 
+            if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
+               call restrtrw(-1.0,itstart)
+               call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
+            endif
+            !         call MPI_BARRIER(MPI_COMM_WORLD,IERR)
+         enddo
+         
+         if (restart_index == 1) then
+            restart_index=2
+         else
+            restart_index=1
+         endif
 
         ! Uniform mesh - Same as is in version 5.0
-        yb=(jb-1)*hy
-        ye= je   *hy
-        zb=(kb-1)*hz
-        ze= ke   *hz
+         yb=(jb-1)*hy
+         ye= je   *hy
+         zb=(kb-1)*hz
+         ze= ke   *hz
          
-        ! Nonuniform mesh
-        zb=meshZ%xn(kb+1)
-        ze=meshZ%xn(ke+2)
-        do ipe=0,npes-1
-          zbglobal(ipe)=meshZ%xn(kbglobal(ipe)+1)
-          zeglobal(ipe)=meshZ%xn(keglobal(ipe)+2)
-        enddo
-        yb=meshY%xn(jb+1)
-        ye=meshY%xn(je+2)
-        do ipe=0,npes-1
-          ybglobal(ipe)=meshY%xn(jbglobal(ipe)+1)
-          yeglobal(ipe)=meshY%xn(jeglobal(ipe)+2)
-        enddo
+         !       Nonuniform mesh
+         zb=meshZ%xn(kb+1)
+         ze=meshZ%xn(ke+2)
+         do ipe=0,npes-1
+            zbglobal(ipe)=meshZ%xn(kbglobal(ipe)+1)
+            zeglobal(ipe)=meshZ%xn(keglobal(ipe)+2)
+         enddo
+         yb=meshY%xn(jb+1)
+         ye=meshY%xn(je+2)
+         do ipe=0,npes-1
+            ybglobal(ipe)=meshY%xn(jbglobal(ipe)+1)
+            yeglobal(ipe)=meshY%xn(jeglobal(ipe)+2)
+         enddo
          
          
-        volume_fraction = (ye-yb)*(ze-zb)/(ymax*zmax)
-        xb        = 0.
-        xe        = xmax
-        xb_logical=MESH_UNMAP(meshX,xb)
-        xe_logical=MESH_UNMAP(meshX,xe)
-        yb_logical=MESH_UNMAP(meshY,yb)
-        ye_logical=MESH_UNMAP(meshY,ye)
-        zb_logical=MESH_UNMAP(meshZ,zb)
-        ze_logical=MESH_UNMAP(meshZ,ze)
+         volume_fraction = (ye-yb)*(ze-zb)/(ymax*zmax)
          
-        do is=1,nspec
-          npm=npx(is)*npy(is)*npz(is)*npes
-          dfac(is)=real(ny*nz*nx)/real(npm)
-          do ixe=1,nx2
-              do iye=jb-1,je+1
-                do ize=kb-1,ke+1
-                    !                 qp_cell(ixe,iye,ize,is) = (meshX%dxc(ixe)*meshY%dxc(iye)*meshZ%dxc(ize)/(hx*hy*hz))*dfac(is)*frac(is)
-                    qp_cell(ixe,iye,ize,is) = meshX%dxc(ixe)*meshY%dxc(iye+1)*meshZ%dxc(ize+1)*dfac(is)*frac(is)
-                enddo
-              enddo
-          enddo
-        enddo
+         xb        = 0.
+         xe        = xmax
+         xb_logical=MESH_UNMAP(meshX,xb)
+         xe_logical=MESH_UNMAP(meshX,xe)
+         yb_logical=MESH_UNMAP(meshY,yb)
+         ye_logical=MESH_UNMAP(meshY,ye)
+         zb_logical=MESH_UNMAP(meshZ,zb)
+         ze_logical=MESH_UNMAP(meshZ,ze)
          
-        do i=1,nxmax
-          xc_uniform(i) = hx*(i-1.5)
-          xv_uniform(i) = hx*(i-2.0)
-        enddo
-        do j=1,nymax
-          yc_uniform(j) = hy*(j-0.5)
-          yv_uniform(j) = hy*(j-1.0)
-        enddo
-        do k=1,nzmax
-          zc_uniform(k) = hz*(k-0.5)
-          zv_uniform(k) = hz*(k-1.0)
-        enddo
+         
+         do is=1,nspec
+            npm=npx(is)*npy(is)*npz(is)*npes
+            dfac(is)=real(ny*nz*nx)/real(npm)
+            do ixe=1,nx2
+               do iye=jb-1,je+1
+                  do ize=kb-1,ke+1
+                     !                 qp_cell(ixe,iye,ize,is) = (meshX%dxc(ixe)*meshY%dxc(iye)*meshZ%dxc(ize)/(hx*hy*hz))*dfac(is)*frac(is)
+                     qp_cell(ixe,iye,ize,is) = meshX%dxc(ixe)*meshY%dxc(iye+1)*meshZ%dxc(ize+1)*dfac(is)*frac(is)
+                  enddo
+               enddo
+            enddo
+         enddo
+         
+         
+         do i=1,nxmax
+            xc_uniform(i) = hx*(i-1.5)
+            xv_uniform(i) = hx*(i-2.0)
+         enddo
+         do j=1,nymax
+            yc_uniform(j) = hy*(j-0.5)
+            yv_uniform(j) = hy*(j-1.0)
+         enddo
+         do k=1,nzmax
+            zc_uniform(k) = hz*(k-0.5)
+            zv_uniform(k) = hz*(k-1.0)
+         enddo
          
         if (myid ==0) then
            my_short_int=it
@@ -811,6 +838,7 @@
         
         call MPI_BCAST(cycle_ascii    ,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
         call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
+        
         
       else  !VR: fresh start
         time=0.0
@@ -826,7 +854,8 @@
 
       endif !VR: end of if (restart)
 
-      ! VR: removed output of the dipole field
+
+      !VR: removed output of the dipole field
 
       call date_and_time(values=time_end)
       clock_time_init=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
@@ -834,8 +863,8 @@
         print *,'load time = ',real(clock_time_init-clock_time_re1)  
       endif
       clock_time_old = clock_time_init
-      ! write(*,*)'clock time',clock_time_old
-
+      !write(*,*)'clock time',clock_time_old
+  
       ! hxv 01/10/2014
       if (myid == 0) then
         write(6,*) " START AT CYCLE # ",itfin
@@ -867,22 +896,22 @@
       it = itstart
       time_elapsed=0.;time_begin_array=0;time_end_array=0
 
-      !------------------------------------------------------!
-      !                 Start of main time loop
-      !------------------------------------------------------!
-      do while(it <= itfinish)
 
+      !=======================================================================
+      !VR: main time loop
+      do while(it <= itfinish)
         call get_cleanup_status(len(cleanup_status))
 
         if ((myid == 0).and.prntinfo) then
           write(6,*) " "
           write(6,*) " "
-          WRITE(6,*) "DT = ", DT, ", T_STOPPED = ", T_STOPPED
+          WRITE(6,*) " DT = ",DT
+          WRITE(6,*) " T_STOPPED = ",T_STOPPED
         endif
 
-        final_time = MPI_Wtime()
-        wall_clock_elapsed = final_time-initial_time
-        if (wall_clock_elapsed >= quota*3600. .and. myid == 0) then
+        final_time=MPI_Wtime()
+        wall_clock_elapsed= final_time-initial_time
+        if (wall_clock_elapsed >= QUOTA*3600. .and. myid == 0) then
           cleanup_status = 'CLEANUP_STATUS=TRUE'
           write(6,*) " "
           write(6,*) " "
@@ -895,23 +924,23 @@
         call MPI_BCAST(cleanup_status,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
 
         if (cleanup_status == 'CLEANUP_STATUS=EXIT') then
-          goto 999
+           goto 999
         else if (cleanup_status == 'CLEANUP_STATUS=TRUE') then
-          if (myid == 0) then
-            WRITE(6,*)
-            WRITE(6,*) 'WRITING THE RESTART FILE'
-            WRITE(6,*)
-          endif
+           if (myid == 0) then
+              WRITE(6,*)
+              WRITE(6,*) 'WRITING THE RESTART FILE'
+              WRITE(6,*)
+           endif
            
-          itfin = it
-          ! comment out for timing on LANL machine
-          
-          do iwrite = 0,npes_over_60 
-            if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
-                call restrtrw(1.0,itstart)
-            endif
-            call MPI_BARRIER(MPI_COMM_WORLD,IERR)
-          enddo
+           itfin = it
+           !         comment out for timing on LANL machine
+           
+           do iwrite = 0,npes_over_60 
+              if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
+                 call restrtrw(1.0,itstart)
+              endif
+              call MPI_BARRIER(MPI_COMM_WORLD,IERR)
+           enddo
            
            if (myid == 0) then
               open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='unknown')
@@ -922,6 +951,7 @@
         endif
 
         call date_and_time(values=time_begin_array(:,1))
+
 
         call date_and_time(values=time_end)
         clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
@@ -943,7 +973,7 @@
         endif
 
         ! determine whether or not to write data into files
-        ! if (mod(it,nwrtdata) == 0 .or. (it> 6000 .and. it<10000 .and. mod(it,25)==0 )) then
+        !if (mod(it,nwrtdata) == 0 .or. (it> 6000 .and. it<10000 .and. mod(it,25)==0 )) then
         if (mod(it,nwrtdata) == 0 ) then
           wrtdat=.true.
         else
@@ -951,22 +981,23 @@
         endif
 
         ! HXV
+
         call date_and_time(values=time_begin_array(:,3))
 
-        ! VR: we do not need injection from the boundary 
-        ! do is=1,nspec
-        !   call particle_newinject_linked_list(is)
-        ! enddo
+!VR: we do not need injection from the boundary 
+!        do is=1,nspec
+!           call particle_newinject_linked_list(is)
+!        enddo
 
-        ! if (it == 2 ) then
-        !   CALL MPI_FINALIZE(IERR)
-        !   STOP
-        ! ENDIF
-        ! if (notime == 0) then
-        !   call date_and_time(values=time_end)
-        !   clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
-        !   write(file_unit_time,"(i4,' injctpar ',f15.3)") it,real(clock_time-clock_time_init)
-        ! endif
+!        if (it == 2 ) then
+!          CALL MPI_FINALIZE(IERR)
+!          STOP
+!        ENDIF
+!        if (notime == 0) then
+!          call date_and_time(values=time_end)
+!          clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
+!          write(file_unit_time,"(i4,' injctpar ',f15.3)") it,real(clock_time-clock_time_init)
+!        endif
 
         call date_and_time(values=time_end_array(:,3))
         call date_and_time(values=time_begin_array(:,2))
@@ -998,6 +1029,7 @@
           write(14,*)it, time_elapsed(1:40)
         endif
 
+ 
         if (notime == 0) then
           call date_and_time(values=time_end)
           clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
@@ -1041,64 +1073,67 @@
         call accumulate_time_difference(time_begin_array(1,30),time_end_array(1,30),time_elapsed(30))
         !VR: end user diagnostics
         
-        ! VR: this seems to be data output region        
-998     if (.not.testorbt.and.(wrtdat.or.cleanup_status == 'CLEANUP_STATUS=TRUE'.or.it == itfinish &
+!VR: this seems to be data output region        
+998     if (.not.testorbt.and.(wrtdat.or.cleanup_status == 'CLEANUP_STATUS=TRUE'.or.it == itfinish       &
              .or.it == 1)) then
-          if (myid ==0) then
-            my_short_int=it
-            call integer_to_character(cycle_ascii,len(cycle_ascii),my_short_int)
-            cycle_ascii_new=trim(adjustl(cycle_ascii))
-            write(6,*) " cycle = ",cycle_ascii_new
-          endif
-          call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
-          call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
-          
-          if (myid == 0 .and. .not. MPI_IO_format) call openfiles
-          
-          call date_and_time(values=time_begin_array(:,6))
-          if (ndim /= 1) then
-            call caltemp2_global
-          else
-            call caltemp2_global_2d
-          endif
-          call date_and_time(values=time_end_array(:,6))
-          call accumulate_time_difference(time_begin_array(1,6),time_end_array(1,6),time_elapsed(6))
-
-          numvars = 18
-          irecnum=1
-          ! VR: in the old version, "nonuniform_mesh_global" was passed to dataout
-          call dataout(bx,by,bz,den,ex,ey,ez,vix,viy,viz,tpar,tperp,                   &
-              p_xx,p_xy,p_xz,p_yy,p_yz,p_zz,fox,foy,foz, vxs,vys,vzs,                 &
-              nxmax,nymax,nzmax,file_unit,myid,                                       &
-              numvars,irecnum,kb,ke,numprocs,wpiwci,jb,je,ny,nz,nylmax,nzlmax,nspecm, &
-              eta,eta_times_b_dot_j,eta_par,            &
-              uniform_mesh,trim(adjustl(data_directory)), trim(adjustl(cycle_ascii)),      &
-              MPI_IO_format)
-          if (myid == 0 .and. .not. MPI_IO_format) then
-            do j=1,25
-                close(file_unit(j))
-            enddo
-          endif
-
-          ! Write particle data to file and exit if post_process=.true.
-          if (myid == 0) then
-            write(6,*) " t_begin,time,t_end = ",t_begin*wpiwci,time,t_end*wpiwci
-            write(6,*) "it,nwrtparticle = ",it,nwrtparticle
-          endif
-          if (t_begin*wpiwci <= time .and. time <= t_end*wpiwci .and. mod( int(it,8) ,nwrtparticle)==0 .or. it==1) then
-            if (myid == 0) then
+           if (myid ==0) then
               my_short_int=it
               call integer_to_character(cycle_ascii,len(cycle_ascii),my_short_int)
-              write(6,*) " calling particle_in_volume_write with cycle_ascii = ",cycle_ascii
-            endif
-            call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
-            call particle_in_volume_write
-          endif
+              cycle_ascii_new=trim(adjustl(cycle_ascii))
+              write(6,*) " cycle = ",cycle_ascii_new
+           endif
+           call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
+           call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
+           
+           if (myid == 0 .and. .not. MPI_IO_format) call openfiles
+           
+           call date_and_time(values=time_begin_array(:,6))
+           if (ndim /= 1) then
+              call caltemp2_global
+           else
+              call caltemp2_global_2d
+           endif
+           call date_and_time(values=time_end_array(:,6))
+           call accumulate_time_difference(time_begin_array(1,6),time_end_array(1,6),time_elapsed(6))
+
+           numvars = 18
+           irecnum=1
+           !VR: in the old version, "nonuniform_mesh_global" was passed to dataout
+           call dataout(bx,by,bz,den,ex,ey,ez,vix,viy,viz,tpar,tperp,                   &
+                p_xx,p_xy,p_xz,p_yy,p_yz,p_zz,fox,foy,foz, vxs,vys,vzs,                 &
+                nxmax,nymax,nzmax,file_unit,myid,                                       &
+                numvars,irecnum,kb,ke,numprocs,wpiwci,jb,je,ny,nz,nylmax,nzlmax,nspecm, &
+                eta,eta_times_b_dot_j,eta_par,            &
+                uniform_mesh,trim(adjustl(data_directory)), trim(adjustl(cycle_ascii)),      &
+                MPI_IO_format)
+           if (myid == 0 .and. .not. MPI_IO_format) then
+              do j=1,25
+                 close(file_unit(j))
+              enddo
+           endif
+!
+           ! Write particle data to file and exit if post_process=.true.
+           if (myid == 0) then
+              write(6,*) " t_begin,time,t_end = ",t_begin*wpiwci,time,t_end*wpiwci
+              write(6,*) "it,nwrtparticle = ",it,nwrtparticle
+           endif
+           if (t_begin*wpiwci <= time .and. time <= t_end*wpiwci .and. mod( int(it,8) ,nwrtparticle)==0 .or. it==1) then
+              if (myid == 0) then
+                my_short_int=it
+                call integer_to_character(cycle_ascii,len(cycle_ascii),my_short_int)
+                write(6,*) " calling particle_in_volume_write with cycle_ascii = ",cycle_ascii
+              endif
+              call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
+              call particle_in_volume_write
+           endif
+!
            if (cleanup_status == 'CLEANUP_STATUS=TRUE') goto 999
         endif
-
-        ! if (restrt_write == 1 .and.mod(it,nwrtrestart)==0) then
+!=======================================================================
+!       max_sim_time
+!       if (restrt_write == 1.and.mod(it,nwrtrestart)==0) then
         if (restrt_write == 1.and.(mod( int(it,8) ,nwrtrestart)==0 .or. it == itfinish)) then
+
           if (myid == 0) then
             WRITE(6,*)
             WRITE(6,*) 'WRITING THE RESTART FILE'
@@ -1107,12 +1142,12 @@
 
           itfin = it
 
-          do iwrite = 0,npes_over_60  
-          if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
-            call restrtrw(1.0,itstart)
-          endif
-          call MPI_BARRIER(MPI_COMM_WORLD,IERR)
-          enddo
+        do iwrite = 0,npes_over_60  
+         if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
+           call restrtrw(1.0,itstart)
+         endif
+         call MPI_BARRIER(MPI_COMM_WORLD,IERR)
+        enddo
 
           if (myid == 0) then
           open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='unknown')
@@ -1125,6 +1160,7 @@
           else
             restart_index=1
           endif
+
         endif
 
         if (notime == 0) then
@@ -1132,32 +1168,42 @@
           clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
           write(file_unit_time,"(i4,' end      ',f15.3)") it,real(clock_time-clock_time_init)
         endif
-        ! if (it == 1 ) then
-        !   CALL MPI_FINALIZE(IERR)
-        !   STOP
-        ! endif
-
+!        if (it == 1 ) then
+!          CALL MPI_FINALIZE(IERR)
+!          STOP
+!        ENDIF
+!
+!=======================================================================
+!
         time=time+dt
         it = it + 1
+!
+!=======================================================================
+!
 
 
-        ! VR: removed orientation of BZ flip
+! VR: removed orientation of BZ flip
 
+!=======================================================================
+!
         call date_and_time(values=time_end_array(:,1))
-
+!
+!=======================================================================
+!
         do j=1,5
           call accumulate_time_difference(time_begin_array(1,j),time_end_array(1,j),time_elapsed(j))
         enddo
+!
+!=======================================================================
+!
 
-        ! if (it == 1 ) then
-        !   CALL MPI_FINALIZE(IERR)
-        !   STOP
-        ! ENDIF
+!        if (it == 1 ) then
+!          CALL MPI_FINALIZE(IERR)
+!          STOP
+!        ENDIF
 
-      enddo
-      !------------------------------------------------------!
-      !                 End of main time loop
-      !------------------------------------------------------!
+      enddo    ! while it loop
+! END of main time loop
 
       if (myid == 0) then
         close(unit=11)
@@ -1166,13 +1212,15 @@
         close(unit=14)
       endif
       if (tracking_mpi) then
-      ! call MPI_File_close(tracking_fh,ierr)
+     !  call MPI_File_close(tracking_fh,ierr)
       close(unit=13)
       endif
       
  999  if (notime == 0) close(file_unit_time)
-
-      if (myid==0) then
+!
+!***********************************************************************
+!
+      if (MYID.EQ.0) then
         write(6,*) " "
         write(6,*) " "
         write(6,*) " *** RUN COMPLETED *** RUN COMPLETED *** RUN COMPLETED "
@@ -1244,16 +1292,14 @@
         write(6,*) "  subroutine xreal                      (%) =" &
         ,100.*time_elapsed(24)/time_elapsed(1)
       endif
-
+!
       call MPI_FINALIZE(IERR)
       stop
-
-    end program H3D
-
-    !------------------------------------------------------!
-    ! computes velocities?
-    ! what is the difference between vxs and vix?
-    !------------------------------------------------------!
+    end program hybrid
+!=======================================================================
+!>   computes velocities?
+!!    what is the difference between vxs and vix?
+!=======================================================================
       subroutine trans        
       use parameter_mod
       use MESH2D
@@ -1290,12 +1336,14 @@
         enddo
       enddo
  
+ 
       if (notime == 0) then
         call date_and_time(values=time_end)
         clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
         write(file_unit_time,"(i4,' parmov   ',f15.3)") it,real(clock_time-clock_time_init)
       endif
       call date_and_time(values=time_begin_array(:,7))
+
   
       if (ndim /= 1) then
          call parmov
@@ -1313,25 +1361,29 @@
         do k=kb-1,ke+1
           do j=jb-1,je+1
             do i=1,nx2
-              ! Nonuniform mesh
-              cell_volume_ratio = hx*hy*hz/(meshX%dxc(i)*meshY%dxc(j+1)*meshZ%dxc(k+1))
-              dns_tmp=dnsh(i,j,k,is)
-              ! Uniform mesh - Same as is in version 5.0
-              ! if (dns_tmp <= denmin) dns_tmp=1.d+10
 
-              ! Nonuniform mesh
-              ! if (dns_tmp*cell_volume_ratio <= denmin) dns_tmp=1.d+10
+!             Nonuniform mesh
+              cell_volume_ratio = hx*hy*hz/(meshX%dxc(i)*meshY%dxc(j+1)*meshZ%dxc(k+1))
+
+              dns_tmp=dnsh(i,j,k,is)
+
+!             Uniform mesh - Same as is in version 5.0
+!              if (dns_tmp <= denmin) dns_tmp=1.d+10
+
+!             Nonuniform mesh
+!              if (dns_tmp*cell_volume_ratio <= denmin) dns_tmp=1.d+10
               if (dns_tmp*cell_volume_ratio <= denmin) dns_tmp=denmin/cell_volume_ratio ! July 21, 2010
 
               vxs(i,j,k,is)=vxs(i,j,k,is)/dns_tmp
               vys(i,j,k,is)=vys(i,j,k,is)/dns_tmp
               vzs(i,j,k,is)=vzs(i,j,k,is)/dns_tmp
 
-              ! Uniform mesh - Same as is in version 5.0
-              ! dns(i,j,k,is)=dns(i,j,k,is)
+!             Uniform mesh - Same as is in version 5.0
+!              dns(i,j,k,is)=dns(i,j,k,is)
 
-              ! Nonuniform mesh
-              ! dns(i,j,k,is)=dns(i,j,k,is)*cell_volume_ratio
+!             Nonuniform mesh
+!              dns(i,j,k,is)=dns(i,j,k,is)*cell_volume_ratio
+
             enddo
           enddo
         enddo
@@ -1355,7 +1407,7 @@
         enddo
       enddo
 
-      ! Apply Boundary Conditions
+!     Apply Boundary Conditions
       if (ndim /= 1) then
       call XREALBCC(DEN,1_8,NX,NY,NZ)
       call XREALBCC(DENH,1_8,NX,NY,NZ)
@@ -1370,7 +1422,7 @@
       call XREALBCC_2D(VIZ,1_8,NX,NY,NZ)
       endif
 
-      ! smooth density and velocity
+!     smooth density and velocity
       if (smoothing) then
         if (ndim /=1) then
           call nsmth(DEN)
@@ -1410,22 +1462,24 @@
  
       call date_and_time(values=time_end_array(:,8))
       call accumulate_time_difference(time_begin_array(1,8),time_end_array(1,8),time_elapsed(8))
-
-      kbmin = kb-1
-      kbmax = ke+1
-
-      jbmin = jb-1
-      jbmax = je+1
+ 
+ 
+       kbmin = kb-1
+       kbmax = ke+1
+ 
+ 
+       jbmin = jb-1
+       jbmax = je+1
+ 
  
       call date_and_time(values=time_end_array(:,20))
       call accumulate_time_difference(time_begin_array(1,20),time_end_array(1,20),time_elapsed(20))
  
       return
     end subroutine trans
-
-    !------------------------------------------------------!
-    ! compute perp and par temperature and pressure tensor
-    !------------------------------------------------------!
+!=======================================================================
+!>    compute perp and par temperature and pressure tensor
+!=======================================================================
       subroutine caltemp2_global
  
       use parameter_mod
@@ -1443,6 +1497,7 @@
       dtxi = 1./meshX%dt
       dtyi = 1./meshY%dt
       dtzi = 1./meshZ%dt
+
 
       tpar=0.
       tperp=0.
@@ -1466,23 +1521,24 @@
             DO IIXE = 1, NX1
               NP=IPHEAD(IIXE,IIYE,IIZE,IS)
 
-              ! begin advance of particle position and velocity
-              ! If dt=0, skip
+!  begin advance of particle position and velocity
+!  If dt=0, skip
+!
               DO WHILE (NP.NE.0)
                 L=NP
 
-                ! Uniform mesh - Same as is in version 5.0
-                ! rx=hxi*x(l)+1.5000000000000001
-                ! ry=hyi*y(l)+0.5000000000000001d+00
-                ! rz=hzi*z(l)+0.5000000000000001d+00
-                ! ix=rx
-                ! iy=ry
-                ! iz=rz
-                ! fx=rx-ix
-                ! fy=ry-iy
-                ! fz=rz-iz
+!               Uniform mesh - Same as is in version 5.0
+!                rx=hxi*x(l)+1.5000000000000001
+!                ry=hyi*y(l)+0.5000000000000001d+00
+!                rz=hzi*z(l)+0.5000000000000001d+00
+!                ix=rx
+!                iy=ry
+!                iz=rz
+!                fx=rx-ix
+!                fy=ry-iy
+!                fz=rz-iz
 
-                ! Nonuniform mesh - using MESH_UNMAP
+!               Nonuniform mesh - using MESH_UNMAP
                 rx=dtxi*MESH_UNMAP(meshX,x(l))+1.50000000000d+00
                 ry=dtyi*MESH_UNMAP(meshY,y(l))+1.50000000000d+00
                 rz=dtzi*MESH_UNMAP(meshZ,z(l))+1.50000000000d+00
@@ -1492,8 +1548,8 @@
                 fx=rx-ix
                 fy=ry-iy
                 fz=rz-iz
-                iy=iy-1   ! integer index in y direction starts at 0
-                iz=iz-1   ! integer index in z direction starts at 0
+                iy=iy-1             ! integer index in y direction starts at 0
+                iz=iz-1             ! integer index in z direction starts at 0
 
                 ixp1 = ix+1
                 iyp1 = iy+1
@@ -1685,75 +1741,75 @@
           ENDDO
         ENDDO
 
-        ! p_xx(:,:,:,is)=p_xx(:,:,:,is)/(tx0(is)*frac(is))
-        ! p_xy(:,:,:,is)=p_xy(:,:,:,is)/(tx0(is)*frac(is))
-        ! p_xz(:,:,:,is)=p_xz(:,:,:,is)/(tx0(is)*frac(is))
-        ! p_yy(:,:,:,is)=p_yy(:,:,:,is)/(tx0(is)*frac(is))
-        ! p_yz(:,:,:,is)=p_yz(:,:,:,is)/(tx0(is)*frac(is))
-        ! p_zz(:,:,:,is)=p_zz(:,:,:,is)/(tx0(is)*frac(is))
+!        p_xx(:,:,:,is)=p_xx(:,:,:,is)/(tx0(is)*frac(is))
+!        p_xy(:,:,:,is)=p_xy(:,:,:,is)/(tx0(is)*frac(is))
+!        p_xz(:,:,:,is)=p_xz(:,:,:,is)/(tx0(is)*frac(is))
+!        p_yy(:,:,:,is)=p_yy(:,:,:,is)/(tx0(is)*frac(is))
+!        p_yz(:,:,:,is)=p_yz(:,:,:,is)/(tx0(is)*frac(is))
+!        p_zz(:,:,:,is)=p_zz(:,:,:,is)/(tx0(is)*frac(is))
 
       ENDDO
-
       call date_and_time(values=time_end_array(:,26))
       call accumulate_time_difference(time_begin_array(1,26) &
-                                    ,time_end_array(1,26) &
-                                    ,time_elapsed(26))
+     &                               ,time_end_array(1,26) &
+     &                                ,time_elapsed(26))
+ 
 
-      ! do is=1,nspec
-      !   call date_and_time(values=time_begin_array(:,24))
-      !   call XREAL(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
-      !   call XREAL(tperp(1,jb-1,kb-1,is),NX,NY,NZ)
-      !   call date_and_time(values=time_end_array(:,24))
-      !   call accumulate_time_difference(time_begin_array(1,24) &
-      !                                  ,time_end_array(1,24) &
-      !                                  ,time_elapsed(24))
+!      do is=1,nspec
+!        call date_and_time(values=time_begin_array(:,24))
+!        call XREAL(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
+!        call XREAL(tperp(1,jb-1,kb-1,is),NX,NY,NZ)
+!        call date_and_time(values=time_end_array(:,24))
+!        call accumulate_time_difference(time_begin_array(1,24) &
+!     &                                 ,time_end_array(1,24) &
+!     &                                 ,time_elapsed(24))
+! 
+!        call date_and_time(values=time_begin_array(:,25))
+!        call XREALBCC(tpar (1,jb-1,kb-1,is),1,NX,NY,NZ)
+!        call XREALBCC(tperp(1,jb-1,kb-1,is),1,NX,NY,NZ)
+!        call date_and_time(values=time_end_array(:,25))
+!        call accumulate_time_difference(time_begin_array(1,25) &
+!     &                                 ,time_end_array(1,25) &
+!     &                                 ,time_elapsed(25))
+! 
+!      enddo
 
-      !   call date_and_time(values=time_begin_array(:,25))
-      !   call XREALBCC(tpar (1,jb-1,kb-1,is),1,NX,NY,NZ)
-      !   call XREALBCC(tperp(1,jb-1,kb-1,is),1,NX,NY,NZ)
-      !   call date_and_time(values=time_end_array(:,25))
-      !   call accumulate_time_difference(time_begin_array(1,25) &
-      !                                  ,time_end_array(1,25) &
-      !                                  ,time_elapsed(25))
 
-      ! enddo
-
-
-      ! call date_and_time(values=time_begin_array(:,26))
-      ! do is=1,nspec
-      !   do k=kb-1,ke+1
-      !     do j = jb-1,je+1
-      !       do i=1,nx2
-      !         if (is == 1) then
-      !           dns1=dns(i,j,k,1)/(dfac(1)*frac(1))
-      !           dns2=0.
-      !           denum=dns1+rfrac*dns2
-      !         else
-      !           denum=dns(i,j,k,is)/(dfac(is)*frac(is))
-      !         endif
-      !         if (denum < denmin)  then
-      !           tpar(i,j,k,is)=1.e-5
-      !           tperp(i,j,k,is)=1.e-5
-      !         else
-      !           denum=denum*tx0(is)
-      !           tpar(i,j,k,is)=tpar(i,j,k,is)*wspec(is)/denum
-      !           tperp(i,j,k,is)=0.5*tperp(i,j,k,is)*wspec(is)/denum
-      !         endif
-      !       enddo
-      !     enddo
-      !   enddo
-      ! enddo
-      ! call date_and_time(values=time_end_array(:,26))
-      ! call accumulate_time_difference(time_begin_array(1,26) &
-      ! &                               ,time_end_array(1,26) &
-      ! &                               ,time_elapsed(26))
+!      call date_and_time(values=time_begin_array(:,26))
+!      do is=1,nspec
+!        do k=kb-1,ke+1
+!          do j = jb-1,je+1
+!            do i=1,nx2
+!              if (is == 1) then
+!                dns1=dns(i,j,k,1)/(dfac(1)*frac(1))
+!                dns2=0.
+!                denum=dns1+rfrac*dns2
+!              else
+!                denum=dns(i,j,k,is)/(dfac(is)*frac(is))
+!              endif
+!              if (denum < denmin)  then
+!               tpar(i,j,k,is)=1.e-5
+!               tperp(i,j,k,is)=1.e-5
+!              else
+!               denum=denum*tx0(is)
+!               tpar(i,j,k,is)=tpar(i,j,k,is)*wspec(is)/denum
+!               tperp(i,j,k,is)=0.5*tperp(i,j,k,is)*wspec(is)/denum
+!              endif
+!            enddo
+!          enddo
+!        enddo
+!      enddo
+!      call date_and_time(values=time_end_array(:,26))
+!      call accumulate_time_difference(time_begin_array(1,26) &
+!     &                               ,time_end_array(1,26) &
+!     &                               ,time_elapsed(26))
 
  
-      call date_and_time(values=time_end_array(:,23))
-      call accumulate_time_difference(time_begin_array(1,23) &
-                                    ,time_end_array(1,23) &
-                                    ,time_elapsed(23))
-
+       call date_and_time(values=time_end_array(:,23))
+       call accumulate_time_difference(time_begin_array(1,23) &
+     &                                ,time_end_array(1,23) &
+     &                                ,time_elapsed(23))
+ 
       return
     end subroutine caltemp2_global
 
