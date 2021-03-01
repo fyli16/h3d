@@ -37,6 +37,7 @@ def get_snapshot_data(ts, path, field):
     return (data)
 
 b0_list=[0.001, 0.01, 0.05, 0.1, 0.2, 0.5]
+b0_list2=[0.05, 0.1, 0.2, 0.5]
 load_input('test')  # get ndumps, nz
 spec_rho=np.zeros( (ndumps, int(nz/2), len(b0_list)) )
 spec_rho_max =  np.zeros( (ndumps, len(b0_list)) )
@@ -95,19 +96,28 @@ for i in range(len(b0_list)):
         growth[i] = pidx[0]
         ax1.semilogy(times[id1:id2], yfit, '-', color=line.get_color())
 ax1.legend(loc='upper right')
-#@ append analytical results
+#@ growth rates
 ax1 = axes[1]
 gmax=np.load('test/h3dtest-gmax.npy')
 b0_theory=np.load('test/h3dtest-b0.npy')
 from math import e
 convert=5*twopi/224
-ax1.plot(np.array(b0_list), growth/convert, 'ko', 
-        markersize=7, markerfacecolor='none',label='sim.')
-# ax2 = ax1.twinx()
+# sim. zmax=224, resis=1e-6
+ax1.plot(np.array(b0_list)/np.sqrt(2), growth/convert, 'ko', 
+        markersize=7, markerfacecolor='none',label='sim, z=224, resis=1e-6')
+# sim. zmax=224, resis=0
+growth_resis0 = np.load('resis0/growth_resis0.npy')
+ax1.plot(np.array(b0_list2)/np.sqrt(2), growth_resis0/convert, 'kx', 
+        markersize=7, markerfacecolor='none',label='sim, z=224, resis=0')
+# sim. zmax=2240, resis=1e-6
+growth_z2240 = np.load('z2240/growth_z2240.npy')
+ax1.plot(np.array(b0_list2)/np.sqrt(2), growth_z2240/convert, 'kd', 
+        markersize=7, markerfacecolor='none',label='sim, z=2240, resis=1e-6')
+# theory
 ax1.plot(b0_theory[1:], gmax[1:], 'r-', label='theory')
 ax1.legend()
-ax1.set_xlim(0,.6)
-ax1.set_xlabel(r'$b_0$')
+ax1.set_xlim(0,.4)
+ax1.set_xlabel(r'$b_0/\sqrt{2}=b_0^{theory}$')
 ax1.set_ylabel(r'$\gamma_{max}/\omega_0$')
 # ax1.set_ylabel(r'analytical $\gamma_{max}$')
 # ax2.yaxis.label.set_color('r')

@@ -93,9 +93,11 @@ def snapshot(ts, data):
     # ax1.set_ylabel('z')
 
     plt.tight_layout()
-    if a.showplots: plt.show()
-    path = join(a.dir, '%s_%06d.png'%(figname, ts) )
-    plt.savefig(path, pad_inches=0.01)
+    if a.showplots: 
+        plt.show()
+    else: 
+        path = join(a.dir, '%s_%06d.png'%(figname, ts) )
+        plt.savefig(path, pad_inches=0.01)
 
 def spectrum(ts, data):
     mean = np.mean(data, axis=0)

@@ -676,7 +676,7 @@
         lenrec=(nxmax-2)*recl_for_real
         file_unit_ref = 250
         do j=1,25
-  	  file_unit(j) = file_unit_ref + j
+  	      file_unit(j) = file_unit_ref + j
         enddo
         open (file_unit(1),                                                                         &
 !              file= 'bx_'//trim(adjustl(cycle_ascii))//'.gda', &

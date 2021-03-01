@@ -1,6 +1,13 @@
 #!/bin/tcsh
 module purge
 module load gcc/9.1.0 impi/19.0.9
+echo ""
+echo "#--------------------- compling --------------------#"
+make
+echo ""
+echo "#--------------------- cleaning --------------------#"
+make clean
+echo ""
 
 set verbose
 setenv OMP_NUM_THREADS 1
