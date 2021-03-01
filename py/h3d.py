@@ -161,7 +161,7 @@ def load_input(path):
         tmax, dt, nwrtdata, y, z, \
         ndumps, timesteps, times 
 
-    nml = f90nml.read(path + '/data/input.f90')
+    nml = f90nml.read( join(path,'input.f90') )
     denmin = nml['datum']['denmin']
     nspec = nml['datum']['nspec']
     nx = nml['datum']['nx']
@@ -170,7 +170,7 @@ def load_input(path):
     xmax = nml['datum']['xmax']
     ymax = nml['datum']['ymax']
     zmax = nml['datum']['zmax']
-    tmax = nml['datum']['maximum_simulation_time']
+    tmax = nml['datum']['tmax']
     dt = nml['datum']['dtwci']
     nwrtdata = nml['datum']['nwrtdata']
     #@ box axes

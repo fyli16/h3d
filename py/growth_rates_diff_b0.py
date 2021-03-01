@@ -5,7 +5,7 @@ def load_input(path):
         tmax, dt, nwrtdata, y, z, \
         ndumps, timesteps, times 
 
-    nml = f90nml.read(path + '/data/finput.f90')
+    nml = f90nml.read(path + '/data/input.f90')
     denmin = nml['datum']['denmin']
     nspec = nml['datum']['nspec']
     nx = nml['datum']['nx']
@@ -64,7 +64,6 @@ for k, b0 in enumerate(b0_list):
         data = np.load(datafile)
     
     for m in range(ndumps):
-        # showProgressBar(ndumps-1, i)
         rho=data[m,:,0] 
         rho=rho.reshape(nz,ny).transpose()
         mean=np.mean(rho,axis=0)  # averaged over y
@@ -96,17 +95,18 @@ for i in range(len(b0_list)):
         growth[i] = pidx[0]
         ax1.semilogy(times[id1:id2], yfit, '-', color=line.get_color())
 ax1.legend(loc='upper right')
+#@ append analytical results
 ax1 = axes[1]
 gmax=np.load('test/h3dtest-gmax.npy')
 b0_theory=np.load('test/h3dtest-b0.npy')
 from math import e
-convert=5*twopi/224 * np.log10(e)
-ax1.plot(np.array(b0_list)*np.sqrt(2), growth/convert, 'ko', markersize=7, markerfacecolor='none',
-            label='sim.')
+convert=5*twopi/224
+ax1.plot(np.array(b0_list), growth/convert, 'ko', 
+        markersize=7, markerfacecolor='none',label='sim.')
 # ax2 = ax1.twinx()
 ax1.plot(b0_theory[1:], gmax[1:], 'r-', label='theory')
 ax1.legend()
-ax1.set_xlim(0,1)
+ax1.set_xlim(0,.6)
 ax1.set_xlabel(r'$b_0$')
 ax1.set_ylabel(r'$\gamma_{max}/\omega_0$')
 # ax1.set_ylabel(r'analytical $\gamma_{max}$')

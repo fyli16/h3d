@@ -14,7 +14,7 @@ def load_input(path):
     xmax = nml['datum']['xmax']
     ymax = nml['datum']['ymax']
     zmax = nml['datum']['zmax']
-    tmax = nml['datum']['max_sim_time']
+    tmax = nml['datum']['tmax']
     dt = nml['datum']['dtwci']
     nwrtdata = nml['datum']['nwrtdata']
     #@ box axes
