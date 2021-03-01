@@ -22,5 +22,5 @@ mkdir -p $RESTART_DIRECTORY
 setenv MPI_TYPE_MAX 65536
 setenv MPI_REQUEST_MAX 65536
 
-srun -n 32 ./3dh 
+srun -n 64 ./h3d
 exit
