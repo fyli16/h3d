@@ -503,7 +503,6 @@ end subroutine accumulate_time_difference
       logical fexists
  
       if (myid==0) then
-!        open(unit=1,file='.cleanup_status',status='old')
          inquire(file=trim(adjustl(data_directory))//'.cleanup_status',exist=fexists)
          if (fexists) then
             open(unit=1,file=trim(adjustl(data_directory))//'.cleanup_status',status='old')

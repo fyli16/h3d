@@ -835,7 +835,7 @@
 
         if ((myid == 0).and.prntinfo) then
           write(6,*) " "
-          WRITE(6,*) "DT = ", DT, ", T_STOPPED = ",T_STOPPED
+          WRITE(6,*) "DT = ", dt, ", T_STOPPED = ", t_stopped
         endif
 
         final_time = MPI_Wtime()
@@ -862,8 +862,8 @@
            endif
            
            itfin = it
-           !         comment out for timing on LANL machine
-           
+           ! comment out for timing on LANL machine
+        
            do iwrite = 0,npes_over_60 
               if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
                  call restrtrw(1.0,itstart)
@@ -880,8 +880,6 @@
         endif
 
         call date_and_time(values=time_begin_array(:,1))
-
-
         call date_and_time(values=time_end)
         clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
         if (notime == 0) then
@@ -955,7 +953,6 @@
           write(14,*)it, time_elapsed(1:40)
         endif
 
- 
         if (notime == 0) then
           call date_and_time(values=time_end)
           clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
@@ -1124,6 +1121,7 @@
         close(unit=13)
         close(unit=14)
       endif
+
       if (tracking_mpi) then
         ! call MPI_File_close(tracking_fh,ierr)
         close(unit=13)

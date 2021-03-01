@@ -102,7 +102,7 @@ character(len=160):: cycle_ascii,cleanup_status
 real(kind=8):: dB_B0, num_cycles ! for init_wave
 ! some constants
 double precision, parameter :: zero=0.0d0, one=1.0d0, two=2.0d0, one_half=0.5d0, &
-               pi=acos(-1.d+00);
+               pi=acos(-1.d+00)
 
 contains
 ! Set global parameters and allocate global arrays
