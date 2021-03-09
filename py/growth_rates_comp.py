@@ -70,14 +70,10 @@ def get_spectral_max(path, spec_rho, spec_rho_max, k_pos):
 # path_list = ['test', '1d-resis0.001']
 # label_list = ['resis=1e-6', 'resis=1e-3']
 
-# path_list = ['test', 'test-ppc64', 'test-ppc512', 'test-ppc1728']
-# label_list = ['ppc=1000', 'ppc=64', 'ppc=512', 'ppc=1728']
-
-# path_list = ['test', 'test-z2240']
-# label_list = ['zmax=224', 'zmax=2240']
-
-path_list = ['1d-b0.05', '1d-b0.1', '1d-b0.2', '1d-b0.5']
-label_list = ['b0=0.05', 'b0=0.1', 'b0=0.2', 'b0=0.5']
+# path_list = ['1d-b0.05', '1d-b0.1', '1d-b0.2', '1d-b0.5']
+# label_list = ['b0=0.05', 'b0=0.1', 'b0=0.2', 'b0=0.5']
+b0_list=[0.001, 0.01, 0.05, 0.1, 0.2, 0.5]
+b0_list2=[0.05, 0.1, 0.2, 0.5]
 
 # path_list = ['run1', 'run2', 'run3']
 # label_list = path_list
@@ -85,13 +81,12 @@ label_list = ['b0=0.05', 'b0=0.1', 'b0=0.2', 'b0=0.5']
 #            0      1      2    3     4     5     6       7        8
 field_list=['den', 'bx', 'by', 'bz', 'ex', 'ey', 'ez', 'tpar_1', 'tperp_1']
 
-
-
 fig, axes = plt.subplots(1,1, figsize=[5,3.8])
 ax1=axes
 
-for i in range(len(path_list)):
-    path = path_list[i]; print(path)
+for i, b0 in enumerate(b0_list):
+    path = '1d-b%s'%b0
+    print(path)
     load_input(path)
     spec_rho=np.zeros( (ndumps, int(nz/2)) )
     spec_rho_max =  np.zeros( ndumps )
@@ -99,10 +94,11 @@ for i in range(len(path_list)):
     spec_rho, spec_rho_max, k_pos = get_spectral_max(path, 
                             spec_rho, spec_rho_max, k_pos)
     ax1.semilogy(times, spec_rho_max, 'o', markersize=3, 
-                markerfacecolor='none', label=label_list[i])
+                markerfacecolor='none', label=r'$b_0=%s$'%b0_list[i])
 ax1.legend()
 ax1.set_xlabel(r'$\omega_{ci}t$')
 ax1.set_ylabel('Spectral max.')
+
 # # exponential fit
 # t0, t1 = 300., 700.
 # id1, id2 = int(t0/(dt*nwrtdata)), int(t1/(dt*nwrtdata))

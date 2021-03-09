@@ -31,7 +31,7 @@ def load_input(path):
 # it, ex, ey, ez, bx, by, bz
 # 0,  1,  2,  3,  4,  5,  6
 
-path='resis0/1d-b0.1'
+path='1d-b0.5'
 load_input(path)
 myid=28
 data = np.loadtxt(path+'/data/probes_%.04d.dat'%myid)

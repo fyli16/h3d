@@ -36,10 +36,8 @@ def get_snapshot_data(ts, path, field):
     # data = data.reshape(nz, ny).transpose()
     return (data)
 
-b0_list=[0.001, 0.01, 0.05, 0.1, 0.2, 0.5]
-b0_list2=[0.05, 0.1, 0.2, 0.5]
-b0_list3=[0.05, 0.1, 0.2]
-load_input('h3d')  # get ndumps, nz
+b0_list=[0.05, 0.1, 0.2, 0.5]
+load_input('1d-b0.05')  # get ndumps, nz
 spec_rho=np.zeros( (ndumps, int(nz/2), len(b0_list)) )
 spec_rho_max =  np.zeros( (ndumps, len(b0_list)) )
 k_pos =  np.zeros( (ndumps, len(b0_list)) )
@@ -48,7 +46,7 @@ field_list=['den', 'bx', 'by', 'bz', 'ex', 'ey', 'ez', 'tpar_1', 'tperp_1']
 
 # read sim data
 for k, b0 in enumerate(b0_list):
-    path='base-old/1d-b%s'%b0
+    path='1d-b%s'%b0
     print (path)
     load_input(path)
     dsize = ny*nz
@@ -77,12 +75,12 @@ for k, b0 in enumerate(b0_list):
 #==========================================================#
 #>>   measured growth against theory
 #==========================================================#
-tends=np.array([[0,0],[0,0],[500,1200],[200,550],[100,300],[0,150]])
+tends=np.array([[0,0],[0,0],[500,1000],[1000,1500]])
 growth = np.zeros(len(b0_list))
 growth[:]=np.nan
 print ('plotting ...')
-fig, axes = plt.subplots(1,2, figsize=[10,4.5])
-ax1=axes[0]
+fig, axes = plt.subplots(1,1, figsize=[5,3.8])
+ax1=axes
 for i in range(len(b0_list)):
     line,= ax1.semilogy(times, spec_rho_max[:,i], 'o', markersize=3, 
                 markerfacecolor='none', label=r'$b_0=%s$'%b0_list[i])
@@ -96,104 +94,32 @@ for i in range(len(b0_list)):
         yfit=np.exp(times[id1:id2]*pidx[0]+pidx[1])
         growth[i] = pidx[0]
         ax1.semilogy(times[id1:id2], yfit, '-', color=line.get_color())
+    else:
+        growth[i] = np.nan
 ax1.legend(loc='upper right')
+np.save('growth_rates.npy', growth)
 
-#@ growth rates
+
+"""
+#@ append analytical results
 ax1 = axes[1]
-gmax_theory=np.load('test/h3dtest-gmax.npy')
+gmax=np.load('test/h3dtest-gmax.npy')
 b0_theory=np.load('test/h3dtest-b0.npy')
 from math import e
 convert=5*twopi/224
-
-# ----------------- 
-# sim. beta=0.0001
-growth_ = np.load('beta/beta-0.0001/growth_rates.npy')
-ax1.plot(np.array(b0_list3), growth_/convert, 'x', 
-        markersize=7, markerfacecolor='none',
-          label=r'sim, $\beta=$'+str(0.0001))
-# sim. beta=0.001
-growth_ = np.load('beta/beta-0.001/growth_rates.npy')
-ax1.plot(np.array(b0_list2), growth_/convert, 'o', 
-        markersize=7, markerfacecolor='none',
-          label=r'sim, $\beta=$'+str(0.001))
-# sim. beta=0.01
-ax1.plot(np.array(b0_list), growth/convert, 'o', 
-        markersize=7, markerfacecolor='none',
-         label=r'sim, $\beta=$'+str(0.01))
-# sim. beta=0.1
-growth = np.load('beta/beta-0.1/growth_rates.npy')
-ax1.plot(np.array(b0_list2), growth/convert, 'x', 
-        markersize=7, markerfacecolor='none',
-          label=r'sim, $\beta=$'+str(0.1))
-# sim. beta=1
-growth = np.load('beta/beta-1/growth_rates.npy')
-ax1.plot(np.array(b0_list2), growth/convert, 's', 
-        markersize=7, markerfacecolor='none',
-          label=r'sim, $\beta=$'+str(1))
-# sim. beta=1.5
-growth = np.load('beta/beta-1.5/growth_rates.npy')
-ax1.plot(np.array(b0_list2), growth/convert, 'd', 
-        markersize=7, markerfacecolor='none',
-          label=r'sim, $\beta=$'+str(1.5))
-# sim. beta=3
-growth = np.load('beta/beta-3/growth_rates.npy')
-ax1.plot(np.array(b0_list2), growth/convert, 'o', 
-        markersize=7, markerfacecolor='none',
-          label=r'sim, $\beta=$'+str(3))
-
-
-
-# ----------------- 
-# # sim. zmax=224, resis=1e-6
-# ax1.plot(np.array(b0_list), growth/convert, 'ko', 
-#         markersize=7, markerfacecolor='none',
-#          label=r'sim, z=224, $\omega_0/\omega_{ci}$=0.14')
-# # sim. zmax=224, w0/wci=0.67
-# growth_w067 = np.load('w0.67/growth_w0.67.npy')
-# ax1.plot(np.array(b0_list2), growth_w067/convert, 'bo', 
-#         markersize=7, markerfacecolor='none',
-#           label=r'sim, z=224, $\omega_0/\omega_{ci}$=0.67')
-
-#------------------------
-# # sim. zmax=224, resis=1e-6
-# ax1.plot(np.array(b0_list), growth/convert, 'ko', 
-#         markersize=7, markerfacecolor='none',
-#           label=r'sim, z=224, $\omega_0/\omega_{ci}$=0.14')
-# # sim. zmax=224, resis=0
-# growth_resis0 = np.load('resis0/growth_resis0.npy')
-# ax1.plot(np.array(b0_list2), growth_resis0/convert, 'kx', 
-#         markersize=7, markerfacecolor='none',
-#           label='sim, z=224, resis=0')
-# # sim. zmax=2240, resis=1e-6
-# growth_z2240 = np.load('z2240/growth_z2240.npy')
-# ax1.plot(np.array(b0_list2), growth_z2240/convert, 'kd', 
-#         markersize=7, markerfacecolor='none',
-#           label='sim, z=2240, resis=1e-6')
-
-#------------------------
-# # sim. ppc=64
-# growth_ppc64 = np.load('ppc64/growth_ppc64.npy')
-# ax1.plot(np.array(b0_list2), growth_ppc64/convert, 'kd', 
-#         markersize=7, markerfacecolor='none',label='sim, ppc=64')
-# # sim. ppc=1000
-# ax1.plot(np.array(b0_list), growth/convert, 'ko', 
-#         markersize=7, markerfacecolor='none',label='sim, ppc=1000')
-# # sim. ppc=1728
-# growth_ppc1728 = np.load('ppc1728/growth_ppc1728.npy')
-# ax1.plot(np.array(b0_list2), growth_ppc1728/convert, 'kx', 
-#         markersize=7, markerfacecolor='none',label='sim, ppc=1728')
-
-
-# # theory
-# ax1.plot(b0_theory[1:], gmax_theory[1:], 'r-', label='theory')
-ax1.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=2, ncol=2)
-# ax1.set_xlim(0,.6)
-ax1.set_xlabel(r'$b_0$ (Goldstein)')
+ax1.plot(np.array(b0_list), growth/convert, 'ko', 
+        markersize=7, markerfacecolor='none',label='sim.')
+# ax2 = ax1.twinx()
+ax1.plot(b0_theory[1:], gmax[1:], 'r-', label='theory')
+ax1.legend()
+ax1.set_xlim(0,.6)
+ax1.set_xlabel(r'$b_0$')
 ax1.set_ylabel(r'$\gamma_{max}/\omega_0$')
-
 # ax1.set_ylabel(r'analytical $\gamma_{max}$')
 # ax2.yaxis.label.set_color('r')
 # ax2.tick_params(axis='y',colors='r')
+"""
+
 plt.tight_layout()
 plt.show()
 

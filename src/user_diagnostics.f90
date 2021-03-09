@@ -11,6 +11,7 @@ subroutine user_diagnostics
     call virtual_probes2
   else
     call virtual_probes
+  endif
   call date_and_time(values=time_end_array(:,31))
   call accumulate_time_difference(time_begin_array(1,31),time_end_array(1,31),time_elapsed(31))
 
