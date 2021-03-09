@@ -493,8 +493,6 @@
       !VR this is not needed since we filled the map locally on each process
       ! call MPI_BCAST(idmap_yz,size(idmap_yz),MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
 
-
-
       !VR: output neigbor info for each process & idmap
       
       ! write(tmpfname,"(A,I0,A)") "neighbors.",myid,".dat"

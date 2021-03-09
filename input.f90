@@ -5,7 +5,7 @@ tmax=2000.0, ! max sim. time, in units of 1/wci
 t_begin=0.0, t_end=2000.0, 
 dtwci=0.01,  ! value of dt*wci
 restart=.false.,  ! whether to restart from 'restart' directory
-quota=24.0,  ! walltime quota?
+quota=24.0,  ! walltime quota (in unit of hours)
 MPI_IO_format = .true. ! use MPI IO instead of traditional binary output
 
 ! ------------------ simulation domain ----------------!

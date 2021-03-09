@@ -7,8 +7,10 @@
 subroutine user_diagnostics
   use parameter_mod, only: time_begin_array, time_end_array, time_elapsed, tracking_mpi
   call date_and_time(values=time_begin_array(:,31))
-  !call virtual_probes
-  call virtual_probes2
+  if (tracking_mpi) then
+    call virtual_probes2
+  else
+    call virtual_probes
   call date_and_time(values=time_end_array(:,31))
   call accumulate_time_difference(time_begin_array(1,31),time_end_array(1,31),time_elapsed(31))
 
@@ -62,7 +64,7 @@ subroutine virtual_probes
       enddo
     else
       ! send data to root 
-        call MPI_Send(buf, bufsize, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, ierr)
+      call MPI_Send(buf, bufsize, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, ierr)
     endif
   endif
 end subroutine virtual_probes
