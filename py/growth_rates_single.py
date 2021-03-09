@@ -68,35 +68,132 @@ def get_spectral_max(path, spec_rho, spec_rho_max, k_pos):
         k_pos[m]=f[np.argmax(F)]
     return (spec_rho, spec_rho_max, k_pos)
 
-path = 'test2'
+def get_spec(path, field_num, t):
+    data = read_sim_data(path)
+    idx = np.argmin(np.abs(times-t))
+    print (times[idx])
+    d = data[idx,:,field_num]
+    d = d.reshape(nz, ny).transpose()
+    mean = np.mean(d, axis=0)
+    if field_num==0: mean-=1.
+    f, F = FFT(z, mean)
+    return (f, F)
+
+
+def get_lineout(path, field_num, t):
+    data = read_sim_data(path)
+    idx = np.argmin(np.abs(times-t))
+    print (times[idx])
+    d = data[idx,:,field_num]
+    d = d.reshape(nz, ny).transpose()
+    mean = np.mean(d, axis=0)
+    if field_num==0: mean-=1.
+    return (mean)
+
+def get_spacetime(path, field_num):
+    data = read_sim_data(path)
+    spt = np.zeros((ndumps, nz))
+    for m in range(ndumps):
+        showProgressBar(ndumps-1, m)
+        d = data[m,:,field_num]
+        d = d.reshape(nz, ny).transpose()
+        mean = np.mean(d, axis=0)
+        if field_num==0: mean-=1.
+        spt[m,:] = mean
+    return (spt)
+
+
+# plot_type = 'growth_rates'
+# plot_type = 'space_time'; field_num=0
+# plot_type = 'lineout'; field_num=0; t=700
+# plot_type = 'lineouts'; field_num=1; tl=[380, 400, 420]
+plot_type = 'spec'; field_num=1; t=700; w0wci=24*twopi/224
+
+# path = 'test2'
 # path = '1d-resis0.1'
 # path = 'test-ppc64'
-# path = '1d-b0.01'
+# path = '1d-b0.1'
 # path = 'test-z2240'
-# path = 'h3d'
+path = '1d-lapd-w0.67-beta1e-4'
+# path = '1d-lapd-beta1e-4'
+# path = '1d-lapd-w0.67'
+# path = '1d-lapd'
+
 
 #            0      1      2    3     4     5     6       7        8
 field_list=['den', 'bx', 'by', 'bz', 'ex', 'ey', 'ez', 'tpar_1', 'tperp_1']
 
-load_input(path)
-spec_rho=np.zeros( (ndumps, int(nz/2)) )
-spec_rho_max =  np.zeros( ndumps )
-k_pos =  np.zeros( ndumps )
-spec_rho, spec_rho_max, k_pos = get_spectral_max(path, 
-                        spec_rho, spec_rho_max, k_pos)
+if plot_type == 'growth_rates':
+    load_input(path)
+    spec_rho=np.zeros( (ndumps, int(nz/2)) )
+    spec_rho_max =  np.zeros( ndumps )
+    k_pos =  np.zeros( ndumps )
+    spec_rho, spec_rho_max, k_pos = get_spectral_max(path, 
+                            spec_rho, spec_rho_max, k_pos)
+    fig, axes = plt.subplots(1,1, figsize=[5,3.8])
+    ax1=axes
+    ax1.semilogy(times, spec_rho_max, 'ko', markersize=3, 
+                markerfacecolor='none', label=r'$F_{max}$')
+    ax1.set_xlabel(r'$\omega_{ci}t$')
+    ax1.set_ylabel('Spectral max.')
+    # # exponential fit
+    # t0, t1 = 300., 700.
+    # id1, id2 = int(t0/(dt*nwrtdata)), int(t1/(dt*nwrtdata))
+    # pidx=np.polyfit(times[id1:id2],np.log(spec_rho_max[id1:id2]),1)
+    # yfit=np.exp(times[id1:id2]*pidx[0]+pidx[1])
+    # ax1.semilogy(times[id1:id2], yfit, 'r-', label=r'$F_{max}$')
+    plt.tight_layout()
+    plt.show()
 
-fig, axes = plt.subplots(1,1, figsize=[5,3.8])
-ax1=axes
-ax1.semilogy(times, spec_rho_max, 'ko', markersize=3, 
-            markerfacecolor='none', label=r'$F_{max}$')
-ax1.set_xlabel(r'$\omega_{ci}t$')
-ax1.set_ylabel('Spectral max.')
-# # exponential fit
-# t0, t1 = 300., 700.
-# id1, id2 = int(t0/(dt*nwrtdata)), int(t1/(dt*nwrtdata))
-# pidx=np.polyfit(times[id1:id2],np.log(spec_rho_max[id1:id2]),1)
-# yfit=np.exp(times[id1:id2]*pidx[0]+pidx[1])
-# ax1.semilogy(times[id1:id2], yfit, 'r-', label=r'$F_{max}$')
+elif plot_type == 'space_time':
+    spt = get_spacetime(path, field_num=field_num)
+    fig, axes = plt.subplots(1,1, figsize=[5,3.8])
+    ax1 = axes
+    im1 = ax1.imshow(spt, origin='lower', aspect='auto', cmap='jet',
+            extent=[z[0], z[-1], times[0], times[-1]])
+    plt.colorbar(im1, ax=ax1, pad=0.02, aspect=15)
+    ax1.set_ylabel(r'$\omega_{ci}t$')
+    ax1.set_xlabel(r'$z/d_i$')
+    # ax1.set_ylim(200, 600)
+    plt.tight_layout()
+    plt.show()
 
-plt.tight_layout()
-plt.show()
+elif plot_type=='lineout':
+    lout = get_lineout(path, field_num=field_num, t=700)
+    fig, axes = plt.subplots(1,1, figsize=[5,3.8])
+    ax1 = axes
+    ax1.plot(z, lout)
+    # ax1.set_ylabel(r'$\omega_{ci}t$')
+    ax1.set_xlabel(r'$z/d_i$')
+    plt.tight_layout()
+    plt.show()
+
+elif plot_type == 'lineouts':
+    fig, axes = plt.subplots(3,1, figsize=[5,4], sharex=True)
+    for i, t in enumerate(tl):
+        lout = get_lineout(path, field_num=field_num, t=t)
+        ax1 = axes[i]
+        ax1.plot(z, lout, label=r'$t=%.1f$'%t)
+        ax1.legend(loc='upper right')
+        if i==1: ax1.set_ylabel(r'$b_x$')
+    ax1.set_xlabel(r'$z/d_i$')
+    plt.tight_layout()
+    plt.show()
+
+elif plot_type =='spec':
+    f0, F0 = get_spec(path, field_num=field_num, t=0)
+    f, F = get_spec(path, field_num=field_num, t=t)
+    fig, axes = plt.subplots(1,1, figsize=[5,3.8])
+    ax1 = axes
+    ax1.plot(f0/w0wci*twopi, F0, 'k', label='t=0')
+    ax1.plot(f/w0wci*twopi, F, 'r', label='t=%.1f'%t)
+    ax1.legend(loc='upper right')
+    ax1.set_xlim(0,3) 
+    ax1.set_ylabel('Spec. Amp.')
+    ax1.set_xlabel(r'$k/k_0$')
+    plt.tight_layout()
+    plt.show()
+
+    
+
+

@@ -102,22 +102,48 @@ gmax=np.load('test/h3dtest-gmax.npy')
 b0_theory=np.load('test/h3dtest-b0.npy')
 from math import e
 convert=5*twopi/224
-# sim. zmax=224, resis=1e-6
-ax1.plot(np.array(b0_list)/np.sqrt(2), growth/convert, 'ko', 
-        markersize=7, markerfacecolor='none',label='sim, z=224, resis=1e-6')
-# sim. zmax=224, resis=0
-growth_resis0 = np.load('resis0/growth_resis0.npy')
-ax1.plot(np.array(b0_list2)/np.sqrt(2), growth_resis0/convert, 'kx', 
-        markersize=7, markerfacecolor='none',label='sim, z=224, resis=0')
-# sim. zmax=2240, resis=1e-6
-growth_z2240 = np.load('z2240/growth_z2240.npy')
-ax1.plot(np.array(b0_list2)/np.sqrt(2), growth_z2240/convert, 'kd', 
-        markersize=7, markerfacecolor='none',label='sim, z=2240, resis=1e-6')
+
+# ----------------- 
+# # sim. zmax=224, resis=1e-6
+# ax1.plot(np.array(b0_list), growth/convert, 'ko', 
+#         markersize=7, markerfacecolor='none',label=r'sim, z=224, $\omega_0/\omega_{ci}$=0.14')
+# # sim. zmax=224, w0/wci=0.67
+# growth_w067 = np.load('w0.67/growth_w0.67.npy')
+# ax1.plot(np.array(b0_list2), growth_w067/convert, 'bo', 
+#         markersize=7, markerfacecolor='none',label=r'sim, z=224, $\omega_0/\omega_{ci}$=0.67')
+
+#------------------------
+# # sim. zmax=224, resis=1e-6
+# ax1.plot(np.array(b0_list), growth/convert, 'ko', 
+#         markersize=7, markerfacecolor='none',label=r'sim, z=224, $\omega_0/\omega_{ci}$=0.14')
+# # sim. zmax=224, resis=0
+# growth_resis0 = np.load('resis0/growth_resis0.npy')
+# ax1.plot(np.array(b0_list2), growth_resis0/convert, 'kx', 
+#         markersize=7, markerfacecolor='none',label='sim, z=224, resis=0')
+# # sim. zmax=2240, resis=1e-6
+# growth_z2240 = np.load('z2240/growth_z2240.npy')
+# ax1.plot(np.array(b0_list2), growth_z2240/convert, 'kd', 
+#         markersize=7, markerfacecolor='none',label='sim, z=2240, resis=1e-6')
+
+#------------------------
+# sim. ppc=64
+growth_ppc64 = np.load('ppc64/growth_ppc64.npy')
+ax1.plot(np.array(b0_list2), growth_ppc64/convert, 'kd', 
+        markersize=7, markerfacecolor='none',label='sim, ppc=64')
+# sim. ppc=1000
+ax1.plot(np.array(b0_list), growth/convert, 'ko', 
+        markersize=7, markerfacecolor='none',label='sim, ppc=1000')
+# sim. ppc=1728
+growth_ppc1728 = np.load('ppc1728/growth_ppc1728.npy')
+ax1.plot(np.array(b0_list2), growth_ppc1728/convert, 'kx', 
+        markersize=7, markerfacecolor='none',label='sim, ppc=1728')
+
+
 # theory
 ax1.plot(b0_theory[1:], gmax[1:], 'r-', label='theory')
 ax1.legend()
-ax1.set_xlim(0,.4)
-ax1.set_xlabel(r'$b_0/\sqrt{2}=b_0^{theory}$')
+ax1.set_xlim(0,.6)
+ax1.set_xlabel(r'$b_0$ (Goldstein)')
 ax1.set_ylabel(r'$\gamma_{max}/\omega_0$')
 # ax1.set_ylabel(r'analytical $\gamma_{max}$')
 # ax2.yaxis.label.set_color('r')
