@@ -75,7 +75,7 @@ for k, b0 in enumerate(b0_list):
 #==========================================================#
 #>>   measured growth against theory
 #==========================================================#
-tends=np.array([[0,0],[0,0],[500,1000],[1000,1500]])
+tends=np.array([[500,1200],[200,550],[100,300],[0,150]])
 growth = np.zeros(len(b0_list))
 growth[:]=np.nan
 print ('plotting ...')
@@ -84,8 +84,7 @@ ax1=axes
 for i in range(len(b0_list)):
     line,= ax1.semilogy(times, spec_rho_max[:,i], 'o', markersize=3, 
                 markerfacecolor='none', label=r'$b_0=%s$'%b0_list[i])
-    ax1.set_xlabel(r'$\omega_{ci}t$')
-    ax1.set_ylabel('Spectral max.')
+    
     t0, t1 = tends[i,0], tends[i,1]
     if not (t0==0 and t1==0):
         print (b0_list[i])
@@ -97,6 +96,8 @@ for i in range(len(b0_list)):
     else:
         growth[i] = np.nan
 ax1.legend(loc='upper right')
+ax1.set_xlabel(r'$\omega_{ci}t$')
+ax1.set_ylabel(r'$F(\delta\rho)$')
 np.save('growth_rates.npy', growth)
 
 

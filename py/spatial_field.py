@@ -64,36 +64,51 @@ def read_sim_data(path):
     #     spec_rho_max[m,k] = F.max()
     #     k_pos[m,k]=f[np.argmax(F)]
 
-def get_field_mean(path, fieldname, t):
-    load_input(path)
-    idx = np.argmin(np.abs(times-t))
+def get_field_idx(fieldname):
+    idx=0
+    for i, field in enumerate(field_list):
+        if field==fieldname:
+            idx=i
+            break
+    return (idx)
+
+def get_field_mean(data, fieldname, idump):
+    d_ = data[idump,:,get_field_idx(fieldname)]
+    d_ = d_.reshape(nz,ny).transpose()
+    d = np.mean(d_, axis=0)
+    return (d)
+
+def get_spectral_max(path, spec, spec_max, k_pos):
     data = read_sim_data(path)
-    d_ = data[idx,:,]
+    for m in range(ndumps):
+        ex = get_field_mean(data, 'ex', m)
+        by = get_field_mean(data, 'by', m)
+        # RX = 0.5*(ex+by)
+        LX = 0.5*(ex-by)
+        f, F = FFT(z, LX)
+        spec[m,:] = F
+        spec_max[m] = F.max()
+        k_pos[m] = f[np.argmax(F)]
+    return (spec, spec_max, k_pos)
 
 
 
 #            0      1      2    3     4     5     6       7        8
 field_list=['den', 'bx', 'by', 'bz', 'ex', 'ey', 'ez', 'tpar_1', 'tperp_1']
 
-plot_type = 'snaptshot'
+# plot_type = 'snapshot'
+plot_type = 'growth'
+
+path='1d-b0.1'; t=100
+load_input(path)
+w0wci = 5*twopi/224
+coeff = twopi/w0wci
 
 if plot_type=='snapshot':
-    path='1d-b0.1'
-    load_input(path)
-    t=100
-    idx = np.argmin(np.abs(times-t))
-    data = read_sim_data(path)
-    ex_ = data[idx,:,4]
-    ex_ = ex_.reshape(nz,ny).transpose()
-    ex = np.mean(ex_,axis=0)
-    by_ = data[idx,:,2]
-    by_ = by_.reshape(nz,ny).transpose()
-    by = np.mean(by_,axis=0)
+    ex = get_field_mean(path, 'ex', t)
+    by = get_field_mean(path, 'by', t)
     RX = 0.5*(ex+by)
     LX = 0.5*(ex-by)
-
-    w0wci=5*twopi/224
-    coeff = twopi/w0wci
 
     print ('plotting ...')
     fig, axes = plt.subplots(3,2, figsize=[9,5.5],)#sharex=True)
@@ -132,6 +147,47 @@ if plot_type=='snapshot':
     # ax1.plot(f*coeff, F)
     ax1.set_xlim(0,2)
     ax1.set_xlabel(r'$k/k_0$')
+
+    plt.tight_layout()
+    plt.show()
+
+elif plot_type == 'growth':
+    b0_list = [0.05, 0.1, 0.2, 0.5]
+
+    tends=np.array([[800,1300],[350,550],[200,300],[100,200]])
+    growth = np.zeros(len(b0_list))
+    growth[:]=np.nan
+
+    fig, axes = plt.subplots(1,1, figsize=[5,3.8])
+    ax1=axes
+
+    for i, b0 in enumerate(b0_list):
+        path = '1d-b%s'%b0
+        load_input(path)
+        spec = np.zeros( (ndumps, int(nz/2)) )
+        spec_max =  np.zeros( ndumps )
+        k_pos =  np.zeros( ndumps )
+        spec, spec_max, k_pos = get_spectral_max(path, 
+                                spec, spec_max, k_pos)
+        line, = ax1.semilogy(times, spec_max, 'o', markersize=3, 
+                markerfacecolor='none', label=r'$b_0=%s$'%b0_list[i])
+        
+        t0, t1 = tends[i,0], tends[i,1]
+        if not (t0==0 and t1==0):
+            id1, id2 = int(t0/(dt*nwrtdata)), int(t1/(dt*nwrtdata))
+            pidx=np.polyfit(times[id1:id2],np.log(spec_max[id1:id2]),1)
+            yfit=np.exp(times[id1:id2]*pidx[0]+pidx[1])
+            growth[i] = pidx[0]
+            ax1.semilogy(times[id1:id2], yfit, '-', color=line.get_color())
+        else:
+            growth[i] = np.nan
+
+
+    ax1.legend()
+    ax1.set_xlabel(r'$\omega_{ci}t$')
+    ax1.set_ylabel(r'$F(L_x)$')
+
+    np.save('growth_rates_Lx.npy', growth)
 
     plt.tight_layout()
     plt.show()

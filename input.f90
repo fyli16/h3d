@@ -15,7 +15,7 @@ npx=10, npy=40, npz=2240,  ! number of particles along each dim over full length
 
 ! number of nodes (cores) along y, z; (no decompostion along x)
 ! make sure npy, npz can be divided by nodey, nodez, respectively
-nodey=2, nodez=28  
+nodey=2, nodez=32  
 
 ! boundaries of the uniform region
 ! setting xbb/ybb/zbb to xmax/ymax/zmax would leave only the uniform region to be simulated

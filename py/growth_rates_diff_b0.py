@@ -81,7 +81,7 @@ tends=np.array([[0,0],[0,0],[500,1200],[200,550],[100,300],[0,150]])
 growth = np.zeros(len(b0_list))
 growth[:]=np.nan
 print ('plotting ...')
-fig, axes = plt.subplots(1,2, figsize=[10,4.5])
+fig, axes = plt.subplots(1,2, figsize=[10,4.2])
 ax1=axes[0]
 for i in range(len(b0_list)):
     line,= ax1.semilogy(times, spec_rho_max[:,i], 'o', markersize=3, 
@@ -106,41 +106,52 @@ from math import e
 convert=5*twopi/224
 
 # ----------------- 
-# sim. beta=0.0001
-growth_ = np.load('beta/beta-0.0001/growth_rates.npy')
-ax1.plot(np.array(b0_list3), growth_/convert, 'x', 
-        markersize=7, markerfacecolor='none',
-          label=r'sim, $\beta=$'+str(0.0001))
-# sim. beta=0.001
-growth_ = np.load('beta/beta-0.001/growth_rates.npy')
-ax1.plot(np.array(b0_list2), growth_/convert, 'o', 
-        markersize=7, markerfacecolor='none',
-          label=r'sim, $\beta=$'+str(0.001))
-# sim. beta=0.01
-ax1.plot(np.array(b0_list), growth/convert, 'o', 
-        markersize=7, markerfacecolor='none',
-         label=r'sim, $\beta=$'+str(0.01))
-# sim. beta=0.1
-growth = np.load('beta/beta-0.1/growth_rates.npy')
-ax1.plot(np.array(b0_list2), growth/convert, 'x', 
-        markersize=7, markerfacecolor='none',
-          label=r'sim, $\beta=$'+str(0.1))
-# sim. beta=1
-growth = np.load('beta/beta-1/growth_rates.npy')
-ax1.plot(np.array(b0_list2), growth/convert, 's', 
-        markersize=7, markerfacecolor='none',
-          label=r'sim, $\beta=$'+str(1))
-# sim. beta=1.5
-growth = np.load('beta/beta-1.5/growth_rates.npy')
-ax1.plot(np.array(b0_list2), growth/convert, 'd', 
-        markersize=7, markerfacecolor='none',
-          label=r'sim, $\beta=$'+str(1.5))
-# sim. beta=3
-growth = np.load('beta/beta-3/growth_rates.npy')
-ax1.plot(np.array(b0_list2), growth/convert, 'o', 
-        markersize=7, markerfacecolor='none',
-          label=r'sim, $\beta=$'+str(3))
+# # sim. beta=0.0001
+# growth_ = np.load('beta/beta-0.0001/growth_rates.npy')
+# ax1.plot(np.array(b0_list3), growth_/convert, 'x', 
+#         markersize=7, markerfacecolor='none',
+#           label=r'sim, $\beta=$'+str(0.0001))
+# # sim. beta=0.001
+# growth_ = np.load('beta/beta-0.001/growth_rates.npy')
+# ax1.plot(np.array(b0_list2), growth_/convert, 'o', 
+#         markersize=7, markerfacecolor='none',
+#           label=r'sim, $\beta=$'+str(0.001))
+# # sim. beta=0.01
+# ax1.plot(np.array(b0_list), growth/convert, 'o', 
+#         markersize=7, markerfacecolor='none',
+#          label=r'sim, $\beta=$'+str(0.01))
+# # sim. beta=0.1
+# growth = np.load('beta/beta-0.1/growth_rates.npy')
+# ax1.plot(np.array(b0_list2), growth/convert, 'x', 
+#         markersize=7, markerfacecolor='none',
+#           label=r'sim, $\beta=$'+str(0.1))
+# # sim. beta=1
+# growth = np.load('beta/beta-1/growth_rates.npy')
+# ax1.plot(np.array(b0_list2), growth/convert, 's', 
+#         markersize=7, markerfacecolor='none',
+#           label=r'sim, $\beta=$'+str(1))
+# # sim. beta=1.5
+# growth = np.load('beta/beta-1.5/growth_rates.npy')
+# ax1.plot(np.array(b0_list2), growth/convert, 'd', 
+#         markersize=7, markerfacecolor='none',
+#           label=r'sim, $\beta=$'+str(1.5))
+# # sim. beta=3
+# growth = np.load('beta/beta-3/growth_rates.npy')
+# ax1.plot(np.array(b0_list2), growth/convert, 'o', 
+#         markersize=7, markerfacecolor='none',
+#           label=r'sim, $\beta=$'+str(3))
 
+
+# ----------------- 
+# sim. using rho
+ax1.plot(np.array(b0_list), growth/convert, 'ko', 
+        markersize=7, markerfacecolor='none',
+         label=r'sim, using $\delta\rho$')
+# sim. zmax=224, w0/wci=0.67
+growth = np.load('base-old/growth_rates_Lx.npy')
+ax1.plot(np.array(b0_list2), growth/convert, 'bx', 
+        markersize=7, markerfacecolor='none',
+          label=r'sim, using $L_x$')
 
 
 # ----------------- 
@@ -185,8 +196,8 @@ ax1.plot(np.array(b0_list2), growth/convert, 'o',
 
 
 # # theory
-# ax1.plot(b0_theory[1:], gmax_theory[1:], 'r-', label='theory')
-ax1.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=2, ncol=2)
+ax1.plot(b0_theory[1:], gmax_theory[1:], 'r-', label='theory')
+ax1.legend(bbox_to_anchor=(0., 1), loc=2, ncol=2)
 # ax1.set_xlim(0,.6)
 ax1.set_xlabel(r'$b_0$ (Goldstein)')
 ax1.set_ylabel(r'$\gamma_{max}/\omega_0$')

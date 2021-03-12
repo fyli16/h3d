@@ -84,7 +84,7 @@ field_list=['den', 'bx', 'by', 'bz', 'ex', 'ey', 'ez', 'tpar_1', 'tperp_1']
 fig, axes = plt.subplots(1,1, figsize=[5,3.8])
 ax1=axes
 
-for i, b0 in enumerate(b0_list):
+for i, b0 in enumerate(b0_list2):
     path = '1d-b%s'%b0
     print(path)
     load_input(path)
@@ -94,10 +94,10 @@ for i, b0 in enumerate(b0_list):
     spec_rho, spec_rho_max, k_pos = get_spectral_max(path, 
                             spec_rho, spec_rho_max, k_pos)
     ax1.semilogy(times, spec_rho_max, 'o', markersize=3, 
-                markerfacecolor='none', label=r'$b_0=%s$'%b0_list[i])
+                markerfacecolor='none', label=r'$b_0=%s$'%b0_list2[i])
 ax1.legend()
 ax1.set_xlabel(r'$\omega_{ci}t$')
-ax1.set_ylabel('Spectral max.')
+ax1.set_ylabel(r'$F(\delta\rho)$')
 
 # # exponential fit
 # t0, t1 = 300., 700.
