@@ -36,7 +36,8 @@ OBJS =  parameter_mod.of90 \
 		field_2d.of90 \
 		etacal.of90 \
 		etacal_2d.of90\
-		inject_wave.of90
+		inject_wave.of90\
+		read_input.of90
 $(EFILE): $(OBJS)
 	@echo "linking..."
 	$(F90) $(OPTFLAGS2) -o $(EFILE) $(OBJS) $(LIBS)
