@@ -1,5 +1,7 @@
 # A hybrid 3D code for studying plasma physics
 
 ```math
-\sqrt{x}+y^3=1
+\gamma=\gamma_0+\gamma_1\sin^2\theta,\\
+\gamma_0=\gamma_{min},\\
+\gamma_1=\gamma_{max}-\gamma_{min},
 ```
