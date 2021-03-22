@@ -19,7 +19,7 @@
       integer*8 i,irecnum,ixe,iye,ize,j,jbt,jet,k,kbt,ket,nplmax6, &
                 nwrtparticle,nwrtrestart,nyl,nzl,numvars
       double precision rnorm,pifac
-      integer*4:: time_begin(8),time_end(8),input_error,is
+      integer*4:: time_begin(8),time_end(8),is
       integer*8  itstart, itfinish
       double precision :: clock_time_re1
       double precision, dimension(:,:,:), allocatable:: uniform_mesh      

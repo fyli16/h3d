@@ -1,6 +1,7 @@
 module read_input
   use parameter_mod
   implicit none
+  integer*4:: input_error
 
   contains
     subroutine init_input()
