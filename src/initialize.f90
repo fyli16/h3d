@@ -174,7 +174,6 @@ module initialize
         write(6,*) "*** NEW RUN "
       endif
     endif 
-
   end subroutine read_input
 
 end module initialize
