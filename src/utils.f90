@@ -466,7 +466,8 @@ end subroutine accumulate_time_difference
       link(nplmax)=0
       return
     end subroutine makelist
-!
+
+    
 !***********************************************************************
 !>    domain decompostion util: splits n elements between numprocs processors
 !!    @param n number of elements
@@ -475,7 +476,7 @@ end subroutine accumulate_time_difference
 !***********************************************************************
       subroutine MPE_DECOMP1D( n, numprocs, myid, s, e )
       implicit none  
-      integer   numprocs,myid
+      integer   numprocs, myid
       integer*8 n
       integer*8 s, e
       integer*8 nlocal
@@ -490,10 +491,10 @@ end subroutine accumulate_time_difference
       endif
       e = s + nlocal - 1
       if (e  >  n .or. myid  ==  numprocs-1) e = n
- 
- 
       return
     end subroutine MPE_DECOMP1D
+
+
 !************************************************************************
 !************************************************************************
       subroutine get_cleanup_status(maxchar)

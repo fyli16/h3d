@@ -1,11 +1,11 @@
-module MESH2D
+module mesh2d
   use MESH_CLASS
   type(MESH) :: meshX, meshY, meshZ
 contains
 !=======================================================================!
       subroutine MESH_INTERPOLATED_3D(nonuniform_mesh,uniform_mesh,nonuniform_mesh_global)
       use parameter_mod
-!      use MESH2D
+!      use mesh2d
       implicit none
 
       double precision:: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,w1,w2,w3,w4,w5,w6,w7,w8
@@ -98,4 +98,4 @@ contains
 
       return
     end subroutine MESH_INTERPOLATED_3D
-end module MESH2D
+end module mesh2d

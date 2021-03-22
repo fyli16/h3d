@@ -8,15 +8,15 @@
 !                                                                          *
 !***************************************************************************
 
-    program H3D 
+    program h3d 
 
       use parameter_mod
       use functions_f90
-      use MESH2D
+      use mesh2d
 
       implicit none
-      integer*8 i,irecnum,ixe,iye,ize,j,jbt,jet,k,kbt,ket,nplmax6    &
-       ,nwrtparticle,nwrtrestart,nyl,nzl,numvars
+      integer*8 i,irecnum,ixe,iye,ize,j,jbt,jet,k,kbt,ket,nplmax6, &
+                nwrtparticle,nwrtrestart,nyl,nzl,numvars
       double precision rnorm,pifac
       integer*4:: time_begin(8),time_end(8),input_error,is
       integer*8  itstart, itfinish
@@ -75,21 +75,21 @@
       initial_time = MPI_Wtime()
 
       ! get the i/o directory names from the environment variable
-      call get_environment_variable1(data_directory,len(data_directory))
-        data_directory=trim(adjustl(data_directory))//'/'
-      call get_environment_variable2(restart_directory,len(restart_directory))
-      restart_directory=trim(adjustl(restart_directory))//'/'
-      restart_index_suffix(1)='.1'
-      restart_index_suffix(2)='.2'
+      call get_environment_variable1(data_directory, len(data_directory))
+      data_directory = trim(adjustl(data_directory))//'/'
+      call get_environment_variable2(restart_directory, len(restart_directory))
+      restart_directory = trim(adjustl(restart_directory))//'/'
+      restart_index_suffix(1) = '.1'
+      restart_index_suffix(2) = '.2'
 
       my_short_int = myid
-      call integer_to_character(myid_char,len(myid_char),my_short_int)
+      call integer_to_character(myid_char,len(myid_char), my_short_int)
       if (myid_char == '') myid_char='0'
 
       ! read input deck
       if (myid == 0) then
-         open(5,file='input.f90',form='formatted',status='old')
-         read(5,nml=datum,iostat=input_error)
+         open(5, file='input.f90', form='formatted', status='old')
+         read(5, nml=datum, iostat=input_error)
          write(6, datum)
       endif
       iwt=0; t_stopped=0. ! set default values
@@ -225,23 +225,29 @@
       !    call MPI_FINALIZE(IERR)
       !    STOP         
       ! endif
-      PERIODS = .TRUE. 
-      REORDER = .TRUE.
-      call MPI_DIMS_CREATE(NUMPROCS,NDIM,DIMS,IERR)
+
+      call MPI_DIMS_CREATE(NUMPROCS, NDIM, DIMS, IERR)
 
       ! now npy means number of particles in each core along y
-      npy=npy/dims(1)
-      npz=npz/dims(2)
+      npy = npy/dims(1)
+      npz = npz/dims(2)
       if (myid == 0) then
         do i=1,ndim
           write(6,*) "DIMENSION = ", i, " DIMS = ",dims(i)
         enddo
       endif
-      call MPI_CART_CREATE(MPI_COMM_WORLD,NDIM,DIMS,PERIODS,REORDER,COMM2D,IERR)
-      call MPI_COMM_RANK(COMM2D,MYID,IERR)
-      call MPI_CART_GET(COMM2D,NDIM,DIMS,PERIODS,COORDS,IERR)
-      call MPE_DECOMP1D(NZ,DIMS(2),COORDS(2),KB,KE)
-      call MPE_DECOMP1D(NY,DIMS(1),COORDS(1),JB,JE)
+
+      PERIODS = .TRUE. ! logical array of size ndims specifying whether the grid is periodic (true) or not (false) in each dimension
+      REORDER = .TRUE. ! ranking may be reordered (true) or not (false) (logical)
+      ! Makes a new communicator to which topology information has been attached
+      call MPI_CART_CREATE(MPI_COMM_WORLD, NDIM, DIMS, PERIODS, REORDER, COMM2D, IERR) 
+      ! Determines the rank of the calling process in the communicator
+      call MPI_COMM_RANK(COMM2D, MYID, IERR)
+      ! Retrieves Cartesian topology information associated with a communicator
+      call MPI_CART_GET(COMM2D, NDIM, DIMS, PERIODS, COORDS, IERR)
+      ! splits N elements between numprocs processors
+      call MPE_DECOMP1D(NZ, DIMS(2), COORDS(2), KB, KE)
+      call MPE_DECOMP1D(NY, DIMS(1), COORDS(1), JB, JE)
       ! print domain decomposition info
       ! write(*,*)'myid=',myid,'jb,je',jb,je,'kb,ke=',kb,ke
       nspecm = nspec
@@ -1202,7 +1208,7 @@
 
       call MPI_FINALIZE(IERR)
       stop
-    end program H3D
+    end program h3d
 
 
 !-----------------------------------------------------------------
