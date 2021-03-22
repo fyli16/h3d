@@ -60,8 +60,8 @@ integer*8:: nax,nbx,nay,nby,naz,nbz
 integer*8, dimension(8) :: wall_clock_begin,wall_clock_end
 integer*8:: eta_par,nparbuf
 integer*8, dimension(5) ::  npx,npy,npz
-integer*8 :: iterb,norbskip,restrt_write,nxcel,netax,netay,netaz,nspec,nx,ny,nz,nprint,nwrtdata &
-     ,nskipx,nskipy,nskipz
+integer*8 :: iterb,norbskip,restrt_write,nxcel,netax,netay,netaz,nspec,nx,ny,nz,nprint, &
+          nwrtdata, nwrtparticle, nwrtrestart, nskipx,nskipy,nskipz
 double precision:: etamin,etamax,moat_zone
 integer*8:: ieta,profile_power
 logical :: testorbt,restart,setup_mesh,uniform_loading_in_logical_grid,MPI_IO_format,smoothing

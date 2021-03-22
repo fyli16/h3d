@@ -16,8 +16,7 @@
       use read_input
 
       implicit none
-      integer*8 i,irecnum,ixe,iye,ize,j,jbt,jet,k,kbt,ket,nplmax6, &
-                nwrtparticle,nwrtrestart,nyl,nzl,numvars
+      integer*8 i,irecnum,ixe,iye,ize,j,jbt,jet,k,kbt,ket,nplmax6,nyl,nzl,numvars
       double precision rnorm,pifac
       integer*4:: time_begin(8),time_end(8),is
       integer*8  itstart, itfinish
