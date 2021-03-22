@@ -1,7 +1,7 @@
 #!/bin/tcsh
 
-# module purge PrgEnv-intel
-# module load PrgEnv-gnu openmpi
+module purge PrgEnv-intel
+module load PrgEnv-gnu openmpi
 # echo ""
 # echo "#--------------------- compling --------------------#"
 # make
