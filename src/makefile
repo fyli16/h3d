@@ -28,7 +28,7 @@ OBJS =  parameter_mod.of90 \
 		wrtfile.of90 \
 		wrtfile_Non_MPIO.of90\
 		user_diagnostics.of90\
-		read_input.of90\
+		initialize.of90\
 		3dHybrid.of90 \
 		get_environment_variable1.ogcc \
 		get_environment_variable2.ogcc \

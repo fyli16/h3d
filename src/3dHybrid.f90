@@ -13,7 +13,7 @@
       use parameter_mod
       use functions_f90
       use mesh2d
-      use read_input
+      use initialize
 
       implicit none
       integer*8 i,irecnum,ixe,iye,ize,j,jbt,jet,k,kbt,ket,nplmax6,nyl,nzl,numvars
@@ -32,18 +32,7 @@
       character(len=1024):: eStr
       external get_environment_variable
 
-      call init_input()
-      
-      ! The unit of dt is 1/wci in input file, but converted to 1/wpi here
-      dt = dtwci * wpiwci
-
-      if (myid==0) then
-        if (restart) then
-          write(6,*) "*** RUN IS RESTARTED FROM "//trim(adjustl(restart_directory))
-        else
-          write(6,*) "*** NEW RUN "
-        endif
-      endif 
+      call read_input()
 
       ! field subcycling
       ! n_subcycles=max(n_subcycles,1_8)
