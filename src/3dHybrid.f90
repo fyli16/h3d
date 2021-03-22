@@ -212,9 +212,9 @@
         write(6,*) "Total number of processors = ",NUMPROCS
       endif
       ! specify decomposition (along y, z only; no decomposition along x) 
-      ndim=2
-      dims(1)=nodey
-      dims(2)=nodez
+      ndim = 2
+      dims(1) = nodey
+      dims(2) = nodez
       ! if (ndim /= 2) then
       !    if (myid==0) then
       !       print *,"*************************************************************************"
