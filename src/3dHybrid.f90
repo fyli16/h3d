@@ -22,8 +22,7 @@
       integer*8  itstart, itfinish
       double precision :: clock_time_re1
       double precision, dimension(:,:,:), allocatable:: uniform_mesh      
-      !VR : allocating a global mesh can not work on large runs with small
-      !VR : amount of memory per rank
+      !VR : allocating a global mesh can not work on large runs with small amount of memory per rank
       !VR : double precision, dimension(:,:,:), allocatable:: nonuniform_mesh_global
       character (len=240):: filename, filename2
       character(len=128):: tmpfname
@@ -81,7 +80,7 @@
       call MPE_DECOMP1D(NZ, DIMS(2), COORDS(2), KB, KE)
       call MPE_DECOMP1D(NY, DIMS(1), COORDS(1), JB, JE)
       ! print domain decomposition info
-      ! write(*,*)'myid=',myid,'jb,je',jb,je,'kb,ke=',kb,ke
+      write(*,*) 'myid=', myid, 'jb, je =', jb, je, 'kb, ke = ',kb, ke
       nspecm = nspec
       nxmax  = nx+2
       nymax  = ny+2
@@ -94,8 +93,7 @@
          qleft(is)=0
          qrite(is)=0
       enddo
-
-      if (MYID == 0) then
+      if (myid == 0) then
         write(6,*) "LOCAL ARRAY SIZE IN Y-DIRECTION = ",JE-JB+1
         write(6,*) "LOCAL ARRAY SIZE IN Z-DIRECTION = ",KE-KB+1
       endif
@@ -663,9 +661,9 @@
       it = itstart
       time_elapsed=0.;time_begin_array=0;time_end_array=0
 
-      !---------------------------------------------------------
-      !         start of main time loop
-      !---------------------------------------------------------
+      !#########################################################
+      !>>         start of main time loop
+      !#########################################################
       do while(it <= itfinish)
         call get_cleanup_status(len(cleanup_status))
 
@@ -947,9 +945,9 @@
         !  ENDIF
 
       enddo  
-      !---------------------------------------------------------
-      !         end of main time loop
-      !---------------------------------------------------------
+      !#########################################################
+      !>>         end of main time loop
+      !#########################################################
 
       if (myid == 0) then
         close(unit=11)

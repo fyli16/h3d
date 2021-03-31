@@ -69,7 +69,7 @@ end subroutine nsmth
 !********************************************************
 subroutine sortit
   use parameter_mod
-  use MESH2D
+  use mesh2d
   implicit none
   double precision pstore(nplmax)
   integer pstore2(nplmax)
@@ -264,7 +264,6 @@ subroutine energy
   v2=0.
 
   ! particle energy calculation -- works for 3D only !!!
-
   dtxi = 1./meshX%dt
   dtyi = 1./meshY%dt
   dtzi = 1./meshZ%dt
