@@ -447,6 +447,7 @@
 
 
       double precision function fmaxwell(vx,vy,vthe)
+      use parameter_mod
       implicit none
       double precision :: vx, vy, vthe
       fmaxwell=exp(-(vx**2+vy**2)/(2.*vthe**2))/(twopi*vthe**2)
@@ -464,7 +465,7 @@
       use gser_mod
       use gcf_mod
       DOUBLE PRECISION a,gammp,x
-!U    USES gcf,gser
+! U    USES gcf,gser
       DOUBLE PRECISION gammcf,gamser,gln
       if(x.lt.0..or.a.le.0.) stop 'bad arguments in gammp'
       if(x.lt.a+1.)then
