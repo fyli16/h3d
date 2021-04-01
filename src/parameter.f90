@@ -110,15 +110,23 @@ subroutine set_parameters(numprocs)
      single_prec = 0.
      inquire (IOLENGTH=recl_for_double_precision) double_prec
      inquire (IOLENGTH=recl_for_real) single_prec
+
+     nspecm = nspec  ! nspecm is just a mirror of nspec
+     nxmax  = nx + 2  
+     nymax  = ny + 2
+     nzmax  = nz + 2
+     nylmax = je - jb + 1  ! max of local array size in y
+     nzlmax = ke - kb + 1  ! max of local array size in z
      nparbuf = nxmax*(nylmax+2)*(nzlmax+2)
-     npes = numprocs  ! neps is a copy of numprocs
+     npes = numprocs  ! npes is a copy of numprocs
      npes_over_60 = npes / 512
+
      ! count particle storage requirement
      nplmax = 0
      do is = 1, nspec
           nplmax=nplmax+npx(is)*npy(is)*npz(is)
      enddo
-     nplmax = 5*nplmax       ! pad storage requirement by factor of 2 
+     nplmax = 5*nplmax  ! pad storage requirement by factor of 2 
      maxtags_pe = maxtags/npes/nspec
      if (maxtags_pe==0) then
           maxtags_pe = 1 ! at least tracking one particle per species per pe
