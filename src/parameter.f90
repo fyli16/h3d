@@ -96,7 +96,7 @@ integer*8 :: recl_for_real, recl_for_double_precision
 logical :: periods(2), reorder
 integer*8 :: restart_index
 character(len=2) :: restart_index_suffix(2)
-character(len=160) :: data_directory, restart_directory, cycle_ascii_new, myid_char,
+character(len=160) :: data_directory, restart_directory, cycle_ascii_new, myid_char
 character(len=160) :: cycle_ascii,cleanup_status
 real(kind=8) :: dB_B0, num_cycles ! for init_wave
 
