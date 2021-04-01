@@ -4,6 +4,24 @@ module initialize
   integer*4:: input_error
 
   contains
+  subroutine init_mpi()
+    ! MPI initialization
+    call MPI_INIT(IERR)
+    call MPI_COMM_SIZE(MPI_COMM_WORLD,NUMPROCS,IERR)
+    call MPI_COMM_RANK(MPI_COMM_WORLD,MYID,IERR)
+    if (myid==0) then
+      write(6,*) "Total number of processors = ", numprocs
+    endif
+
+    ! get_simulation_id
+    ! if (myid==0) call get_sim_id(sim_id)
+
+    ! time stamp
+    !  call date_and_time(values=wall_clock_begin)
+    initial_time = MPI_Wtime()
+  end subroutine init_mpi
+
+
   subroutine read_input()
     namelist /datum/ &
     ! global simulation info
@@ -34,18 +52,6 @@ module initialize
     buffer_zone=0.  ! set to 0 anyway despite contained in input
     notime=1 ! notime=0 will output detailed timing
     !tracking_binary=.false.
-
-    ! MPI initialization
-    call MPI_INIT(IERR)
-    call MPI_COMM_SIZE(MPI_COMM_WORLD,NUMPROCS,IERR)
-    call MPI_COMM_RANK(MPI_COMM_WORLD,MYID,IERR)
-
-    ! get_simulation_id
-    ! if (myid==0) call get_sim_id(sim_id)
-
-    ! time stamp
-    !  call date_and_time(values=wall_clock_begin)
-    initial_time = MPI_Wtime()
 
     ! get the i/o directory names from the environment variable
     call get_environment_variable1(data_directory, len(data_directory))
@@ -166,6 +172,8 @@ module initialize
 
     ! The unit of dt is 1/wci in input file, but converted to 1/wpi here
     dt = dtwci * wpiwci
+    ! field subcycling
+    ! n_subcycles=max(n_subcycles,1_8)
 
     if (myid==0) then
       if (restart) then
@@ -175,5 +183,37 @@ module initialize
       endif
     endif 
   end subroutine read_input
+
+
+  subroutine mpi_decomposition()
+    ! set MPI Cartesian geometry, define stride vector types, obtain new
+    ! ID for the processors, perform 2D decomposition of the
+    ! computational mesh, and find nearest neighbors (in y and z directions)
+    ! specify decomposition (along y, z only; no decomposition along x) 
+    ndim = 2
+    dims(1) = nodey
+    dims(2) = nodez
+    ! if (ndim /= 2) then
+    !    if (myid==0) then
+    !       print *,"*************************************************************************"
+    !       print *," ERROR: FIELD SOLVER HAS NOT BEEN MODIFIED FOR PERIODIC B.C. in 1D and 2D"
+    !       print *,"                            H3D TERMINATING                              "
+    !       print *,"*************************************************************************"
+    !    endif
+    !    call MPI_FINALIZE(IERR)
+    !    STOP         
+    ! endif
+
+    call MPI_DIMS_CREATE(NUMPROCS, NDIM, DIMS, IERR)
+
+    ! now npy means number of particles in each core along y
+    npy = npy/dims(1)
+    npz = npz/dims(2)
+    if (myid == 0) then
+      do i=1,ndim
+        write(6,*) "DIMENSION = ", i, " DIMS = ",dims(i)
+      enddo
+    endif
+  end subroutine mpi_decomposition
 
 end module initialize

@@ -496,11 +496,11 @@
       if (myid == 0) write(6,*) " BEFORE FIELD (CALLED BY INIT)"
       if (.not.testorbt) then
           do field_subcycle=1,n_subcycles
-          if (ndim /= 1) then
-            call field
-          else
-            call field_2d
-          endif
+            if (ndim /= 1) then
+              call field
+            else
+              call field_2d
+            endif
           enddo
       endif
 

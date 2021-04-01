@@ -31,43 +31,10 @@
       character(len=1024) :: eStr
       external get_environment_variable
 
+      call init_mpi()
       call read_input()
-
-      ! field subcycling
-      ! n_subcycles=max(n_subcycles,1_8)
-
-      ! set MPI Cartesian geometry, define stride vector types, obtain new
-      ! ID for the processors, perform 2D decomposition of the
-      ! computational mesh, and find nearest neighbors (in y and z directions)
-      if (myid==0) then
-        write(6,*) "Total number of processors = ",NUMPROCS
-      endif
-      ! specify decomposition (along y, z only; no decomposition along x) 
-      ndim = 2
-      dims(1) = nodey
-      dims(2) = nodez
-      ! if (ndim /= 2) then
-      !    if (myid==0) then
-      !       print *,"*************************************************************************"
-      !       print *," ERROR: FIELD SOLVER HAS NOT BEEN MODIFIED FOR PERIODIC B.C. in 1D and 2D"
-      !       print *,"                            H3D TERMINATING                              "
-      !       print *,"*************************************************************************"
-      !    endif
-      !    call MPI_FINALIZE(IERR)
-      !    STOP         
-      ! endif
-
-      call MPI_DIMS_CREATE(NUMPROCS, NDIM, DIMS, IERR)
-
-      ! now npy means number of particles in each core along y
-      npy = npy/dims(1)
-      npz = npz/dims(2)
-      if (myid == 0) then
-        do i=1,ndim
-          write(6,*) "DIMENSION = ", i, " DIMS = ",dims(i)
-        enddo
-      endif
-
+      call mpi_decomposition()
+    
       PERIODS = .TRUE. ! logical array of size ndims specifying whether the grid is periodic (true) or not (false) in each dimension
       REORDER = .TRUE. ! ranking may be reordered (true) or not (false) (logical)
       ! Makes a new communicator to which topology information has been attached
