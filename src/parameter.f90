@@ -121,16 +121,16 @@ subroutine set_parameters()
      npes = numprocs  ! npes is a copy of numprocs
      npes_over_60 = npes / 512  ! if numprocs > 512
 
-     myid_stop(myid) = 0 
-     do is = 1, nspecm
-     qleft(is) = 0
-     qrite(is) = 0
+     do i = 1, nspecm
+          qleft(i) = 0
+          qrite(i) = 0
      enddo
      if (myid == 0) then
-     write(6,*) "LOCAL ARRAY SIZE IN Y-DIRECTION = ", nylmax
-     write(6,*) "LOCAL ARRAY SIZE IN Z-DIRECTION = ", nzlmax
+          write(6,*) "LOCAL ARRAY SIZE IN Y-DIRECTION = ", nylmax
+          write(6,*) "LOCAL ARRAY SIZE IN Z-DIRECTION = ", nzlmax
      endif
 
+     myid_stop(myid) = 0  
      ! if (nzlmax < ke-kb+1) then
      !      print*, 'myid = ', myid, ' nzlmax less than ke-kb+1'
      !      print*, 'myid = ', myid, ' nzlmax, ke, kb= ', nzlmax, ke, kb
