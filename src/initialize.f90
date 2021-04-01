@@ -186,6 +186,9 @@ module initialize
 
 
   subroutine mpi_decomposition()
+    implicit none
+    integer :: i
+    
     ! set MPI Cartesian geometry, define stride vector types, obtain new
     ! ID for the processors, perform 2D decomposition of the
     ! computational mesh, and find nearest neighbors (in y and z directions)
