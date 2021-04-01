@@ -16,19 +16,19 @@
       use initialize
 
       implicit none
-      integer*8 i,irecnum,ixe,iye,ize,j,jbt,jet,k,kbt,ket,nplmax6,nyl,nzl,numvars
+      integer*8 :: i,irecnum,ixe,iye,ize,j,jbt,jet,k,kbt,ket,nplmax6,nyl,nzl,numvars
       double precision rnorm,pifac
-      integer*4:: time_begin(8),time_end(8),is
-      integer*8  itstart, itfinish
+      integer*4 :: time_begin(8),time_end(8),is
+      integer*8 :: itstart, itfinish
       double precision :: clock_time_re1
       double precision, dimension(:,:,:), allocatable:: uniform_mesh      
       !VR : allocating a global mesh can not work on large runs with small amount of memory per rank
       !VR : double precision, dimension(:,:,:), allocatable:: nonuniform_mesh_global
-      character (len=240):: filename, filename2
-      character(len=128):: tmpfname
-      integer:: iwrite
-      integer:: ierr2, eStrLen
-      character(len=1024):: eStr
+      character (len=240) :: filename, filename2
+      character(len=128) :: tmpfname
+      integer :: iwrite
+      integer :: ierr2, eStrLen
+      character(len=1024) :: eStr
       external get_environment_variable
 
       call read_input()
