@@ -14,7 +14,7 @@ LIBS        =
 
 # Define dependecies
 EFILE = h3d
-OBJS =  parameter_mod.of90 \
+OBJS =  parameter.of90 \
 		mesh_class.of90 \
 		mesh2d.of90 \
 		functions.of90 \
