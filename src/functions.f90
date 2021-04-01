@@ -420,7 +420,7 @@
 
         double precision function fmaxwell(vx,vy,vthe)
         implicit none
-        double precision :: vx, vy, vthe, pi 
+        double precision :: vx, vy, vthe, twopi 
         twopi = 2.0*acos(-1.0)
         fmaxwell=exp(-(vx**2+vy**2)/(2.*vthe**2))/(twopi*vthe**2)
         end function fmaxwell
