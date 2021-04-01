@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void get_environment_variable1(c, max_char)
+void get_environment_variable1_(c, max_char)
 char c[1];
 int *max_char;
 {
@@ -11,7 +11,7 @@ int *max_char;
         c[strlen(getenv("DATA_DIRECTORY"))]=' ';  
 }
 
-void get_environment_variable2(c, max_char)
+void get_environment_variable2_(c, max_char)
 char c[1];
 int  *max_char;
 {

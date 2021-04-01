@@ -30,8 +30,8 @@ OBJS =  parameter.of90 \
 		user_diagnostics.of90\
 		initialize.of90\
 		3dHybrid.of90 \
-		get_env_var.ogcc \
-		integer_to_character.ogcc \
+		c_get_env_var.ogcc \
+		c_int_to_char.ogcc \
 		particle.of90 \
 		field_2d.of90 \
 		etacal.of90 \
