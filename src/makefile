@@ -46,7 +46,7 @@ $(EFILE): $(OBJS)
 
 # Compile C files 
 %.ogcc: %.c 
-	$(CC) -o $@ -c $<
+	$(CC) -o $@ -c ${C_FIELS}/$<
 
 # Compile F90 files
 %.of90: %.f90
