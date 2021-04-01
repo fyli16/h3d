@@ -100,8 +100,7 @@ character(len=160) :: data_directory,cycle_ascii_new,myid_char,restart_directory
 character(len=160) :: cycle_ascii,cleanup_status
 real(kind=8) :: dB_B0, num_cycles ! for init_wave
 
-double precision, parameter :: zero=0.0d0, one=1.0d0, two=2.0d0, one_half=0.5d0,  &
-                              pi=acos(-1.), twopi=2.*acos(-1.)
+double precision, parameter :: zero=0.0d0, one=1.0d0, two=2.0d0, one_half=0.5d0, pi=acos(-1.)
 
 contains
 ! Set global parameters and allocate global arrays

@@ -447,10 +447,10 @@
 
 
       double precision function fmaxwell(vx,vy,vthe)
-      use parameter_mod
       implicit none
-      double precision :: vx, vy, vthe
-      fmaxwell=exp(-(vx**2+vy**2)/(2.*vthe**2))/(twopi*vthe**2)
+      double precision :: vx, vy, vthe, pi 
+      pi=acos(-1.)
+      fmaxwell=exp(-(vx**2+vy**2)/(2.*vthe**2))/(two*pi*vthe**2)
       end function fmaxwell
 
       
