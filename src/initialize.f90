@@ -227,7 +227,7 @@ module initialize
     call MPE_DECOMP1D(NY, DIMS(1), COORDS(1), JB, JE)
     call MPE_DECOMP1D(NZ, DIMS(2), COORDS(2), KB, KE)
     ! print domain decomposition info
-    write(6,"(I4,I4,I4,I4,I4,I4)") 'myid=', myid, 'jb, je =', jb, je, 'kb, ke = ',kb, ke, 'coords =', coords
+    write(6,*) 'myid=', myid, 'jb, je =', jb, je, 'kb, ke = ',kb, ke, 'coords =', coords
 
   end subroutine mpi_decomposition
 
