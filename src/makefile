@@ -44,7 +44,7 @@ $(EFILE): $(OBJS)
 	$(F90) $(OPTFLAGS2) -o $(EFILE) $(OBJS) $(LIBS)
 
 # Compile C files 
-%.ogcc: %.c makefile 
+%.ogcc: %.c 
 	$(CC) -o $@ -c $<
 
 # Compile F90 files
