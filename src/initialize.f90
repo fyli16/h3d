@@ -23,6 +23,8 @@ module initialize
 
 
   subroutine read_input()
+    external get_environment_variable1, get_environment_variable2
+    
     namelist /datum/ tmax, t_begin, t_end, dtwci, dt, restart, &   ! global info
     restrt_write, quota, MPI_IO_format, &
     nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, &  ! simulation domain

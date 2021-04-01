@@ -15,20 +15,17 @@
       use mesh2d
       
       implicit none
-      integer*8 :: i,irecnum,ixe,iye,ize,j,jbt,jet,k,kbt,ket,nplmax6,nyl,nzl,numvars
-      double precision :: rnorm,pifac
-      integer*4 :: time_begin(8),time_end(8),is
+      integer*8 :: i, irecnum, ixe, iye, ize, j, jbt, jet, k, kbt, ket, nplmax6, nyl, nzl, numvars
+      real*8 :: rnorm, pifac
+      integer*4 :: time_begin(8), time_end(8),is
       integer*8 :: itstart, itfinish
-      double precision :: clock_time_re1
-      double precision, dimension(:,:,:), allocatable :: uniform_mesh      
+      real*8 :: clock_time_re1
+      real*8, dimension(:,:,:), allocatable :: uniform_mesh      
       !VR : allocating a global mesh can not work on large runs with small amount of memory per rank
       !VR : double precision, dimension(:,:,:), allocatable:: nonuniform_mesh_global
-      character (len=240) :: filename, filename2
-      character(len=128) :: tmpfname
-      integer :: iwrite
-      integer :: ierr2, eStrLen
+      character (len=240) :: filename, filename2, tmpfname
+      integer :: iwrite, ierr2, eStrLen
       character(len=1024) :: eStr
-      external get_environment_variable
 
       call init_mpi()
       call read_input()
@@ -448,7 +445,7 @@
         ! if (ierr.ne.MPI_SUCCESS) then
         !   call MPI_Error_string(iErr,eStr,eStrLen,iErr2)
         !   write(0,*)'Error: Could not open file: ',filename
-        !   write(0,*)eStr
+        !   write(0,*) eStr
         !   write(0,*)'Aborted.'
         !   return
         ! endif
