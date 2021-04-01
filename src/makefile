@@ -46,13 +46,13 @@ $(EFILE): $(OBJS)
 
 # Compile C files 
 %.ogcc: %.c 
-	$(CC) -o ${C_FIELS}/$@ -c ${C_FIELS}/$<
+	$(CC) -o $@ -c $<
 
 # Compile F90 files
 %.of90: %.f90
 	$(F90) $(OPTFLAGS) -o $@ -c $< 
 
 clean:
-	-rm  *.mod *.of90 ${C_FIELS}/*.ogcc h3d
+	-rm  *.mod *.of90 *.ogcc h3d
 cleanall: clean
 	-rm  restart_data.*
