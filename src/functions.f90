@@ -1,6 +1,4 @@
-!---------------------------------------------------------------
-      double precision FUNCTION myranf()
- 
+    double precision FUNCTION myranf()
       implicit none
       INTEGER*8:: idum
       INTEGER*8:: MBIG,MSEED,MZ
@@ -44,19 +42,16 @@
       if (mj < MZ)mj=mj+MBIG
       ma(inext)=mj
       myranf=dble(mj*FAC)
- 
-      end function myranf
-!---------------------------------------------------------------
+    end function myranf
 
 
-!---------------------------------------------------------------
-      module gammaln_mod
+    module gammaln_mod
       contains
         DOUBLE PRECISION FUNCTION gammln(xx)
         implicit none
-        DOUBLE PRECISION xx
-        INTEGER*8 j
-        DOUBLE PRECISION ser,stp,tmp,x,y,cof(6)
+        DOUBLE PRECISION :: xx
+        INTEGER*8 :: j
+        DOUBLE PRECISION :: ser,stp,tmp,x,y,cof(6)
         SAVE cof,stp
         DATA cof,stp/76.18009172947146d0,-86.50532032941677d0,&
         24.01409824083091d0,-1.231739572450155d0,.1208650973866179d-2,&
@@ -72,12 +67,10 @@
 11      continue
         gammln=tmp+log(stp*ser/x)
         END FUNCTION gammln
-      end module gammaln_mod
-!---------------------------------------------------------------
+    end module gammaln_mod
 
 
-!---------------------------------------------------------------
-      module gcf_mod
+    module gcf_mod
       contains
         SUBROUTINE gcf(gammcf,a,x,gln)
         use gammaln_mod
@@ -108,12 +101,10 @@
         stop 'a too large, ITMAX too small in gcf'
 1       gammcf=exp(-x+a*log(x)-gln)*h
         END SUBROUTINE gcf
-      end module gcf_mod
-!---------------------------------------------------------------
+    end module gcf_mod
 
 
-!---------------------------------------------------------------
-      module gser_mod
+    module gser_mod
       contains
         SUBROUTINE gser(gamser,a,x,gln)
         use gammaln_mod
@@ -142,54 +133,48 @@
         stop 'a too large, ITMAX too small in gser'
 1       gamser=sum*exp(-x+a*log(x)-gln)
         END SUBROUTINE gser
-      end module gser_mod
-!---------------------------------------------------------------
+    end module gser_mod
 
 
-!---------------------------------------------------------------
-      module erf_mod
-        contains
-          double precision function erf(x)
-          implicit none
-          integer*8:: n,i
-          double precision:: x,deltax,sqrtpi
+    module erf_mod
+      contains
+        double precision function erf(x)
+        implicit none
+        integer*8:: n,i
+        double precision:: x,deltax,sqrtpi
 
-          sqrtpi=sqrt(acos(-1.d+00))
-          if (abs(x).ge.3.0d+00) then
-            erf=sign(1.d+00,x)
-          else
-            n=max(1,int(abs(x)/0.001))
-            deltax=abs(x/dble(n))
-            erf=0.0
-            do i=1,n
-              erf=erf+exp(-(deltax*(0.5d+00+dble(i-1)))**2)
-            enddo
-            erf=sign(1.d+00,x)*erf*deltax*2./sqrtpi
-          endif
-        end function erf
-      end module erf_mod
-!---------------------------------------------------------------
+        sqrtpi=sqrt(acos(-1.d+00))
+        if (abs(x).ge.3.0d+00) then
+          erf=sign(1.d+00,x)
+        else
+          n=max(1,int(abs(x)/0.001))
+          deltax=abs(x/dble(n))
+          erf=0.0
+          do i=1,n
+            erf=erf+exp(-(deltax*(0.5d+00+dble(i-1)))**2)
+          enddo
+          erf=sign(1.d+00,x)*erf*deltax*2./sqrtpi
+        endif
+      end function erf
+    end module erf_mod
 
 
-!---------------------------------------------------------------
-      module sinc_mod
-        contains
-          double precision function sinc(x)
-          implicit none
-          double precision:: x
+    module sinc_mod
+      contains
+        double precision function sinc(x)
+        implicit none
+        double precision:: x
 
-          if (x.eq.0.0) then
-            sinc=1.
-          else
-            sinc=sin(x)/x
-          endif
-        end function sinc
-      end module sinc_mod
-!---------------------------------------------------------------
+        if (x.eq.0.0) then
+          sinc=1.
+        else
+          sinc=sin(x)/x
+        endif
+      end function sinc
+    end module sinc_mod
 
 
-!---------------------------------------------------------------
-      module zp_mod
+    module zp_mod
         contains
           double complex function zp(u)
           implicit none
@@ -236,10 +221,8 @@
    11     continue
         end function zp
       end module zp_mod
-!---------------------------------------------------------------
 
 
-!---------------------------------------------------------------
       module zprime_mod
         contains
           double complex function zprime(u)
@@ -249,11 +232,9 @@
           zprime=-2.*(1.+u*zp(u))
         end function zprime
       end module zprime_mod
-!---------------------------------------------------------------
 
 
-!---------------------------------------------------------------
-      module z2prime_mod
+    module z2prime_mod
         contains
           double complex function z2prime(u)
           use zp_mod
@@ -262,12 +243,10 @@
           double complex:: u
           z2prime=-2.*(u*zprime(u)+zp(u))
         end function z2prime
-      end module z2prime_mod
-!---------------------------------------------------------------
+    end module z2prime_mod
 
 
-!---------------------------------------------------------------
-      module f_mod
+    module f_mod
       contains
         double complex function f(omega,theta)
         use zprime_mod
@@ -276,12 +255,10 @@
         double complex:: omega
         f=1.-0.5*theta*zprime(omega)
         end function f
-      end module f_mod
-!---------------------------------------------------------------
+    end module f_mod
 
 
-!---------------------------------------------------------------
-      module fprime_mod
+    module fprime_mod
       contains
         double complex function fprime(omega,theta)
         use z2prime_mod
@@ -290,12 +267,10 @@
         double complex:: omega
         fprime=-0.5*theta*z2prime(omega)
         end function fprime
-      end module fprime_mod
-!---------------------------------------------------------------
+    end module fprime_mod
 
 
-!---------------------------------------------------------------
-      module flux_mod
+    module flux_mod
       contains
         double precision function flux(x,argum,vtherm,xran,ss)
         !  this function finds the F(v) whose zero will generate
@@ -309,12 +284,10 @@
         flux=ss*(1.d+00-xran) &
         +argum*sqrtpi*(erf(x1)-1.d+00)-vtherm*exp(-x1*x1)
         end function flux
-      end module flux_mod
-!---------------------------------------------------------------
+    end module flux_mod
 
 
-!---------------------------------------------------------------
-      module functions_f90
+    module functions_f90
       contains
         double precision function sqrnoise(rkx,rky,netot,nitot &
         ,rkdesqr,rkdisqr,dx,dy)
@@ -340,64 +313,64 @@
         +(1.-ssqr)**2*chiebar**2/(nitot*(1.+chie)**2*(1.+chiebar)  &
                                   *epsbar                        ) &
                                  )*chiebar**2
-      end function sqrnoise
+        end function sqrnoise
 
 
-      double precision function bessj0(x)
-      implicit none
-      double precision:: ax,xx,z,p1,p2,p3,p4,p5,q1,q2,q3,q4,q5,r1,r2,r3 &
-      ,r4,r5,r6,s1,s2,s3,s4,s5,s6,y,x
-      save p1,p2,p3,p4,p5,q1,q2,q3,q4,q5,r1,r2,r3,r4 &
-      ,r5,r6,s1,s2,s3,s4,s5,s6
-      data p1,p2,p3,p4,p5/1.e0,-.1098628627e-2,.2734510407e-4, &
-         -.2073370639e-5,.2093887211e-6/
-      data  q1,q2,q3,q4,q5/-.1562499995e-1, &
-         .1430488765e-3,-.6911147651d-5,.7621095161e-6,-.934945152e-7/
-      data r1,r2,r3,r4,r5,r6/57568490574.e0,-13362590354.e0, &
-          651619640.7e0, &
-         -11214424.18e0,77392.33017e0,-184.9052456e0/
-      data s1,s2,s3,s4,s5,s6/57568490411.e0,1029532985.e0, &
-         9494680.718e0,59272.64853e0,267.8532712e0,1.e0/
+        double precision function bessj0(x)
+        implicit none
+        double precision:: ax,xx,z,p1,p2,p3,p4,p5,q1,q2,q3,q4,q5,r1,r2,r3 &
+        ,r4,r5,r6,s1,s2,s3,s4,s5,s6,y,x
+        save p1,p2,p3,p4,p5,q1,q2,q3,q4,q5,r1,r2,r3,r4 &
+        ,r5,r6,s1,s2,s3,s4,s5,s6
+        data p1,p2,p3,p4,p5/1.e0,-.1098628627e-2,.2734510407e-4, &
+          -.2073370639e-5,.2093887211e-6/
+        data  q1,q2,q3,q4,q5/-.1562499995e-1, &
+          .1430488765e-3,-.6911147651d-5,.7621095161e-6,-.934945152e-7/
+        data r1,r2,r3,r4,r5,r6/57568490574.e0,-13362590354.e0, &
+            651619640.7e0, &
+          -11214424.18e0,77392.33017e0,-184.9052456e0/
+        data s1,s2,s3,s4,s5,s6/57568490411.e0,1029532985.e0, &
+          9494680.718e0,59272.64853e0,267.8532712e0,1.e0/
 
-      if (abs(x).lt.8.) then
-        y=x**2
-        bessj0=(r1+y*(r2+y*(r3+y*(r4+y*(r5+y*r6))))) &
-        /(s1+y*(s2+y*(s3+y*(s4+y*(s5+y*s6)))))
-      else
-        ax=abs(x)
-        z=8./ax
-        y=z**2
-        xx=ax-.785398164
-        bessj0=sqrt(.636619772/ax)                &
-        *cos(xx)*(p1+y*(p2+y*(p3+y*(p4+y*p5))))   &
-        -z*sin(xx)*(q1+y*(q2+y*(q3+y*(q4+y*q5))))
-      endif
-      end function bessj0
+        if (abs(x).lt.8.) then
+          y=x**2
+          bessj0=(r1+y*(r2+y*(r3+y*(r4+y*(r5+y*r6))))) &
+          /(s1+y*(s2+y*(s3+y*(s4+y*(s5+y*s6)))))
+        else
+          ax=abs(x)
+          z=8./ax
+          y=z**2
+          xx=ax-.785398164
+          bessj0=sqrt(.636619772/ax)                &
+          *cos(xx)*(p1+y*(p2+y*(p3+y*(p4+y*p5))))   &
+          -z*sin(xx)*(q1+y*(q2+y*(q3+y*(q4+y*q5))))
+        endif
+        end function bessj0
 
 
-      double complex function shape(xix,xiy,f,rk0,xhs,yhs,xleft &
-                                    ,plane_wave)
-      implicit none
-      logical:: plane_wave
-      double precision:: xix,xiy,f,rk0,xhs,yhs,xleft
-      double complex:: sigma2
+        double complex function shape(xix,xiy,f,rk0,xhs,yhs,xleft &
+                                      ,plane_wave)
+        implicit none
+        logical:: plane_wave
+        double precision:: xix,xiy,f,rk0,xhs,yhs,xleft
+        double complex:: sigma2
 
-      if (plane_wave) then
-        shape=1.
-      else
-        sigma2=(2.*f/rk0)**2+cmplx(0.d+00,1.d+00)*(xix-xhs)/(2.*rk0)
+        if (plane_wave) then
+          shape=1.
+        else
+          sigma2=(2.*f/rk0)**2+cmplx(0.d+00,1.d+00)*(xix-xhs)/(2.*rk0)
 
-      ! 3D Gaussian beam
-      ! shape=exp(-xiy**2/(4.*sigma2)                   &
-      !             +cmplx(0.d+00,1.d+00)*rk0*(xix-xhs)) &
-      !       *(2.*f/rk0)**2/sigma2
+        ! 3D Gaussian beam
+        ! shape=exp(-xiy**2/(4.*sigma2)                   &
+        !             +cmplx(0.d+00,1.d+00)*rk0*(xix-xhs)) &
+        !       *(2.*f/rk0)**2/sigma2
 
-      ! 2D Gaussian beam
-        shape=exp(-xiy**2/(4.*sigma2)                   &
-                   +cmplx(0.d+00,1.d+00)*rk0*(xix-xhs)) &
-              *(2.*f/rk0)/sqrt(sigma2)
-      endif
-      end function shape
+        ! 2D Gaussian beam
+          shape=exp(-xiy**2/(4.*sigma2)                   &
+                    +cmplx(0.d+00,1.d+00)*rk0*(xix-xhs)) &
+                *(2.*f/rk0)/sqrt(sigma2)
+        endif
+        end function shape
 
 
 !      double precision FUNCTION myranf()
@@ -445,37 +418,34 @@
 !      myranf=dble(mj)*FAC
 !      END FUNCTION myranf
 
+        double precision function fmaxwell(vx,vy,vthe)
+        implicit none
+        double precision :: vx, vy, vthe, pi 
+        twopi = 2.0*acos(-1.0)
+        fmaxwell=exp(-(vx**2+vy**2)/(2.*vthe**2))/(twopi*vthe**2)
+        end function fmaxwell
 
-      double precision function fmaxwell(vx,vy,vthe)
-      implicit none
-      double precision :: vx, vy, vthe, pi 
-      pi=acos(-1.)
-      fmaxwell=exp(-(vx**2+vy**2)/(2.*vthe**2))/(two*pi*vthe**2)
-      end function fmaxwell
-
-      
-      double precision function fmaxwell1d(vx,vy,vthe)
-      double precision:: vx,vthe,vy,sqrttwopi
-      sqrttwopi=sqrt(acos(-1.d+00))
-      fmaxwell1d=exp(-vx**2/(2.*vthe**2))/(sqrttwopi*vthe)
-      end function fmaxwell1d
+        
+        double precision function fmaxwell1d(vx,vy,vthe)
+        double precision:: vx,vthe,vy,sqrttwopi
+        sqrttwopi=sqrt(acos(-1.d+00))
+        fmaxwell1d=exp(-vx**2/(2.*vthe**2))/(sqrttwopi*vthe)
+        end function fmaxwell1d
   
 
-      FUNCTION gammp(a,x)
-      use gser_mod
-      use gcf_mod
-      DOUBLE PRECISION a,gammp,x
-! U    USES gcf,gser
-      DOUBLE PRECISION gammcf,gamser,gln
-      if(x.lt.0..or.a.le.0.) stop 'bad arguments in gammp'
-      if(x.lt.a+1.)then
-        call gser(gamser,a,x,gln)
-        gammp=gamser
-      else
-        call gcf(gammcf,a,x,gln)
-        gammp=1.-gammcf
-      endif
-      END FUNCTION gammp
+        FUNCTION gammp(a,x)
+        use gser_mod
+        use gcf_mod
+        DOUBLE PRECISION a,gammp,x
+        DOUBLE PRECISION gammcf,gamser,gln
+        if(x.lt.0..or.a.le.0.) stop 'bad arguments in gammp'
+        if(x.lt.a+1.)then
+          call gser(gamser,a,x,gln)
+          gammp=gamser
+        else
+          call gcf(gammcf,a,x,gln)
+          gammp=1.-gammcf
+        endif
+        END FUNCTION gammp
 
       end module functions_f90
-!---------------------------------------------------------------
