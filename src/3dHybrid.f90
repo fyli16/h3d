@@ -566,10 +566,8 @@
         if (myid == 0) write(6,*) " Yee    = ",yee
         restart_index=1
 
-        ! call init_IA_wave
         call init_wave
-        ! call init_lapd_wave
-
+        
       endif !VR: end of if (restart)
 
 

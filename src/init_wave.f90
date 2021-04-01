@@ -517,5 +517,3 @@
       deallocate(seed) 
       return
     end subroutine init_wave
-!
-!***********************************************************************

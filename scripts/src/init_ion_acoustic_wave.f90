@@ -1,6 +1,4 @@
-!=======================================================================
-!=======================================================================
-      subroutine init_IA_wave
+      subroutine init_iaw  ! init an ion acoustic wave
       use parameter_mod
       use MESH2D
       implicit none
