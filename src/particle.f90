@@ -1,6 +1,6 @@
-!#######################################################################
-!
-      subroutine parmov      
+!------- subroutines for particle --------!
+  
+    subroutine parmov   ! particle move?    
       use parameter_mod
       use MESH2D
       implicit none
@@ -28,7 +28,7 @@
       double precision:: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
       double precision:: x_disp,y_disp,z_disp 
       double precision:: dth ! dt/2
-      double precision:: eps2,myranf,twopi,fluxran,vxa,vyz,vza
+      double precision:: eps2,myranf,fluxran,vxa,vyz,vza
       INTEGER*8:: L, EXIT_CODE_P, EXIT_CODE
       integer*8:: n_fast_removed,n_fast_removed_local,nptot_max,Field_Diverge,Field_Diverge_p
       double precision:: tx,ty,tz,v_x,v_y,v_z  
@@ -49,12 +49,9 @@
       double precision,dimension(:,:),allocatable,target :: packed_pdata_recv
       double precision, pointer :: pp(:,:)
       integer exchange_send_request(8)
-
-!      double precision :: mp_elapsed
-
+    !  double precision :: mp_elapsed
 
       call date_and_time(values=time_begin_array(:,19))
-
 
       dtxi = 1./meshX%dt
       dtyi = 1./meshY%dt
@@ -62,15 +59,9 @@
 
       dth=dt/2
 
- 
       epsilon= buffer_zone
       d_ranf=1./1001.
-      twopi=2.*acos(-1.)
-
       eps2=1.d-25
- 
- 
-
  
       bx_av=0.;by_av=0.;bz_av=0.
       DO K = KB-1,KE
@@ -478,7 +469,8 @@
       return
     end subroutine parmov
 
-      subroutine push
+    
+    subroutine push
       ! This subourtine pushes particles for half a step
       use parameter_mod
       use MESH2D
@@ -763,9 +755,10 @@
         endif
       ENDDO !is
 
-      end subroutine push
+    end subroutine push
 
-      subroutine particle_boundary
+    
+    subroutine particle_boundary
       use parameter_mod
       use MESH2D
       implicit none
@@ -1541,5 +1534,5 @@
 
       ENDDO ! for IS
  
-      end subroutine particle_boundary
+    end subroutine particle_boundary
 

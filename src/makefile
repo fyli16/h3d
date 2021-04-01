@@ -33,7 +33,7 @@ OBJS =  parameter_mod.of90 \
 		get_environment_variable1.ogcc \
 		get_environment_variable2.ogcc \
 		integer_to_character.ogcc \
-		parmov.of90 \
+		particle.of90 \
 		field_2d.of90 \
 		etacal.of90 \
 		etacal_2d.of90\

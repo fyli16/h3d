@@ -9,12 +9,11 @@
 !***************************************************************************
 
     program h3d 
-
       use parameter_mod
+      use initialize
       use functions_f90
       use mesh2d
-      use initialize
-
+      
       implicit none
       integer*8 :: i,irecnum,ixe,iye,ize,j,jbt,jet,k,kbt,ket,nplmax6,nyl,nzl,numvars
       double precision :: rnorm,pifac

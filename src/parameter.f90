@@ -1,5 +1,5 @@
 ! Declare global parameters and global arrays in this module
-module parameter_mod   
+module parameter_mod  
 ! implicit double precision (a-h,o-z),integer*8(i-n)
 use mpi
 implicit none
@@ -101,7 +101,7 @@ character(len=160) :: cycle_ascii,cleanup_status
 real(kind=8) :: dB_B0, num_cycles ! for init_wave
 
 double precision, parameter :: zero=0.0d0, one=1.0d0, two=2.0d0, one_half=0.5d0,  &
-                              pi=acos(-1.d+00)
+                              pi=acos(-1.), twopi=2.*acos(-1.)
 
 contains
 ! Set global parameters and allocate global arrays
