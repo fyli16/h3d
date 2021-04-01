@@ -98,18 +98,17 @@ integer*8 :: restart_index
 character(len=2) :: restart_index_suffix(2)
 character(len=160) :: data_directory, restart_directory, cycle_ascii_new, myid_char
 character(len=160) :: cycle_ascii,cleanup_status
-real(kind=8) :: dB_B0, num_cycles ! for init_wave
-
+real*8 :: dB_B0, num_cycles ! for init_wave
 double precision, parameter :: zero=0.0d0, one=1.0d0, two=2.0d0, one_half=0.5d0, pi=acos(-1.)
 
 contains
 ! Set global parameters and allocate global arrays
 subroutine set_parameters(numprocs)
      implicit none
-     integer:: numprocs
-     integer*8 is
-     double_prec=0.
-     single_prec=0.
+     integer :: numprocs
+     integer*8 :: is
+     double_prec = 0.
+     single_prec = 0.
      inquire (IOLENGTH=recl_for_double_precision) double_prec
      inquire (IOLENGTH=recl_for_real) single_prec
      nparbuf=nxmax*(nylmax+2)*(nzlmax+2)
@@ -148,7 +147,6 @@ subroutine set_parameters(numprocs)
 end subroutine set_parameters
 
 
-! Allocate global arrays
 subroutine allocate_global_arrays
      implicit none
      allocate ( ex       (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),ey       (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &

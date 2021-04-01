@@ -31,17 +31,19 @@
       call read_input()
       call mpi_decomposition()
 
-      nspecm = nspec
-      nxmax  = nx+2
-      nymax  = ny+2
-      nzmax  = nz+2
-      nylmax = je-jb+1
-      nzlmax = ke-kb+1
-      call set_parameters(NUMPROCS)
-      myid_stop(myid)=0 
-      do is = 1 , nspecm
-         qleft(is)=0
-         qrite(is)=0
+      nspecm = nspec  ! nspecm is just a mirror of nspec
+      nxmax  = nx + 2
+      nymax  = ny + 2
+      nzmax  = nz + 2
+      nylmax = je - jb + 1  ! max of local array size in y
+      nzlmax = ke - kb + 1  ! max of local array size in z
+
+      call set_parameters(numprocs)
+      
+      myid_stop(myid) = 0 
+      do is = 1, nspecm
+         qleft(is) = 0
+         qrite(is) = 0
       enddo
       if (myid == 0) then
         write(6,*) "LOCAL ARRAY SIZE IN Y-DIRECTION = ",JE-JB+1

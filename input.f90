@@ -38,7 +38,7 @@ testorbt=.false.,
 norbskip=1,
 
 ! ------------------ plasma setup ----------------!
-nspec=1, ! number of ion species, maximum 5
+nspec=1,  ! number of ion species, maximum 5
 qspec=1., ! charge of each ion species (use array if nspec>1 and the same for rest)
 wspec=1., ! mass of each ion species
 
