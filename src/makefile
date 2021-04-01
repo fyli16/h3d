@@ -12,8 +12,6 @@ OPTFLAGS2   = -O3 -ffree-line-length-none -fimplicit-none
 # OPTFLAGS2   = -Og -fbounds-check -ffree-line-length-none -fimplicit-none -g 
 LIBS        = 
 
-C_FIELS = ./C
-
 # Define dependecies
 EFILE = h3d
 OBJS =  parameter.of90 \
@@ -46,7 +44,7 @@ $(EFILE): $(OBJS)
 
 # Compile C files 
 %.ogcc: %.c 
-	$(CC) -o $@ -c ${C_FIELS}/$<
+	$(CC) -o $@ -c $<
 
 # Compile F90 files
 %.of90: %.f90
