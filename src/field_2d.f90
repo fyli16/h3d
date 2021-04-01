@@ -696,7 +696,7 @@
                  ,ixep1,iyep1,izep1,ixp1,iyp1,izp1
       double precision:: pdata(7),rx,ry,rz,fx,fy,fz,w1,w2,w3,w4,w5,w6,w7,w8,xpart,ypart,zpart
       double precision:: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
-      double precision:: v_limit,eps2,myranf,twopi,fluxran,vxa,vyz,vza
+      double precision:: v_limit,eps2,myranf,fluxran,vxa,vyz,vza
       INTEGER*8:: L, EXIT_CODE_P, EXIT_CODE
       integer*8:: n_fast_removed,n_fast_removed_local,nptot_max,Courant_Violation,Courant_Violation_p,Field_Diverge,Field_Diverge_p
       double precision:: hxmin,hxmax,hymin,hymax,hzmin,hzmax,cell_size_min,x_disp,y_disp,z_disp          &
@@ -728,13 +728,9 @@
       dtyi = 1./meshY%dt
       dtzi = 1./meshZ%dt
 
- 
       epsilon= buffer_zone
       d_ranf=1./1001.
-      twopi=2.*acos(-1.)
-
       eps2=1.d-25
- 
  
 !     Uniform mesh - Same as in version 5.0
 !      if (dt /=0.) then
@@ -746,7 +742,6 @@
 !      else
 !        v_limit=1.d+10
 !      endif
-!
 
 !     Nonuniform mesh
       hxmin=meshX%dxc(1)
