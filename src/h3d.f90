@@ -30,48 +30,10 @@
       call init_mpi()
       call read_input()
       call mpi_decomposition()
-      call set_parameters(numprocs)
+      call set_parameters()
       
-      myid_stop(myid) = 0 
-      do is = 1, nspecm
-         qleft(is) = 0
-         qrite(is) = 0
-      enddo
-      if (myid == 0) then
-        write(6,*) "LOCAL ARRAY SIZE IN Y-DIRECTION = ",JE-JB+1
-        write(6,*) "LOCAL ARRAY SIZE IN Z-DIRECTION = ",KE-KB+1
-      endif
-
-      if (nzlmax < ke-kb+1) then
-          print *,'myid = ',myid,' nzlmax lt ke-kb+1'
-          print *,'myid = ',myid,' nzlmax,ke,kb= ',nzlmax,ke,kb
-          myid_stop(myid) = 1
-      endif
-      if (nylmax < je-jb+1) then
-          print *,'myid = ',myid,' nylmax lt je-jb+1'
-          print *,'myid = ',myid,' nylmax,je,jb= ',nylmax,je,jb
-          myid_stop(myid) = 1
-      endif
-      do i = 0, npes-1
-        ! if (myid.eq.i) then
-        !    write(*,*)"Node no:",i,"myid_stop=",MYID_STOP(I)
-        ! endif
-         i_i = i
-         call MPI_BCAST(MYID_STOP(i),1,MPI_INTEGER8,i_i,MPI_COMM_WORLD, IERR)
-      enddo
-      do i = 0,npes-1
-         if (myid_stop(i).ne.0) then
-            call MPI_FINALIZE(IERR)
-            write(*,*)"TEST HERE"
-            write(*,*)i, myid_stop(i)
-            STOP
-         endif
-      enddo
-
-      !  Use CART_SHIFT to determine processor to immediate left
-      ! (NBRLEFT) and right (NBRRITE) of processor MYID
-      !  Since code is aperiodic in z, need to manually set the
-      !  left boundary for processor 0 and right boundary for npes-1
+      !  Use CART_SHIFT to determine processor to immediate left (NBRLEFT) and right (NBRRITE) of processor MYID
+      !  Since code is aperiodic in z, need to manually set the left boundary for processor 0 and right boundary for npes-1
       if (ndim == 2) then
         call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
         call MPI_CART_SHIFT(COMM2D,1,1,NBRBOT ,NBRTOP ,IERR)
@@ -85,6 +47,7 @@
         NBRTOP =MYID
         NBRBOT =MYID
       endif
+      
       call MPI_SENDRECV(NBRTOP    ,1,MPI_INTEGER ,NBRRITE,0,&
                         NBRLEFTTOP,1,MPI_INTEGER ,NBRLEFT,0,&
                         mpi_comm_world,status,ierr)

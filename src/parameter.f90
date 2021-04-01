@@ -4,12 +4,12 @@ module parameter_mod
 use mpi
 implicit none
 save
-integer :: my_short_int,i_source,i_destination,i_tag,i_length,i_i
+integer :: my_short_int, i_source, i_destination, i_tag, i_length, i_i
 integer, dimension(8,128) :: time_begin_array,time_end_array
 real*8, dimension(128):: time_elapsed
 integer*8 :: nxmax, nymax, nzmax, nspecm, npes, nvar, nylmax, nzlmax, npm, npes_over_60
 
-integer :: numprocs,ndim,dims(2),nodey,nodez,ierr,comm2d,myid,req(8)                                          &
+integer :: numprocs, ndim, dims(2), nodey, nodez, ierr, comm2d, myid, req(8)                                          &
           ,nbrtop,nbrbot,nbrritetop,nbrlefttop,nbrritebot,nbrleftbot                                          &
           ,nbrleft,nbrrite,ipe,stridery,striderz,iseed(1),coords(2)
 integer :: status(mpi_status_size),status1(mpi_status_size),status2(mpi_status_size),status_array(mpi_status_size,8)
@@ -39,7 +39,7 @@ real*8, dimension(:,:), allocatable ::ainjxz,ainjzx,deavxz,deavzx,vxavxz,vyavxz,
 real*8, dimension(:), allocatable :: x, y, z, vx, vy, vz, qp
 integer, dimension(:), allocatable :: ptag ! tag used to trace particles
 integer*8, dimension(:), allocatable :: link,porder
-integer*8 :: nplmax,ipstore,np,n_subcycles
+integer*8 :: nplmax, ipstore, np, n_subcycles
 integer*8, dimension(:,:,:,:), allocatable:: iphead, iptemp
 integer*8, dimension(:), allocatable ::  ninj,ninj_global,nescape,nescape_global,npart,npart_global
 integer*8, dimension(:),allocatable :: nescape_yz,nescape_zy,nescape_xy                 &
@@ -58,7 +58,7 @@ double precision :: denmin, resis, wpiwci, bete, fxsho,ave1,ave2,phib,demin2, &
      xaa,xbb,yaa,ybb,zaa,zbb,t_stopped
 integer*8 :: nax,nbx,nay,nby,naz,nbz
 integer*8, dimension(8) :: wall_clock_begin,wall_clock_end
-integer*8 :: eta_par,nparbuf
+integer*8 :: eta_par, nparbuf
 integer*8, dimension(5) ::  npx,npy,npz
 integer*8 :: iterb,norbskip,restrt_write,nxcel,netax,netay,netaz,nspec,nx,ny,nz,nprint, &
           nwrtdata, nwrtparticle, nwrtrestart, nskipx,nskipy,nskipz
@@ -80,7 +80,7 @@ integer*8, dimension(:), allocatable:: idmap
 integer*8, dimension(:,:), allocatable:: idmap_yz
 integer*8 :: kb,ke,jb,je,nsendtotp,nrecvtotp,nsendtot,nrecvtot
 integer*8, dimension(:), allocatable :: idfft, kvec, jvec, myid_stop
-integer*8 :: ihstb,ihste,isendid(4),irecvid(4,4)
+integer*8 :: ihstb, ihste, isendid(4), irecvid(4,4)
 real*4 :: single_prec
 real*8:: double_prec, xtmp1m, xtmp2m,initial_time,final_time    &
                     ,xbox_l,xbox_r,ybox_l,ybox_r,zbox_l,zbox_r,t_begin,t_end
@@ -88,7 +88,7 @@ real*8, dimension(:,:), allocatable :: buf, buf2, buf_p1
 real*8, dimension(:,:,:), allocatable :: buf_particle
 integer, dimension(:), allocatable :: buftime
 integer, parameter :: nprobes=6, nbufsteps=100, tracking_width=14
-integer :: maxtags=100,maxtags_pe, ntot 
+integer :: maxtags=100, maxtags_pe, ntot 
 logical :: tracking_binary=.true., tracking_mpi=.true.
 integer :: tracking_fh
 
@@ -103,9 +103,9 @@ real*8, parameter :: zero=0.0d0, one=1.0d0, two=2.0d0, one_half=0.5d0, pi=acos(-
 
 contains
 ! Set global parameters and allocate global arrays
-subroutine set_parameters(numprocs)
+subroutine set_parameters()
      implicit none
-     integer :: numprocs, is
+     integer :: i 
      double_prec = 0.
      single_prec = 0.
      inquire (IOLENGTH=recl_for_double_precision) double_prec
@@ -119,17 +119,59 @@ subroutine set_parameters(numprocs)
      nzlmax = ke - kb + 1  ! max of local array size in z
      nparbuf = nxmax*(nylmax+2)*(nzlmax+2)
      npes = numprocs  ! npes is a copy of numprocs
-     npes_over_60 = npes / 512
+     npes_over_60 = npes / 512  ! if numprocs > 512
 
-     ! count particle storage requirement
-     nplmax = 0
-     do is = 1, nspec
-          nplmax=nplmax+npx(is)*npy(is)*npz(is)
+     myid_stop(myid) = 0 
+     do is = 1, nspecm
+     qleft(is) = 0
+     qrite(is) = 0
      enddo
-     nplmax = 5*nplmax  ! pad storage requirement by factor of 2 
+     if (myid == 0) then
+     write(6,*) "LOCAL ARRAY SIZE IN Y-DIRECTION = ", nylmax
+     write(6,*) "LOCAL ARRAY SIZE IN Z-DIRECTION = ", nzlmax
+     endif
+
+     ! if (nzlmax < ke-kb+1) then
+     !      print*, 'myid = ', myid, ' nzlmax less than ke-kb+1'
+     !      print*, 'myid = ', myid, ' nzlmax, ke, kb= ', nzlmax, ke, kb
+     !      myid_stop(myid) = 1
+     ! endif
+
+     ! if (nylmax < je-jb+1) then
+     !      print*, 'myid = ', myid, ' nylmax less than je-jb+1'
+     !      print*, 'myid = ', myid, ' nylmax, je, jb= ', nylmax, je, jb
+     !      myid_stop(myid) = 1
+     ! endif
+
+     ! do i = 0, npes-1
+     !      ! if (myid==i) then
+     !      !    write(6,*)"Node number:", i, "myid_stop=", myid_stop(i)
+     !      ! endif
+     !      i_i = i
+     !      call MPI_BCAST(MYID_STOP(i),1,MPI_INTEGER8,i_i,MPI_COMM_WORLD, IERR)
+     ! enddo
+
+     ! do i = 0, npes-1
+     ! if (myid_stop(i).ne.0) then
+     !      call MPI_FINALIZE(IERR)
+     !      write(6,*)"TEST HERE"
+     !      write(6,*) i, myid_stop(i)
+     !      STOP
+     ! endif
+     ! enddo
+
+     ! estimate on particle storage requirement
+     nplmax = 0  ! max number of local particles in each process
+     do i = 1, nspec
+          nplmax = nplmax + npx(i)*npy(i)*npz(i)  ! notice npy, npz are already divided by nodey, nodez respectively
+     enddo
+     nplmax = 2*nplmax  ! pad storage requirement by a factor of 2 
+
+     ! number of tags used to track particles
+     ! maxtags was initialized as 100
      maxtags_pe = maxtags/npes/nspec
      if (maxtags_pe==0) then
-          maxtags_pe = 1 ! at least tracking one particle per species per pe
+          maxtags_pe = 1  ! at least tracking one particle per species per pe
           maxtags = maxtags_pe*npes
      endif
 
@@ -149,7 +191,6 @@ subroutine set_parameters(numprocs)
      allocate ( dfac(nspecm),nskip(nspecm),ipleft(nspecm),iprite(nspecm),ipsendleft(nspecm),ipsendrite(nspecm) &
                ,iprecv(nspecm),ipsendtop(nspecm),ipsendbot(nspecm),ipsendlefttop(nspecm),ipsendleftbot(nspecm) &
                ,ipsendritetop(nspecm),ipsendritebot(nspecm),ipsend(nspecm))        
-     ! allocate ( idmap_yz(0:nymax+1,0:nzmax+1),idmap(0:nzmax),idfft(nzmax),kvec(nzlmax),jvec(nylmax))
      allocate ( idmap_yz(0:ny+1,0:nz+1),idmap(0:nzmax),idfft(nzmax),kvec(nzlmax),jvec(nylmax))
 end subroutine set_parameters
 
