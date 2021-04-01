@@ -26,7 +26,7 @@ OBJS =  parameter.of90 \
 		write_file.of90 \
 		user_diagnostics.of90\
 		initialize.of90\
-		3dHybrid.of90 \
+		h3d.of90 \
 		c_get_env_var.ogcc \
 		c_int_to_char.ogcc \
 		particle.of90 \
