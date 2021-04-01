@@ -12,6 +12,8 @@ OPTFLAGS2   = -O3 -ffree-line-length-none -fimplicit-none
 # OPTFLAGS2   = -Og -fbounds-check -ffree-line-length-none -fimplicit-none -g 
 LIBS        = 
 
+C_FIELS = ./C
+
 # Define dependecies
 EFILE = h3d
 OBJS =  parameter.of90 \
@@ -30,9 +32,8 @@ OBJS =  parameter.of90 \
 		user_diagnostics.of90\
 		initialize.of90\
 		3dHybrid.of90 \
-		get_environment_variable1.ogcc \
-		get_environment_variable2.ogcc \
-		integer_to_character.ogcc \
+		${C_FIELS}/get_env_var.ogcc \
+		${C_FIELS}/integer_to_character.ogcc \
 		particle.of90 \
 		field_2d.of90 \
 		etacal.of90 \
@@ -45,13 +46,13 @@ $(EFILE): $(OBJS)
 
 # Compile C files 
 %.ogcc: %.c 
-	$(CC) -o $@ -c $<
+	$(CC) -o ${C_FIELS}/$@ -c ${C_FIELS}/$<
 
 # Compile F90 files
 %.of90: %.f90
 	$(F90) $(OPTFLAGS) -o $@ -c $< 
 
 clean:
-	-rm  *.mod *.of90 *.ogcc h3d
+	-rm  *.mod *.of90 ${C_FIELS}/*.ogcc h3d
 cleanall: clean
 	-rm  restart_data.*

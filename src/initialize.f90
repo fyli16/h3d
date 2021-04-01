@@ -23,30 +23,22 @@ module initialize
 
 
   subroutine read_input()
-    namelist /datum/ &
-      ! global info
-      tmax, t_begin, t_end, dtwci, dt, restart, &
-      restrt_write, quota, MPI_IO_format, &
-      ! simulation domain
-      nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, &
-      nodey, nodez, &
-      xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
-      uniform_loading_in_logical_grid, &
-      buffer_zone, moat_zone, profile_power, &
-      ! field solver
-      n_subcycles, nskipx, nskipy, nskipz, iterb, testorbt, norbskip, &
-      ! plasma setup
-      nspec, qspec, wspec, frac, denmin, wpiwci, btspec, bete, &
-      ieta, resis, netax, netay, netaz, etamin, etamax, eta_par, &
-      anisot, gama, ave1, ave2, phib, smoothing, smooth_coef, &
-      ! init waves
-      dB_B0, num_cycles, &
-      ! diagnostic control
-      nprint, nwrtdata, nwrtrestart, nwrtparticle, &
-      xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
-      ! others
-      Yee, global, harris, fxsho, nxcel, & 
-      rcorr, ishape, teti, setup_mesh, post_process
+    namelist /datum/ tmax, t_begin, t_end, dtwci, dt, restart, &   ! global info
+    restrt_write, quota, MPI_IO_format, &
+    nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, &  ! simulation domain
+    nodey, nodez, &
+    xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
+    uniform_loading_in_logical_grid, &
+    buffer_zone, moat_zone, profile_power, &
+    n_subcycles, nskipx, nskipy, nskipz, iterb, testorbt, norbskip, &  ! field solver
+    nspec, qspec, wspec, frac, denmin, wpiwci, btspec, bete, &  ! plasma setup
+    ieta, resis, netax, netay, netaz, etamin, etamax, eta_par, &
+    anisot, gama, ave1, ave2, phib, smoothing, smooth_coef, &
+    dB_B0, num_cycles, &  ! init waves
+    nprint, nwrtdata, nwrtrestart, nwrtparticle, &  ! diagnostics
+    xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
+    Yee, global, harris, fxsho, nxcel, &  ! others
+    rcorr, ishape, teti, setup_mesh, post_process
       
     time_elapsed=0.; time_begin_array=0; time_end_array=0
     buffer_zone=0.  ! set to 0 anyway despite contained in input

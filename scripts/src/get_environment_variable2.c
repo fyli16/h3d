@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-void get_environment_variable2_(c,max_char)
+void get_environment_variable2_(c, max_char)
 char c[1];
 int  *max_char;
 {
