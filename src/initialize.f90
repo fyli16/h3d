@@ -24,29 +24,29 @@ module initialize
 
   subroutine read_input()
     namelist /datum/ &
-    ! global simulation info
-    tmax, t_begin, t_end, dtwci, dt, restart, &
-    restrt_write, quota, MPI_IO_format, &
-    ! simulation domain
-    nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, &
-    nodey, nodez, &
-    xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
-    uniform_loading_in_logical_grid, &
-    buffer_zone, moat_zone, profile_power, &
-    ! field solver
-    n_subcycles, nskipx, nskipy, nskipz, iterb, testorbt, norbskip, &
-    ! plasma setup
-    nspec, qspec, wspec, frac, denmin, wpiwci, btspec, bete, &
-    ieta, resis, netax, netay, netaz, etamin, etamax, eta_par, &
-    anisot, gama, ave1, ave2, phib, smoothing, smooth_coef, &
-    ! init waves
-    dB_B0, num_cycles, &
-    ! diagnostic control
-    nprint, nwrtdata, nwrtrestart, nwrtparticle, &
-    xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
-    ! others
-    Yee, global, harris, fxsho, nxcel, & 
-    rcorr, ishape, teti, setup_mesh, post_process
+      ! global info
+      tmax, t_begin, t_end, dtwci, dt, restart, &
+      restrt_write, quota, MPI_IO_format, &
+      ! simulation domain
+      nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, &
+      nodey, nodez, &
+      xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
+      uniform_loading_in_logical_grid, &
+      buffer_zone, moat_zone, profile_power, &
+      ! field solver
+      n_subcycles, nskipx, nskipy, nskipz, iterb, testorbt, norbskip, &
+      ! plasma setup
+      nspec, qspec, wspec, frac, denmin, wpiwci, btspec, bete, &
+      ieta, resis, netax, netay, netaz, etamin, etamax, eta_par, &
+      anisot, gama, ave1, ave2, phib, smoothing, smooth_coef, &
+      ! init waves
+      dB_B0, num_cycles, &
+      ! diagnostic control
+      nprint, nwrtdata, nwrtrestart, nwrtparticle, &
+      xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
+      ! others
+      Yee, global, harris, fxsho, nxcel, & 
+      rcorr, ishape, teti, setup_mesh, post_process
       
     time_elapsed=0.; time_begin_array=0; time_end_array=0
     buffer_zone=0.  ! set to 0 anyway despite contained in input
@@ -186,9 +186,8 @@ module initialize
 
 
   subroutine mpi_decomposition()
-    implicit none
     integer :: i
-    
+
     ! set MPI Cartesian geometry, define stride vector types, obtain new
     ! ID for the processors, perform 2D decomposition of the
     ! computational mesh, and find nearest neighbors (in y and z directions)
@@ -207,6 +206,10 @@ module initialize
     !    STOP         
     ! endif
 
+    ! create a division of processors in a cartesian grid
+    ! where DIMS is an input/output parameter and an integer array of size ndims specifying 
+    ! the number of nodes in each dimension, and a value of 0 indicates that MPI_Dims_create 
+    ! should fill in a suitable value.
     call MPI_DIMS_CREATE(NUMPROCS, NDIM, DIMS, IERR)
 
     ! now npy means number of particles in each core along y
@@ -217,6 +220,21 @@ module initialize
         write(6,*) "DIMENSION = ", i, " DIMS = ",dims(i)
       enddo
     endif
+
+    PERIODS = .TRUE. ! logical array of size ndims specifying whether the grid is periodic (true) or not (false) in each dimension
+    REORDER = .TRUE. ! ranking may be reordered (true) or not (false) (logical)
+    ! Makes a new communicator to which topology information has been attached
+    call MPI_CART_CREATE(MPI_COMM_WORLD, NDIM, DIMS, PERIODS, REORDER, COMM2D, IERR) 
+    ! Determines the rank of the calling process in the new communicator
+    call MPI_COMM_RANK(COMM2D, MYID, IERR)
+    ! Retrieves Cartesian topology information associated with the new communicator
+    call MPI_CART_GET(COMM2D, NDIM, DIMS, PERIODS, COORDS, IERR)
+    ! splits N elements between numprocs processors
+    call MPE_DECOMP1D(NY, DIMS(1), COORDS(1), JB, JE)
+    call MPE_DECOMP1D(NZ, DIMS(2), COORDS(2), KB, KE)
+    ! print domain decomposition info
+    write(6,*) 'myid=', myid, 'jb, je =', jb, je, 'kb, ke = ',kb, ke
+
   end subroutine mpi_decomposition
 
 end module initialize

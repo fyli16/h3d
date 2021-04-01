@@ -34,20 +34,7 @@
       call init_mpi()
       call read_input()
       call mpi_decomposition()
-    
-      PERIODS = .TRUE. ! logical array of size ndims specifying whether the grid is periodic (true) or not (false) in each dimension
-      REORDER = .TRUE. ! ranking may be reordered (true) or not (false) (logical)
-      ! Makes a new communicator to which topology information has been attached
-      call MPI_CART_CREATE(MPI_COMM_WORLD, NDIM, DIMS, PERIODS, REORDER, COMM2D, IERR) 
-      ! Determines the rank of the calling process in the communicator
-      call MPI_COMM_RANK(COMM2D, MYID, IERR)
-      ! Retrieves Cartesian topology information associated with a communicator
-      call MPI_CART_GET(COMM2D, NDIM, DIMS, PERIODS, COORDS, IERR)
-      ! splits N elements between numprocs processors
-      call MPE_DECOMP1D(NZ, DIMS(2), COORDS(2), KB, KE)
-      call MPE_DECOMP1D(NY, DIMS(1), COORDS(1), JB, JE)
-      ! print domain decomposition info
-      write(*,*) 'myid=', myid, 'jb, je =', jb, je, 'kb, ke = ',kb, ke
+
       nspecm = nspec
       nxmax  = nx+2
       nymax  = ny+2
