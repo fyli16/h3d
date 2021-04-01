@@ -1,7 +1,7 @@
 &datum
 
 ! ------------------ global simulation info -----------!
-tmax=2000.0, ! max sim. time, in units of 1/wci
+tmax=1000.0, ! max sim. time, in units of 1/wci
 t_begin=0.0, t_end=2000.0, 
 dtwci=0.01,  ! value of dt*wci
 restart=.false.,  ! whether to restart from 'restart' directory

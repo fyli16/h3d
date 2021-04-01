@@ -2,13 +2,13 @@
 
 module purge PrgEnv-intel
 module load PrgEnv-gnu openmpi
-# echo ""
-# echo "#--------------------- compling --------------------#"
-# make
-# echo ""
-# echo "#--------------------- cleaning --------------------#"
-# make clean
-# echo ""
+echo ""
+echo "#--------------------- compling --------------------#"
+make
+echo ""
+echo "#--------------------- cleaning --------------------#"
+make clean
+echo ""
 
 
 set verbose

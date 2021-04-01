@@ -47,9 +47,12 @@ $(EFILE): $(OBJS)
 %.ogcc: %.c makefile 
 	$(CC) -o $@ -c $<
 
+%.c: %.c.nashi makefile 
+	cp -f $< $@
+
 # Compile F90 files
-%.of90: %.f90
-	$(F90) $(OPTFLAGS) -o $@ -c $< 
+%.of90: %.f90 makefile parameter_mod.f90
+	$(F90)  $(OPTFLAGS) -o $@ -c $< 
 
 clean:
 	-rm  *.mod *.of90 *.ogcc h3d
