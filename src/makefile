@@ -24,7 +24,7 @@ OBJS =  parameter.of90 \
 	 	boundary.of90 \
 		field.of90\
 		write_file.of90 \
-		user_diagnostics.of90\
+		diagnostics.of90\
 		initialize.of90\
 		h3d.of90 \
 		c_get_env_var.ogcc \

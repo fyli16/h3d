@@ -158,9 +158,8 @@ end subroutine track_particles2
 ! passes the unit to write to
 !*****************************************************
 subroutine user_data_write_restart(wunit)
-implicit none
-integer, intent (in) :: wunit
-
+  implicit none
+  integer, intent (in) :: wunit
 end subroutine user_data_write_restart
 
 !*****************************************************
@@ -168,8 +167,6 @@ end subroutine user_data_write_restart
 ! passes the unit to read from
 !*****************************************************
 subroutine user_diagnostics_restart(wunit)
-implicit none
-integer, intent (in) :: wunit
-
-
+  implicit none
+  integer, intent (in) :: wunit
 end subroutine user_diagnostics_restart
