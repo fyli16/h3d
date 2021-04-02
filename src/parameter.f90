@@ -2,7 +2,6 @@
 module parameter_mod  
 ! implicit double precision (a-h,o-z),integer*8(i-n)
 use mpi
-use initialize
 implicit none
 save
 integer :: my_short_int, i_source, i_destination, i_tag, i_length, i_i
