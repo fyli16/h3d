@@ -28,14 +28,21 @@
       character(len=1024) :: eStr
 
       call init_mpi()
-      call read_input()
-      call mpi_decomposition()
+      write(6,*) "init_mpi done"
 
-      call set_parameters()    
+      call read_input()
+      write(6,*) "read_input done"
+
+      call mpi_decomposition()
+      write(6,*) "mpi_decomposition done"
+
+      call set_parameters()  
+      write(6,*) "set_parameters done"  
 
       call setup_mesh()
       allocate (uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1))
       ! VR: allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
+      write(6,*) "setup_mesh done"
       
       call date_and_time(values=time_begin)
       clock_time_re1=(time_begin(5)*3600.+time_begin(6)*60.+time_begin(7)+time_begin(8)*0.001)
@@ -630,7 +637,7 @@ subroutine setup_mesh()
   use mesh2d
   implicit none
   integer :: i
-  
+
   ! Initialize nonuniform mesh
   call MESH_INIT(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh
   call MESH_INIT(meshY,yaa,ybb,ymax,nay,nby,ny) ! initialize y-mesh
