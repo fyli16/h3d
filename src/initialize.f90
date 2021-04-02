@@ -251,6 +251,11 @@ module initialize
     inquire (IOLENGTH=recl_for_double_precision) double_prec
     inquire (IOLENGTH=recl_for_real) single_prec
 
+    if (myid==0) then
+      write(6,*)
+      write(6,*) "Setting up global parameters ..."
+    endif
+
     ! nparbuf = nxmax*(nylmax+2)*(nzlmax+2)
     nspecm = nspec  ! nspecm is just a mirror of nspec
     npes = numprocs  ! npes is a copy of numprocs

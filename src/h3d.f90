@@ -34,7 +34,6 @@
       call setup_mesh()
       allocate (uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1))
       ! VR: allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
-      if (myid==0) write(6,*) "setup_mesh done"
       
       call date_and_time(values=time_begin)
       clock_time_re1=(time_begin(5)*3600.+time_begin(6)*60.+time_begin(7)+time_begin(8)*0.001)
@@ -630,6 +629,11 @@ use mesh2d
 implicit none
   
   integer :: i
+
+  if (myid==0) then
+    write(6,*)
+    write(6,*) "Setting up mesh ..."
+  endif
 
   ! Initialize nonuniform mesh
   call MESH_INIT(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh
