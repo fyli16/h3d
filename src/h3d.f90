@@ -625,6 +625,7 @@ subroutine setup_mesh()
   use parameter_mod
   use mesh2d
   implicit none
+  integer :: i
   ! Initialize nonuniform mesh
   call MESH_INIT(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh
   call MESH_INIT(meshY,yaa,ybb,ymax,nay,nby,ny) ! initialize y-mesh
