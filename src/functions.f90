@@ -1,17 +1,16 @@
-    double precision FUNCTION myranf()
+    double precision function myranf()
       implicit none
-      INTEGER*8:: idum
-      INTEGER*8:: MBIG,MSEED,MZ
+      integer*8:: idum
+      integer*8:: MBIG,MSEED,MZ
       double precision:: FAC
-      INTEGER*8:: i,iff,ii,inext,inextp,k
-      INTEGER*8:: mj,mk,ma(55)
-      PARAMETER (MBIG=1000000000,MSEED=161803398,MZ=0 &
-                ,FAC=1.d-09)
-      SAVE iff,inext,inextp,ma
+      integer*8:: i,iff,ii,inext,inextp,k
+      integer*8:: mj,mk,ma(55)
+      parameter (MBIG=1000000000, MSEED=161803398, MZ=0, FAC=1.d-09)
+      save iff,inext,inextp,ma
       DATA iff /0/
       common /myrandom/ idum
  
-      if (idum < 0.or.iff == 0)then
+      if (idum < 0.or.iff == 0) then
         iff=1
         mj=MSEED-abs(idum)
         mj=mod(mj,MBIG)
@@ -47,11 +46,11 @@
 
     module gammaln_mod
       contains
-        DOUBLE PRECISION FUNCTION gammln(xx)
+        double precision function gammln(xx)
         implicit none
-        DOUBLE PRECISION :: xx
+        double precision :: xx
         INTEGER*8 :: j
-        DOUBLE PRECISION :: ser,stp,tmp,x,y,cof(6)
+        double precision :: ser,stp,tmp,x,y,cof(6)
         SAVE cof,stp
         DATA cof,stp/76.18009172947146d0,-86.50532032941677d0,&
         24.01409824083091d0,-1.231739572450155d0,.1208650973866179d-2,&
@@ -66,21 +65,21 @@
           ser=ser+cof(j)/y
 11      continue
         gammln=tmp+log(stp*ser/x)
-        END FUNCTION gammln
+        end function gammln
     end module gammaln_mod
 
 
     module gcf_mod
       contains
-        SUBROUTINE gcf(gammcf,a,x,gln)
+        subroutine gcf(gammcf,a,x,gln)
         use gammaln_mod
         implicit none
         INTEGER*8 ITMAX
-        DOUBLE PRECISION a,gammcf,gln,x,EPS,FPMIN
+        double precision a,gammcf,gln,x,EPS,FPMIN
         PARAMETER (ITMAX=100,EPS=3.e-7,FPMIN=1.e-30)
 ! U      USES gammln
         INTEGER*8 i
-        DOUBLE PRECISION an,b,c,d,del,h
+        double precision an,b,c,d,del,h
         gln=gammln(a)
         b=x+1.-a
         c=1./FPMIN
@@ -100,21 +99,21 @@
 11      continue
         stop 'a too large, ITMAX too small in gcf'
 1       gammcf=exp(-x+a*log(x)-gln)*h
-        END SUBROUTINE gcf
+        end subroutine gcf
     end module gcf_mod
 
 
     module gser_mod
       contains
-        SUBROUTINE gser(gamser,a,x,gln)
+        subroutine gser(gamser,a,x,gln)
         use gammaln_mod
         implicit none
         INTEGER*8 ITMAX
-        DOUBLE PRECISION a,gamser,gln,x,EPS
+        double precision a,gamser,gln,x,EPS
         PARAMETER (ITMAX=100,EPS=3.e-7)
 !U      USES gammln
         INTEGER*8 n
-        DOUBLE PRECISION ap,del,sum
+        double precision ap,del,sum
         gln=gammln(a)
         if(x.le.0.)then
           if(x.lt.0.) stop 'x < 0 in gser'
@@ -132,7 +131,7 @@
 11      continue
         stop 'a too large, ITMAX too small in gser'
 1       gamser=sum*exp(-x+a*log(x)-gln)
-        END SUBROUTINE gser
+        end subroutine gser
     end module gser_mod
 
 
@@ -307,9 +306,7 @@ module functions_f90
     chii   =(rkdisqr/rkhatsqr)*ssqr
     epsbar =1.+chiebar+chii
     sqrnoise=ssqr*((rksqr/rkdesqr+1./(1.+chie))/netot          &
-    +(1.-ssqr)**2*chiebar**2/(nitot*(1.+chie)**2*(1.+chiebar)  &
-                              *epsbar                        ) &
-                              )*chiebar**2
+    +(1.-ssqr)**2*chiebar**2/(nitot*(1.+chie)**2*(1.+chiebar)*epsbar))*chiebar**2
   end function sqrnoise
 
   double precision function bessj0(x)
@@ -382,8 +379,8 @@ module functions_f90
   function gammp(a,x)
     use gser_mod
     use gcf_mod
-    DOUBLE PRECISION a,gammp,x
-    DOUBLE PRECISION gammcf,gamser,gln
+    double precision a,gammp,x
+    double precision gammcf,gamser,gln
     if(x.lt.0..or.a.le.0.) stop 'bad arguments in gammp'
     if(x.lt.a+1.)then
       call gser(gamser,a,x,gln)
