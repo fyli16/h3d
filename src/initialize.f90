@@ -225,7 +225,7 @@ module initialize
   subroutine set_parameters()
     implicit none
     integer :: i, j, k
-    integer*8 :: nyl, nzl
+    ! integer*8 :: nyl, nzl
     double_prec = 0.
     single_prec = 0.
     inquire (IOLENGTH=recl_for_double_precision) double_prec
@@ -404,10 +404,8 @@ module initialize
         irecvid(3,4)=nbrleftbot
         irecvid(4,4)=nbrritebot
     endif
-    nzl = nzlmax
-    nyl = nylmax
-
-    
+    ! nzl = nzlmax
+    ! nyl = nylmax
 
     ! gather jb,je,kb,ke of each rank into *global (where *=jb,je,kb,ke)
     call MPI_ALLGATHER(jb,1,MPI_INTEGER8,jbglobal,1,MPI_INTEGER8,MPI_COMM_WORLD,IERR)
@@ -456,9 +454,9 @@ module initialize
 
     ! print *, myid, "size of id_map is ",size(idmap_yz)
 
-    call MPI_TYPE_VECTOR(int(nzl+2,4), int(nx+2,4), int((nx+2)*(nyl+2),4), MPI_DOUBLE_PRECISION, stridery, IERR)
+    call MPI_TYPE_VECTOR(int(nzlmax+2,4), int(nx+2,4), int((nx+2)*(nylmax+2),4), MPI_DOUBLE_PRECISION, stridery, IERR)
     call MPI_TYPE_COMMIT(stridery, IERR)
-    call MPI_TYPE_VECTOR(int(nyl+2,4), int(nx+2,4), int(nx+2,4), MPI_DOUBLE_PRECISION, STRIDERZ, IERR)
+    call MPI_TYPE_VECTOR(int(nylmax+2,4), int(nx+2,4), int(nx+2,4), MPI_DOUBLE_PRECISION, STRIDERZ, IERR)
     call MPI_TYPE_COMMIT(STRIDERZ, IERR)
 
     nptotp = 0  ! total number of particles per processor
