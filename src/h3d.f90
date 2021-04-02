@@ -31,7 +31,7 @@
       call read_input()
       call mpi_decomposition()
       call set_parameters()    
-       
+
       call setup_mesh()
       allocate (uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1))
       ! VR: allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
