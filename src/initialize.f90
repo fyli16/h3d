@@ -188,16 +188,6 @@ module initialize
     ndim = 2
     dims(1) = nodey
     dims(2) = nodez
-    ! if (ndim /= 2) then
-    !    if (myid==0) then
-    !       print *,"*************************************************************************"
-    !       print *," ERROR: FIELD SOLVER HAS NOT BEEN MODIFIED FOR PERIODIC B.C. in 1D and 2D"
-    !       print *,"                            H3D TERMINATING                              "
-    !       print *,"*************************************************************************"
-    !    endif
-    !    call MPI_FINALIZE(IERR)
-    !    STOP         
-    ! endif
 
     ! create a division of processors in a cartesian grid
     ! where DIMS is an input/output parameter and an integer array of size ndims specifying 
@@ -209,8 +199,8 @@ module initialize
     npy = npy/dims(1)
     npz = npz/dims(2)
     if (myid == 0) then
-      do i=1,ndim
-        write(6,*) "DIMENSION = ", i, " DIMS = ",dims(i)
+      do i = 1, ndim
+        write(6,*) "DIMENSION = ", i, " DIMS = ", dims(i)
       enddo
     endif
 
@@ -427,7 +417,7 @@ module initialize
     do i = 0, numprocs-1
         do k = kbglobal(i), keglobal(i)
             do j = jbglobal(i), jeglobal(i)
-              idmap_yz(j,k) = i
+              idmap_yz(j, k) = i
             enddo
         enddo
     enddo
@@ -470,14 +460,14 @@ module initialize
     call MPI_TYPE_COMMIT(STRIDERZ, IERR)
 
     nptotp = 0  ! total number of particles per processor
-    do i=1, nspec
+    do i = 1, nspec
         nptotp = nptotp + npx(i)*npy(i)*npz(i)
     enddo
 
-    do i = 0, npes-1
-        i_i = i
-        CALL MPI_BCAST(MYID_STOP(i),1,MPI_INTEGER8,i_i,MPI_COMM_WORLD, IERR)
-    enddo
+    ! do i = 0, npes-1
+    !     i_i = i
+    !     CALL MPI_BCAST(MYID_STOP(i),1,MPI_INTEGER8,i_i,MPI_COMM_WORLD, IERR)
+    ! enddo
         
     if (.not.testorbt) norbskip=1
 
