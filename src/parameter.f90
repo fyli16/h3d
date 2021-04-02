@@ -259,7 +259,7 @@ subroutine set_parameters()
      do i = 1, nspec
           nplmax = nplmax + npx(i)*npy(i)*npz(i)  ! notice npy, npz are already divided by nodey, nodez respectively
      enddo
-     nplmax = 2*nplmax  ! pad storage requirement by a factor of 2 
+     nplmax = 5*nplmax  ! pad storage requirement by a factor of 5
 
      ! number of tags used to track particles
      ! maxtags was initialized as 100
