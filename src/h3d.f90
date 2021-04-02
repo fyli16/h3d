@@ -8,7 +8,7 @@
 !                                                                          *
 !***************************************************************************
 
-    program h3d 
+program h3d 
     use parameter_mod
     use initialize
     use functions_f90
@@ -28,11 +28,15 @@
       character(len=1024) :: eStr
 
       call init_mpi()
+
       call read_input()
+      
       call mpi_decomposition()
+      
       call set_parameters()  
+      
       call setup_mesh()
-      allocate (uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1))
+      allocate ( uniform_mesh(nxmax, jb-1:je+1, kb-1:ke+1) )
       ! VR: allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
       
       call date_and_time(values=time_begin)
@@ -620,13 +624,14 @@
 
       call MPI_FINALIZE(IERR)
       stop
-    end program h3d
+end program h3d
 
 
+!---------------------------------------------------------------------
 subroutine setup_mesh()
-use parameter_mod
-use mesh2d
-implicit none
+  use parameter_mod
+  use mesh2d
+  implicit none
   
   integer :: i
 

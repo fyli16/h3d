@@ -1,20 +1,19 @@
 module initialize
   use parameter_mod
   implicit none
+
   integer*4:: input_error
 
-  contains
+contains
+  !---------------------------------------------------------------------
   subroutine init_mpi()  ! MPI initialization
-
-    if (myid==0) then
-      write(6,*) 
-      write(6,*) "Init mpi ..."
-    endif
 
     call MPI_INIT(IERR)
     call MPI_COMM_SIZE(MPI_COMM_WORLD,NUMPROCS,IERR)
     call MPI_COMM_RANK(MPI_COMM_WORLD,MYID,IERR)
     if (myid==0) then
+      write(6,*) 
+      write(6,*) "Init mpi ..."
       write(6,*) "  Total number of processors = ", numprocs
     endif
 
@@ -27,6 +26,7 @@ module initialize
   end subroutine init_mpi
 
 
+  !---------------------------------------------------------------------
   subroutine read_input()
     external get_environment_variable1, get_environment_variable2
 
@@ -186,7 +186,9 @@ module initialize
   end subroutine read_input
 
 
+  !---------------------------------------------------------------------
   subroutine mpi_decomposition()
+    implicit none
     integer :: i
 
     ! set MPI Cartesian geometry, define stride vector types, obtain new
@@ -241,6 +243,7 @@ module initialize
   end subroutine mpi_decomposition
 
 
+  !---------------------------------------------------------------------
   ! Set global parameters
   subroutine set_parameters()
     implicit none
