@@ -241,9 +241,43 @@ module initialize
     npes = numprocs  ! npes is a copy of numprocs
     npes_over_60 = npes / 512  ! if numprocs > 512
 
+    ! estimate on particle storage requirement
+    nplmax = 0  ! max number of local particles in each process
+    do i = 1, nspec
+        nplmax = nplmax + npx(i)*npy(i)*npz(i)  ! notice npy, npz are already divided by nodey, nodez respectively
+    enddo
+    nplmax = 5*nplmax  ! pad storage requirement by a factor of 5
+
+    ! number of tags used to track particles
+    ! maxtags was initialized as 100
+    maxtags_pe = maxtags/npes/nspec
+    if (maxtags_pe==0) then
+        maxtags_pe = 1  ! at least tracking one particle per species per pe
+        maxtags = maxtags_pe*npes
+    endif
+
+    ! gathered enough info, now allocate arrays
+    allocate (zbglobal(0:npes-1), zeglobal(0:npes-1), ybglobal(0:npes-1), yeglobal(0:npes-1)                     &
+              ,kbglobal(0:npes-1), keglobal(0:npes-1), jbglobal(0:npes-1), jeglobal(0:npes-1)                     &
+              ,nsendp(0:npes-1), nrecvp(0:npes-1), myid_stop(0:npes-1))
+    allocate ( x(nplmax),y(nplmax),z(nplmax),vx(nplmax),vy(nplmax),vz(nplmax),link(nplmax),porder(nplmax)     &
+              ,qp(nplmax))
+    allocate (ptag(nplmax))
+    allocate ( ninj(nspecm), ninj_global(nspecm),nescape(nspecm),nescape_global(nspecm),npart(nspecm)         &
+              ,npart_global(nspecm),qleft(nspecm),qrite(nspecm))
+    allocate ( nescape_xy(nspecm),nescape_yx(nspecm),nescape_xz(nspecm),nescape_zx(nspecm)                    &
+              ,nescape_yz(nspecm),nescape_zy(nspecm)                                                          &
+              ,nescape_xy_global(nspecm),nescape_yx_global(nspecm),nescape_xz_global(nspecm)                  &
+              ,nescape_zx_global(nspecm),nescape_yz_global(nspecm),nescape_zy_global(nspecm))
+    allocate ( x0(nspecm),x1(nspecm),tx0(nspecm),vpar(nspecm),vper(nspecm),vbal(nxmax,nspecm),bbal(nxmax))
+    allocate ( dfac(nspecm),nskip(nspecm),ipleft(nspecm),iprite(nspecm),ipsendleft(nspecm),ipsendrite(nspecm) &
+              ,iprecv(nspecm),ipsendtop(nspecm),ipsendbot(nspecm),ipsendlefttop(nspecm),ipsendleftbot(nspecm) &
+              ,ipsendritetop(nspecm),ipsendritebot(nspecm),ipsend(nspecm))        
+    allocate ( idmap_yz(0:ny+1,0:nz+1), idmap(0:nzmax), idfft(nzmax), kvec(nzlmax), jvec(nylmax) )
+
     do i = 1, nspecm
-        qleft(i) = 0
-        qrite(i) = 0
+      qleft(i) = 0
+      qrite(i) = 0
     enddo
     if (myid == 0) then
         write(6,*) "LOCAL ARRAY SIZE IN Y-DIRECTION = ", nylmax
@@ -373,39 +407,7 @@ module initialize
     nzl = nzlmax
     nyl = nylmax
 
-    ! estimate on particle storage requirement
-    nplmax = 0  ! max number of local particles in each process
-    do i = 1, nspec
-        nplmax = nplmax + npx(i)*npy(i)*npz(i)  ! notice npy, npz are already divided by nodey, nodez respectively
-    enddo
-    nplmax = 5*nplmax  ! pad storage requirement by a factor of 5
-
-    ! number of tags used to track particles
-    ! maxtags was initialized as 100
-    maxtags_pe = maxtags/npes/nspec
-    if (maxtags_pe==0) then
-        maxtags_pe = 1  ! at least tracking one particle per species per pe
-        maxtags = maxtags_pe*npes
-    endif
-
-    ! gathered enough info, now allocate arrays
-    allocate (zbglobal(0:npes-1), zeglobal(0:npes-1), ybglobal(0:npes-1), yeglobal(0:npes-1)                     &
-              ,kbglobal(0:npes-1), keglobal(0:npes-1), jbglobal(0:npes-1), jeglobal(0:npes-1)                     &
-              ,nsendp(0:npes-1), nrecvp(0:npes-1), myid_stop(0:npes-1))
-    allocate ( x(nplmax),y(nplmax),z(nplmax),vx(nplmax),vy(nplmax),vz(nplmax),link(nplmax),porder(nplmax)     &
-              ,qp(nplmax))
-    allocate (ptag(nplmax))
-    allocate ( ninj(nspecm), ninj_global(nspecm),nescape(nspecm),nescape_global(nspecm),npart(nspecm)         &
-              ,npart_global(nspecm),qleft(nspecm),qrite(nspecm))
-    allocate ( nescape_xy(nspecm),nescape_yx(nspecm),nescape_xz(nspecm),nescape_zx(nspecm)                    &
-              ,nescape_yz(nspecm),nescape_zy(nspecm)                                                          &
-              ,nescape_xy_global(nspecm),nescape_yx_global(nspecm),nescape_xz_global(nspecm)                  &
-              ,nescape_zx_global(nspecm),nescape_yz_global(nspecm),nescape_zy_global(nspecm))
-    allocate ( x0(nspecm),x1(nspecm),tx0(nspecm),vpar(nspecm),vper(nspecm),vbal(nxmax,nspecm),bbal(nxmax))
-    allocate ( dfac(nspecm),nskip(nspecm),ipleft(nspecm),iprite(nspecm),ipsendleft(nspecm),ipsendrite(nspecm) &
-              ,iprecv(nspecm),ipsendtop(nspecm),ipsendbot(nspecm),ipsendlefttop(nspecm),ipsendleftbot(nspecm) &
-              ,ipsendritetop(nspecm),ipsendritebot(nspecm),ipsend(nspecm))        
-    allocate ( idmap_yz(0:ny+1,0:nz+1), idmap(0:nzmax), idfft(nzmax), kvec(nzlmax), jvec(nylmax) )
+    
 
     ! gather jb,je,kb,ke of each rank into *global (where *=jb,je,kb,ke)
     call MPI_ALLGATHER(jb,1,MPI_INTEGER8,jbglobal,1,MPI_INTEGER8,MPI_COMM_WORLD,IERR)
