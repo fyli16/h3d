@@ -210,9 +210,8 @@ module initialize
       write(6,*)
       write(6,*) "MPI decompsition ..."
       do i = 1, ndim
-        write(6,*) "Dimension = ", i, " Dims = ", dims(i)
+        write(6,*) "  Dimension = ", i, " Dims = ", dims(i)
       enddo
-      write*6,*) 
     endif
 
     PERIODS = .TRUE. ! logical array of size ndims specifying whether the grid is periodic (true) or not (false) in each dimension
@@ -235,8 +234,8 @@ module initialize
     nylmax = je - jb + 1 
     nzlmax = ke - kb + 1  
     if (myid == 0) then
-      write(6,*) "Local array size in y-direction = ", nylmax
-      write(6,*) "Local array size in z-direction = ", nzlmax
+      write(6,*) "  Local array size in y-direction = ", nylmax
+      write(6,*) "  Local array size in z-direction = ", nzlmax
     endif
 
   end subroutine mpi_decomposition
