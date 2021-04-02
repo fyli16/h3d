@@ -7,7 +7,7 @@ CC          = mpicc
 # OPTFLAGS    = -O3 
 # OPTFLAGS2   = -O3
 OPTFLAGS    = -O3 -ffree-line-length-none -fimplicit-none -cpp
-OPTFLAGS2   = -O3 -ffree-line-length-none -fimplicit-none  
+OPTFLAGS2   = -O3 -ffree-line-length-none -fimplicit-none -fcheck=all 
 # OPTFLAGS    = -Og -fbounds-check -ffree-line-length-none -fimplicit-none -g -cpp
 # OPTFLAGS2   = -Og -fbounds-check -ffree-line-length-none -fimplicit-none -g 
 LIBS        = 

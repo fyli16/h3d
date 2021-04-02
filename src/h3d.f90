@@ -9,12 +9,12 @@
 !***************************************************************************
 
     program h3d 
-      use parameter_mod
-      use initialize
-      use functions_f90
-      use mesh2d
-      
-      implicit none
+    use parameter_mod
+    use initialize
+    use functions_f90
+    use mesh2d
+    implicit none
+
       integer*8 :: i, irecnum, ixe, iye, ize, j, jbt, jet, k, kbt, ket, nplmax6, numvars
       real*8 :: rnorm, pifac
       integer*4 :: time_begin(8), time_end(8), is
@@ -633,9 +633,10 @@
 
 
 subroutine setup_mesh()
-  use parameter_mod
-  use mesh2d
-  implicit none
+use parameter_mod
+use mesh2d
+implicit none
+  
   integer :: i
 
   ! Initialize nonuniform mesh
