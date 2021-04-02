@@ -2,6 +2,7 @@
 module parameter_mod  
 ! implicit double precision (a-h,o-z),integer*8(i-n)
 use mpi
+use initialize
 implicit none
 save
 integer :: my_short_int, i_source, i_destination, i_tag, i_length, i_i
@@ -78,7 +79,7 @@ logical :: global, harris, Yee, post_process
 integer*8:: idum
 integer*8, dimension(:), allocatable:: idmap
 integer*8, dimension(:,:), allocatable:: idmap_yz
-integer*8 :: kb,ke,jb,je,nsendtotp,nrecvtotp,nsendtot,nrecvtot
+integer*8 :: kb, ke, jb, je, nsendtotp, nrecvtotp, nsendtot, nrecvtot
 integer*8, dimension(:), allocatable :: idfft, kvec, jvec, myid_stop
 integer*8 :: ihstb, ihste, isendid(4), irecvid(4,4)
 real*4 :: single_prec
@@ -102,7 +103,7 @@ real*8 :: dB_B0, num_cycles ! for init_wave
 real*8, parameter :: zero=0.0d0, one=1.0d0, two=2.0d0, one_half=0.5d0, pi=acos(-1.)
 
 contains
-! Set global parameters and allocate global arrays
+! Set global parameters
 subroutine set_parameters()
      implicit none
      integer :: i, j, k
@@ -340,7 +341,6 @@ subroutine set_parameters()
      call MPI_TYPE_VECTOR(int(nyl+2,4), int(nx+2,4), int(nx+2,4), MPI_DOUBLE_PRECISION, STRIDERZ, IERR)
      call MPI_TYPE_COMMIT(STRIDERZ, IERR)
   
-      
      nptotp = 0  ! total number of particles per processor
      do i=1, nspec
           nptotp = nptotp + npx(i)*npy(i)*npz(i)

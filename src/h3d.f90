@@ -627,6 +627,7 @@
 subroutine setup_mesh()
   use parameter_mod
   use mesh2d
+  use initialize
   implicit none
   integer :: i
   ! Initialize nonuniform mesh
