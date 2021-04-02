@@ -622,6 +622,7 @@
 
 
 subroutine setup_mesh()
+  use parameter_mod
   implicit none
   ! Initialize nonuniform mesh
   call MESH_INIT(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh
