@@ -30,8 +30,11 @@
       call init_mpi()
       call read_input()
       call mpi_decomposition()
-      call set_parameters()     
+      call set_parameters()    
+       
       call setup_mesh()
+      allocate (uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1))
+      ! VR: allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
       
       call date_and_time(values=time_begin)
       clock_time_re1=(time_begin(5)*3600.+time_begin(6)*60.+time_begin(7)+time_begin(8)*0.001)
@@ -671,8 +674,5 @@ subroutine setup_mesh()
     
     close(unit=11)
   endif
-
-  allocate (uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1))
-  ! VR: allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
 
 end subroutine setup_mesh
