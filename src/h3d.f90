@@ -32,71 +32,11 @@
       call mpi_decomposition()
       call set_parameters()     
 
-      ! if (myid == 0) then
-      !    jbglobal(myid)=jb
-      !    jeglobal(myid)=je
-      !    kbglobal(myid)=kb
-      !    keglobal(myid)=ke
-      !    do ipe=numprocs-1,1,-1
-      !       call MPI_IRECV(jbglobal(ipe),1,MPI_INTEGER8,IPE,0,MPI_COMM_WORLD,req(1),IERR)
-      !       call MPI_IRECV(jeglobal(ipe),1,MPI_INTEGER8,IPE,1,MPI_COMM_WORLD,req(2),IERR)
-      !       call MPI_IRECV(kbglobal(ipe),1,MPI_INTEGER8,IPE,2,MPI_COMM_WORLD,req(3),IERR)
-      !       call MPI_IRECV(keglobal(ipe),1,MPI_INTEGER8,IPE,3,MPI_COMM_WORLD,req(4),IERR)
-      !       call MPI_WAITALL(4,req,status_array,IERR)
-      !    enddo
-      ! else
-      !    call MPI_ISEND(jb           ,1,MPI_INTEGER8,0,0,MPI_COMM_WORLD,req(1),IERR)
-      !    call MPI_ISEND(je           ,1,MPI_INTEGER8,0,1,MPI_COMM_WORLD,req(2),IERR)
-      !    call MPI_ISEND(kb           ,1,MPI_INTEGER8,0,2,MPI_COMM_WORLD,req(3),IERR)
-      !    call MPI_ISEND(ke           ,1,MPI_INTEGER8,0,3,MPI_COMM_WORLD,req(4),IERR)
-      !    call MPI_WAITALL(4,req,status_array,IERR)
-      ! endif
-      ! call MPI_BCAST(JBGLOBAL,NUMPROCS,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-      ! call MPI_BCAST(JEGLOBAL,NUMPROCS,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-      ! call MPI_BCAST(KBGLOBAL,NUMPROCS,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-      ! call MPI_BCAST(KEGLOBAL,NUMPROCS,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-
-      !VR: this is much simpler
-      call MPI_ALLGATHER(jb,1,MPI_INTEGER8,jbglobal,1,MPI_INTEGER8,MPI_COMM_WORLD,IERR)
-      call MPI_ALLGATHER(je,1,MPI_INTEGER8,jeglobal,1,MPI_INTEGER8,MPI_COMM_WORLD,IERR)
-      call MPI_ALLGATHER(kb,1,MPI_INTEGER8,kbglobal,1,MPI_INTEGER8,MPI_COMM_WORLD,IERR)
-      call MPI_ALLGATHER(ke,1,MPI_INTEGER8,keglobal,1,MPI_INTEGER8,MPI_COMM_WORLD,IERR)
-
-
-      ! VR: what is going on here?
-      ! if (myid.ne.0) then
-      !   do k=kb,ke
-      !     do j=1,je-jb+1
-      !       jvec(j)=myid
-      !     enddo
-      !     i_length=je-jb+1
-      !     call MPI_ISEND(jvec(1),i_length,MPI_INTEGER8,0,0,MPI_COMM_WORLD,req(1),IERR)
-      !     call MPI_WAITALL(1,req,status_array,IERR)
-      !   enddo
-      ! else
-      !   do k=kbglobal(myid),keglobal(myid)
-      !     do j=jbglobal(myid),jeglobal(myid)
-      !         idmap_yz(j,k)=myid
-      !     enddo
-      !   enddo
-      !   do ipe=1,numprocs-1
-      !     jbt=jbglobal(ipe)
-      !     jet=jeglobal(ipe)
-      !     kbt=kbglobal(ipe)
-      !     ket=keglobal(ipe)
-      !     do k=kbt,ket
-      !         i_length=jet-jbt+1
-      !         call MPI_IRECV(idmap_yz(jbt,k),i_length,MPI_INTEGER8,IPE,0,MPI_COMM_WORLD,req(1),IERR)
-      !         call MPI_WAITALL(1,req,status_array,IERR)
-      !     enddo
-      !   enddo
-      ! endif
-
       !VR: again, this is much simpler than the commented block
-      do ipe=0,numprocs-1
-         do k=kbglobal(ipe),keglobal(ipe)
-            do j=jbglobal(ipe),jeglobal(ipe)
-               idmap_yz(j,k)=ipe
+      do ipe = 0, numprocs-1
+         do k = kbglobal(ipe), keglobal(ipe)
+            do j = jbglobal(ipe), jeglobal(ipe)
+               idmap_yz(j,k) = ipe
             enddo
          enddo
       enddo
@@ -112,13 +52,8 @@
       idmap_yz(0,nz+1)    = idmap_yz(ny,1)
       idmap_yz(ny+1,0)    = idmap_yz(1,nz)
       idmap_yz(ny+1,nz+1) = idmap_yz(1,1)
-      !VR: end fill ghost cells
-
-      !VR this is not needed since we filled the map locally on each process
-      ! call MPI_BCAST(idmap_yz,size(idmap_yz),MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
 
       !VR: output neigbor info for each process & idmap
-      
       ! write(tmpfname,"(A,I0,A)") "neighbors.",myid,".dat"
       ! open(unit=512,file=TRIM(tmpfname),status='replace',action='write')
       ! write(512,"(A,I6)") "TOP=",NBRTOP
@@ -136,37 +71,32 @@
       ! write(512) idmap_yz
       ! close(512)
 
-      ! print *, myid, "size OF id_map is ",size(idmap_yz)
+      ! print *, myid, "size of id_map is ",size(idmap_yz)
 
-      call MPI_TYPE_VECTOR(int(nzlmax+2,4),int(nx+2,4),int((nx+2)*(nylmax+2),4),MPI_DOUBLE_PRECISION,stridery,IERR)
-      call MPI_TYPE_COMMIT(stridery,IERR)
-      call MPI_TYPE_VECTOR(int(nylmax+2,4),int(nx+2,4),int(nx+2,4)          ,MPI_DOUBLE_PRECISION,STRIDERZ,IERR)
-      call MPI_TYPE_COMMIT(STRIDERZ,IERR)
+      call MPI_TYPE_VECTOR(int(nzlmax+2,4), int(nx+2,4), int((nx+2)*(nylmax+2),4), MPI_DOUBLE_PRECISION, stridery, IERR)
+      call MPI_TYPE_COMMIT(stridery, IERR)
+      call MPI_TYPE_VECTOR(int(nylmax+2,4), int(nx+2,4), int(nx+2,4), MPI_DOUBLE_PRECISION, STRIDERZ, IERR)
+      call MPI_TYPE_COMMIT(STRIDERZ, IERR)
  
      
-      nptotp=0
-      do is=1,nspec
-          nptotp=nptotp+npx(is)*npy(is)*npz(is)
+      nptotp = 0  ! total number of particles per processor
+      do is=1, nspec
+        nptotp = nptotp + npx(is)*npy(is)*npz(is)
       enddo
-      if (nptotp > nplmax) then
-          if (myid == 0) then
-            write(6,*) 'Increase nplmax in the input file '
-            write(6,*) 'nptotp = ',nptotp
-          endif
-          myid_stop(myid) = 1
-      endif
+
       do i = 0, npes-1
-          i_i = i
-          CALL MPI_BCAST(MYID_STOP(i),1,MPI_INTEGER8,i_i,MPI_COMM_WORLD, IERR)
-        enddo
-        do i = 0,npes-1
-          if (myid_stop(i).ne.0) then
-              call MPI_FINALIZE(IERR)
-              write(*,*)"TEST HERE"
-              STOP
-          endif
-        enddo
-        if (.not.testorbt) norbskip=1
+        i_i = i
+        CALL MPI_BCAST(MYID_STOP(i),1,MPI_INTEGER8,i_i,MPI_COMM_WORLD, IERR)
+      enddo
+        
+      do i = 0,npes-1
+        if (myid_stop(i).ne.0) then
+            call MPI_FINALIZE(IERR)
+            write(*,*)"TEST HERE"
+            STOP
+        endif
+      enddo
+      if (.not.testorbt) norbskip=1
 
       call allocate_global_arrays
       !  call pdf_injection
