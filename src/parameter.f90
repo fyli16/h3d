@@ -250,8 +250,8 @@ subroutine set_parameters()
           irecvid(3,4)=nbrleftbot
           irecvid(4,4)=nbrritebot
      endif
-     nzl = nzlmax
-     nyl = nylmax
+     ! nzl = nzlmax
+     ! nyl = nylmax
 
      ! estimate on particle storage requirement
      nplmax = 0  ! max number of local particles in each process

@@ -15,7 +15,7 @@
       use mesh2d
       
       implicit none
-      integer*8 :: i, irecnum, ixe, iye, ize, j, jbt, jet, k, kbt, ket, nplmax6, nyl, nzl, numvars
+      integer*8 :: i, irecnum, ixe, iye, ize, j, jbt, jet, k, kbt, ket, nplmax6, numvars
       real*8 :: rnorm, pifac
       integer*4 :: time_begin(8), time_end(8), is
       integer*8 :: itstart, itfinish
@@ -138,9 +138,9 @@
 
       ! print *, myid, "size OF id_map is ",size(idmap_yz)
 
-      call MPI_TYPE_VECTOR(int(nzl+2,4),int(nx+2,4),int((nx+2)*(nyl+2),4),MPI_DOUBLE_PRECISION,stridery,IERR)
+      call MPI_TYPE_VECTOR(int(nzlmax+2,4),int(nx+2,4),int((nx+2)*(nylmax+2),4),MPI_DOUBLE_PRECISION,stridery,IERR)
       call MPI_TYPE_COMMIT(stridery,IERR)
-      call MPI_TYPE_VECTOR(int(nyl+2,4),int(nx+2,4),int(nx+2,4)          ,MPI_DOUBLE_PRECISION,STRIDERZ,IERR)
+      call MPI_TYPE_VECTOR(int(nylmax+2,4),int(nx+2,4),int(nx+2,4)          ,MPI_DOUBLE_PRECISION,STRIDERZ,IERR)
       call MPI_TYPE_COMMIT(STRIDERZ,IERR)
  
      
