@@ -28,17 +28,9 @@
       character(len=1024) :: eStr
 
       call init_mpi()
-      if (myid==0) write(6,*) "init_mpi done"
-
       call read_input()
-      if (myid==0) write(6,*) "read_input done"
-
       call mpi_decomposition()
-      if (myid==0) write(6,*) "mpi_decomposition done"
-
       call set_parameters()  
-      if (myid==0) write(6,*) "set_parameters done"  
-
       call setup_mesh()
       allocate (uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1))
       ! VR: allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))

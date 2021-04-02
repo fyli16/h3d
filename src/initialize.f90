@@ -4,13 +4,18 @@ module initialize
   integer*4:: input_error
 
   contains
-  subroutine init_mpi()
-    ! MPI initialization
+  subroutine init_mpi()  ! MPI initialization
+
+    if (myid==0) then
+      write(6,*) 
+      write(6,*) "Init mpi ..."
+    endif
+
     call MPI_INIT(IERR)
     call MPI_COMM_SIZE(MPI_COMM_WORLD,NUMPROCS,IERR)
     call MPI_COMM_RANK(MPI_COMM_WORLD,MYID,IERR)
     if (myid==0) then
-      write(6,*) "Total number of processors = ", numprocs
+      write(6,*) "  Total number of processors = ", numprocs
     endif
 
     ! get_simulation_id
@@ -61,9 +66,11 @@ module initialize
 
     ! read input deck
     if (myid == 0) then
-        open(5, file='input.f90', form='formatted', status='old')
-        read(5, nml=datum, iostat=input_error)
-        write(6, datum)
+      write(6,*) 
+      write(6,*) "Reading input file ..."
+      open(5, file='input.f90', form='formatted', status='old')
+      read(5, nml=datum, iostat=input_error)
+      write(6, datum)
     endif
     iwt=0; t_stopped=0. ! set default values
 
@@ -169,10 +176,11 @@ module initialize
     ! n_subcycles=max(n_subcycles,1_8)
 
     if (myid==0) then
+      write(6,*)
       if (restart) then
-        write(6,*) "*** RUN IS RESTARTED FROM "//trim(adjustl(restart_directory))
+        write(6,*) "*** Restarted from "//trim(adjustl(restart_directory))
       else
-        write(6,*) "*** NEW RUN "
+        write(6,*) "*** New run *** "
       endif
     endif 
   end subroutine read_input
@@ -199,9 +207,12 @@ module initialize
     npy = npy/dims(1)
     npz = npz/dims(2)
     if (myid == 0) then
+      write(6,*)
+      write(6,*) "MPI decompsition ..."
       do i = 1, ndim
-        write(6,*) "DIMENSION = ", i, " DIMS = ", dims(i)
+        write(6,*) "Dimension = ", i, " Dims = ", dims(i)
       enddo
+      write*6,*) 
     endif
 
     PERIODS = .TRUE. ! logical array of size ndims specifying whether the grid is periodic (true) or not (false) in each dimension
@@ -218,6 +229,16 @@ module initialize
     ! print domain decomposition info
     ! write(6,*) 'myid=', myid, 'jb, je =', jb, je, 'kb, ke = ',kb, ke, 'coords =', coords
 
+    nxmax  = nx + 2  
+    nymax  = ny + 2
+    nzmax  = nz + 2
+    nylmax = je - jb + 1 
+    nzlmax = ke - kb + 1  
+    if (myid == 0) then
+      write(6,*) "Local array size in y-direction = ", nylmax
+      write(6,*) "Local array size in z-direction = ", nzlmax
+    endif
+
   end subroutine mpi_decomposition
 
 
@@ -225,19 +246,13 @@ module initialize
   subroutine set_parameters()
     implicit none
     integer :: i, j, k
-    ! integer*8 :: nyl, nzl
     double_prec = 0.
     single_prec = 0.
     inquire (IOLENGTH=recl_for_double_precision) double_prec
     inquire (IOLENGTH=recl_for_real) single_prec
 
+    ! nparbuf = nxmax*(nylmax+2)*(nzlmax+2)
     nspecm = nspec  ! nspecm is just a mirror of nspec
-    nxmax  = nx + 2  
-    nymax  = ny + 2
-    nzmax  = nz + 2
-    nylmax = je - jb + 1  ! max of local array size in y
-    nzlmax = ke - kb + 1  ! max of local array size in z
-    nparbuf = nxmax*(nylmax+2)*(nzlmax+2)
     npes = numprocs  ! npes is a copy of numprocs
     npes_over_60 = npes / 512  ! if numprocs > 512
 
@@ -279,10 +294,6 @@ module initialize
       qleft(i) = 0
       qrite(i) = 0
     enddo
-    if (myid == 0) then
-        write(6,*) "LOCAL ARRAY SIZE IN Y-DIRECTION = ", nylmax
-        write(6,*) "LOCAL ARRAY SIZE IN Z-DIRECTION = ", nzlmax
-    endif
 
     myid_stop(myid) = 0  
 
@@ -404,8 +415,6 @@ module initialize
         irecvid(3,4)=nbrleftbot
         irecvid(4,4)=nbrritebot
     endif
-    ! nzl = nzlmax
-    ! nyl = nylmax
 
     ! gather jb,je,kb,ke of each rank into *global (where *=jb,je,kb,ke)
     call MPI_ALLGATHER(jb,1,MPI_INTEGER8,jbglobal,1,MPI_INTEGER8,MPI_COMM_WORLD,IERR)
@@ -434,26 +443,6 @@ module initialize
     idmap_yz(ny+1,0)    = idmap_yz(1,nz)
     idmap_yz(ny+1,nz+1) = idmap_yz(1,1)
 
-    !VR: output neigbor info for each process & idmap
-    ! write(tmpfname,"(A,I0,A)") "neighbors.",myid,".dat"
-    ! open(unit=512,file=TRIM(tmpfname),status='replace',action='write')
-    ! write(512,"(A,I6)") "TOP=",NBRTOP
-    ! write(512,"(A,I6)") "TOPLEFT=",NBRLEFTTOP
-    ! write(512,"(A,I6)") "LEFT=",NBRLEFT
-    ! write(512,"(A,I6)") "BOTLEFT=",NBRLEFTBOT
-    ! write(512,"(A,I6)") "BOT=",NBRBOT
-    ! write(512,"(A,I6)") "BOTRITE=",NBRRITEBOT
-    ! write(512,"(A,I6)") "RITE=",NBRRITE
-    ! write(512,"(A,I6)") "RITETOP=",NBRRITETOP
-    ! close(512)
-    
-    ! write(tmpfname,"(A,I0,A)") "idmap_yz.",myid,".dat"
-    ! open(unit=512,file=TRIM(tmpfname),status='replace',action='write',access='stream',form='unformatted')
-    ! write(512) idmap_yz
-    ! close(512)
-
-    ! print *, myid, "size of id_map is ",size(idmap_yz)
-
     call MPI_TYPE_VECTOR(int(nzlmax+2,4), int(nx+2,4), int((nx+2)*(nylmax+2),4), MPI_DOUBLE_PRECISION, stridery, IERR)
     call MPI_TYPE_COMMIT(stridery, IERR)
     call MPI_TYPE_VECTOR(int(nylmax+2,4), int(nx+2,4), int(nx+2,4), MPI_DOUBLE_PRECISION, STRIDERZ, IERR)
@@ -463,11 +452,6 @@ module initialize
     do i = 1, nspec
         nptotp = nptotp + npx(i)*npy(i)*npz(i)
     enddo
-
-    ! do i = 0, npes-1
-    !     i_i = i
-    !     CALL MPI_BCAST(MYID_STOP(i),1,MPI_INTEGER8,i_i,MPI_COMM_WORLD, IERR)
-    ! enddo
         
     if (.not.testorbt) norbskip=1
 
