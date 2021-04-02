@@ -30,6 +30,7 @@
       call init_mpi()
       call read_input()
       call mpi_decomposition()
+
       call set_parameters()    
 
       call setup_mesh()

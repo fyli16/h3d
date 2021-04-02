@@ -230,4 +230,259 @@ module initialize
 
   end subroutine mpi_decomposition
 
+
+  ! Set global parameters
+  subroutine set_parameters()
+    implicit none
+    integer :: i, j, k
+    integer*8 :: nyl, nzl
+    double_prec = 0.
+    single_prec = 0.
+    inquire (IOLENGTH=recl_for_double_precision) double_prec
+    inquire (IOLENGTH=recl_for_real) single_prec
+
+    nspecm = nspec  ! nspecm is just a mirror of nspec
+    nxmax  = nx + 2  
+    nymax  = ny + 2
+    nzmax  = nz + 2
+    nylmax = je - jb + 1  ! max of local array size in y
+    nzlmax = ke - kb + 1  ! max of local array size in z
+    nparbuf = nxmax*(nylmax+2)*(nzlmax+2)
+    npes = numprocs  ! npes is a copy of numprocs
+    npes_over_60 = npes / 512  ! if numprocs > 512
+
+    do i = 1, nspecm
+        qleft(i) = 0
+        qrite(i) = 0
+    enddo
+    if (myid == 0) then
+        write(6,*) "LOCAL ARRAY SIZE IN Y-DIRECTION = ", nylmax
+        write(6,*) "LOCAL ARRAY SIZE IN Z-DIRECTION = ", nzlmax
+    endif
+
+    myid_stop(myid) = 0  
+
+    !  Use CART_SHIFT to determine processor to immediate left (NBRLEFT) and right (NBRRITE) of processor MYID
+    !  Since code is aperiodic in z, need to manually set the left boundary for processor 0 and right boundary for npes-1
+    if (ndim == 2) then
+        call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
+        call MPI_CART_SHIFT(COMM2D,1,1,NBRBOT ,NBRTOP ,IERR)
+    else if (ndim == 1) then
+        call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
+        NBRTOP = MYID
+        NBRBOT = MYID
+    else if (ndim == 0) then
+        NBRLEFT = MYID
+        NBRRITE = MYID
+        NBRTOP = MYID
+        NBRBOT = MYID
+    endif
+
+    call MPI_SENDRECV(NBRTOP    ,1,MPI_INTEGER ,NBRRITE,0,&
+                      NBRLEFTTOP,1,MPI_INTEGER ,NBRLEFT,0,&
+                      mpi_comm_world,status,ierr)
+    call MPI_SENDRECV(NBRTOP    ,1,MPI_INTEGER ,NBRLEFT,0,&
+                  NBRRITETOP,1,MPI_INTEGER ,NBRRITE,0,&
+                  mpi_comm_world,status,ierr)
+    call MPI_SENDRECV(NBRBOT    ,1,MPI_INTEGER ,NBRRITE,0,&
+                  NBRLEFTBOT,1,MPI_INTEGER ,NBRLEFT,0,&
+                  mpi_comm_world,status,ierr)
+    call MPI_SENDRECV(NBRBOT    ,1,MPI_INTEGER ,NBRLEFT,0,&
+                  NBRRITEBOT,1,MPI_INTEGER ,NBRRITE,0,&
+                  mpi_comm_world,status,ierr) 
+
+    ! recv, send id
+    if (mod(coords(1),2) == 0.and.mod(coords(2),2) == 0) then
+        isendid(1)=1
+    else
+        isendid(1)=0
+    endif
+
+    if (mod(coords(1)+1,2) == 0.and.mod(coords(2),2) == 0) then
+        irecvid(1,1)=nbrrite
+        irecvid(2,1)=-1
+        irecvid(3,1)=nbrleft
+        irecvid(4,1)=-1
+    else if (mod(coords(1),2) == 0.and.mod(coords(2)+1,2) == 0) then
+        irecvid(1,1)=-1
+        irecvid(2,1)=nbrtop
+        irecvid(3,1)=-1
+        irecvid(4,1)=nbrbot
+    else if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
+        irecvid(1,1)=nbrritetop
+        irecvid(2,1)=nbrlefttop
+        irecvid(3,1)=nbrleftbot
+        irecvid(4,1)=nbrritebot
+    endif
+    
+    if (mod(coords(1)+1,2) == 0.and.mod(coords(2)  ,2) == 0) then
+        isendid(2)=1
+    else
+        isendid(2)=0
+    endif
+    if (mod(coords(1)  ,2) == 0.and.mod(coords(2)  ,2) == 0) then
+        irecvid(1,2)=nbrrite
+        irecvid(2,2)=-1
+        irecvid(3,2)=nbrleft
+        irecvid(4,2)=-1
+    else if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
+        irecvid(1,2)=-1
+        irecvid(2,2)=nbrtop
+        irecvid(3,2)=-1
+        irecvid(4,2)=nbrbot
+    else if (mod(coords(1)  ,2) == 0.and.mod(coords(2)+1,2) == 0) then
+        irecvid(1,2)=nbrritetop
+        irecvid(2,2)=nbrlefttop
+        irecvid(3,2)=nbrleftbot
+        irecvid(4,2)=nbrritebot
+    endif
+    
+    if (mod(coords(1)  ,2) == 0.and.mod(coords(2)+1,2) == 0) then
+        isendid(3)=1
+    else
+        isendid(3)=0
+    endif
+    if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
+        irecvid(1,3)=nbrrite
+        irecvid(2,3)=-1
+        irecvid(3,3)=nbrleft
+        irecvid(4,3)=-1
+    else if (mod(coords(1)  ,2) == 0.and.mod(coords(2)  ,2) == 0) then
+        irecvid(1,3)=-1
+        irecvid(2,3)=nbrtop
+        irecvid(3,3)=-1
+        irecvid(4,3)=nbrbot
+    else if (mod(coords(1)+1,2) == 0.and.mod(coords(2)  ,2) == 0) then
+        irecvid(1,3)=nbrritetop
+        irecvid(2,3)=nbrlefttop
+        irecvid(3,3)=nbrleftbot
+        irecvid(4,3)=nbrritebot
+    endif
+    
+    if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
+        isendid(4)=1
+    else
+        isendid(4)=0
+    endif
+    if (mod(coords(1)  ,2) == 0.and.mod(coords(2)+1,2) == 0) then
+        irecvid(1,4)=nbrrite
+        irecvid(2,4)=-1
+        irecvid(3,4)=nbrleft
+        irecvid(4,4)=-1
+    else if (mod(coords(1)+1,2) == 0.and.mod(coords(2)  ,2) == 0) then
+        irecvid(1,4)=-1
+        irecvid(2,4)=nbrtop
+        irecvid(3,4)=-1
+        irecvid(4,4)=nbrbot
+    else if (mod(coords(1)  ,2) == 0.and.mod(coords(2)  ,2) == 0) then
+        irecvid(1,4)=nbrritetop
+        irecvid(2,4)=nbrlefttop
+        irecvid(3,4)=nbrleftbot
+        irecvid(4,4)=nbrritebot
+    endif
+    nzl = nzlmax
+    nyl = nylmax
+
+    ! estimate on particle storage requirement
+    nplmax = 0  ! max number of local particles in each process
+    do i = 1, nspec
+        nplmax = nplmax + npx(i)*npy(i)*npz(i)  ! notice npy, npz are already divided by nodey, nodez respectively
+    enddo
+    nplmax = 5*nplmax  ! pad storage requirement by a factor of 5
+
+    ! number of tags used to track particles
+    ! maxtags was initialized as 100
+    maxtags_pe = maxtags/npes/nspec
+    if (maxtags_pe==0) then
+        maxtags_pe = 1  ! at least tracking one particle per species per pe
+        maxtags = maxtags_pe*npes
+    endif
+
+    ! gathered enough info, now allocate arrays
+    allocate (zbglobal(0:npes-1), zeglobal(0:npes-1), ybglobal(0:npes-1), yeglobal(0:npes-1)                     &
+              ,kbglobal(0:npes-1), keglobal(0:npes-1), jbglobal(0:npes-1), jeglobal(0:npes-1)                     &
+              ,nsendp(0:npes-1), nrecvp(0:npes-1), myid_stop(0:npes-1))
+    allocate ( x(nplmax),y(nplmax),z(nplmax),vx(nplmax),vy(nplmax),vz(nplmax),link(nplmax),porder(nplmax)     &
+              ,qp(nplmax))
+    allocate (ptag(nplmax))
+    allocate ( ninj(nspecm), ninj_global(nspecm),nescape(nspecm),nescape_global(nspecm),npart(nspecm)         &
+              ,npart_global(nspecm),qleft(nspecm),qrite(nspecm))
+    allocate ( nescape_xy(nspecm),nescape_yx(nspecm),nescape_xz(nspecm),nescape_zx(nspecm)                    &
+              ,nescape_yz(nspecm),nescape_zy(nspecm)                                                          &
+              ,nescape_xy_global(nspecm),nescape_yx_global(nspecm),nescape_xz_global(nspecm)                  &
+              ,nescape_zx_global(nspecm),nescape_yz_global(nspecm),nescape_zy_global(nspecm))
+    allocate ( x0(nspecm),x1(nspecm),tx0(nspecm),vpar(nspecm),vper(nspecm),vbal(nxmax,nspecm),bbal(nxmax))
+    allocate ( dfac(nspecm),nskip(nspecm),ipleft(nspecm),iprite(nspecm),ipsendleft(nspecm),ipsendrite(nspecm) &
+              ,iprecv(nspecm),ipsendtop(nspecm),ipsendbot(nspecm),ipsendlefttop(nspecm),ipsendleftbot(nspecm) &
+              ,ipsendritetop(nspecm),ipsendritebot(nspecm),ipsend(nspecm))        
+    allocate ( idmap_yz(0:ny+1,0:nz+1), idmap(0:nzmax), idfft(nzmax), kvec(nzlmax), jvec(nylmax) )
+
+    ! gather jb,je,kb,ke of each rank into *global (where *=jb,je,kb,ke)
+    call MPI_ALLGATHER(jb,1,MPI_INTEGER8,jbglobal,1,MPI_INTEGER8,MPI_COMM_WORLD,IERR)
+    call MPI_ALLGATHER(je,1,MPI_INTEGER8,jeglobal,1,MPI_INTEGER8,MPI_COMM_WORLD,IERR)
+    call MPI_ALLGATHER(kb,1,MPI_INTEGER8,kbglobal,1,MPI_INTEGER8,MPI_COMM_WORLD,IERR)
+    call MPI_ALLGATHER(ke,1,MPI_INTEGER8,keglobal,1,MPI_INTEGER8,MPI_COMM_WORLD,IERR)
+
+    !VR: again, this is much simpler than the commented block
+    do i = 0, numprocs-1
+        do k = kbglobal(i), keglobal(i)
+            do j = jbglobal(i), jeglobal(i)
+              idmap_yz(j,k) = i
+            enddo
+        enddo
+    enddo
+
+    !VR: fill in ghost cells in idmap     
+    idmap_yz(1:ny,0)    = idmap_yz(1:ny,nz)
+    idmap_yz(1:ny,nz+1) = idmap_yz(1:ny,1)
+
+    idmap_yz(0,1:nz)    = idmap_yz(ny,1:nz)
+    idmap_yz(ny+1,1:nz) = idmap_yz(1,1:nz)
+
+    idmap_yz(0,0)       = idmap_yz(ny,nz)
+    idmap_yz(0,nz+1)    = idmap_yz(ny,1)
+    idmap_yz(ny+1,0)    = idmap_yz(1,nz)
+    idmap_yz(ny+1,nz+1) = idmap_yz(1,1)
+
+    !VR: output neigbor info for each process & idmap
+    ! write(tmpfname,"(A,I0,A)") "neighbors.",myid,".dat"
+    ! open(unit=512,file=TRIM(tmpfname),status='replace',action='write')
+    ! write(512,"(A,I6)") "TOP=",NBRTOP
+    ! write(512,"(A,I6)") "TOPLEFT=",NBRLEFTTOP
+    ! write(512,"(A,I6)") "LEFT=",NBRLEFT
+    ! write(512,"(A,I6)") "BOTLEFT=",NBRLEFTBOT
+    ! write(512,"(A,I6)") "BOT=",NBRBOT
+    ! write(512,"(A,I6)") "BOTRITE=",NBRRITEBOT
+    ! write(512,"(A,I6)") "RITE=",NBRRITE
+    ! write(512,"(A,I6)") "RITETOP=",NBRRITETOP
+    ! close(512)
+    
+    ! write(tmpfname,"(A,I0,A)") "idmap_yz.",myid,".dat"
+    ! open(unit=512,file=TRIM(tmpfname),status='replace',action='write',access='stream',form='unformatted')
+    ! write(512) idmap_yz
+    ! close(512)
+
+    ! print *, myid, "size of id_map is ",size(idmap_yz)
+
+    call MPI_TYPE_VECTOR(int(nzl+2,4), int(nx+2,4), int((nx+2)*(nyl+2),4), MPI_DOUBLE_PRECISION, stridery, IERR)
+    call MPI_TYPE_COMMIT(stridery, IERR)
+    call MPI_TYPE_VECTOR(int(nyl+2,4), int(nx+2,4), int(nx+2,4), MPI_DOUBLE_PRECISION, STRIDERZ, IERR)
+    call MPI_TYPE_COMMIT(STRIDERZ, IERR)
+
+    nptotp = 0  ! total number of particles per processor
+    do i=1, nspec
+        nptotp = nptotp + npx(i)*npy(i)*npz(i)
+    enddo
+
+    do i = 0, npes-1
+        i_i = i
+        CALL MPI_BCAST(MYID_STOP(i),1,MPI_INTEGER8,i_i,MPI_COMM_WORLD, IERR)
+    enddo
+        
+    if (.not.testorbt) norbskip=1
+
+    call allocate_global_arrays
+
+  end subroutine set_parameters 
+
 end module initialize
