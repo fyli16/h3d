@@ -40,7 +40,7 @@ module initialize
     nprint, nwrtdata, nwrtrestart, nwrtparticle, &  ! diagnostics
     xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
     Yee, global, harris, fxsho, nxcel, &  ! others
-    rcorr, ishape, teti, setup_mesh, post_process
+    rcorr, ishape, teti, post_process
       
     time_elapsed=0.; time_begin_array=0; time_end_array=0
     buffer_zone=0.  ! set to 0 anyway despite contained in input
@@ -161,7 +161,6 @@ module initialize
     call MPI_BCAST(rcorr                  ,5     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(ishape                 ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(teti                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(setup_mesh             ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(post_process           ,1     ,MPI_LOGICAL,0,MPI_COMM_WORLD,IERR)
 
     ! The unit of dt is 1/wci in input file, but converted to 1/wpi here

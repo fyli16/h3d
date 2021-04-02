@@ -31,74 +31,8 @@
       call read_input()
       call mpi_decomposition()
       call set_parameters()     
-
-      ! Initialize nonuniform mesh
-      call MESH_INIT(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh
-      call MESH_INIT(meshY,yaa,ybb,ymax,nay,nby,ny) ! initialize y-mesh
-      call MESH_INIT(meshZ,zaa,zbb,zmax,naz,nbz,nz) ! initialize z-mesh
-
-      call MESH_INDEX(meshX,CELL,ixv_2_c_map)
-      call MESH_INDEX(meshY,CELL,iyv_2_c_map)
-      call MESH_INDEX(meshZ,CELL,izv_2_c_map)
-      call MESH_INDEX(meshX,NODE,ixv_2_v_map)
-      call MESH_INDEX(meshY,NODE,iyv_2_v_map)
-      call MESH_INDEX(meshZ,NODE,izv_2_v_map)
-      call MESH_INDEX(meshX,CELL,ixc_2_c_map,CELL)
-      call MESH_INDEX(meshY,CELL,iyc_2_c_map,CELL)
-      call MESH_INDEX(meshZ,CELL,izc_2_c_map,CELL)
-      call MESH_INDEX(meshX,NODE,ixc_2_v_map,CELL)
-      call MESH_INDEX(meshY,NODE,iyc_2_v_map,CELL)
-      call MESH_INDEX(meshZ,NODE,izc_2_v_map,CELL)
-
-      if (myid == 0) then
-        ! write(6,*) " nl_x = ",meshX%nl
-        ! do i=1,meshX%nl+3 
-        !   write(6,*) " i, x;",i,meshX%xn(i),meshX%xc(i)
-        ! enddo
-        ! write(6,*) " nl_y = ",meshY%nl
-        ! do i=1,meshY%nl+3 
-        !   write(6,*) " i, y;",i,meshY%xn(i),meshY%xc(i)
-        ! enddo
-        ! write(6,*) " nl_z = ",meshZ%nl
-        ! do i=1,meshZ%nl+3 
-        !   write(6,*) " i, z;",i,meshZ%xn(i),meshZ%xc(i)
-        ! enddo
-        open(unit=11,file='mesh_vertices.dat',status='unknown',form='formatted')
-        write(11,*) meshX%nl+1,meshY%nl+1,meshZ%nl+1
-
-        do i=2,meshX%nl+2 
-          write(11,*) meshX%xn(i)
-        enddo
-        do i=2,meshX%nl+2 
-          write(11,*) meshX%dxc(i)
-        enddo
-
-        do i=2,meshY%nl+2 
-          write(11,*) meshY%xn(i)
-        enddo
-        do i=2,meshY%nl+2 
-          write(11,*) meshY%dxc(i)
-        enddo
-
-        do i=2,meshZ%nl+2 
-          write(11,*) meshZ%xn(i)
-        enddo
-        do i=2,meshZ%nl+2 
-          write(11,*) meshZ%dxc(i)
-        enddo
-        
-        close(unit=11)
-      endif
-
-      ! STOP HERE IF SETUP_MESH=.TRUE.
-      if (setup_mesh) then
-        call MPI_FINALIZE(IERR)
-        STOP
-      endif
-
-      allocate (uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1))
-      ! VR: allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
-
+      call setup_mesh()
+      
       call date_and_time(values=time_begin)
       clock_time_re1=(time_begin(5)*3600.+time_begin(6)*60.+time_begin(7)+time_begin(8)*0.001)
  
@@ -685,3 +619,57 @@
       call MPI_FINALIZE(IERR)
       stop
     end program h3d
+
+
+subroutine setup_mesh()
+  implicit none
+  ! Initialize nonuniform mesh
+  call MESH_INIT(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh
+  call MESH_INIT(meshY,yaa,ybb,ymax,nay,nby,ny) ! initialize y-mesh
+  call MESH_INIT(meshZ,zaa,zbb,zmax,naz,nbz,nz) ! initialize z-mesh
+
+  call MESH_INDEX(meshX,CELL,ixv_2_c_map)
+  call MESH_INDEX(meshY,CELL,iyv_2_c_map)
+  call MESH_INDEX(meshZ,CELL,izv_2_c_map)
+  call MESH_INDEX(meshX,NODE,ixv_2_v_map)
+  call MESH_INDEX(meshY,NODE,iyv_2_v_map)
+  call MESH_INDEX(meshZ,NODE,izv_2_v_map)
+  call MESH_INDEX(meshX,CELL,ixc_2_c_map,CELL)
+  call MESH_INDEX(meshY,CELL,iyc_2_c_map,CELL)
+  call MESH_INDEX(meshZ,CELL,izc_2_c_map,CELL)
+  call MESH_INDEX(meshX,NODE,ixc_2_v_map,CELL)
+  call MESH_INDEX(meshY,NODE,iyc_2_v_map,CELL)
+  call MESH_INDEX(meshZ,NODE,izc_2_v_map,CELL)
+
+  if (myid == 0) then
+    open(unit=11,file='mesh_vertices.dat',status='unknown',form='formatted')
+    write(11,*) meshX%nl+1, meshY%nl+1, meshZ%nl+1
+
+    do i=2,meshX%nl+2 
+      write(11,*) meshX%xn(i)
+    enddo
+    do i=2,meshX%nl+2 
+      write(11,*) meshX%dxc(i)
+    enddo
+
+    do i=2,meshY%nl+2 
+      write(11,*) meshY%xn(i)
+    enddo
+    do i=2,meshY%nl+2 
+      write(11,*) meshY%dxc(i)
+    enddo
+
+    do i=2,meshZ%nl+2 
+      write(11,*) meshZ%xn(i)
+    enddo
+    do i=2,meshZ%nl+2 
+      write(11,*) meshZ%dxc(i)
+    enddo
+    
+    close(unit=11)
+  endif
+
+  allocate (uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1))
+  ! VR: allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
+
+end subroutine setup_mesh

@@ -64,7 +64,7 @@ integer*8 :: iterb,norbskip,restrt_write,nxcel,netax,netay,netaz,nspec,nx,ny,nz,
           nwrtdata, nwrtparticle, nwrtrestart, nskipx,nskipy,nskipz
 real*8 :: etamin,etamax,moat_zone
 integer*8 :: ieta, profile_power
-logical :: testorbt, restart, setup_mesh, uniform_loading_in_logical_grid, MPI_IO_format, smoothing
+logical :: testorbt, restart, uniform_loading_in_logical_grid, MPI_IO_format, smoothing
 real*8 ::  hx,hy,hz,hxi,hyi,hzi,efld,bfld,efluidt,ethermt,eptclt,time,te0
 logical :: prntinfo, wrtdat
 integer :: it,notime
