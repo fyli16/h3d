@@ -30,126 +30,7 @@
       call init_mpi()
       call read_input()
       call mpi_decomposition()
-      call set_parameters()
-      
-      !  Use CART_SHIFT to determine processor to immediate left (NBRLEFT) and right (NBRRITE) of processor MYID
-      !  Since code is aperiodic in z, need to manually set the left boundary for processor 0 and right boundary for npes-1
-      if (ndim == 2) then
-        call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
-        call MPI_CART_SHIFT(COMM2D,1,1,NBRBOT ,NBRTOP ,IERR)
-      else if (ndim == 1) then
-        call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
-        NBRTOP=MYID
-        NBRBOT=MYID
-      else if (ndim == 0) then
-        NBRLEFT=MYID
-        NBRRITE=MYID
-        NBRTOP =MYID
-        NBRBOT =MYID
-      endif
-
-      call MPI_SENDRECV(NBRTOP    ,1,MPI_INTEGER ,NBRRITE,0,&
-                        NBRLEFTTOP,1,MPI_INTEGER ,NBRLEFT,0,&
-                        mpi_comm_world,status,ierr)
-      call MPI_SENDRECV(NBRTOP    ,1,MPI_INTEGER ,NBRLEFT,0,&
-                        NBRRITETOP,1,MPI_INTEGER ,NBRRITE,0,&
-                        mpi_comm_world,status,ierr)
-      call MPI_SENDRECV(NBRBOT    ,1,MPI_INTEGER ,NBRRITE,0,&
-                        NBRLEFTBOT,1,MPI_INTEGER ,NBRLEFT,0,&
-                        mpi_comm_world,status,ierr)
-      call MPI_SENDRECV(NBRBOT    ,1,MPI_INTEGER ,NBRLEFT,0,&
-                        NBRRITEBOT,1,MPI_INTEGER ,NBRRITE,0,&
-                        mpi_comm_world,status,ierr) 
- 
-      if (mod(coords(1)  ,2) == 0.and.mod(coords(2)  ,2) == 0) then
-        isendid(1)=1
-      else
-        isendid(1)=0
-      endif
-      if (mod(coords(1)+1,2) == 0.and.mod(coords(2)  ,2) == 0) then
-        irecvid(1,1)=nbrrite
-        irecvid(2,1)=-1
-        irecvid(3,1)=nbrleft
-        irecvid(4,1)=-1
-      else if (mod(coords(1)  ,2) == 0.and.mod(coords(2)+1,2) == 0) then
-        irecvid(1,1)=-1
-        irecvid(2,1)=nbrtop
-        irecvid(3,1)=-1
-        irecvid(4,1)=nbrbot
-      else if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
-        irecvid(1,1)=nbrritetop
-        irecvid(2,1)=nbrlefttop
-        irecvid(3,1)=nbrleftbot
-        irecvid(4,1)=nbrritebot
-      endif
- 
-      if (mod(coords(1)+1,2) == 0.and.mod(coords(2)  ,2) == 0) then
-        isendid(2)=1
-      else
-        isendid(2)=0
-      endif
-      if (mod(coords(1)  ,2) == 0.and.mod(coords(2)  ,2) == 0) then
-        irecvid(1,2)=nbrrite
-        irecvid(2,2)=-1
-        irecvid(3,2)=nbrleft
-        irecvid(4,2)=-1
-      else if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
-        irecvid(1,2)=-1
-        irecvid(2,2)=nbrtop
-        irecvid(3,2)=-1
-        irecvid(4,2)=nbrbot
-      else if (mod(coords(1)  ,2) == 0.and.mod(coords(2)+1,2) == 0) then
-        irecvid(1,2)=nbrritetop
-        irecvid(2,2)=nbrlefttop
-        irecvid(3,2)=nbrleftbot
-        irecvid(4,2)=nbrritebot
-      endif
- 
-      if (mod(coords(1)  ,2) == 0.and.mod(coords(2)+1,2) == 0) then
-        isendid(3)=1
-      else
-        isendid(3)=0
-      endif
-      if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
-        irecvid(1,3)=nbrrite
-        irecvid(2,3)=-1
-        irecvid(3,3)=nbrleft
-        irecvid(4,3)=-1
-      else if (mod(coords(1)  ,2) == 0.and.mod(coords(2)  ,2) == 0) then
-        irecvid(1,3)=-1
-        irecvid(2,3)=nbrtop
-        irecvid(3,3)=-1
-        irecvid(4,3)=nbrbot
-      else if (mod(coords(1)+1,2) == 0.and.mod(coords(2)  ,2) == 0) then
-        irecvid(1,3)=nbrritetop
-        irecvid(2,3)=nbrlefttop
-        irecvid(3,3)=nbrleftbot
-        irecvid(4,3)=nbrritebot
-      endif
- 
-      if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
-        isendid(4)=1
-      else
-        isendid(4)=0
-      endif
-      if (mod(coords(1)  ,2) == 0.and.mod(coords(2)+1,2) == 0) then
-        irecvid(1,4)=nbrrite
-        irecvid(2,4)=-1
-        irecvid(3,4)=nbrleft
-        irecvid(4,4)=-1
-      else if (mod(coords(1)+1,2) == 0.and.mod(coords(2)  ,2) == 0) then
-        irecvid(1,4)=-1
-        irecvid(2,4)=nbrtop
-        irecvid(3,4)=-1
-        irecvid(4,4)=nbrbot
-      else if (mod(coords(1)  ,2) == 0.and.mod(coords(2)  ,2) == 0) then
-        irecvid(1,4)=nbrritetop
-        irecvid(2,4)=nbrlefttop
-        irecvid(3,4)=nbrleftbot
-        irecvid(4,4)=nbrritebot
-      endif
-      nzl=nzlmax
-      nyl=nylmax
+      call set_parameters()     
 
       ! if (myid == 0) then
       !    jbglobal(myid)=jb
@@ -289,7 +170,6 @@
 
       call allocate_global_arrays
       !  call pdf_injection
-
 
       ! Initialize nonuniform mesh
       call MESH_INIT(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh

@@ -1,8 +1,8 @@
 !===============================================================
 ! by Yuri Omelchenko, Scibernet Inc., 2003
 !> This module constructs a 1-D mesh by mapping a logical
-!! node-centered grid, t=[0,1] to a physical node-centered grid x=[0,xl] 
-!! surrounded by ghost grid points. 
+!! node-centered grid, t=[0,1] to a physical node-centered grid x=[0,xl] surrounded by ghost grid points. 
+
 !! The cell-centered grid points are also computed.
 !! The following mapping is used (dt=1/nl):
 !! 0 <= t <= ta(=dt*na):
@@ -11,6 +11,7 @@
 !! x = xa + dx*(t-ta)/dt, where dx = (xb-xa)/(nb-na)
 !! tb <= t <= 1:
 !! x = xb + (xl-xb)*[exp(alph2*(t-tb))-1]/[exp(alph2*(1-tb))-1]
+
 !! We define eps == exp(alph*dt)
 !! The first steps on both nonuniform grids are matched to be equal to dx.
 !! We solve nonlinear equations to find eps1 and eps2:
@@ -334,13 +335,10 @@
       endif
 
       do j=1,nny
-
          ry=(j-1)*dy
          jj=iy(j)
          fy=( ry-ppy(jj) )/( ppy(jj+1)-ppy(jj) )
-
          do i=1,nnx
-
             rx=(i-1)*dx
             ii=ix(i)
             fx=( rx-ppx(ii) )/( ppx(ii+1)-ppx(ii) )
@@ -349,9 +347,7 @@
             w3=(1.-fx)*fy
             w4=fx*fy
             ap(i,j)=w1*a(ii,jj)+w2*a(ii+1,jj)+w3*a(ii,jj+1)+w4*a(ii+1,jj+1)
-        
          enddo
-
       enddo
 
       nullify(ppx)
@@ -359,6 +355,7 @@
       end subroutine MESH_INTERPOLATE2D
 
       end module MESH_CLASS
+
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 !     Helper functions
@@ -396,9 +393,9 @@
       return
       end function FINDEXP
 
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !>     F(t) = 0 to solve
-!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       double precision function FUNC(t) 
       implicit none
@@ -414,9 +411,9 @@
       return
       end function FUNC 
   
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !>     simple root finder
-!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine BISECT(f,a,b,tol)
       implicit none
@@ -450,14 +447,15 @@
       return      
       end subroutine BISECT
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
       subroutine ERROR_ABORT(message)
-      character(*), intent(in) :: message
-      write(6,*) message
-      stop
+        character(*), intent(in) :: message
+        write(6,*) message
+        stop
       end subroutine ERROR_ABORT
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
       subroutine WARNING(message)
-      character(*), intent(in) :: message
-      write(6,*) message
+        character(*), intent(in) :: message
+        write(6,*) message
       end subroutine WARNING

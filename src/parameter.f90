@@ -9,33 +9,33 @@ integer, dimension(8,128) :: time_begin_array,time_end_array
 real*8, dimension(128):: time_elapsed
 integer*8 :: nxmax, nymax, nzmax, nspecm, npes, nvar, nylmax, nzlmax, npm, npes_over_60
 
-integer :: numprocs, ndim, dims(2), nodey, nodez, ierr, comm2d, myid, req(8)                                          &
-          ,nbrtop,nbrbot,nbrritetop,nbrlefttop,nbrritebot,nbrleftbot                                          &
-          ,nbrleft,nbrrite,ipe,stridery,striderz,iseed(1),coords(2)
+integer :: numprocs, ndim, dims(2), nodey, nodez, ierr, comm2d, myid, req(8)     &
+          ,nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot        &
+          ,nbrleft, nbrrite, ipe, stridery, striderz, iseed(1), coords(2)
 integer :: status(mpi_status_size),status1(mpi_status_size),status2(mpi_status_size),status_array(mpi_status_size,8)
 
 real*8 :: zb,ze,yb,ye,teti,volume_fraction,cell_volume_ratio,zb_logical,ze_logical,yb_logical,ye_logical    &
-     ,xb_logical,xe_logical,xb,xe,smooth_coef
+          ,xb_logical,xe_logical,xb,xe,smooth_coef
 real*8, dimension(:), allocatable :: zbglobal,zeglobal,ybglobal,yeglobal,xc_uniform,yc_uniform,zc_uniform   &
-     ,xv_uniform,yv_uniform,zv_uniform
-integer*8, dimension(:), allocatable :: kbglobal,keglobal,jbglobal,jeglobal,nsendp,nrecvp,ixc_2_c_map,iyc_2_c_map,izc_2_c_map   &
-     ,ixc_2_v_map,iyc_2_v_map,izc_2_v_map     &
-     ,ixv_2_c_map,iyv_2_c_map,izv_2_c_map     &
-     ,ixv_2_v_map,iyv_2_v_map,izv_2_v_map     
+                                   ,xv_uniform,yv_uniform,zv_uniform
+integer*8, dimension(:), allocatable :: kbglobal, keglobal, jbglobal, jeglobal, nsendp,nrecvp,ixc_2_c_map,iyc_2_c_map,izc_2_c_map   &
+                                        ,ixc_2_v_map,iyc_2_v_map,izc_2_v_map     &
+                                        ,ixv_2_c_map,iyv_2_c_map,izv_2_c_map     &
+                                        ,ixv_2_v_map,iyv_2_v_map,izv_2_v_map     
 real*8, dimension(:,:,:), allocatable :: ex,ey,ez,bx,by,bz,fox,foy,foz,eta,curlex,curley,curlez,&
-     bx_av, by_av, bz_av, &
-     bxs,bys,bzs,den,deno,denh,dpedx,dpedy,dpedz,vix,viy,viz,vixo,viyo,   &
-     vizo,pe,curlbx,curlby,curlbz,                               &
-     eta_times_b_dot_j
+                                        bx_av, by_av, bz_av, &
+                                        bxs,bys,bzs,den,deno,denh,dpedx,dpedy,dpedz,vix,viy,viz,vixo,viyo,   &
+                                        vizo,pe,curlbx,curlby,curlbz,                               &
+                                        eta_times_b_dot_j
 real*8, dimension(:,:,:,:), allocatable :: dns, dnsh, vxs, vys, vzs, tpar, tperp,qp_cell
 real*8, dimension(:,:,:,:), allocatable :: p_xx,p_xy,p_xz,p_yy,p_yz,p_zz
 
 real*8, dimension(:,:), allocatable ::ainjxz,ainjzx,deavxz,deavzx,vxavxz,vyavxz,vzavxz,vxavzx,      &
-                                             vyavzx,vzavzx,vxcaxz,vycaxz,vzcaxz,vxcazx,vycazx,vzcazx,      &
-                                             ainjyz,ainjzy,deavyz,deavzy,vxavyz,vyavyz,vzavyz,vxavzy,      &
-                                             vyavzy,vzavzy,vxcayz,vycayz,vzcayz,vxcazy,vycazy,vzcazy,      &
-                                             ainjxy,ainjyx,deavxy,deavyx,vxavxy,vyavxy,vzavxy,vxavyx,      &
-                                             vyavyx,vzavyx,vxcaxy,vycaxy,vzcaxy,vxcayx,vycayx,vzcayx
+                                        vyavzx,vzavzx,vxcaxz,vycaxz,vzcaxz,vxcazx,vycazx,vzcazx,      &
+                                        ainjyz,ainjzy,deavyz,deavzy,vxavyz,vyavyz,vzavyz,vxavzy,      &
+                                        vyavzy,vzavzy,vxcayz,vycayz,vzcayz,vxcazy,vycazy,vzcazy,      &
+                                        ainjxy,ainjyx,deavxy,deavyx,vxavxy,vyavxy,vzavxy,vxavyx,      &
+                                        vyavyx,vzavyx,vxcaxy,vycaxy,vzcaxy,vxcayx,vycayx,vzcayx
 real*8, dimension(:), allocatable :: x, y, z, vx, vy, vz, qp
 integer, dimension(:), allocatable :: ptag ! tag used to trace particles
 integer*8, dimension(:), allocatable :: link,porder
@@ -54,8 +54,8 @@ real*8, dimension(5) :: rcorr
 integer*8, dimension(5) :: ishape
 real*8, dimension(5) :: btspec,qspec,wspec,frac,anisot
 double precision :: denmin, resis, wpiwci, bete, fxsho,ave1,ave2,phib,demin2, &
-     xmax,ymax,zmax,dt,gama,dtwci,quota,wall_clock_elapsed,tmax,buffer_zone,  &
-     xaa,xbb,yaa,ybb,zaa,zbb,t_stopped
+                    xmax,ymax,zmax,dt,gama,dtwci,quota,wall_clock_elapsed,tmax,buffer_zone,  &
+                    xaa,xbb,yaa,ybb,zaa,zbb,t_stopped
 integer*8 :: nax,nbx,nay,nby,naz,nbz
 integer*8, dimension(8) :: wall_clock_begin,wall_clock_end
 integer*8 :: eta_par, nparbuf
@@ -64,12 +64,12 @@ integer*8 :: iterb,norbskip,restrt_write,nxcel,netax,netay,netaz,nspec,nx,ny,nz,
           nwrtdata, nwrtparticle, nwrtrestart, nskipx,nskipy,nskipz
 real*8 :: etamin,etamax,moat_zone
 integer*8 :: ieta, profile_power
-logical :: testorbt,restart,setup_mesh,uniform_loading_in_logical_grid,MPI_IO_format,smoothing
+logical :: testorbt, restart, setup_mesh, uniform_loading_in_logical_grid, MPI_IO_format, smoothing
 real*8 ::  hx,hy,hz,hxi,hyi,hzi,efld,bfld,efluidt,ethermt,eptclt,time,te0
 logical :: prntinfo, wrtdat
 integer :: it,notime
 integer*8 :: nsteps0,itfin,iwt,nx1,nx2,ny1,ny2,nz1,nz2,iopen,file_unit(25),file_unit_time,            &
-     file_unit_tmp,file_unit_read(20),nptot,npleaving,npentering,iclock_speed,nptotp
+               file_unit_tmp,file_unit_read(20),nptot,npleaving,npentering,iclock_speed,nptotp
 real*8 :: clock_time_init,clock_time_old,clock_time,clock_time1
 real*8, dimension(:) ,allocatable:: dfac
 integer*8, dimension(:) ,allocatable:: nskip,ipleft,iprite,ipsendleft,ipsendrite,iprecv,ipsendtop,ipsendbot     &
@@ -131,34 +131,127 @@ subroutine set_parameters()
      endif
 
      myid_stop(myid) = 0  
-     ! if (nzlmax < ke-kb+1) then
-     !      print*, 'myid = ', myid, ' nzlmax less than ke-kb+1'
-     !      print*, 'myid = ', myid, ' nzlmax, ke, kb= ', nzlmax, ke, kb
-     !      myid_stop(myid) = 1
-     ! endif
 
-     ! if (nylmax < je-jb+1) then
-     !      print*, 'myid = ', myid, ' nylmax less than je-jb+1'
-     !      print*, 'myid = ', myid, ' nylmax, je, jb= ', nylmax, je, jb
-     !      myid_stop(myid) = 1
-     ! endif
+     !  Use CART_SHIFT to determine processor to immediate left (NBRLEFT) and right (NBRRITE) of processor MYID
+     !  Since code is aperiodic in z, need to manually set the left boundary for processor 0 and right boundary for npes-1
+     if (ndim == 2) then
+          call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
+          call MPI_CART_SHIFT(COMM2D,1,1,NBRBOT ,NBRTOP ,IERR)
+     else if (ndim == 1) then
+          call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
+          NBRTOP = MYID
+          NBRBOT = MYID
+     else if (ndim == 0) then
+          NBRLEFT = MYID
+          NBRRITE = MYID
+          NBRTOP = MYID
+          NBRBOT = MYID
+     endif
 
-     ! do i = 0, npes-1
-     !      ! if (myid==i) then
-     !      !    write(6,*)"Node number:", i, "myid_stop=", myid_stop(i)
-     !      ! endif
-     !      i_i = i
-     !      call MPI_BCAST(MYID_STOP(i),1,MPI_INTEGER8,i_i,MPI_COMM_WORLD, IERR)
-     ! enddo
+     call MPI_SENDRECV(NBRTOP    ,1,MPI_INTEGER ,NBRRITE,0,&
+                        NBRLEFTTOP,1,MPI_INTEGER ,NBRLEFT,0,&
+                        mpi_comm_world,status,ierr)
+     call MPI_SENDRECV(NBRTOP    ,1,MPI_INTEGER ,NBRLEFT,0,&
+                    NBRRITETOP,1,MPI_INTEGER ,NBRRITE,0,&
+                    mpi_comm_world,status,ierr)
+     call MPI_SENDRECV(NBRBOT    ,1,MPI_INTEGER ,NBRRITE,0,&
+                    NBRLEFTBOT,1,MPI_INTEGER ,NBRLEFT,0,&
+                    mpi_comm_world,status,ierr)
+     call MPI_SENDRECV(NBRBOT    ,1,MPI_INTEGER ,NBRLEFT,0,&
+                    NBRRITEBOT,1,MPI_INTEGER ,NBRRITE,0,&
+                    mpi_comm_world,status,ierr) 
 
-     ! do i = 0, npes-1
-     ! if (myid_stop(i).ne.0) then
-     !      call MPI_FINALIZE(IERR)
-     !      write(6,*)"TEST HERE"
-     !      write(6,*) i, myid_stop(i)
-     !      STOP
-     ! endif
-     ! enddo
+     ! recv, send id
+     if (mod(coords(1),2) == 0.and.mod(coords(2),2) == 0) then
+          isendid(1)=1
+     else
+          isendid(1)=0
+     endif
+
+     if (mod(coords(1)+1,2) == 0.and.mod(coords(2),2) == 0) then
+          irecvid(1,1)=nbrrite
+          irecvid(2,1)=-1
+          irecvid(3,1)=nbrleft
+          irecvid(4,1)=-1
+     else if (mod(coords(1),2) == 0.and.mod(coords(2)+1,2) == 0) then
+          irecvid(1,1)=-1
+          irecvid(2,1)=nbrtop
+          irecvid(3,1)=-1
+          irecvid(4,1)=nbrbot
+     else if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
+          irecvid(1,1)=nbrritetop
+          irecvid(2,1)=nbrlefttop
+          irecvid(3,1)=nbrleftbot
+          irecvid(4,1)=nbrritebot
+     endif
+     
+     if (mod(coords(1)+1,2) == 0.and.mod(coords(2)  ,2) == 0) then
+          isendid(2)=1
+     else
+          isendid(2)=0
+     endif
+     if (mod(coords(1)  ,2) == 0.and.mod(coords(2)  ,2) == 0) then
+          irecvid(1,2)=nbrrite
+          irecvid(2,2)=-1
+          irecvid(3,2)=nbrleft
+          irecvid(4,2)=-1
+     else if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
+          irecvid(1,2)=-1
+          irecvid(2,2)=nbrtop
+          irecvid(3,2)=-1
+          irecvid(4,2)=nbrbot
+     else if (mod(coords(1)  ,2) == 0.and.mod(coords(2)+1,2) == 0) then
+          irecvid(1,2)=nbrritetop
+          irecvid(2,2)=nbrlefttop
+          irecvid(3,2)=nbrleftbot
+          irecvid(4,2)=nbrritebot
+     endif
+     
+     if (mod(coords(1)  ,2) == 0.and.mod(coords(2)+1,2) == 0) then
+          isendid(3)=1
+     else
+          isendid(3)=0
+     endif
+     if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
+          irecvid(1,3)=nbrrite
+          irecvid(2,3)=-1
+          irecvid(3,3)=nbrleft
+          irecvid(4,3)=-1
+     else if (mod(coords(1)  ,2) == 0.and.mod(coords(2)  ,2) == 0) then
+          irecvid(1,3)=-1
+          irecvid(2,3)=nbrtop
+          irecvid(3,3)=-1
+          irecvid(4,3)=nbrbot
+     else if (mod(coords(1)+1,2) == 0.and.mod(coords(2)  ,2) == 0) then
+          irecvid(1,3)=nbrritetop
+          irecvid(2,3)=nbrlefttop
+          irecvid(3,3)=nbrleftbot
+          irecvid(4,3)=nbrritebot
+     endif
+     
+     if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
+          isendid(4)=1
+     else
+          isendid(4)=0
+     endif
+     if (mod(coords(1)  ,2) == 0.and.mod(coords(2)+1,2) == 0) then
+          irecvid(1,4)=nbrrite
+          irecvid(2,4)=-1
+          irecvid(3,4)=nbrleft
+          irecvid(4,4)=-1
+     else if (mod(coords(1)+1,2) == 0.and.mod(coords(2)  ,2) == 0) then
+          irecvid(1,4)=-1
+          irecvid(2,4)=nbrtop
+          irecvid(3,4)=-1
+          irecvid(4,4)=nbrbot
+     else if (mod(coords(1)  ,2) == 0.and.mod(coords(2)  ,2) == 0) then
+          irecvid(1,4)=nbrritetop
+          irecvid(2,4)=nbrlefttop
+          irecvid(3,4)=nbrleftbot
+          irecvid(4,4)=nbrritebot
+     endif
+     nzl = nzlmax
+     nyl = nylmax
 
      ! estimate on particle storage requirement
      nplmax = 0  ! max number of local particles in each process
