@@ -4,10 +4,10 @@ module initialize
 
   integer*4:: input_error
 
-contains
+  contains
   !---------------------------------------------------------------------
-  subroutine init_mpi()  ! MPI initialization
-
+  ! MPI initialization
+  subroutine init_mpi()  
     call MPI_INIT(IERR)
     call MPI_COMM_SIZE(MPI_COMM_WORLD,NUMPROCS,IERR)
     call MPI_COMM_RANK(MPI_COMM_WORLD,MYID,IERR)
@@ -23,6 +23,7 @@ contains
     ! time stamp
     !  call date_and_time(values=wall_clock_begin)
     initial_time = MPI_Wtime()
+    return
   end subroutine init_mpi
 
 
@@ -183,6 +184,7 @@ contains
         write(6,*) "*** New run *** "
       endif
     endif 
+    return
   end subroutine read_input
 
 
@@ -239,7 +241,7 @@ contains
       write(6,*) "  Local array size in y-direction = ", nylmax
       write(6,*) "  Local array size in z-direction = ", nzlmax
     endif
-
+    return
   end subroutine mpi_decomposition
 
 
@@ -463,7 +465,7 @@ contains
     if (.not.testorbt) norbskip=1
 
     call allocate_global_arrays
-
+    return
   end subroutine set_parameters 
-
+  
 end module initialize
