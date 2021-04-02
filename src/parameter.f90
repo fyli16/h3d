@@ -341,8 +341,8 @@ subroutine set_parameters()
   
       
      nptotp = 0  ! total number of particles per processor
-     do is=1, nspec
-          nptotp = nptotp + npx(is)*npy(is)*npz(is)
+     do i=1, nspec
+          nptotp = nptotp + npx(i)*npy(i)*npz(i)
      enddo
  
      do i = 0, npes-1
