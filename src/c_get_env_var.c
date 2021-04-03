@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void get_environment_variable_(char c[1], int *max_char, char var)
+void get_environment_variable_(char c[], int *max_char, char var[])
 {
   int i;
   for (i=0; i<*max_char; ++i)
