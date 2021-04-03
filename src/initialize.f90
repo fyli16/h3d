@@ -29,7 +29,8 @@ module initialize
 
   !---------------------------------------------------------------------
   subroutine read_input()
-    external get_environment_variable1, get_environment_variable2
+    ! external get_environment_variable1, get_environment_variable2
+    external get_environment_variable
 
     namelist /datum/ tmax, t_begin, t_end, dtwci, dt, restart, &   ! global info
     restrt_write, quota, MPI_IO_format, &
@@ -54,9 +55,11 @@ module initialize
     !tracking_binary=.false.
 
     ! get the i/o directory names from the environment variable
-    call get_environment_variable1(data_directory, len(data_directory))
+    ! call get_environment_variable1(data_directory, len(data_directory))
+    call get_environment_variable(data_directory, len(data_directory), 'DATA_DIRECTORY')
     data_directory = trim(adjustl(data_directory))//'/'
-    call get_environment_variable2(restart_directory, len(restart_directory))
+    ! call get_environment_variable2(restart_directory, len(restart_directory))
+    call get_environment_variable(restart_directory, len(restart_directory), 'RESTART_DIRECTORY')
     restart_directory = trim(adjustl(restart_directory))//'/'
     restart_index_suffix(1) = '.1'
     restart_index_suffix(2) = '.2'

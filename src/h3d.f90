@@ -75,9 +75,8 @@
     endif
 
     if (tracking_mpi) then
-      ! write(*,*)'filename=',filename
-      write(filename,"(a,i4.4,a)")'tracking_',myid,'.dat'
-      write(filename2,"(a,i4.4,a)")'probes_',myid,'.dat'
+      write(filename,"(a,i4.4,a)") 'tracking_',myid,'.dat'
+      write(filename2,"(a,i4.4,a)") 'probes_',myid,'.dat'
       if (restart) then
         open(unit=12,file=trim(adjustl(data_directory))//filename2, status='old',position='append')
         open(unit=13,file=trim(adjustl(data_directory))//filename,form='unformatted',status='old',access='append')
@@ -547,7 +546,7 @@
 
 999 if (notime == 0) close(file_unit_time)
       
-    if (MYID.EQ.0) then
+    if (myid.EQ.0) then
       write(6,*) " "
       write(6,*) " "
       write(6,*) " *** RUN COMPLETED *** RUN COMPLETED *** RUN COMPLETED "
@@ -684,4 +683,5 @@ subroutine setup_mesh()
     close(unit=11)
   endif
 
+  return
 end subroutine setup_mesh
