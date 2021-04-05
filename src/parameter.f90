@@ -27,7 +27,7 @@ module parameter_mod
                                           bxs,bys,bzs,den,deno,denh,dpedx,dpedy,dpedz,vix,viy,viz,vixo,viyo,   &
                                           vizo,pe,curlbx,curlby,curlbz,                               &
                                           eta_times_b_dot_j
-  real*8, dimension(:,:,:,:), allocatable :: dns, dnsh, vxs, vys, vzs, tpar, tperp,qp_cell
+  real*8, dimension(:,:,:,:), allocatable :: dns, dnsh, vxs, vys, vzs, tpar, tperp, qp_cell
   real*8, dimension(:,:,:,:), allocatable :: p_xx,p_xy,p_xz,p_yy,p_yz,p_zz
 
   real*8, dimension(:,:), allocatable ::ainjxz,ainjzx,deavxz,deavzx,vxavxz,vyavxz,vzavxz,vxavzx,      &
@@ -52,7 +52,7 @@ module parameter_mod
   real*8, dimension(:,:), allocatable :: vbal
   real*8, dimension(5) :: rcorr
   integer*8, dimension(5) :: ishape
-  real*8, dimension(5) :: btspec,qspec,wspec,frac,anisot
+  real*8, dimension(5) :: btspec, qspec, wspec, frac, anisot
   double precision :: denmin, resis, wpiwci, bete, fxsho,ave1,ave2,phib,demin2, &
                       xmax,ymax,zmax,dt,gama,dtwci,quota,wall_clock_elapsed,tmax,buffer_zone,  &
                       xaa,xbb,yaa,ybb,zaa,zbb,t_stopped
@@ -65,7 +65,7 @@ module parameter_mod
   real*8 :: etamin,etamax,moat_zone
   integer*8 :: ieta, profile_power
   logical :: testorbt, restart, uniform_loading_in_logical_grid, MPI_IO_format, smoothing
-  real*8 ::  hx,hy,hz,hxi,hyi,hzi,efld,bfld,efluidt,ethermt,eptclt,time,te0
+  real*8 ::  hx, hy, hz, hxi, hyi, hzi, efld, bfld, efluidt, ethermt, eptclt, time, te0
   logical :: prntinfo, wrtdat
   integer :: it, notime
   integer*8 :: nsteps0,itfin,iwt,nx1,nx2,ny1,ny2, nz1, nz2, iopen, file_unit(25), file_unit_time,            &

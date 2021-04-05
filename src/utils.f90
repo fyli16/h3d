@@ -240,8 +240,7 @@ subroutine clock_write(iunit,message,i2,i1,is,it)
 end subroutine clock_write
 
 
-!********************************************************
-!***********************************************************************
+!---------------------------------------------------------------------
 subroutine makelist
   use parameter_mod
   implicit none

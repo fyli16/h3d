@@ -16,7 +16,7 @@
 
     implicit none
 
-    integer*8 :: i, irecnum, ixe, iye, ize, j, jbt, jet, k, kbt, ket, nplmax6, numvars
+    integer*8 :: i, irecnum, ixe, iye, ize, j, jbt, jet, k, kbt, ket, numvars
     real*8 :: rnorm, pifac
     integer*4 :: time_begin(8), time_end(8), is
     integer*8 :: itstart, itfinish
@@ -49,12 +49,12 @@
     clock_time_re1=(time_begin(5)*3600.+time_begin(6)*60.+time_begin(7)+time_begin(8)*0.001)
  
     ! open diagnostic files
-    call open_files_for_diagnostics()
+    call open_diag_files()
 
+    ! ??
     if (restart) then
       call makelist
       if (myid == 0) then
-        ! open(unit=222,file='restart_index.dat' ,status='old')
         open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='old')
         read(222,*) restart_index, itfin
         close(222)
@@ -62,7 +62,7 @@
 
       call MPI_BCAST(restart_index,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
       call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-      nplmax6 = 6*nplmax
+
       ! hxv 01/10/2014
       if (myid == 0) then
         write(6,*) " "
@@ -86,23 +86,23 @@
       endif
 
       ! Uniform mesh - Same as is in version 5.0
-      yb=(jb-1)*hy
-      ye= je   *hy
-      zb=(kb-1)*hz
-      ze= ke   *hz
+      yb = (jb-1)*hy  ! where is hy, hz defined before this?
+      ye = je   *hy
+      zb = (kb-1)*hz
+      ze = ke   *hz
         
       ! Nonuniform mesh
-      zb=meshZ%xn(kb+1)
-      ze=meshZ%xn(ke+2)
-      do ipe=0,npes-1
-        zbglobal(ipe)=meshZ%xn(kbglobal(ipe)+1)
-        zeglobal(ipe)=meshZ%xn(keglobal(ipe)+2)
+      zb = meshZ%xn(kb+1)
+      ze = meshZ%xn(ke+2)
+      do ipe = 0,npes-1
+        zbglobal(ipe) = meshZ%xn(kbglobal(ipe)+1)
+        zeglobal(ipe) = meshZ%xn(keglobal(ipe)+2)
       enddo
-      yb=meshY%xn(jb+1)
-      ye=meshY%xn(je+2)
-      do ipe=0,npes-1
-        ybglobal(ipe)=meshY%xn(jbglobal(ipe)+1)
-        yeglobal(ipe)=meshY%xn(jeglobal(ipe)+2)
+      yb = meshY%xn(jb+1)
+      ye = meshY%xn(je+2)
+      do ipe = 0,npes-1
+        ybglobal(ipe) = meshY%xn(jbglobal(ipe)+1)
+        yeglobal(ipe) = meshY%xn(jeglobal(ipe)+2)
       enddo
                 
       volume_fraction = (ye-yb)*(ze-zb)/(ymax*zmax)
@@ -117,12 +117,11 @@
       ze_logical = MESH_UNMAP(meshZ,ze)
                 
       do is = 1, nspec
-        npm=npx(is)*npy(is)*npz(is)*npes
-        dfac(is)=real(ny*nz*nx)/real(npm)
+        npm = npx(is)*npy(is)*npz(is)*npes
+        dfac(is) = real(ny*nz*nx)/real(npm)
         do ixe=1,nx2
             do iye=jb-1,je+1
               do ize=kb-1,ke+1
-                  ! qp_cell(ixe,iye,ize,is) = (meshX%dxc(ixe)*meshY%dxc(iye)*meshZ%dxc(ize)/(hx*hy*hz))*dfac(is)*frac(is)
                   qp_cell(ixe,iye,ize,is) = meshX%dxc(ixe)*meshY%dxc(iye+1)*meshZ%dxc(ize+1)*dfac(is)*frac(is)
               enddo
             enddo
@@ -143,22 +142,27 @@
       enddo
         
       if (myid ==0) then
-          my_short_int=it
+          my_short_int = it
           call integer_to_character(cycle_ascii,len(cycle_ascii),my_short_int)
           cycle_ascii_new=trim(adjustl(cycle_ascii))
-          write(6,*) " cycle = ",cycle_ascii_new
+          write(6,*) " cycle = ", cycle_ascii_new
       endif
       
       call MPI_BCAST(cycle_ascii    ,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
       call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
       
     else  !VR: fresh start
-      time=0.0
+
+      time = 0.0
       call makelist
-      if (myid == 0) write(6,*) " harris = ",harris
-      if (myid == 0) write(6,*) " global = ",global
-      if (myid == 0) write(6,*) " Yee    = ",yee
-      restart_index=1
+      if (myid == 0) then 
+        write(6,*) " "
+        write(6,*) " harris = ", harris
+        write(6,*) " global = ", global
+        write(6,*) " Yee    = ", yee  ! seems these parameters are not used at all
+        write(6,*) " "
+      endif 
+      restart_index = 1
 
       call init_wave
       
@@ -194,14 +198,14 @@
     endif
 
     ! march forward in time
-    itstart = itfin+1
+    itstart = itfin + 1
 
     ! change how itfinish is computed
-    itfinish = (tmax-t_stopped)/dtwci+itstart-1
+    itfinish = (tmax-t_stopped)/dtwci + itstart - 1
 
-    if (myid == 0) write(6,*) 't_stopped = ',t_stopped
-    if (myid == 0) write(6,*) 'itstart, itfinish = ',itstart,' ',itfinish
-    if (myid == 0) write(6,*) 'nwrtdata = ',nwrtdata
+    if (myid == 0) write(6,*) 't_stopped = ', t_stopped
+    if (myid == 0) write(6,*) 'itstart, itfinish = ', itstart, ' ', itfinish
+    if (myid == 0) write(6,*) 'nwrtdata = ', nwrtdata
     it = itstart
     time_elapsed=0.; time_begin_array=0; time_end_array=0
 
@@ -643,7 +647,7 @@ subroutine setup_mesh()
 end subroutine setup_mesh
 
 
-subroutine open_files_for_diagnostics()
+subroutine open_diag_files()
   use parameter_mod
   implicit none 
 
@@ -699,4 +703,4 @@ subroutine open_files_for_diagnostics()
   if (notime==0) call open_timediag_files
 
   return
-end subroutine open_files_for_diagnostics
+end subroutine open_diag_files
