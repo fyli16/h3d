@@ -842,16 +842,15 @@ subroutine opendiagfiles
   file_unit_time = myid + 500
   write(timeunit,"(i4.4)") file_unit_time
 
-  ! The diagnostic timing file is defined as a standard COS
-  ! blocked file. Note that this file is ONLY used during
-  ! diagnostic runs
-  if (notime == 0) then
+  ! The diagnostic timing file is defined as a standard COS blocked file. 
+  ! Note that this file is ONLY used during diagnostic runs
+  if (notime == 0) then  ! notime=0 will output detailed timing
     file_name = trim(adjustl(data_directory))//"timing" // timeunit // ".txt" 
-    open(UNIT=file_unit_time,FILE=file_name,status='unknown')
+    open(UNIT=file_unit_time, FILE=file_name, status='unknown')
   endif
 
-return
-end subroutine opendiagfiles
+  return
+end subroutine opendiagfiles  
 
 
 !---------------------------------------------------------------------
@@ -894,7 +893,7 @@ subroutine readdatum(ndatum,datum,f_unit)
   integer*8:: ndatum,f_unit
   integer:: ndatum_4
   double precision:: datum(ndatum),datum_tmp(ndatum)
-  
+
   ndatum_4=ndatum
   do ipe=0,numprocs-1
     if (myid == 0) then
