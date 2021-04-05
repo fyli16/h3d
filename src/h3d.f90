@@ -643,6 +643,7 @@ end subroutine setup_mesh
 
 
 subroutine open_files_for_diagnostics()
+  use parameter_mod
   implicit none 
 
   if (myid == 0) then
