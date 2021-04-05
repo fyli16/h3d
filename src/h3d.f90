@@ -643,6 +643,8 @@ end subroutine setup_mesh
 
 
 subroutine open_files_for_diagnostics()
+  implicit none 
+
   if (myid == 0) then
     if (restart) then
       open(unit=11,file=trim(adjustl(data_directory))//'energy.dat' ,status='old',position='append')
