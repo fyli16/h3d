@@ -24,7 +24,7 @@
     real*8, dimension(:,:,:), allocatable :: uniform_mesh      
     !VR : allocating a global mesh can not work on large runs with small amount of memory per rank
     !VR : double precision, dimension(:,:,:), allocatable:: nonuniform_mesh_global
-    character (len=240) :: filename, filename2, tmpfname
+    character (len=240) :: tmpfname
     integer :: iwrite, ierr2, eStrLen
     character(len=1024) :: eStr
 
@@ -645,6 +645,8 @@ end subroutine setup_mesh
 subroutine open_files_for_diagnostics()
   use parameter_mod
   implicit none 
+
+  character (len=240) :: filename, filename2
 
   if (myid == 0) then
     if (restart) then
