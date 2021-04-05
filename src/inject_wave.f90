@@ -180,33 +180,33 @@
       real(kind=8) :: bx_,by_,bz_, ex_,ey_,ez_
       real(kind=8) :: kx,ky,kz,kxmin,kymin,kzmin
 
-      ! Alfvenic perturbation with deltaB in the x direction
-      ! i,j,k are wave numbers in x,y,z
-      #define DBX_1(k,j,phi) (dB_B0*B0*cos((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
-      #define DEY_1(k,j,phi) (-dB_B0*(k/abs(k))*VA*B0*cos((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
-      ! These give velocity & current consistent with Alfven wave
-      #define DUX_1(k,j,phi) (-dB_B0*(k/abs(k))*VA*cos((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
-      #define DJY_1(k,j,phi) (-dB_B0*B0*(k)*kzmin*sin((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
-      #define DJZ_1(k,j,phi) (dB_B0*B0*(j)*kymin*sin((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
-      #define BX_PERT_1 DBX_1(1,1,0) + DBX_1(1,2,1.5) + DBX_1(-2,3,3.9)   
-      #define EY_PERT_1 DEY_1(1,1,0) + DEY_1(1,2,1.5) + DEY_1(-2,3,3.9)  
-      #define UX_PERT_1 DUX_1(1,1,0) + DUX_1(1,2,1.5) + DUX_1(-2,3,3.9)
-      #define JY_PERT_1 DJY_1(1,1,0) + DJY_1(1,2,1.5) + DJY_1(-2,3,3.9)
-      #define JZ_PERT_1 DJZ_1(1,1,0) + DJZ_1(1,2,1.5) + DJZ_1(-2,3,3.9)
+! Alfvenic perturbation with deltaB in the x direction
+! i,j,k are wave numbers in x,y,z
+#define DBX_1(k,j,phi) (dB_B0*B0*cos((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
+#define DEY_1(k,j,phi) (-dB_B0*(k/abs(k))*VA*B0*cos((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
+! These give velocity & current consistent with Alfven wave
+#define DUX_1(k,j,phi) (-dB_B0*(k/abs(k))*VA*cos((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
+#define DJY_1(k,j,phi) (-dB_B0*B0*(k)*kzmin*sin((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
+#define DJZ_1(k,j,phi) (dB_B0*B0*(j)*kymin*sin((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
+#define BX_PERT_1 DBX_1(1,1,0) + DBX_1(1,2,1.5) + DBX_1(-2,3,3.9)   
+#define EY_PERT_1 DEY_1(1,1,0) + DEY_1(1,2,1.5) + DEY_1(-2,3,3.9)  
+#define UX_PERT_1 DUX_1(1,1,0) + DUX_1(1,2,1.5) + DUX_1(-2,3,3.9)
+#define JY_PERT_1 DJY_1(1,1,0) + DJY_1(1,2,1.5) + DJY_1(-2,3,3.9)
+#define JZ_PERT_1 DJZ_1(1,1,0) + DJZ_1(1,2,1.5) + DJZ_1(-2,3,3.9)
 
-      ! Alfvenic perturbation with deltaB in the y direction
-      ! works only for a pair plasma
-      #define DBY_2(k,i,phi) (dB_B0*B0*cos((k)*kzmin*z_pos + (i)*kxmin*x_pos + (phi)))
-      #define DEX_2(k,i,phi) (dB_B0*(k/abs(k))*VA*B0*cos((k)*kzmin*z_pos + (i)*kxmin*x_pos + (phi)))
-      ! These give velocity & current consistent with Alfven wave
-      #define DUY_2(k,i,phi) (-dB_B0*(k/abs(k))*VA*cos((k)*kzmin*z_pos + (i)*kxmin*x_pos + (phi)))
-      #define DJX_2(k,i,phi) (dB_B0*B0*(k)*kzmin*sin((k)*kzmin*z_pos + (i)*kxmin*x_pos + (phi)))
-      #define DJZ_2(k,i,phi) (-dB_B0*B0*(i)*kxmin*sin((k)*kzmin*z_pos + (i)*kxmin*x_pos + (phi)))
-      #define BY_PERT_2 DBY_2(-1,1,0.4) + DBY_2(-1,-2,2.56) + DBY_2(2,-3,4.19)   
-      #define EX_PERT_2 DEX_2(-1,1,0.4) + DEX_2(-1,-2,2.56) + DEX_2(2,-3,4.19) 
-      #define UY_PERT_2 DUY_2(-1,1,0.4) + DUY_2(-1,-2,2.56) + DUY_2(2,-3,4.19)
-      #define JX_PERT_2 DJX_2(-1,1,0.4) + DJX_2(-1,-2,2.56) + DJX_2(2,-3,4.19)
-      #define JZ_PERT_2 DJZ_2(-1,1,0.4) + DJZ_2(-1,-2,2.56) + DJZ_2(2,-3,4.19)
+! Alfvenic perturbation with deltaB in the y direction
+! works only for a pair plasma
+#define DBY_2(k,i,phi) (dB_B0*B0*cos((k)*kzmin*z_pos + (i)*kxmin*x_pos + (phi)))
+#define DEX_2(k,i,phi) (dB_B0*(k/abs(k))*VA*B0*cos((k)*kzmin*z_pos + (i)*kxmin*x_pos + (phi)))
+! These give velocity & current consistent with Alfven wave
+#define DUY_2(k,i,phi) (-dB_B0*(k/abs(k))*VA*cos((k)*kzmin*z_pos + (i)*kxmin*x_pos + (phi)))
+#define DJX_2(k,i,phi) (dB_B0*B0*(k)*kzmin*sin((k)*kzmin*z_pos + (i)*kxmin*x_pos + (phi)))
+#define DJZ_2(k,i,phi) (-dB_B0*B0*(i)*kxmin*sin((k)*kzmin*z_pos + (i)*kxmin*x_pos + (phi)))
+#define BY_PERT_2 DBY_2(-1,1,0.4) + DBY_2(-1,-2,2.56) + DBY_2(2,-3,4.19)   
+#define EX_PERT_2 DEX_2(-1,1,0.4) + DEX_2(-1,-2,2.56) + DEX_2(2,-3,4.19) 
+#define UY_PERT_2 DUY_2(-1,1,0.4) + DUY_2(-1,-2,2.56) + DUY_2(2,-3,4.19)
+#define JX_PERT_2 DJX_2(-1,1,0.4) + DJX_2(-1,-2,2.56) + DJX_2(2,-3,4.19)
+#define JZ_PERT_2 DJZ_2(-1,1,0.4) + DJZ_2(-1,-2,2.56) + DJZ_2(2,-3,4.19)
  
       ! VR: initialize wave parameters
       ! dB_B0 = 1.2e-3   ! RMS amplitude of the pertubation [B0=RMS(B)]
