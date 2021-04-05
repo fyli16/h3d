@@ -694,7 +694,9 @@ subroutine open_files_for_diagnostics()
     !   return
     ! endif
   endif
-  call opendiagfiles
+  
+  ! notime=0 will output detailed timing
+  if (notime==0) call open_timediag_files
 
   return
 end subroutine open_files_for_diagnostics

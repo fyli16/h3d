@@ -832,7 +832,10 @@ end subroutine openfiles
 
 
 !---------------------------------------------------------------------
-subroutine opendiagfiles
+! open diagnostic files for timing on each MPI rank
+! The diagnostic timing file is defined as a standard COS blocked file. 
+! Note that this diagnostic is ONLY used during diagnostic runs
+subroutine open_timediag_files
   use parameter_mod
   implicit none
 
@@ -841,16 +844,11 @@ subroutine opendiagfiles
 
   file_unit_time = myid + 500
   write(timeunit,"(i4.4)") file_unit_time
-
-  ! The diagnostic timing file is defined as a standard COS blocked file. 
-  ! Note that this file is ONLY used during diagnostic runs
-  if (notime == 0) then  ! notime=0 will output detailed timing
-    file_name = trim(adjustl(data_directory))//"timing" // timeunit // ".txt" 
-    open(UNIT=file_unit_time, FILE=file_name, status='unknown')
-  endif
+  file_name = trim(adjustl(data_directory))//"timing" // timeunit // ".txt" 
+  open(UNIT=file_unit_time, FILE=file_name, status='unknown')
 
   return
-end subroutine opendiagfiles  
+end subroutine open_timediag_files  
 
 
 !---------------------------------------------------------------------
