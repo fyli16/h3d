@@ -67,8 +67,8 @@ smoothing=.true.,
 smooth_coef=0. ! seems not implemented
 
 ! ---------------------- init waves --------------------!
-dB_B0=0.1
-num_cycles=5
+dB_B0=0.1,
+num_cycles=5,
 
 ! ------------------ diagnostic control ----------------!
 nprint=100,  ! frequency at which to print simulation information
@@ -82,6 +82,8 @@ nwrtrestart=20000000, ! frequency at which to write restart files
 xbox_l=0., xbox_r=1.0, 
 ybox_l=0., ybox_r=1.0, 
 zbox_l=0., zbox_r=2.24,
+
+diag_timing=.false., ! write detailed timing info into files (used only in diagnostic runs)
 
 ! ------------------------- others ---------------------!
 ! these seem not really implemented

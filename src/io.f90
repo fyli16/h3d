@@ -690,6 +690,63 @@ end subroutine restrtrw
 
 
 !---------------------------------------------------------------------
+subroutine open_hist_diag_files()
+  use parameter_mod
+  implicit none 
+
+  character (len=240) :: filename, filename2
+
+  if (myid == 0) then
+    if (restart) then
+      open(unit=11,file=trim(adjustl(data_directory))//'energy.dat' ,status='old',position='append')
+      open(unit=14,file=trim(adjustl(data_directory))//'time.dat' ,status='old',position='append')
+      if (.not. tracking_mpi)then
+        open(unit=12,file=trim(adjustl(data_directory))//'probes.dat' ,status='old',position='append')
+        if (tracking_binary) then
+          open(unit=13,file=trim(adjustl(data_directory))//'tracking_b.dat' ,form='unformatted',status='old',position='append')
+        else
+          open(unit=13,file=trim(adjustl(data_directory))//'tracking.dat' ,status='old',position='append')
+        endif
+      endif
+    else
+      open(unit=11,file=trim(adjustl(data_directory))//'energy.dat' ,status='unknown')
+      open(unit=14,file=trim(adjustl(data_directory))//'time.dat' ,status='unknown')
+      if (.not. tracking_mpi)then
+        open(unit=12,file=trim(adjustl(data_directory))//'probes.dat' ,status='unknown')
+        if (tracking_binary) then
+          open(unit=13,file=trim(adjustl(data_directory))//'tracking_b.dat' ,form='unformatted',status='unknown')
+        else
+          open(unit=13,file=trim(adjustl(data_directory))//'tracking.dat' ,status='unknown')
+        endif
+      endif
+    endif
+  endif
+
+  if (tracking_mpi) then
+    write(filename,"(a,i4.4,a)") 'tracking_', myid, '.dat'
+    write(filename2,"(a,i4.4,a)") 'probes_', myid, '.dat'
+    if (restart) then
+      open(unit=12,file=trim(adjustl(data_directory))//filename2, status='old',position='append')
+      open(unit=13,file=trim(adjustl(data_directory))//filename,form='unformatted',status='old',access='append')
+    else
+      open(unit=12,file=trim(adjustl(data_directory))//filename2, status='unknown')
+      open(unit=13,file=trim(adjustl(data_directory))//filename,form='unformatted',status='unknown')
+    endif
+    !call MPI_File_open(MPI_COMM_WORLD, trim(adjustl(data_directory))//filename, MPI_MODE_WRONLY+MPI_MODE_CREATE, MPI_INFO_NULL, tracking_fh, ierr)
+    ! if (ierr.ne.MPI_SUCCESS) then
+    !   call MPI_Error_string(iErr,eStr,eStrLen,iErr2)
+    !   write(0,*)'Error: Could not open file: ',filename
+    !   write(0,*) eStr
+    !   write(0,*)'Aborted.'
+    !   return
+    ! endif
+  endif
+
+  return
+end subroutine open_hist_diag_files
+
+
+!---------------------------------------------------------------------
 subroutine openfiles
   use parameter_mod
   implicit none
@@ -835,7 +892,7 @@ end subroutine openfiles
 ! open diagnostic files for timing on each MPI rank
 ! The diagnostic timing file is defined as a standard COS blocked file. 
 ! Note that this diagnostic is ONLY used during diagnostic runs
-subroutine open_timediag_files
+subroutine open_timing_diag_files
   use parameter_mod
   implicit none
 
@@ -845,10 +902,10 @@ subroutine open_timediag_files
   file_unit_time = myid + 500
   write(timeunit,"(i4.4)") file_unit_time
   file_name = trim(adjustl(data_directory))//"timing" // timeunit // ".txt" 
-  open(UNIT=file_unit_time, FILE=file_name, status='unknown')
+  open(unit=file_unit_time, file=file_name, status='unknown')
 
   return
-end subroutine open_timediag_files  
+end subroutine open_timing_diag_files  
 
 
 !---------------------------------------------------------------------
