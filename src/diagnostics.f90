@@ -4,6 +4,8 @@
 !VR: modular layout similar to other modern codes,
 !VR: where the "engine" is separate from output, etc
 !VR*****************************************************
+
+!---------------------------------------------------------------------
 subroutine user_diagnostics
   use parameter_mod, only: time_begin_array, time_end_array, time_elapsed, tracking_mpi
   call date_and_time(values=time_begin_array(:,31))
@@ -25,6 +27,8 @@ subroutine user_diagnostics
   call accumulate_time_difference(time_begin_array(1,32),time_end_array(1,32),time_elapsed(32))
 end subroutine user_diagnostics
 
+
+!---------------------------------------------------------------------
 subroutine virtual_probes
   use parameter_mod
   implicit none
@@ -70,6 +74,8 @@ subroutine virtual_probes
   endif
 end subroutine virtual_probes
 
+
+!---------------------------------------------------------------------
 subroutine virtual_probes2
   use parameter_mod
   implicit none
@@ -80,6 +86,8 @@ subroutine virtual_probes2
     bx(2,jb,kb)*factor(4),by(2,jb,kb)*factor(5),bz(2,jb,kb)*factor(6)
 end subroutine
 
+
+!---------------------------------------------------------------------
 subroutine track_particles
   use parameter_mod
   implicit none
@@ -136,6 +144,8 @@ subroutine track_particles
 
 end subroutine track_particles
 
+
+!---------------------------------------------------------------------
 subroutine track_particles2
   ! using MPI_IO, one file only
   use parameter_mod
@@ -153,19 +163,19 @@ subroutine track_particles2
 
 end subroutine track_particles2
 
-!*****************************************************
+
+!---------------------------------------------------------------------
 ! wrapper for user disganostic restart framework
 ! passes the unit to write to
-!*****************************************************
 subroutine user_data_write_restart(wunit)
   implicit none
   integer, intent (in) :: wunit
 end subroutine user_data_write_restart
 
-!*****************************************************
+
+!---------------------------------------------------------------------
 ! wrapper for user disganostic restart framework
 ! passes the unit to read from
-!*****************************************************
 subroutine user_diagnostics_restart(wunit)
   implicit none
   integer, intent (in) :: wunit

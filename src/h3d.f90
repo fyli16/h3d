@@ -54,6 +54,7 @@
     ! ??
     if (restart) then
       call makelist
+      ! read 'restart_index' and 'itfin'
       if (myid == 0) then
         open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='old')
         read(222,*) restart_index, itfin
@@ -66,17 +67,16 @@
       ! hxv 01/10/2014
       if (myid == 0) then
         write(6,*) " "
-        write(6,*) " RESTARTED FROM SET # ",restart_index
+        write(6,*) " RESTARTED FROM SET # ", restart_index
         write(6,*) " "
       endif
 
       ! comment out for timing on LANL machine
       do iwrite = 0,npes_over_60 
-        if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
+        if (mod( int(myid,8), npes_over_60 + 1) .eq. iwrite) then
             call restrtrw(-1.0,itstart)
             call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
         endif
-        ! call MPI_BARRIER(MPI_COMM_WORLD,IERR)
       enddo
         
       if (restart_index == 1) then
@@ -87,9 +87,9 @@
 
       ! Uniform mesh - Same as is in version 5.0
       yb = (jb-1)*hy  ! where is hy, hz defined before this?
-      ye = je   *hy
+      ye = je    *hy
       zb = (kb-1)*hz
-      ze = ke   *hz
+      ze = ke    *hz
         
       ! Nonuniform mesh
       zb = meshZ%xn(kb+1)
@@ -361,22 +361,23 @@
       endif        
       call date_and_time(values=time_end_array(:,5))
 
-      !if (it == 21000) call inject_wave
-      !if (mod(it,100) == 0) call kick
+      ! ??
+      ! if (it == 21000) call inject_wave
+      ! if (mod(it,100) == 0) call kick
 
       if (notime == 0) then
         call date_and_time(values=time_end)
         clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
         write(file_unit_time,"(i4,' diagnose ',f15.3)") it,real(clock_time-clock_time_init)
       endif
-      !VR: call user diagnostics
+      ! VR: call user diagnostics
       call date_and_time(values=time_begin_array(:,30))
       call user_diagnostics
       call date_and_time(values=time_end_array(:,30))
       call accumulate_time_difference(time_begin_array(1,30),time_end_array(1,30),time_elapsed(30))
-      !VR: end user diagnostics
+      ! VR: end user diagnostics
         
-      !VR: this seems to be data output region        
+      ! VR: this seems to be data output region        
 998   if (.not.testorbt.and.(wrtdat.or.cleanup_status == 'CLEANUP_STATUS=TRUE'.or.it == itfinish.or.it == 1)) then
         if (myid ==0) then
           my_short_int=it
@@ -400,7 +401,7 @@
 
         numvars = 18
         irecnum=1
-        !VR: in the old version, "nonuniform_mesh_global" was passed to dataout
+        ! VR: in the old version, "nonuniform_mesh_global" was passed to dataout
         call dataout(bx,by,bz,den,ex,ey,ez,vix,viy,viz,tpar,tperp,                   &
             p_xx,p_xy,p_xz,p_yy,p_yz,p_zz,fox,foy,foz, vxs,vys,vzs,                 &
             nxmax,nymax,nzmax,file_unit,myid,                                       &

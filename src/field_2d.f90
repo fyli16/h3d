@@ -44,7 +44,7 @@ subroutine pressgrad_2d(iflag)
   implicit none
   integer :: iflag
   integer*8 :: i,j,k
-  double precision :: dena,dxa,dya,dza,a
+  real*8 :: dena,dxa,dya,dza,a
 
   do k=kb,ke
     do j = jb,je
@@ -83,16 +83,16 @@ subroutine ecalc_2d( iflag)
   integer :: iflag
   integer*8 :: i,j,k
 
-  double precision:: tenx,teny,tenz,xj,yj,zj,bxx,byy,bzz,btot,tjdotb &
+  real*8 :: tenx,teny,tenz,xj,yj,zj,bxx,byy,bzz,btot,tjdotb &
                     ,curr_tot
-  double precision:: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8 
-  double precision:: by1,by2,by3,by4,by5,by6,by7,by8 
-  double precision:: bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8  
-  double precision:: vixa, viya, viza, dena, a, dxa, dya, dza 
-  double precision:: dbxdy, dbxdz, dbydx, dbydz, dbzdx, dbzdy 
-  double precision:: curlbx_scalar,curlby_scalar,curlbz_scalar
-  double precision:: bxav, byav, bzav  
-  double precision:: dexdy, dexdz, deydx, deydz, dezdx,dezdy  
+  real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8 
+  real*8 :: by1,by2,by3,by4,by5,by6,by7,by8 
+  real*8 :: bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8  
+  real*8 :: vixa, viya, viza, dena, a, dxa, dya, dza 
+  real*8 :: dbxdy, dbxdz, dbydx, dbydz, dbzdx, dbzdy 
+  real*8 :: curlbx_scalar,curlby_scalar,curlbz_scalar
+  real*8 :: bxav, byav, bzav  
+  real*8 :: dexdy, dexdz, deydx, deydz, dezdx,dezdy  
 
   do k=kb,ke
     do j = jb,je
@@ -253,8 +253,8 @@ subroutine bcalc_2d
   use mesh2d
   implicit none
   integer*8 :: i, j, k, ii
-  double precision :: dts, dts2, dts6
-  double precision :: tempx1(nxmax,jb-1:je+1,kb-1:ke+1)&
+  real*8 :: dts, dts2, dts6
+  real*8 :: tempx1(nxmax,jb-1:je+1,kb-1:ke+1)&
                     ,tempy1(nxmax,jb-1:je+1,kb-1:ke+1)&
                     ,tempz1(nxmax,jb-1:je+1,kb-1:ke+1)
 
@@ -405,14 +405,14 @@ subroutine focalc_2d
   use mesh2d
   implicit none
 
-  double precision :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8
-  double precision :: by1,by2,by3,by4,by5,by6,by7,by8
-  double precision :: bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8
-  double precision:: tenx,teny,tenz,xj,yj,zj,bxx,byy,bzz,btot,tjdotb &
+  real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8
+  real*8 :: by1,by2,by3,by4,by5,by6,by7,by8
+  real*8 :: bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8
+  real*8 :: tenx,teny,tenz,xj,yj,zj,bxx,byy,bzz,btot,tjdotb &
                     ,curr_tot
   integer*8 :: i,j,k
-  double precision :: dbxdy,dbydx,dbzdx,dbxdz,dbzdy,dbydz
-  double precision :: curlbx_scalar,curlby_scalar,curlbz_scalar,bxav,byav,bzav
+  real*8 :: dbxdy,dbydx,dbzdx,dbxdz,dbzdy,dbydz
+  real*8 :: curlbx_scalar,curlby_scalar,curlbz_scalar,bxav,byav,bzav
 
   do k = kb, ke 
     do j = jb,je
@@ -533,22 +533,22 @@ subroutine parmov_2d
     use mesh2d
     implicit none
 
-    double precision bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8,by1,by2,by3,by4,by5,by6,by7,by8,bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8,bxa,bya,bza
-    double precision ex1,ex2,ex3,ex4,ex5,ex6,ex7,ex8,ey1,ey2,ey3,ey4,ey5,ey6,ey7,ey8,ez1,ez2,ez3,ez4,ez5,ez6,ez7,ez8,exa,eya,eza
+    real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8,by1,by2,by3,by4,by5,by6,by7,by8,bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8,bxa,bya,bza
+    real*8 :: ex1,ex2,ex3,ex4,ex5,ex6,ex7,ex8,ey1,ey2,ey3,ey4,ey5,ey6,ey7,ey8,ez1,ez2,ez3,ez4,ez5,ez6,ez7,ez8,exa,eya,eza
 
-    double precision d_ranf,deltime1,deltime2,epsilon,ff,h,hh
-    double precision fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8,foxa
-    double precision foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8,foya
-    double precision foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8,foza
-    double precision w1e,w2e,w3e,w4e,w5e,w6e,w7e,w8e
-    double precision vex,vey,vez,vmag,vx_tmp,vy_tmp,vz_tmp
-    double precision p2xs,p2ys,p2zs,q_p,th
-    double precision wmult
+    real*8 :: d_ranf,deltime1,deltime2,epsilon,ff,h,hh
+    real*8 :: fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8,foxa
+    real*8 :: foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8,foya
+    real*8 :: foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8,foza
+    real*8 :: w1e,w2e,w3e,w4e,w5e,w6e,w7e,w8e
+    real*8 :: vex,vey,vez,vmag,vx_tmp,vy_tmp,vz_tmp
+    real*8 :: p2xs,p2ys,p2zs,q_p,th
+    real*8 :: wmult
 
-    integer*8 i,ii,iix,iixe,iiy,iiye,iiz,iize,irepeat,irepeatp,is,itmp
-    integer*8 iv,iye_cc,ize_cc,j,jv,k,kspc,npleavingp,nprecv,nprecvtmp
-    integer*8 icount
-    integer*8 count_kbq
+    integer*8 :: i,ii,iix,iixe,iiy,iiye,iiz,iize,irepeat,irepeatp,is,itmp
+    integer*8 :: iv,iye_cc,ize_cc,j,jv,k,kspc,npleavingp,nprecv,nprecvtmp
+    integer*8 :: icount
+    integer*8 :: count_kbq
     integer :: time_begin(8),time_end(8)
     integer*8 nptotp_kbq,npart_kbq(2),np_ijk,Storage_Error_p,Storage_Error
     data fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8/0,0,0,0,0,0,0,0/
@@ -556,25 +556,25 @@ subroutine parmov_2d
     data foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8/0,0,0,0,0,0,0,0/
     integer*8:: nsendactual,nsendactualp,nrecvactualp,nrecvactual,jj,kk,ix,iy,iz,ixe,iye,ize           &
                 ,ixep1,iyep1,izep1,ixp1,iyp1,izp1
-    double precision:: pdata(7),rx,ry,rz,fx,fy,fz,w1,w2,w3,w4,w5,w6,w7,w8,xpart,ypart,zpart
-    double precision:: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
-    double precision:: v_limit,eps2,myranf,fluxran,vxa,vyz,vza
+    real*8 :: pdata(7),rx,ry,rz,fx,fy,fz,w1,w2,w3,w4,w5,w6,w7,w8,xpart,ypart,zpart
+    real*8 :: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
+    real*8 :: v_limit,eps2,myranf,fluxran,vxa,vyz,vza
     INTEGER*8:: L, EXIT_CODE_P, EXIT_CODE
     integer*8:: n_fast_removed,n_fast_removed_local,nptot_max,Courant_Violation,Courant_Violation_p,Field_Diverge,Field_Diverge_p
-    double precision:: hxmin,hxmax,hymin,hymax,hzmin,hzmax,cell_size_min,x_disp,y_disp,z_disp          &
+    real*8 :: hxmin,hxmax,hymin,hymax,hzmin,hzmax,cell_size_min,x_disp,y_disp,z_disp          &
                       ,y_disp_max_p,x_disp_max_p,z_disp_max_p,y_disp_max,x_disp_max,z_disp_max
-    double precision:: disp_max_p(3),disp_max(3),tx,ty,tz,v_x,v_y,v_z  
+    real*8 :: disp_max_p(3),disp_max(3),tx,ty,tz,v_x,v_y,v_z  
     INTEGER*4 :: nescapearr(8),nescapearr_global(8)
     INTEGER*4 :: ppacket(3),ppacketg(3),dpacket(4),dpacketg(4)
     INTEGER*8 :: epacket(2),epacketg(2),indx,loop
-    INTEGER*8,dimension(:),allocatable :: nparr
-    double precision, dimension(3,nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax) :: bxyz_av
-    double precision:: TEX1,TEX2,TEX3,TEX4,TEX5,TEX6,TEX7,TEX8  
-    double precision:: TEY1,TEY2,TEY3,TEY4,TEY5,TEY6,TEY7,TEY8  
-    double precision:: TEZ1,TEZ2,TEZ3,TEZ4,TEZ5,TEZ6,TEZ7,TEZ8  
-    double precision:: mX_xa,mX_ta,mX_ca1,mX_ca2,mX_xb,mX_dtdx,mX_tb,mX_cb1,mX_cb2
-    double precision:: mY_xa,mY_ta,mY_ca1,mY_ca2,mY_xb,mY_dtdx,mY_tb,mY_cb1,mY_cb2
-    double precision:: mZ_xa,mZ_ta,mZ_ca1,mZ_ca2,mZ_xb,mZ_dtdx,mZ_tb,mZ_cb1,mZ_cb2
+    INTEGER*8, dimension(:), allocatable :: nparr
+    real*8, dimension(3,nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax) :: bxyz_av
+    real*8 :: TEX1,TEX2,TEX3,TEX4,TEX5,TEX6,TEX7,TEX8  
+    real*8 :: TEY1,TEY2,TEY3,TEY4,TEY5,TEY6,TEY7,TEY8  
+    real*8 :: TEZ1,TEZ2,TEZ3,TEZ4,TEZ5,TEZ6,TEZ7,TEZ8  
+    real*8 :: mX_xa,mX_ta,mX_ca1,mX_ca2,mX_xb,mX_dtdx,mX_tb,mX_cb1,mX_cb2
+    real*8 :: mY_xa,mY_ta,mY_ca1,mY_ca2,mY_xb,mY_dtdx,mY_tb,mY_cb1,mY_cb2
+    real*8 :: mZ_xa,mZ_ta,mZ_ca1,mZ_ca2,mZ_xb,mZ_dtdx,mZ_tb,mZ_cb1,mZ_cb2
 
  
     call date_and_time(values=time_begin_array(:,19))
@@ -1476,7 +1476,7 @@ subroutine xreal_2d(a,nx1m,ny1m,nz1m)
   implicit none
 
   integer*8 :: i, j, nx1m, ny1m, nz1m, k
-  double precision :: a(nxmax, jb-1:je+1, kb-1:ke+1)&
+  real*8 :: a(nxmax, jb-1:je+1, kb-1:ke+1)&
                     ,tmp(nxmax, jb-1:je+1, kb-1:ke+1)
 
   a(2,:,:) = a(2,:,:) + a(nx2,:,:)
@@ -1505,7 +1505,7 @@ subroutine xrealbcc_2d(a, ibnd, nx1m, ny1m,nz1m)
   use parameter_mod
   implicit none
   integer*8 :: ibnd,i,j,nx1m,ny1m,nz1m
-  double precision :: a(nxmax,jb-1:je+1,kb-1:ke+1)&
+  real*8 :: a(nxmax,jb-1:je+1,kb-1:ke+1)&
                     ,tmp(nxmax,jb-1:je+1,kb-1:ke+1)
 
   tmp = a
@@ -1530,7 +1530,7 @@ subroutine xrealbcc_pack_b_2d(a_x,a_y,a_z, ibnd, nx1m, ny1m,nz1m)
   implicit none
 
   integer*8 :: i,j,nx1m,ny1m,nz1m,k,ibnd
-  double precision :: a_x(nxmax,jb-1:je+1,kb-1:ke+1)&
+  real*8 :: a_x(nxmax,jb-1:je+1,kb-1:ke+1)&
                     ,a_y(nxmax,jb-1:je+1,kb-1:ke+1)&
                     ,a_z(nxmax,jb-1:je+1,kb-1:ke+1)&
                     ,packed_data_xz_send(nxmax,kb-1:ke+1,3) &
@@ -1591,11 +1591,11 @@ subroutine caltemp2_global_2d
   use mesh2d
   implicit none
 
-  double precision:: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,xx,xy,xz,yy,yz,zz
+  real*8 :: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,xx,xy,xz,yy,yz,zz
   integer*8 ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,is,l,iix,iixe
-  double precision vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
+  real*8 :: vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
         ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar,wmult
-  double precision w1,w2,w3,w4,w5,w6,w7,w8,h,hh,dns1,dns2,bxa,bya,bza,btota,dnst
+  real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,h,hh,dns1,dns2,bxa,bya,bza,btota,dnst
 
   call date_and_time(values=time_begin_array(:,23))
  
@@ -1868,7 +1868,7 @@ subroutine xrealbcc_pack_e_2d(a_x,a_y,a_z, ibnd, nx1m, ny1m,nz1m)
   implicit none
 
   integer*8 :: ibnd,i,j,nx1m,ny1m,nz1m,k
-  double precision :: a_x(nxmax,jb-1:je+1,kb-1:ke+1)&
+  real*8 :: a_x(nxmax,jb-1:je+1,kb-1:ke+1)&
                   ,a_y(nxmax,jb-1:je+1,kb-1:ke+1)&
                   ,a_z(nxmax,jb-1:je+1,kb-1:ke+1)&
                   ,packed_data_xz_send(nxmax,kb-1:ke+1,3) &
@@ -1931,7 +1931,7 @@ subroutine nsmth_2d (a,nx2m,ny2m,nz2m)
   integer*8 :: i,j,k
 
   integer*8 :: nx2m, ny2m, nz2m
-  double precision, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
+  real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
 
   ! smoothing routine--assumes aperiodic in x
   call XREALBCC_2D(a,0_8,NX,NY,NZ)

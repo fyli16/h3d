@@ -8,12 +8,10 @@ module parameter_mod
   integer, dimension(8,128) :: time_begin_array,time_end_array
   real*8, dimension(128):: time_elapsed
   integer*8 :: nxmax, nymax, nzmax, nspecm, npes, nvar, nylmax, nzlmax, npm, npes_over_60
-
   integer :: numprocs, ndim, dims(2), nodey, nodez, ierr, comm2d, myid, req(8)     &
             ,nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot        &
             ,nbrleft, nbrrite, ipe, stridery, striderz, iseed(1), coords(2)
   integer :: status(mpi_status_size),status1(mpi_status_size),status2(mpi_status_size),status_array(mpi_status_size,8)
-
   real*8 :: zb,ze,yb,ye,teti,volume_fraction,cell_volume_ratio,zb_logical,ze_logical,yb_logical,ye_logical    &
             ,xb_logical,xe_logical,xb,xe,smooth_coef
   real*8, dimension(:), allocatable :: zbglobal,zeglobal,ybglobal,yeglobal,xc_uniform,yc_uniform,zc_uniform   &
@@ -29,13 +27,12 @@ module parameter_mod
                                           eta_times_b_dot_j
   real*8, dimension(:,:,:,:), allocatable :: dns, dnsh, vxs, vys, vzs, tpar, tperp, qp_cell
   real*8, dimension(:,:,:,:), allocatable :: p_xx,p_xy,p_xz,p_yy,p_yz,p_zz
-
-  real*8, dimension(:,:), allocatable ::ainjxz,ainjzx,deavxz,deavzx,vxavxz,vyavxz,vzavxz,vxavzx,      &
-                                          vyavzx,vzavzx,vxcaxz,vycaxz,vzcaxz,vxcazx,vycazx,vzcazx,      &
-                                          ainjyz,ainjzy,deavyz,deavzy,vxavyz,vyavyz,vzavyz,vxavzy,      &
-                                          vyavzy,vzavzy,vxcayz,vycayz,vzcayz,vxcazy,vycazy,vzcazy,      &
-                                          ainjxy,ainjyx,deavxy,deavyx,vxavxy,vyavxy,vzavxy,vxavyx,      &
-                                          vyavyx,vzavyx,vxcaxy,vycaxy,vzcaxy,vxcayx,vycayx,vzcayx
+  real*8, dimension(:,:), allocatable :: ainjxz,ainjzx,deavxz,deavzx,vxavxz,vyavxz,vzavxz,vxavzx,      &
+                                        vyavzx,vzavzx,vxcaxz,vycaxz,vzcaxz,vxcazx,vycazx,vzcazx,      &
+                                        ainjyz,ainjzy,deavyz,deavzy,vxavyz,vyavyz,vzavyz,vxavzy,      &
+                                        vyavzy,vzavzy,vxcayz,vycayz,vzcayz,vxcazy,vycazy,vzcazy,      &
+                                        ainjxy,ainjyx,deavxy,deavyx,vxavxy,vyavxy,vzavxy,vxavyx,      &
+                                        vyavyx,vzavyx,vxcaxy,vycaxy,vzcaxy,vxcayx,vycayx,vzcayx
   real*8, dimension(:), allocatable :: x, y, z, vx, vy, vz, qp
   integer, dimension(:), allocatable :: ptag ! tag used to trace particles
   integer*8, dimension(:), allocatable :: link,porder
@@ -53,9 +50,9 @@ module parameter_mod
   real*8, dimension(5) :: rcorr
   integer*8, dimension(5) :: ishape
   real*8, dimension(5) :: btspec, qspec, wspec, frac, anisot
-  double precision :: denmin, resis, wpiwci, bete, fxsho,ave1,ave2,phib,demin2, &
-                      xmax,ymax,zmax,dt,gama,dtwci,quota,wall_clock_elapsed,tmax,buffer_zone,  &
-                      xaa,xbb,yaa,ybb,zaa,zbb,t_stopped
+  real*8 :: denmin, resis, wpiwci, bete, fxsho,ave1,ave2,phib,demin2, &
+            xmax,ymax,zmax,dt,gama,dtwci,quota,wall_clock_elapsed,tmax,buffer_zone,  &
+            xaa,xbb,yaa,ybb,zaa,zbb,t_stopped
   integer*8 :: nax,nbx,nay,nby,naz,nbz
   integer*8, dimension(8) :: wall_clock_begin,wall_clock_end
   integer*8 :: eta_par, nparbuf
@@ -64,17 +61,16 @@ module parameter_mod
             nwrtdata, nwrtparticle, nwrtrestart, nskipx,nskipy,nskipz
   real*8 :: etamin,etamax,moat_zone
   integer*8 :: ieta, profile_power
-  logical :: testorbt, restart, uniform_loading_in_logical_grid, MPI_IO_format, smoothing
+  logical :: testorbt, restart, uniform_loading_in_logical_grid, MPI_IO_format, smoothing, &
+              global, harris, Yee, post_process, prntinfo, wrtdat
   real*8 ::  hx, hy, hz, hxi, hyi, hzi, efld, bfld, efluidt, ethermt, eptclt, time, te0
-  logical :: prntinfo, wrtdat
   integer :: it, notime
-  integer*8 :: nsteps0,itfin,iwt,nx1,nx2,ny1,ny2, nz1, nz2, iopen, file_unit(25), file_unit_time,            &
+  integer*8 :: nsteps0, itfin, iwt,nx1,nx2,ny1,ny2, nz1, nz2, iopen, file_unit(25), file_unit_time,            &
                 file_unit_tmp,file_unit_read(20),nptot,npleaving,npentering,iclock_speed, nptotp
-  real*8 :: clock_time_init,clock_time_old,clock_time,clock_time1
+  real*8 :: clock_time_init, clock_time_old, clock_time, clock_time1
   real*8, dimension(:) ,allocatable:: dfac
   integer*8, dimension(:) ,allocatable:: nskip,ipleft,iprite,ipsendleft,ipsendrite,iprecv,ipsendtop,ipsendbot     &
                                           ,ipsendlefttop,ipsendleftbot,ipsendritetop,ipsendritebot,ipsend
-  logical :: global, harris, Yee, post_process
   integer*8:: idum
   integer*8, dimension(:), allocatable:: idmap
   integer*8, dimension(:,:), allocatable:: idmap_yz
@@ -82,7 +78,7 @@ module parameter_mod
   integer*8, dimension(:), allocatable :: idfft, kvec, jvec, myid_stop
   integer*8 :: ihstb, ihste, isendid(4), irecvid(4,4)
   real*4 :: single_prec
-  real*8:: double_prec, xtmp1m, xtmp2m,initial_time,final_time    &
+  real*8 :: double_prec, xtmp1m, xtmp2m,initial_time,final_time    &
                       ,xbox_l,xbox_r,ybox_l,ybox_r,zbox_l,zbox_r,t_begin,t_end
   real*8, dimension(:,:), allocatable :: buf, buf2, buf_p1
   real*8, dimension(:,:,:), allocatable :: buf_particle
