@@ -48,7 +48,8 @@
     call date_and_time(values=time_begin)
     clock_time_re1=(time_begin(5)*3600.+time_begin(6)*60.+time_begin(7)+time_begin(8)*0.001)
  
-    
+    ! open diagnostic files
+    call open_files_for_diagnostics()
 
     if (restart) then
       call makelist
