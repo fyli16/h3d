@@ -547,6 +547,7 @@ end subroutine setup_mesh
 
 subroutine init_restart()
   use parameter_mod
+  use mesh2d
   implicit none 
 
   if (myid == 0) then

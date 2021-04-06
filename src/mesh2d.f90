@@ -1,6 +1,6 @@
 module mesh2d
-  use MESH_CLASS
-  type(MESH) :: meshX, meshY, meshZ
+  use mesh_class
+  type(mesh) :: meshX, meshY, meshZ
 
   contains
 
