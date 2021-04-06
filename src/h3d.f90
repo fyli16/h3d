@@ -13,7 +13,6 @@
     use initialize
     use functions_f90
     use mesh2d
-
     implicit none
 
     integer*8 :: i, irecnum, ixe, iye, ize, j, jbt, jet, k, kbt, ket, numvars
@@ -54,7 +53,7 @@
     ! notime=0 will output detailed timing
     if (notime==0) call open_timing_diag_files
 
-    ! link?
+    ! make list of particles (see utils.f90)
     call makelist
 
     ! ??
@@ -108,7 +107,7 @@
         zbglobal(ipe) = meshZ%xn(kbglobal(ipe)+1)
         zeglobal(ipe) = meshZ%xn(keglobal(ipe)+2)
       enddo
-      
+
       yb = meshY%xn(jb+1)
       ye = meshY%xn(je+2)
       do ipe = 0,npes-1

@@ -29,7 +29,7 @@ module initialize
 
   !---------------------------------------------------------------------
   subroutine read_input()
-    external get_environment_variable1, get_environment_variable2
+    ! external get_environment_variable1, get_environment_variable2
     ! external get_environment_variable
 
     namelist /datum/ tmax, t_begin, t_end, dtwci, dt, restart, &   ! global info
@@ -52,7 +52,8 @@ module initialize
     time_elapsed=0.; time_begin_array=0; time_end_array=0
     buffer_zone=0.  ! set to 0 anyway despite contained in input
     notime=1 ! notime=0 will output detailed timing
-    !tracking_binary=.false.
+    tracking_binary=.true.
+    tracking_mpi=.true.
 
     ! get the i/o directory names from the environment variable
     ! call get_environment_variable1(data_directory, len(data_directory))

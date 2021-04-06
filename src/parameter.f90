@@ -85,15 +85,15 @@ module parameter_mod
   integer, dimension(:), allocatable :: buftime
   integer, parameter :: nprobes=6, nbufsteps=100, tracking_width=14
   integer :: maxtags=100, maxtags_pe, ntot 
-  logical :: tracking_binary=.true., tracking_mpi=.true.
+  logical :: tracking_binary, tracking_mpi
   integer :: tracking_fh
 
   integer*8 :: recl_for_real, recl_for_double_precision
   logical :: periods(2), reorder
   integer*8 :: restart_index
   character(len=2) :: restart_index_suffix(2)
-  character(len=160) :: data_directory, restart_directory, cycle_ascii_new, myid_char
-  character(len=160) :: cycle_ascii,cleanup_status
+  character(len=160) :: cycle_ascii, cycle_ascii_new, myid_char, cleanup_status
+  character :: data_directory*5, restart_directory*8
   real*8 :: dB_B0, num_cycles ! for init_wave
   real*8, parameter :: zero=0.0d0, one=1.0d0, two=2.0d0, one_half=0.5d0, pi=acos(-1.)
 
