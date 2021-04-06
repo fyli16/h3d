@@ -96,11 +96,6 @@ module parameter_mod
   real*8 :: dB_B0, num_cycles ! for init_wave
   real*8, parameter :: zero=0.0d0, one=1.0d0, two=2.0d0, one_half=0.5d0, pi=acos(-1.)
 
-  data_directory = 'data/'
-  restart_directory = 'restart/'
-  restart_index_suffix(1) = '.1'
-  restart_index_suffix(2) = '.2'
-
   contains
   !---------------------------------------------------------------------
   subroutine read_input()
@@ -241,6 +236,10 @@ module parameter_mod
     dt = dtwci * wpiwci
     ! field subcycling
     ! n_subcycles=max(n_subcycles,1_8)
+    data_directory = 'data/'
+    restart_directory = 'restart/'
+    restart_index_suffix(1) = '.1'
+    restart_index_suffix(2) = '.2'
 
     if (myid==0) then
       write(6,*)
@@ -596,7 +595,7 @@ module parameter_mod
     allocate (buf(nprobes,nbufsteps),buf2(nprobes*npes,nbufsteps),buftime(nbufsteps))
     allocate (buf_particle(tracking_width,nspec*maxtags,nbufsteps))
     allocate (buf_p1(tracking_width,nspec*maxtags))
-    
+
     return 
   end subroutine allocate_global_arrays
 
