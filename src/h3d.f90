@@ -16,6 +16,7 @@
     implicit none
 
     integer*8 :: i, irecnum, ixe, iye, ize, j, jbt, jet, k, kbt, ket, numvars, is
+    integer, dimension(8) :: curr_time
     real*8 :: rnorm, pifac
     integer*8 :: itstart, itfinish
     real*8 :: clock_time_re1
@@ -44,8 +45,8 @@
     ! VR: allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
 
     ! timer
-    call date_and_time(values=time_begin)
-    clock_time_re1=(time_begin(5)*3600.+time_begin(6)*60.+time_begin(7)+time_begin(8)*0.001)
+    call date_and_time(values=curr_time)
+    clock_time_re1=(curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
  
     ! open history diagnostic files
     call open_hist_diag_files()
@@ -66,8 +67,8 @@
     endif
 
     ! time stamp just before entering the simulation loop
-    call date_and_time(values=time_end)
-    clock_time_init=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
+    call date_and_time(values=curr_time)
+    clock_time_init=( curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
     if (myid == 0) then
       write(6,*) 'load time = ', real(clock_time_init - clock_time_re1)  
     endif
@@ -340,6 +341,8 @@ subroutine one_simulation_loop()
   use parameter_mod
   implicit none 
 
+  integer, dimension(8) :: curr_time
+
   call get_cleanup_status(len(cleanup_status))
 
   if (cleanup_status=='CLEANUP_STATUS=EXIT') then
@@ -347,8 +350,8 @@ subroutine one_simulation_loop()
   endif
 
   call date_and_time(values=time_begin_array(:,1))
-  call date_and_time(values=time_end)
-  clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
+  call date_and_time(values=curr_time)
+  clock_time=( curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
   if (notime == 0) then
     write(file_unit_time,"(i4,' begin    ',f15.3)") it, real(clock_time-clock_time_init)
   endif
@@ -390,8 +393,8 @@ subroutine one_simulation_loop()
   endif
      
   if (notime == 0) then
-    call date_and_time(values=time_end)
-    clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
+    call date_and_time(values=curr_time)
+    clock_time=( curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
     write(file_unit_time,"(i4,' trans    ',f15.3)") it, real(clock_time-clock_time_init)
   endif
 
@@ -408,8 +411,8 @@ subroutine one_simulation_loop()
   endif
 
   if (notime == 0) then
-    call date_and_time(values=time_end)
-    clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
+    call date_and_time(values=curr_time)
+    clock_time=( curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
     write(file_unit_time,"(i4,' sortit   ',f15.3)") it,real(clock_time-clock_time_init)
   endif
 
@@ -419,8 +422,8 @@ subroutine one_simulation_loop()
   call date_and_time(values=time_end_array(:,4))
 
   if (notime == 0) then
-    call date_and_time(values=time_end)
-    clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
+    call date_and_time(values=curr_time)
+    clock_time=( curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
     write(file_unit_time,"(i4,' field    ',f15.3)") it,real(clock_time-clock_time_init)
   endif
 
@@ -439,8 +442,8 @@ subroutine one_simulation_loop()
   ! if (it == 21000) call inject_wave
   ! if (mod(it,100) == 0) call kick
   if (notime == 0) then
-    call date_and_time(values=time_end)
-    clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
+    call date_and_time(values=curr_time)
+    clock_time=( curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
     write(file_unit_time,"(i4,' diagnose ',f15.3)") it, real(clock_time-clock_time_init)
   endif
 
@@ -485,8 +488,8 @@ subroutine one_simulation_loop()
   endif
 
   if (notime == 0) then
-    call date_and_time(values=time_end)
-    clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
+    call date_and_time(values=curr_time)
+    clock_time=( curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
     write(file_unit_time,"(i4,' end      ',f15.3)") it,real(clock_time-clock_time_init)
   endif
 

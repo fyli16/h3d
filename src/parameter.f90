@@ -7,7 +7,6 @@ module parameter_mod
   integer :: my_short_int, i_source, i_destination, i_tag, i_length, i_i
   integer, dimension(8,128) :: time_begin_array, time_end_array
   real*8, dimension(128):: time_elapsed
-  integer, dimension(8) :: time_begin, time_end
   integer*8 :: nxmax, nymax, nzmax, nspecm, npes, nvar, nylmax, nzlmax, npm, npes_over_60
   integer :: numprocs, ndim, dims(2), nodey, nodez, ierr, comm2d, myid, req(8)     &
             ,nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot        &
