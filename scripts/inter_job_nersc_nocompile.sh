@@ -19,7 +19,7 @@ setenv OMP_NUM_THREADS 1
 # mkdir -p $RESTART_DIRECTORY
 mkdir -p data; mkdir -p restart
 mkdir -p data/bx; mkdir -p data/by; mkdir -p data/bz; mkdir -p data/ex; mkdir -p data/ey; mkdir -p data/ez
-mkdir -p data/den; mkdir -p data/eta; mkdir -p data/particle; mkdir -p data/probes
+mkdir -p data/den; mkdir -p data/eta; mkdir -p data/eta_par; mkdir -p data/particle; mkdir -p data/probes
 mkdir -p data/fox; mkdir -p data/foy; mkdir -p data/foz
 mkdir -p data/p-xx; mkdir -p data/p-xy; mkdir -p data/p-xz
 mkdir -p data/p-yy; mkdir -p data/p-yz; mkdir -p data/p-zz
