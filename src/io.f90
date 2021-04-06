@@ -690,6 +690,7 @@ end subroutine restrtrw
 
 
 !---------------------------------------------------------------------
+! open history diagnostic files
 subroutine open_hist_diag_files()
   use parameter_mod
   implicit none 
@@ -747,7 +748,7 @@ end subroutine open_hist_diag_files
 
 
 !---------------------------------------------------------------------
-subroutine openfiles
+subroutine open_files
   use parameter_mod
   implicit none
   
@@ -885,7 +886,7 @@ subroutine openfiles
   endif
   
 return
-end subroutine openfiles
+end subroutine open_files
 
 
 !---------------------------------------------------------------------

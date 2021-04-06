@@ -22,8 +22,8 @@
     integer*8 :: itstart, itfinish
     real*8 :: clock_time_re1
     real*8, dimension(:,:,:), allocatable :: uniform_mesh      
-    !VR : allocating a global mesh can not work on large runs with small amount of memory per rank
-    !VR : double precision, dimension(:,:,:), allocatable:: nonuniform_mesh_global
+    ! VR : allocating a global mesh can not work on large runs with small amount of memory per rank
+    ! VR : double precision, dimension(:,:,:), allocatable:: nonuniform_mesh_global
     character (len=240) :: tmpfname
     integer :: iwrite, ierr2, eStrLen
     character(len=1024) :: eStr
@@ -54,9 +54,11 @@
     ! notime=0 will output detailed timing
     if (notime==0) call open_timing_diag_files
 
+    ! link?
+    call makelist
+
     ! ??
     if (restart) then
-      call makelist
       ! read 'restart_index' and 'itfin'
       if (myid == 0) then
         open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='old')
@@ -75,10 +77,10 @@
       endif
 
       ! comment out for timing on LANL machine
-      do iwrite = 0,npes_over_60 
+      do iwrite = 0, npes_over_60 
         if (mod( int(myid,8), npes_over_60 + 1) .eq. iwrite) then
             call restrtrw(-1.0,itstart)
-            call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
+            call MPI_BCAST(itfin,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
         endif
       enddo
         
@@ -106,6 +108,7 @@
         zbglobal(ipe) = meshZ%xn(kbglobal(ipe)+1)
         zeglobal(ipe) = meshZ%xn(keglobal(ipe)+2)
       enddo
+      
       yb = meshY%xn(jb+1)
       ye = meshY%xn(je+2)
       do ipe = 0,npes-1
@@ -162,16 +165,7 @@
     else  !VR: fresh start
 
       time = 0.0
-      call makelist
-      if (myid == 0) then 
-        write(6,*) " "
-        write(6,*) " harris = ", harris
-        write(6,*) " global = ", global
-        write(6,*) " Yee    = ", yee  ! seems these parameters are not used at all
-        write(6,*) " "
-      endif 
       restart_index = 1
-
       call init_wave
       
     endif !VR: end of if (restart)
@@ -181,7 +175,7 @@
     call date_and_time(values=time_end)
     clock_time_init=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
     if (myid == 0) then
-      print *,'load time = ',real(clock_time_init-clock_time_re1)  
+      print *,'load time = ', real(clock_time_init - clock_time_re1)  
     endif
     clock_time_old = clock_time_init
     !write(*,*)'clock time',clock_time_old
@@ -378,6 +372,7 @@
         clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
         write(file_unit_time,"(i4,' diagnose ',f15.3)") it,real(clock_time-clock_time_init)
       endif
+
       ! VR: call user diagnostics
       call date_and_time(values=time_begin_array(:,30))
       call user_diagnostics
@@ -389,14 +384,14 @@
 998   if (.not.testorbt.and.(wrtdat.or.cleanup_status == 'CLEANUP_STATUS=TRUE'.or.it == itfinish.or.it == 1)) then
         if (myid ==0) then
           my_short_int=it
-          call integer_to_character(cycle_ascii,len(cycle_ascii),my_short_int)
+          call integer_to_character(cycle_ascii, len(cycle_ascii), my_short_int)
           cycle_ascii_new=trim(adjustl(cycle_ascii))
           write(6,*) " cycle = ",cycle_ascii_new
         endif
         call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
         call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
         
-        if (myid == 0 .and. .not. MPI_IO_format) call openfiles
+        if (myid == 0 .and. .not. MPI_IO_format) call open_files
         
         call date_and_time(values=time_begin_array(:,6))
         if (ndim /= 1) then

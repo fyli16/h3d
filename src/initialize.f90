@@ -70,7 +70,7 @@ module initialize
 
     ! read input deck
     if (myid == 0) then
-      write(6,*) 
+      write(6,*) " "
       write(6,*) "Reading input file ..."
       open(5, file='input.f90', form='formatted', status='old')
       read(5, nml=datum, iostat=input_error)

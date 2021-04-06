@@ -8,6 +8,7 @@
 !---------------------------------------------------------------------
 subroutine user_diagnostics
   use parameter_mod, only: time_begin_array, time_end_array, time_elapsed, tracking_mpi
+  
   call date_and_time(values=time_begin_array(:,31))
   if (tracking_mpi) then
     call virtual_probes2
