@@ -5,8 +5,9 @@ module parameter_mod
   save
 
   integer :: my_short_int, i_source, i_destination, i_tag, i_length, i_i
-  integer, dimension(8,128) :: time_begin_array,time_end_array
+  integer, dimension(8,128) :: time_begin_array, time_end_array
   real*8, dimension(128):: time_elapsed
+  integer, dimension(8) :: time_begin, time_end
   integer*8 :: nxmax, nymax, nzmax, nspecm, npes, nvar, nylmax, nzlmax, npm, npes_over_60
   integer :: numprocs, ndim, dims(2), nodey, nodez, ierr, comm2d, myid, req(8)     &
             ,nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot        &
@@ -57,12 +58,12 @@ module parameter_mod
   integer*8, dimension(8) :: wall_clock_begin,wall_clock_end
   integer*8 :: eta_par, nparbuf
   integer*8, dimension(5) :: npx, npy, npz
-  integer*8 :: iterb,norbskip,restrt_write,nxcel,netax,netay,netaz,nspec,nx,ny,nz,nprint, &
-            nwrtdata, nwrtparticle, nwrtrestart, nskipx,nskipy,nskipz
+  integer*8 :: iterb, norbskip, nxcel, netax, netay, netaz, nspec, nx, ny, nz, n_print, &
+            n_write_data, n_write_particle, n_write_restart, nskipx,nskipy,nskipz
   real*8 :: etamin,etamax,moat_zone
   integer*8 :: ieta, profile_power
   logical :: testorbt, restart, uniform_loading_in_logical_grid, MPI_IO_format, smoothing, &
-              global, harris, Yee, post_process, prntinfo, wrtdat
+              global, harris, Yee, print_info, write_data, write_restart
   real*8 ::  hx, hy, hz, hxi, hyi, hzi, efld, bfld, efluidt, ethermt, eptclt, time, te0
   integer :: it, notime
   integer*8 :: nsteps0, itfin, iwt,nx1,nx2,ny1,ny2, nz1, nz2, iopen, file_unit(25), file_unit_time,            &
@@ -78,8 +79,7 @@ module parameter_mod
   integer*8, dimension(:), allocatable :: idfft, kvec, jvec, myid_stop
   integer*8 :: ihstb, ihste, isendid(4), irecvid(4,4)
   real*4 :: single_prec
-  real*8 :: double_prec, xtmp1m, xtmp2m,initial_time,final_time    &
-                      ,xbox_l,xbox_r,ybox_l,ybox_r,zbox_l,zbox_r,t_begin,t_end
+  real*8 :: double_prec, xtmp1m, xtmp2m, xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, t_begin, t_end
   real*8, dimension(:,:), allocatable :: buf, buf2, buf_p1
   real*8, dimension(:,:,:), allocatable :: buf_particle
   integer, dimension(:), allocatable :: buftime

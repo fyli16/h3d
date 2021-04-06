@@ -652,7 +652,7 @@ subroutine parmov_2d
     call XREALBCC_PACK_B(BX_AV,BY_AV,BZ_AV,1_8,NX,NY,NZ)
     call XREALBCC_PACK_B(BX   ,BY   ,BZ   ,1_8,NX,NY,NZ)
 
-    if ((myid == 0).and.prntinfo) write(6,*) " CALLING PARMOVE, NSPEC = ",NSPEC
+    if ((myid == 0).and.print_info) write(6,*) " CALLING PARMOVE, NSPEC = ",NSPEC
 
     ! initalize diagnostic variables that keep track of
     ! particle number, injection, and escape
@@ -686,7 +686,7 @@ subroutine parmov_2d
       ! endif
 
       call MPI_ALLREDUCE(nptotp,nptot,1,MPI_INTEGER8,MPI_SUM,MPI_COMM_WORLD,IERR)
-      if ((MYID.EQ.0).and.prntinfo) then
+      if ((MYID.EQ.0).and.print_info) then
         write(6,*) " IS = ",IS
         write(6,*) " TOTAL # OF PARTICLES BEFORE PARMOV = ",NPTOT
       endif
@@ -879,7 +879,7 @@ subroutine parmov_2d
 
       call MPI_ALLREDUCE(x_disp_max_p,x_disp_max,1,MPI_DOUBLE_PRECISION,MPI_MAX,MPI_COMM_WORLD,IERR)
       call MPI_ALLREDUCE(y_disp_max_p,y_disp_max,1,MPI_DOUBLE_PRECISION,MPI_MAX,MPI_COMM_WORLD,IERR)
-      if ((myid == 0).and.prntinfo) then
+      if ((myid == 0).and.print_info) then
         write(6,*) " maximum x-displacement/dx = ",x_disp_max
         write(6,*) " maximum y-displacement/dy = ",y_disp_max
       endif
@@ -1044,7 +1044,7 @@ subroutine parmov_2d
                           MPI_COMM_WORLD,IERR)
       call MPI_ALLREDUCE(n_fast_removed_local,n_fast_removed,1,MPI_INTEGER8,MPI_SUM,&
                           MPI_COMM_WORLD,IERR)
-      if ((myid == 0).and.prntinfo) then
+      if ((myid == 0).and.print_info) then
         write(6,*) " FINISHED COMPILING LISTS "
         write(6,*) " # OF PARTICLES TO BE SENT     = ",NSENDTOT
         write(6,*) " # OF PARTICLES TO BE RECEIVED = ",NRECVTOT
@@ -1232,7 +1232,7 @@ subroutine parmov_2d
       call MPI_ALLREDUCE(nrecvactualp,nrecvactual,1,MPI_INTEGER8,&
                           MPI_SUM,MPI_COMM_WORLD,IERR)
 
-      if ((myid == 0).and.prntinfo) then
+      if ((myid == 0).and.print_info) then
         write(6,*) " FINISHED EXCHANGING PARTICLES "
         write(6,*) " # OF PARTICLES       SENT     = ",NSENDACTUAL
         write(6,*) " # OF PARTICLES       RECEIVED = ",NRECVACTUAL
@@ -1253,7 +1253,7 @@ subroutine parmov_2d
 
       call MPI_ALLREDUCE(nptotp,nptot,1,MPI_INTEGER8,MPI_SUM,&
                           MPI_COMM_WORLD,IERR)
-      IF ((MYID.EQ.0).and.prntinfo) THEN
+      IF ((MYID.EQ.0).and.print_info) THEN
         write(6,*) " IS = ",IS
         write(6,*) " TOTAL # OF PARTICLES AFTER  PARMOV = ",NPTOT
       endif
@@ -1418,12 +1418,12 @@ subroutine parmov_2d
     call MPI_ALLREDUCE(nptotp,nptot,1,MPI_INTEGER8,MPI_SUM,MPI_COMM_WORLD,IERR)
     call MPI_ALLREDUCE(npleavingp,npleaving,1,MPI_INTEGER8,MPI_SUM,MPI_COMM_WORLD,IERR)
 
-    if (prntinfo) then
+    if (print_info) then
       call date_and_time(values=time_end)
       clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
     endif
 
-    if (myid == 0.and.prntinfo) then
+    if (myid == 0.and.print_info) then
       do is=1,nspec
 
         if (is == 1) then

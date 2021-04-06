@@ -99,7 +99,7 @@ subroutine parmov   ! particle move?
     
     CALL XREALBCC_PACK_B(BX_AV,BY_AV,BZ_AV,1_8,NX,NY,NZ)
 
-    if ((myid == 0).and.prntinfo) WRITE(6,*) " CALLING PARMOVE, NSPEC = ",NSPEC
+    if ((myid == 0).and.print_info) WRITE(6,*) " CALLING PARMOVE, NSPEC = ",NSPEC
 
     ! initalize diagnostic variables that keep track of
     ! particle number, injection, and escape
@@ -271,7 +271,7 @@ subroutine parmov   ! particle move?
     call date_and_time(values=time_begin_array(:,15))
     do IS=1,nspec
       if (testorbt) goto 10
-      NPTOTP = 0
+      nptotp = 0
       npart(is) = 0
       do IIZ=KB-1,KE
         do IIY=JB-1,JE
@@ -413,7 +413,7 @@ subroutine parmov   ! particle move?
     nptot      = epacketg(1)
     npleaving  = epacketg(2)
 
-    if (myid == 0.and.prntinfo) then
+    if (myid == 0.and.print_info) then
       do is=1,nspec
 
         if (is == 1) then
@@ -732,7 +732,7 @@ subroutine push
     y_disp_max = disp_max(2)
     z_disp_max = disp_max(3)
 
-    if ((myid == 0).and.prntinfo) then
+    if ((myid == 0).and.print_info) then
       write(6,*) " maximum x-displacement/dx = ",x_disp_max
       write(6,*) " maximum y-displacement/dy = ",y_disp_max
       write(6,*) " maximum z-displacement/dz = ",z_disp_max
@@ -1021,7 +1021,7 @@ subroutine particle_boundary
         nrecvtot       = ppacketg(2)
         n_fast_removed = ppacketg(3)
 
-        if ((myid == 0).and.prntinfo) then
+        if ((myid == 0).and.print_info) then
           write(6,*) " FINISHED COMPILING LISTS "
           write(6,*) " # OF PARTICLES TO BE SENT     = ",NSENDTOT
           write(6,*) " # OF PARTICLES TO BE RECEIVED = ",NRECVTOT
@@ -1460,7 +1460,7 @@ subroutine particle_boundary
         endif
 
 
-        if ((myid == 0).and.prntinfo) then
+        if ((myid == 0).and.print_info) then
           write(6,*) " FINISHED EXCHANGING PARTICLES "
           write(6,*) " # OF PARTICLES       SENT     = ",NSENDACTUAL
           write(6,*) " # OF PARTICLES       RECEIVED = ",NRECVACTUAL
@@ -1481,7 +1481,7 @@ subroutine particle_boundary
         
         ! call MPI_ALLREDUCE(nptotp,nptot,1,MPI_INTEGER8,MPI_SUM,&
         !                    MPI_COMM_WORLD,IERR)
-        ! IF ((MYID.EQ.0).and.prntinfo) THEN
+        ! IF ((MYID.EQ.0).and.print_info) THEN
         !   WRITE(6,*) " IS = ",IS
         !   WRITE(6,*) " TOTAL # OF PARTICLES AFTER  PARMOV = ",NPTOT
         ! ENDIF

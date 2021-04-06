@@ -1,17 +1,17 @@
-!********************************************************
-!
-!********************************************************
+!---------------------------------------------------------------------
 subroutine accumulate_time_difference(time_begin, time_end, time_elapsed)
   implicit none
-  integer,dimension(8):: time_begin,time_end
-  double precision:: time_elapsed
+
+  integer, dimension(8) :: time_begin, time_end
+  real*8 :: time_elapsed
   
-  time_elapsed=time_elapsed &
+  time_elapsed = time_elapsed &
        +(time_end(3)-time_begin(3))*3600.*24. &
        +(time_end(5)-time_begin(5))*3600. &
        +(time_end(6)-time_begin(6))*60. &
        +(time_end(7)-time_begin(7)) &
        +(time_end(8)-time_begin(8))*0.001
+       
   return
 end subroutine accumulate_time_difference
 
@@ -286,25 +286,27 @@ subroutine MPE_DECOMP1D( n, numprocs, myid, s, e )
 end subroutine MPE_DECOMP1D
 
 
-!************************************************************************
-!************************************************************************
+!---------------------------------------------------------------------
 subroutine get_cleanup_status(maxchar)
   use parameter_mod
   implicit none
-  integer maxchar
-  logical fexists
+
+  integer :: maxchar
+  logical :: fexists
 
   if (myid==0) then
-      inquire(file=trim(adjustl(data_directory))//'.cleanup_status',exist=fexists)
+      inquire(file=trim(data_directory)//'.cleanup_status', exist=fexists)
       if (fexists) then
-        open(unit=1,file=trim(adjustl(data_directory))//'.cleanup_status',status='old')
+        open(unit=1,file=trim(data_directory)//'.cleanup_status', status='old')
         read(1,*) cleanup_status
         close(unit=1)
       else
         cleanup_status='CLEANUP_STATUS=FALSE'
       endif
   endif
-  call MPI_BCAST(cleanup_status,maxchar,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
+
+  call MPI_BCAST(cleanup_status, maxchar, MPI_CHARACTER, 0,MPI_COMM_WORLD, IERR)
+
 end subroutine get_cleanup_status
 
 
@@ -319,7 +321,7 @@ subroutine get_sim_id(key)
   character (len=27) :: key
   integer :: values(8)
 
-  call DATE_AND_TIME(DATE, TIME, ZONE, VALUES) 
+  call date_and_time(DATE, TIME, ZONE, VALUES) 
   key = date//'_'//time//'UTC'//zone
 end subroutine get_sim_id
 

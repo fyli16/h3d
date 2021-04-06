@@ -6,7 +6,7 @@ t_begin=0.0, t_end=2000.0,
 dtwci=0.01,  ! value of dt*wci
 restart=.false.,  ! whether to restart from 'restart' directory
 quota=24.0,  ! walltime quota (in unit of hours)
-MPI_IO_format = .true. ! use MPI IO instead of traditional binary output
+MPI_IO_format =.true. ! use MPI IO instead of traditional binary output
 
 ! ------------------ simulation domain ----------------!
 nx=1, ny=4, nz=224,  ! number of cells along each dim
@@ -71,12 +71,12 @@ dB_B0=0.1,
 num_cycles=5,
 
 ! ------------------ diagnostic control ----------------!
-nprint=100,  ! frequency at which to print simulation information
-nwrtdata=1000, ! frequency at which to write data into files
-nwrtparticle=4000,  ! frequency at which to write particles within a box range
+n_print=100,  ! frequency at which to print simulation information
+n_write_data=1000, ! frequency at which to write data into files
+n_write_particle=4000,  ! frequency at which to write particles within a box range
 
-restrt_write=1,  ! whether to write restart files
-nwrtrestart=20000, ! frequency at which to write restart files
+write_restart=.true.,  ! whether to write restart files
+n_write_restart=20000, ! frequency at which to write restart files
 
 ! box range within which particles will be dumped
 xbox_l=0., xbox_r=1.0, 

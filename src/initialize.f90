@@ -20,9 +20,6 @@ module initialize
     ! get_simulation_id
     ! if (myid==0) call get_sim_id(sim_id)
 
-    ! time stamp
-    !  call date_and_time(values=wall_clock_begin)
-    initial_time = MPI_Wtime()
     return
   end subroutine init_mpi
 
@@ -33,7 +30,7 @@ module initialize
     ! external get_environment_variable
 
     namelist /datum/ tmax, t_begin, t_end, dtwci, dt, restart, &   ! global info
-    restrt_write, quota, MPI_IO_format, &
+    write_restart, quota, MPI_IO_format, &
     nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, &  ! simulation domain
     nodey, nodez, &
     xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
@@ -44,12 +41,11 @@ module initialize
     ieta, resis, netax, netay, netaz, etamin, etamax, eta_par, &
     anisot, gama, ave1, ave2, phib, smoothing, smooth_coef, &
     dB_B0, num_cycles, &  ! init waves
-    nprint, nwrtdata, nwrtrestart, nwrtparticle, &  ! diagnostics
+    n_print, n_write_data, n_write_restart, n_write_particle, &  ! diagnostics
     xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
     Yee, global, harris, fxsho, nxcel, &  ! others
-    rcorr, ishape, teti, post_process
+    rcorr, ishape, teti
       
-    time_elapsed=0.; time_begin_array=0; time_end_array=0
     buffer_zone=0.  ! set to 0 anyway despite contained in input
     notime=1 ! notime=0 will output detailed timing
     tracking_binary=.true.
@@ -79,6 +75,7 @@ module initialize
       read(5, nml=datum, iostat=input_error)
       write(6, datum)
     endif
+
     iwt=0; t_stopped=0. ! set default values
 
     ! Broadcast info to all ranks
@@ -89,7 +86,7 @@ module initialize
     call MPI_BCAST(dtwci                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(dt                     ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(restart                ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(restrt_write           ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(write_restart          ,1     ,MPI_LOGICAL        ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(quota                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(MPI_IO_format          ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
     ! sim. domain
@@ -156,10 +153,10 @@ module initialize
     call MPI_BCAST(dB_B0                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(num_cycles             ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     ! diagnostic control
-    call MPI_BCAST(nprint                 ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(nwrtdata               ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(nwrtrestart            ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(nwrtparticle           ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_print                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_write_data           ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_write_restart        ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_write_particle       ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(xbox_l                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(xbox_r                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(ybox_l                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
@@ -175,7 +172,6 @@ module initialize
     call MPI_BCAST(rcorr                  ,5     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(ishape                 ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(teti                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(post_process           ,1     ,MPI_LOGICAL,0,MPI_COMM_WORLD,IERR)
 
     ! The unit of dt is 1/wci in input file, but converted to 1/wpi here
     dt = dtwci * wpiwci
