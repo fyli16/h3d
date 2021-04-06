@@ -27,7 +27,6 @@ OBJS =  parameter.of90 \
 		diagnostics.of90\
 		initialize.of90\
 		h3d.of90 \
-		c_get_env_var.ogcc \
 		c_int_to_char.ogcc \
 		particle.of90 \
 		field_2d.of90 \
