@@ -121,6 +121,7 @@ module parameter_mod
     Yee, global, harris, fxsho, nxcel, &  ! others
     rcorr, ishape, teti
 
+    ! ??
     my_short_int = myid
     call integer_to_character(myid_char, len(myid_char), my_short_int)
     if (myid_char=='') myid_char='0'
@@ -311,7 +312,7 @@ module parameter_mod
 
   !---------------------------------------------------------------------
   ! Set global parameters
-  subroutine set_parameters()
+  subroutine allocate_global_arrays()
     implicit none
 
     integer :: i, j, k
@@ -328,7 +329,7 @@ module parameter_mod
     ! nparbuf = nxmax*(nylmax+2)*(nzlmax+2)
     nspecm = nspec  ! nspecm is just a mirror of nspec
     npes = numprocs  ! npes is a copy of numprocs
-    npes_over_60 = npes / 512  ! if numprocs > 512
+    npes_over_60 = npes / 512  ! if numprocs > 512?
 
     ! estimate on particle storage requirement
     nplmax = 0  ! max number of local particles in each process
@@ -374,17 +375,17 @@ module parameter_mod
     !  Use CART_SHIFT to determine processor to immediate left (NBRLEFT) and right (NBRRITE) of processor MYID
     !  Since code is aperiodic in z, need to manually set the left boundary for processor 0 and right boundary for npes-1
     if (ndim == 2) then
-        call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
-        call MPI_CART_SHIFT(COMM2D,1,1,NBRBOT ,NBRTOP ,IERR)
+      call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
+      call MPI_CART_SHIFT(COMM2D,1,1,NBRBOT ,NBRTOP ,IERR)
     else if (ndim == 1) then
-        call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
-        NBRTOP = MYID
-        NBRBOT = MYID
+      call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
+      NBRTOP = MYID
+      NBRBOT = MYID
     else if (ndim == 0) then
-        NBRLEFT = MYID
-        NBRRITE = MYID
-        NBRTOP = MYID
-        NBRBOT = MYID
+      NBRLEFT = MYID
+      NBRRITE = MYID
+      NBRTOP = MYID
+      NBRBOT = MYID
     endif
 
     call MPI_SENDRECV(NBRTOP    ,1,MPI_INTEGER ,NBRRITE,0,&
@@ -402,92 +403,92 @@ module parameter_mod
 
     ! recv, send id
     if (mod(coords(1),2) == 0.and.mod(coords(2),2) == 0) then
-        isendid(1)=1
+      isendid(1)=1
     else
-        isendid(1)=0
+      isendid(1)=0
     endif
 
     if (mod(coords(1)+1,2) == 0.and.mod(coords(2),2) == 0) then
-        irecvid(1,1)=nbrrite
-        irecvid(2,1)=-1
-        irecvid(3,1)=nbrleft
-        irecvid(4,1)=-1
+      irecvid(1,1)=nbrrite
+      irecvid(2,1)=-1
+      irecvid(3,1)=nbrleft
+      irecvid(4,1)=-1
     else if (mod(coords(1),2) == 0.and.mod(coords(2)+1,2) == 0) then
-        irecvid(1,1)=-1
-        irecvid(2,1)=nbrtop
-        irecvid(3,1)=-1
-        irecvid(4,1)=nbrbot
+      irecvid(1,1)=-1
+      irecvid(2,1)=nbrtop
+      irecvid(3,1)=-1
+      irecvid(4,1)=nbrbot
     else if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
-        irecvid(1,1)=nbrritetop
-        irecvid(2,1)=nbrlefttop
-        irecvid(3,1)=nbrleftbot
-        irecvid(4,1)=nbrritebot
+      irecvid(1,1)=nbrritetop
+      irecvid(2,1)=nbrlefttop
+      irecvid(3,1)=nbrleftbot
+      irecvid(4,1)=nbrritebot
     endif
     
     if (mod(coords(1)+1,2) == 0.and.mod(coords(2)  ,2) == 0) then
-        isendid(2)=1
+      isendid(2)=1
     else
-        isendid(2)=0
+      isendid(2)=0
     endif
     if (mod(coords(1)  ,2) == 0.and.mod(coords(2)  ,2) == 0) then
-        irecvid(1,2)=nbrrite
-        irecvid(2,2)=-1
-        irecvid(3,2)=nbrleft
-        irecvid(4,2)=-1
+      irecvid(1,2)=nbrrite
+      irecvid(2,2)=-1
+      irecvid(3,2)=nbrleft
+      irecvid(4,2)=-1
     else if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
-        irecvid(1,2)=-1
-        irecvid(2,2)=nbrtop
-        irecvid(3,2)=-1
-        irecvid(4,2)=nbrbot
+      irecvid(1,2)=-1
+      irecvid(2,2)=nbrtop
+      irecvid(3,2)=-1
+      irecvid(4,2)=nbrbot
     else if (mod(coords(1)  ,2) == 0.and.mod(coords(2)+1,2) == 0) then
-        irecvid(1,2)=nbrritetop
-        irecvid(2,2)=nbrlefttop
-        irecvid(3,2)=nbrleftbot
-        irecvid(4,2)=nbrritebot
+      irecvid(1,2)=nbrritetop
+      irecvid(2,2)=nbrlefttop
+      irecvid(3,2)=nbrleftbot
+      irecvid(4,2)=nbrritebot
     endif
     
     if (mod(coords(1)  ,2) == 0.and.mod(coords(2)+1,2) == 0) then
-        isendid(3)=1
+      isendid(3)=1
     else
-        isendid(3)=0
+      isendid(3)=0
     endif
     if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
-        irecvid(1,3)=nbrrite
-        irecvid(2,3)=-1
-        irecvid(3,3)=nbrleft
-        irecvid(4,3)=-1
+      irecvid(1,3)=nbrrite
+      irecvid(2,3)=-1
+      irecvid(3,3)=nbrleft
+      irecvid(4,3)=-1
     else if (mod(coords(1)  ,2) == 0.and.mod(coords(2)  ,2) == 0) then
-        irecvid(1,3)=-1
-        irecvid(2,3)=nbrtop
-        irecvid(3,3)=-1
-        irecvid(4,3)=nbrbot
+      irecvid(1,3)=-1
+      irecvid(2,3)=nbrtop
+      irecvid(3,3)=-1
+      irecvid(4,3)=nbrbot
     else if (mod(coords(1)+1,2) == 0.and.mod(coords(2)  ,2) == 0) then
-        irecvid(1,3)=nbrritetop
-        irecvid(2,3)=nbrlefttop
-        irecvid(3,3)=nbrleftbot
-        irecvid(4,3)=nbrritebot
+      irecvid(1,3)=nbrritetop
+      irecvid(2,3)=nbrlefttop
+      irecvid(3,3)=nbrleftbot
+      irecvid(4,3)=nbrritebot
     endif
     
     if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
-        isendid(4)=1
+      isendid(4)=1
     else
-        isendid(4)=0
+      isendid(4)=0
     endif
     if (mod(coords(1)  ,2) == 0.and.mod(coords(2)+1,2) == 0) then
-        irecvid(1,4)=nbrrite
-        irecvid(2,4)=-1
-        irecvid(3,4)=nbrleft
-        irecvid(4,4)=-1
+      irecvid(1,4)=nbrrite
+      irecvid(2,4)=-1
+      irecvid(3,4)=nbrleft
+      irecvid(4,4)=-1
     else if (mod(coords(1)+1,2) == 0.and.mod(coords(2)  ,2) == 0) then
-        irecvid(1,4)=-1
-        irecvid(2,4)=nbrtop
-        irecvid(3,4)=-1
-        irecvid(4,4)=nbrbot
+      irecvid(1,4)=-1
+      irecvid(2,4)=nbrtop
+      irecvid(3,4)=-1
+      irecvid(4,4)=nbrbot
     else if (mod(coords(1)  ,2) == 0.and.mod(coords(2)  ,2) == 0) then
-        irecvid(1,4)=nbrritetop
-        irecvid(2,4)=nbrlefttop
-        irecvid(3,4)=nbrleftbot
-        irecvid(4,4)=nbrritebot
+      irecvid(1,4)=nbrritetop
+      irecvid(2,4)=nbrlefttop
+      irecvid(3,4)=nbrleftbot
+      irecvid(4,4)=nbrritebot
     endif
 
     ! gather jb,je,kb,ke of each rank into *global (where *=jb,je,kb,ke)
@@ -498,11 +499,11 @@ module parameter_mod
 
     !VR: again, this is much simpler than the commented block
     do i = 0, numprocs-1
-        do k = kbglobal(i), keglobal(i)
-            do j = jbglobal(i), jeglobal(i)
-              idmap_yz(j, k) = i
-            enddo
+      do k = kbglobal(i), keglobal(i)
+        do j = jbglobal(i), jeglobal(i)
+          idmap_yz(j, k) = i
         enddo
+      enddo
     enddo
 
     !VR: fill in ghost cells in idmap     
@@ -529,15 +530,6 @@ module parameter_mod
         
     if (.not.testorbt) norbskip=1
 
-    call allocate_global_arrays
-
-    return
-  end subroutine set_parameters 
-
-
-  !---------------------------------------------------------------------
-  subroutine allocate_global_arrays
-    implicit none
     allocate ( ex       (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),ey       (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
               ,ez       (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),bx       (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
               ,by       (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),bz       (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
@@ -596,7 +588,7 @@ module parameter_mod
     allocate (buf_particle(tracking_width,nspec*maxtags,nbufsteps))
     allocate (buf_p1(tracking_width,nspec*maxtags))
 
-    return 
-  end subroutine allocate_global_arrays
+    return
+  end subroutine allocate_global_arrays 
 
 end module parameter_mod

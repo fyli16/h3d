@@ -32,8 +32,8 @@ program h3d
   ! Decompose MPI/simulation domain  
   call domain_decomp()
   
-  ! Set global parameters
-  call set_parameters()  
+  ! allocate global parameters
+  call allocate_global_arrays()  
     
   ! set up mesh 
   call setup_mesh()
