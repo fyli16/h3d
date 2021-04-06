@@ -92,8 +92,8 @@ module parameter_mod
   logical :: periods(2), reorder
   integer*8 :: restart_index
   character(len=2) :: restart_index_suffix(2)
-  character(len=160) :: cycle_ascii, cycle_ascii_new, myid_char, cleanup_status
-  character :: data_directory*5, restart_directory*8
+  character(len=160) :: data_directory, restart_directory, cycle_ascii, cycle_ascii_new, &
+                      myid_char, cleanup_status
   real*8 :: dB_B0, num_cycles ! for init_wave
   real*8, parameter :: zero=0.0d0, one=1.0d0, two=2.0d0, one_half=0.5d0, pi=acos(-1.)
 

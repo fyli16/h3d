@@ -685,7 +685,9 @@ subroutine restrtrw(rw, itstart)
   endif
     
   call sortit
-return
+
+  return
+  
 end subroutine restrtrw
 
 

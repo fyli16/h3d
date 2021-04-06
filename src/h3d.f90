@@ -58,17 +58,14 @@
 
     ! ??
     if (restart) then
-      ! read 'restart_index' and 'itfin'
       if (myid == 0) then
         open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='old')
         read(222,*) restart_index, itfin
         close(222)
       endif
-
       call MPI_BCAST(restart_index,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
       call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
 
-      ! hxv 01/10/2014
       if (myid == 0) then
         write(6,*) " "
         write(6,*) " RESTARTED FROM SET # ", restart_index
@@ -78,7 +75,7 @@
       ! comment out for timing on LANL machine
       do iwrite = 0, npes_over_60 
         if (mod( int(myid,8), npes_over_60 + 1) .eq. iwrite) then
-            call restrtrw(-1.0,itstart)
+            call restrtrw(-1.0, itstart)
             call MPI_BCAST(itfin,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
         endif
       enddo
