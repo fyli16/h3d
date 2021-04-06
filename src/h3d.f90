@@ -545,10 +545,14 @@ subroutine setup_mesh()
 end subroutine setup_mesh
 
 
+!---------------------------------------------------------------------
+! initialize data for a restart run
 subroutine init_restart()
   use parameter_mod
   use mesh2d
   implicit none 
+
+  integer*8 :: ixe, iye, ize, i, j, k, is
 
   if (myid == 0) then
     open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='old')
