@@ -552,7 +552,8 @@ subroutine init_restart()
   use mesh2d
   implicit none 
 
-  integer*8 :: ixe, iye, ize, i, j, k, is
+  integer*8 :: ixe, iye, ize, i, j, k, itstart
+  integer*4 :: is, iwrite
 
   if (myid == 0) then
     open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='old')
