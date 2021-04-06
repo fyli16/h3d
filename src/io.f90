@@ -531,7 +531,7 @@ subroutine restart_read_write(rw, itstart)
     read(f_unit) nspec
 
     do is = 1, nspec
-      read(f_unit) NPTOTP
+      read(f_unit) nptotp
       allocate (particle_tmp_array(nptotp))
       allocate (particle_tmp_array2(nptotp))
 
