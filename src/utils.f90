@@ -64,13 +64,13 @@ subroutine nsmth (a)
 end subroutine nsmth
 
 
-!********************************************************
-!>    sort the particles
-!********************************************************
+!---------------------------------------------------------------------
+! sort the particles
 subroutine sortit
   use parameter_mod
   use mesh2d
   implicit none
+
   double precision pstore(nplmax)
   integer pstore2(nplmax)
   integer*8 id, kb1, is, ix, iy, iz, ixe ,iye, ize, l, nttot, nplist
@@ -89,27 +89,26 @@ subroutine sortit
       do iy = jb-1,je
         do ix = 1, nx1
           np = iphead(ix,iy,iz,is)
-          DO WHILE (NP.NE.0)
-
-          ! Uniform mesh - Same as in version 5.0
-          !  ixe = hxi*x(np)+1.5000000000000001d+00
-          !  iye = hyi*y(np)+0.5000000000000001d+00
-          !  ize = hzi*z(np)+0.5000000000000001d+00
+          do while (NP.NE.0)
+            ! Uniform mesh - Same as in version 5.0
+            ! ixe = hxi*x(np)+1.5000000000000001d+00
+            ! iye = hyi*y(np)+0.5000000000000001d+00
+            ! ize = hzi*z(np)+0.5000000000000001d+00
 
             ! Nonuniform mesh - using MESH_UNMAP
-              rxe=dtxi*MESH_UNMAP(meshX,x(np))+1.50000000000d+00
-              rye=dtyi*MESH_UNMAP(meshY,y(np))+1.50000000000d+00
-              rze=dtzi*MESH_UNMAP(meshZ,z(np))+1.50000000000d+00
-              ixe=rxe
-              iye=rye
-              ize=rze
-              iye=iye-1             ! integer index in y direction starts at 0
-              ize=ize-1             ! integer index in z direction starts at 0
+            rxe=dtxi*MESH_UNMAP(meshX,x(np))+1.50000000000d+00
+            rye=dtyi*MESH_UNMAP(meshY,y(np))+1.50000000000d+00
+            rze=dtzi*MESH_UNMAP(meshZ,z(np))+1.50000000000d+00
+            ixe=rxe
+            iye=rye
+            ize=rze
+            iye=iye-1    ! integer index in y direction starts at 0
+            ize=ize-1    ! integer index in z direction starts at 0
 
             porder(np)=iptemp(ixe,iye,ize,is)
             iptemp(ixe,iye,ize,is)=np
             np = link(np)
-          ENDDO
+          enddo
         enddo
       enddo
     enddo
@@ -199,8 +198,8 @@ subroutine sortit
     do iz = kb-1,ke
       do iy = jb-1,je
         do ix = 1, nx1
-    nplist = iphead(ix,iy,iz,is)
-    if (nplist.ne.0) then
+          nplist = iphead(ix,iy,iz,is)
+          if (nplist.ne.0) then
             iphead(ix,iy,iz,is) = l
             do np = l, l+nplist-1
               link(np) = np+1

@@ -56,124 +56,23 @@
     ! make list of particles (see utils.f90)
     call makelist
 
-    ! ??
+    ! restart or a fresh start
     if (restart) then
-      if (myid == 0) then
-        open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='old')
-        read(222,*) restart_index, itfin
-        close(222)
-      endif
-      call MPI_BCAST(restart_index,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-      call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-
-      if (myid == 0) then
-        write(6,*) " "
-        write(6,*) " RESTARTED FROM SET # ", restart_index
-        write(6,*) " "
-      endif
-
-      do iwrite = 0, npes_over_60 
-        if (mod( int(myid,8), npes_over_60 + 1) .eq. iwrite) then
-            call restrtrw(-1.0, itstart)
-            call MPI_BCAST(itfin,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-        endif
-      enddo
-        
-      if (restart_index == 1) then
-        restart_index=2
-      else
-        restart_index=1
-      endif
-
-      ! Uniform mesh - Same as is in version 5.0
-      if (myid==0) then
-        write(6,*) " "
-        write(6,*) "hx, hy, hz =", hx, hy, hz
-        write(6,*) " "
-      endif
-      yb = (jb-1)*hy  ! where is hy, hz defined before this?
-      ye = je    *hy
-      zb = (kb-1)*hz
-      ze = ke    *hz
-        
-      ! Nonuniform mesh
-      zb = meshZ%xn(kb+1)
-      ze = meshZ%xn(ke+2)
-      do ipe = 0,npes-1
-        zbglobal(ipe) = meshZ%xn(kbglobal(ipe)+1)
-        zeglobal(ipe) = meshZ%xn(keglobal(ipe)+2)
-      enddo
-
-      yb = meshY%xn(jb+1)
-      ye = meshY%xn(je+2)
-      do ipe = 0,npes-1
-        ybglobal(ipe) = meshY%xn(jbglobal(ipe)+1)
-        yeglobal(ipe) = meshY%xn(jeglobal(ipe)+2)
-      enddo
-                
-      volume_fraction = (ye-yb)*(ze-zb)/(ymax*zmax)
-      
-      xb = 0.
-      xe = xmax
-      xb_logical = MESH_UNMAP(meshX,xb)
-      xe_logical = MESH_UNMAP(meshX,xe)
-      yb_logical = MESH_UNMAP(meshY,yb)
-      ye_logical = MESH_UNMAP(meshY,ye)
-      zb_logical = MESH_UNMAP(meshZ,zb)
-      ze_logical = MESH_UNMAP(meshZ,ze)
-                
-      do is = 1, nspec
-        npm = npx(is)*npy(is)*npz(is)*npes
-        dfac(is) = real(ny*nz*nx)/real(npm)
-        do ixe=1,nx2
-            do iye=jb-1,je+1
-              do ize=kb-1,ke+1
-                  qp_cell(ixe,iye,ize,is) = meshX%dxc(ixe)*meshY%dxc(iye+1)*meshZ%dxc(ize+1)*dfac(is)*frac(is)
-              enddo
-            enddo
-        enddo
-      enddo
-              
-      do i=1,nxmax
-        xc_uniform(i) = hx*(i-1.5)
-        xv_uniform(i) = hx*(i-2.0)
-      enddo
-      do j=1,nymax
-        yc_uniform(j) = hy*(j-0.5)
-        yv_uniform(j) = hy*(j-1.0)
-      enddo
-      do k=1,nzmax
-        zc_uniform(k) = hz*(k-0.5)
-        zv_uniform(k) = hz*(k-1.0)
-      enddo
-        
-      if (myid ==0) then
-          my_short_int = it
-          call integer_to_character(cycle_ascii,len(cycle_ascii),my_short_int)
-          cycle_ascii_new=trim(adjustl(cycle_ascii))
-          write(6,*) " cycle = ", cycle_ascii_new
-      endif
-      
-      call MPI_BCAST(cycle_ascii    ,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
-      call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
-      
+      call init_restart()
     else  !VR: fresh start
-
       time = 0.0
       restart_index = 1
       call init_wave
-      
-    endif !VR: end of if (restart)
+    endif
 
-
-    !VR: removed output of the dipole field
+    ! VR: removed output of the dipole field
     call date_and_time(values=time_end)
     clock_time_init=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
     if (myid == 0) then
       print *,'load time = ', real(clock_time_init - clock_time_re1)  
     endif
     clock_time_old = clock_time_init
-    !write(*,*)'clock time',clock_time_old
+    ! write(*,*)'clock time',clock_time_old
 
     ! hxv 01/10/2014
     if (myid == 0) then
@@ -243,7 +142,7 @@
       
           do iwrite = 0,npes_over_60 
             if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
-                call restrtrw(1.0, itstart)
+                call restart_read_write(1.0, itstart)
             endif
             call MPI_BARRIER(MPI_COMM_WORLD,IERR)
           enddo
@@ -443,7 +342,7 @@
 
         do iwrite = 0, npes_over_60  
           if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
-            call restrtrw(1.0, itstart)
+            call restart_read_write(1.0, itstart)
           endif
           call MPI_BARRIER(MPI_COMM_WORLD,IERR)
         enddo
@@ -644,3 +543,111 @@ subroutine setup_mesh()
 
   return
 end subroutine setup_mesh
+
+
+subroutine init_restart()
+  use parameter_mod
+  implicit none 
+
+  if (myid == 0) then
+    open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='old')
+    read(222,*) restart_index, itfin
+    close(222)
+  endif
+  call MPI_BCAST(restart_index,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
+  call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
+
+  if (myid == 0) then
+    write(6,*) " "
+    write(6,*) " RESTARTED FROM SET # ", restart_index
+    write(6,*) " "
+  endif
+
+  do iwrite = 0, npes_over_60 
+    if (mod( int(myid,8), npes_over_60 + 1) .eq. iwrite) then
+        call restart_read_write(-1.0, itstart)  ! read restart data
+        call MPI_BCAST(itfin,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
+    endif
+  enddo
+    
+  if (restart_index == 1) then
+    restart_index=2
+  else
+    restart_index=1
+  endif
+
+  ! Uniform mesh - Same as is in version 5.0
+  if (myid==0) then
+    write(6,*) " "
+    write(6,*) "hx, hy, hz =", hx, hy, hz
+    write(6,*) " "
+  endif
+  yb = (jb-1)*hy  ! where is hy, hz defined before this?
+  ye = je    *hy
+  zb = (kb-1)*hz
+  ze = ke    *hz
+    
+  ! Nonuniform mesh
+  zb = meshZ%xn(kb+1)
+  ze = meshZ%xn(ke+2)
+  do ipe = 0,npes-1
+    zbglobal(ipe) = meshZ%xn(kbglobal(ipe)+1)
+    zeglobal(ipe) = meshZ%xn(keglobal(ipe)+2)
+  enddo
+
+  yb = meshY%xn(jb+1)
+  ye = meshY%xn(je+2)
+  do ipe = 0,npes-1
+    ybglobal(ipe) = meshY%xn(jbglobal(ipe)+1)
+    yeglobal(ipe) = meshY%xn(jeglobal(ipe)+2)
+  enddo
+            
+  volume_fraction = (ye-yb)*(ze-zb)/(ymax*zmax)
+  
+  xb = 0.
+  xe = xmax
+  xb_logical = MESH_UNMAP(meshX,xb)
+  xe_logical = MESH_UNMAP(meshX,xe)
+  yb_logical = MESH_UNMAP(meshY,yb)
+  ye_logical = MESH_UNMAP(meshY,ye)
+  zb_logical = MESH_UNMAP(meshZ,zb)
+  ze_logical = MESH_UNMAP(meshZ,ze)
+            
+  do is = 1, nspec
+    npm = npx(is)*npy(is)*npz(is)*npes
+    dfac(is) = real(ny*nz*nx)/real(npm)
+    do ixe=1,nx2
+        do iye=jb-1,je+1
+          do ize=kb-1,ke+1
+              qp_cell(ixe,iye,ize,is) = meshX%dxc(ixe)*meshY%dxc(iye+1)*meshZ%dxc(ize+1)*dfac(is)*frac(is)
+          enddo
+        enddo
+    enddo
+  enddo
+          
+  do i=1,nxmax
+    xc_uniform(i) = hx*(i-1.5)
+    xv_uniform(i) = hx*(i-2.0)
+  enddo
+  do j=1,nymax
+    yc_uniform(j) = hy*(j-0.5)
+    yv_uniform(j) = hy*(j-1.0)
+  enddo
+  do k=1,nzmax
+    zc_uniform(k) = hz*(k-0.5)
+    zv_uniform(k) = hz*(k-1.0)
+  enddo
+    
+  if (myid ==0) then
+      my_short_int = it
+      call integer_to_character(cycle_ascii,len(cycle_ascii),my_short_int)
+      cycle_ascii_new=trim(adjustl(cycle_ascii))
+      write(6,*) " cycle = ", cycle_ascii_new
+  endif
+  
+  call MPI_BCAST(cycle_ascii    ,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
+  call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
+
+  return 
+
+end subroutine init_restart

@@ -306,7 +306,7 @@ end subroutine dataout
 ! read or write restart data
 ! rw = +1.0: write 
 ! rw = -1.0: read
-subroutine restrtrw(rw, itstart)
+subroutine restart_read_write(rw, itstart)
   use parameter_mod
   implicit none
 
@@ -315,7 +315,7 @@ subroutine restrtrw(rw, itstart)
   real*8, dimension(:), allocatable :: particle_tmp_array
   integer, dimension(:), allocatable :: particle_tmp_array2 
  
-  if (rw == +1.0) then
+  if (rw == +1.0) then  ! write restart data 
     t_stopped = t_stopped + (it - itstart + 1) * dtwci
     f_unit = 215 + myid
     open(unit=f_unit, file=trim(restart_directory)//'restfld_'//trim(adjustl(myid_char))  &
@@ -519,7 +519,7 @@ subroutine restrtrw(rw, itstart)
     
     close(unit=f_unit)
 
-  else if (rw == -1.0) then
+  else if (rw == -1.0) then ! read restart data
     f_unit = 215 + myid
     open(unit=f_unit, file=trim(restart_directory)//'restfld_'//trim(adjustl(myid_char))  &
             //'.bin'//restart_index_suffix(restart_index), form='unformatted', status='unknown')
@@ -688,7 +688,7 @@ subroutine restrtrw(rw, itstart)
 
   return
 
-end subroutine restrtrw
+end subroutine restart_read_write
 
 
 !---------------------------------------------------------------------
