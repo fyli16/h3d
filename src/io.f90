@@ -724,8 +724,8 @@ subroutine open_hist_diag_files()
   endif
 
   if (tracking_mpi) then
-    write(filename,"(a,i4.4,a)") 'tracking_', myid, '.dat'
-    write(filename2,"(a,i4.4,a)") 'probes_', myid, '.dat'
+    write(filename,"(a,i4.4,a)") 'tracking/tracking_', myid, '.dat'
+    write(filename2,"(a,i4.4,a)") 'probes/probes_', myid, '.dat'
     if (restart) then
       open(unit=12,file=trim(adjustl(data_directory))//filename2, status='old',position='append')
       open(unit=13,file=trim(adjustl(data_directory))//filename,form='unformatted',status='old',access='append')
