@@ -8,88 +8,84 @@
 !                                                                          *
 !***************************************************************************
 
-  program h3d 
-    use parameter_mod
-    use functions_f90
-    use mesh2d
-    implicit none
+program h3d 
+  use parameter_mod
+  use functions_f90
+  use mesh2d
 
-    integer, dimension(8) :: curr_time
-    integer*8 :: itstart, itfinish
-    real*8, dimension(:,:,:), allocatable :: uniform_mesh      
-    ! VR : allocating a global mesh can not work on large runs with small amount of memory per rank
-    ! double precision, dimension(:,:,:), allocatable:: nonuniform_mesh_global
+  implicit none
 
-    ! Initialize MPI
-    call MPI_INIT(IERR)
-    call MPI_COMM_SIZE(MPI_COMM_WORLD,NUMPROCS,IERR)
-    call MPI_COMM_RANK(MPI_COMM_WORLD,MYID,IERR)
-    if (myid==0) then
-      write(6,*) 
-      write(6,*) "Init mpi ..."
-      write(6,*) "  Total number of processors = ", numprocs
-    endif
+  integer, dimension(8) :: curr_time
+  integer*8 :: itstart, itfinish
+  ! VR : allocating a global mesh can not work on large runs with small amount of memory per rank
+  real*8, dimension(:,:,:), allocatable :: uniform_mesh      
+  ! double precision, dimension(:,:,:), allocatable:: nonuniform_mesh_global
 
-    ! Read input file
-    call read_input()
+  ! Initialize MPI
+  call MPI_INIT(IERR)
+  call MPI_COMM_SIZE(MPI_COMM_WORLD,NUMPROCS,IERR)
+  call MPI_COMM_RANK(MPI_COMM_WORLD,MYID,IERR)
+
+  ! Read input file
+  call read_input()
+  
+  ! Decompose MPI/simulation domain  
+  call domain_decomp()
+  
+  ! Set global parameters
+  call set_parameters()  
     
-    ! Decompose MPI following input  
-    call mpi_decomposition()
-    
-    ! Set global parameters
-    call set_parameters()  
-      
-    ! set up mesh 
-    call setup_mesh()
-    allocate ( uniform_mesh(nxmax, jb-1:je+1, kb-1:ke+1) )
-    ! VR: allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
- 
-    ! open history diagnostic files
-    call open_hist_diag_files()
+  ! set up mesh 
+  call setup_mesh()
+  allocate ( uniform_mesh(nxmax, jb-1:je+1, kb-1:ke+1) )
+  ! VR: allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
 
-    ! notime=0 will output detailed timing
-    if (notime==0) call open_timing_diag_files
+  ! open history diagnostic files
+  call open_hist_diag_files()
 
-    ! make list of particles (see utils.f90)
-    call makelist
+  ! notime=0 will output detailed timing
+  if (notime==0) call open_timing_diag_files
 
-    ! restart or a fresh start
-    if (restart) then
-      call init_restart()
-    else  ! fresh start
-      time = 0.0
-      restart_index = 1
-      call init_wave
-    endif
+  ! make list of particles (see utils.f90)
+  call makelist
 
-    ! time stamp just before entering the simulation loop
-    call date_and_time(values=curr_time)
-    clock_time_init=( curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
-    clock_time_old = clock_time_init
+  ! restart or a fresh start
+  if (restart) then
+    call init_restart()
+  else  ! fresh start
+    time = 0.0
+    restart_index = 1
+    call init_wave
+  endif
 
-    ! march forward in time
-    itstart = itfin + 1
-    it = itstart
+  ! time stamp just before entering the simulation loop
+  call date_and_time(values=curr_time)
+  clock_time_init=( curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
+  clock_time_old = clock_time_init
 
-    ! change how itfinish is computed
-    itfinish = (tmax-t_stopped)/dtwci + itstart - 1
-    if (myid == 0) write(6,*) 't_stopped = ', t_stopped
-    if (myid == 0) write(6,*) 'itstart, itfinish = ', itstart, ' ', itfinish
-    
-    time_elapsed=0.; time_begin_array=0; time_end_array=0
+  ! march forward in time
+  itstart = itfin + 1
+  it = itstart
 
-    ! main simulation loop
-    do while(it <= itfinish)
-      call one_simulation_loop(itstart, itfinish, uniform_mesh)
-    enddo  
+  ! change how itfinish is computed
+  itfinish = (tmax-t_stopped)/dtwci + itstart - 1
+  if (myid == 0) write(6,*) 't_stopped = ', t_stopped
+  if (myid == 0) write(6,*) 'itstart, itfinish = ', itstart, ' ', itfinish
+  
+  time_elapsed=0.; time_begin_array=0; time_end_array=0
 
-    ! close files that are open
-    call close_files()
+  ! main simulation loop
+  do while(it <= itfinish)
+    call one_simulation_loop(itstart, itfinish, uniform_mesh)
+  enddo  
 
-    ! print misc timing info, finalize MPI, and shutdown the program
-    call shutdown()
+  ! close files that are open
+  call close_files()
 
-  end program h3d
+  ! print misc timing info, finalize MPI, and shutdown the program
+  call shutdown()
+
+end program h3d
 
 
 !---------------------------------------------------------------------

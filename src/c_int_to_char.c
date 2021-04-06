@@ -1,8 +1,8 @@
 #include <math.h>
 #include <stdio.h>
-void integer_to_character_(c,max_char,x)
+void integer_to_character_(c, max_char, x)
 char c[1];
-int  *x,*max_char;
+int *x, *max_char;
 {
         int *remainder_current_pointer,y,remainder_pending,remainder_current,one_digit,counter,divisor,base;
         char c_tmp[1024];

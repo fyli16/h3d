@@ -25,7 +25,6 @@ OBJS =  parameter.of90 \
 		field.of90\
 		write_file.of90 \
 		diagnostics.of90\
-		initialize.of90\
 		h3d.of90 \
 		c_int_to_char.ogcc \
 		particle.of90 \

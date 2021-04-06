@@ -5,7 +5,6 @@ tmax=1000.0, ! max sim. time, in units of 1/wci
 t_begin=0.0, t_end=2000.0, 
 dtwci=0.01,  ! value of dt*wci
 restart=.false.,  ! whether to restart from 'restart' directory
-quota=24.0,  ! walltime quota (in unit of hours)
 MPI_IO_format =.true. ! use MPI IO instead of traditional binary output
 
 ! ------------------ simulation domain ----------------!
@@ -78,10 +77,15 @@ n_write_particle=4000,  ! frequency at which to write particles within a box ran
 write_restart=.true.,  ! whether to write restart files
 n_write_restart=20000, ! frequency at which to write restart files
 
+tracking_binary=.true.
+tracking_mpi=.true.
+
 ! box range within which particles will be dumped
 xbox_l=0., xbox_r=1.0, 
 ybox_l=0., ybox_r=1.0, 
 zbox_l=0., zbox_r=2.24,
+
+notime=1, ! notime=0 will output detailed timing
 
 ! ------------------------- others ---------------------!
 ! these seem not really implemented
