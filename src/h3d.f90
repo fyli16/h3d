@@ -15,17 +15,11 @@
     use mesh2d
     implicit none
 
-    integer*8 :: i, irecnum, ixe, iye, ize, j, jbt, jet, k, kbt, ket, numvars, is
     integer, dimension(8) :: curr_time
-    real*8 :: rnorm, pifac
     integer*8 :: itstart, itfinish
-    real*8 :: clock_time_re1
     real*8, dimension(:,:,:), allocatable :: uniform_mesh      
     ! VR : allocating a global mesh can not work on large runs with small amount of memory per rank
-    ! VR : double precision, dimension(:,:,:), allocatable:: nonuniform_mesh_global
-    character (len=240) :: tmpfname
-    integer :: iwrite, ierr2, eStrLen
-    character(len=1024) :: eStr
+    ! double precision, dimension(:,:,:), allocatable:: nonuniform_mesh_global
 
     ! Initialize MPI
     call init_mpi()
@@ -43,10 +37,6 @@
     call setup_mesh()
     allocate ( uniform_mesh(nxmax, jb-1:je+1, kb-1:ke+1) )
     ! VR: allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
-
-    ! timer
-    call date_and_time(values=curr_time)
-    clock_time_re1=(curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
  
     ! open history diagnostic files
     call open_hist_diag_files()
@@ -69,9 +59,6 @@
     ! time stamp just before entering the simulation loop
     call date_and_time(values=curr_time)
     clock_time_init=( curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
-    if (myid == 0) then
-      write(6,*) 'load time = ', real(clock_time_init - clock_time_re1)  
-    endif
     clock_time_old = clock_time_init
 
     ! march forward in time
@@ -171,7 +158,7 @@ subroutine init_restart()
   implicit none 
 
   integer*8 :: ixe, iye, ize, i, j, k, itstart
-  integer*4 :: is, iwrite
+  integer :: is, iwrite
 
   if (myid == 0) then
     open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='old')
@@ -254,7 +241,7 @@ subroutine init_restart()
     xc_uniform(i) = hx*(i-1.5)
     xv_uniform(i) = hx*(i-2.0)
   enddo
-  do j=1,nymax
+  do j = 1, nymax
     yc_uniform(j) = hy*(j-0.5)
     yv_uniform(j) = hy*(j-1.0)
   enddo
@@ -283,52 +270,52 @@ subroutine data_output()
   use parameter_mod
   implicit none 
 
-  if (.not.testorbt.and.(write_data.or.it==itfinish.or.it==1)) then
-    if (myid ==0) then
-      my_short_int=it
+  integer :: j
+  integer*8 :: numvars, irecnum
+
+  if (myid ==0) then
+    my_short_int=it
+    call integer_to_character(cycle_ascii, len(cycle_ascii), my_short_int)
+    cycle_ascii_new=trim(adjustl(cycle_ascii))
+    write(6,*) " cycle = ",cycle_ascii_new
+  endif
+  call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
+  call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
+  
+  if (myid == 0 .and. .not. MPI_IO_format) call open_files
+  
+  call date_and_time(values=time_begin_array(:,6))
+  if (ndim /= 1) then
+    call caltemp2_global
+  else
+    call caltemp2_global_2d
+  endif
+  call date_and_time(values=time_end_array(:,6))
+  call accumulate_time_difference(time_begin_array(1,6),time_end_array(1,6),time_elapsed(6))
+
+  numvars = 18
+  irecnum = 1
+  ! VR: in the old version, "nonuniform_mesh_global" was passed to dataout
+  call dataout(bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,                   &
+      p_xx,p_xy,p_xz,p_yy,p_yz,p_zz,fox,foy,foz, vxs,vys,vzs,                 &
+      nxmax,nymax,nzmax,file_unit,myid,                                       &
+      numvars,irecnum,kb,ke,numprocs,wpiwci,jb,je,ny,nz,nylmax,nzlmax,nspecm, &
+      eta, eta_times_b_dot_j, eta_par,            &
+      uniform_mesh, trim(data_directory), trim(adjustl(cycle_ascii)), MPI_IO_format)
+  if (myid == 0 .and. .not. MPI_IO_format) then
+    do j = 1, 25
+      close(file_unit(j))
+    enddo
+  endif
+
+  if (t_begin*wpiwci <= time .and. time <= t_end*wpiwci .and. mod(int(it,8),n_write_particle)==0 .or. it==1) then
+    if (myid == 0) then
+      my_short_int = it
       call integer_to_character(cycle_ascii, len(cycle_ascii), my_short_int)
-      cycle_ascii_new=trim(adjustl(cycle_ascii))
-      write(6,*) " cycle = ",cycle_ascii_new
+      write(6,*) " calling particle_in_volume_write with cycle_ascii = ", cycle_ascii
     endif
     call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
-    
-    if (myid == 0 .and. .not. MPI_IO_format) call open_files
-    
-    call date_and_time(values=time_begin_array(:,6))
-    if (ndim /= 1) then
-      call caltemp2_global
-    else
-      call caltemp2_global_2d
-    endif
-    call date_and_time(values=time_end_array(:,6))
-    call accumulate_time_difference(time_begin_array(1,6),time_end_array(1,6),time_elapsed(6))
-
-    numvars = 18
-    irecnum=1
-    ! VR: in the old version, "nonuniform_mesh_global" was passed to dataout
-    call dataout(bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,                   &
-        p_xx,p_xy,p_xz,p_yy,p_yz,p_zz,fox,foy,foz, vxs,vys,vzs,                 &
-        nxmax,nymax,nzmax,file_unit,myid,                                       &
-        numvars,irecnum,kb,ke,numprocs,wpiwci,jb,je,ny,nz,nylmax,nzlmax,nspecm, &
-        eta, eta_times_b_dot_j, eta_par,            &
-        uniform_mesh, trim(data_directory), trim(adjustl(cycle_ascii)), MPI_IO_format)
-    if (myid == 0 .and. .not. MPI_IO_format) then
-      do j=1,25
-        close(file_unit(j))
-      enddo
-    endif
-
-    if (t_begin*wpiwci <= time .and. time <= t_end*wpiwci .and. mod(int(it,8),n_write_particle)==0 .or. it==1) then
-      if (myid == 0) then
-        my_short_int = it
-        call integer_to_character(cycle_ascii, len(cycle_ascii), my_short_int)
-        write(6,*) " calling particle_in_volume_write with cycle_ascii = ", cycle_ascii
-      endif
-      call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
-      call particle_in_volume_write
-    endif
-
+    call particle_in_volume_write
   endif
 
   return 
@@ -337,11 +324,13 @@ end subroutine data_output
 
 
 !---------------------------------------------------------------------
-subroutine one_simulation_loop()
+subroutine one_simulation_loop(itstart, itfinish)
   use parameter_mod
   implicit none 
 
   integer, dimension(8) :: curr_time
+  integer :: iwrite,
+  integer*8 :: itstart, itfinish
 
   call get_cleanup_status(len(cleanup_status))
 
@@ -453,8 +442,10 @@ subroutine one_simulation_loop()
   call date_and_time(values=time_end_array(:,30))
   call accumulate_time_difference(time_begin_array(1,30),time_end_array(1,30),time_elapsed(30))
     
-  ! VR: this seems to be data output region        
-  call data_output()
+  ! VR: this seems to be data output region
+  if (.not.testorbt.and.(write_data.or.it==itfinish.or.it==1)) then        
+    call data_output()
+  endif
 
   ! write restart files at specified steps
   if (write_restart .and. mod(int(it,8), n_write_restart)==0) then
