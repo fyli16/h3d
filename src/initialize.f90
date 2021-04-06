@@ -55,12 +55,14 @@ module initialize
     !tracking_binary=.false.
 
     ! get the i/o directory names from the environment variable
-    call get_environment_variable1(data_directory, len(data_directory))
+    ! call get_environment_variable1(data_directory, len(data_directory))
     ! call get_environment_variable(data_directory, len(data_directory), 'DATA_DIRECTORY')
-    data_directory = trim(adjustl(data_directory))//'/'
-    call get_environment_variable2(restart_directory, len(restart_directory))
+    ! data_directory = trim(adjustl(data_directory))//'/'
+    data_directory = 'data/'
+    ! call get_environment_variable2(restart_directory, len(restart_directory))
     ! call get_environment_variable(restart_directory, len(restart_directory), 'RESTART_DIRECTORY')
-    restart_directory = trim(adjustl(restart_directory))//'/'
+    ! restart_directory = trim(adjustl(restart_directory))//'/'
+    restart_directory = 'restart/'
     restart_index_suffix(1) = '.1'
     restart_index_suffix(2) = '.2'
 
