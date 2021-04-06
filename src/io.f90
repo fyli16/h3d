@@ -11,16 +11,16 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
   integer :: myid, numprocs, is
   integer*8 :: nxmax, nymax, nzmax, kb, ke, jb, je, nylmax, nzlmax, nspecm, numvars, irecnum
   integer*8, dimension(25) :: file_unit
-  double precision, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: bx, by, bz, den,                  &
+  real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: bx, by, bz, den,                  &
                                   ex, ey, ez, vix, viy, viz,eta,eta_times_b_dot_j, fox, foy, foz
-  double precision, dimension(nxmax,jb-1:je+1,kb-1:ke+1,nspecm) :: tpar, tperp, vxs, vys, vzs
-  double precision, dimension(nxmax,jb-1:je+1,kb-1:ke+1,nspecm) :: p_xx,p_xy,p_xz,p_yy,p_yz,p_zz
+  real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1,nspecm) :: tpar, tperp, vxs, vys, vzs
+  real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1,nspecm) :: p_xx,p_xy,p_xz,p_yy,p_yz,p_zz
   integer*8 :: ny,nz,eta_par
-  double precision :: rnorm, wpiwci
+  real*8 :: rnorm, wpiwci
   integer*8 :: irecdel, ir1, ir2, irec_start , idebug,IERR
-  ! double precision:: uniform_mesh(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)
-  double precision :: uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1)
-  ! double precision:: nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1)
+  ! real*8:: uniform_mesh(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)
+  real*8 :: uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1)
+  ! real*8 :: nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1)
   character(len=240) :: fileName
   character(len=2) :: specname
   character :: data_directory*(*)
@@ -38,7 +38,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
   uniform_mesh=bx 
 
   if (MPI_IO_format) then
-    fileName= trim(trim(adjustl(data_directory))//'bx/bx_'//trim(adjustl(cycle_ascii)))//'.gda'
+    fileName= trim(trim(data_directory)//'bx/bx_'//trim(adjustl(cycle_ascii)))//'.gda'
     call wrtfile(uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
   else
     call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(1),irec_start,ny,nz)
@@ -50,7 +50,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
     ! call MESH_INTERPOLATED_3D(by,uniform_mesh,nonuniform_mesh_global)
     uniform_mesh = by 
     if (MPI_IO_format) then
-      fileName = trim(trim(adjustl(data_directory))//'by/by_'//trim(adjustl(cycle_ascii)))//'.gda'
+      fileName = trim(trim(data_directory)//'by/by_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile(uniform_mesh, rnorm, trim(adjustl(fileName)), irec_start, ny, nz)
     else
       call wrtfile_NON_MPIO(uniform_mesh, rnorm, file_unit(2), irec_start, ny, nz)
@@ -60,7 +60,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
     ! call MESH_INTERPOLATED_3D(bz,uniform_mesh,nonuniform_mesh_global)
     uniform_mesh=bz
     if (MPI_IO_format) then
-      fileName= trim(trim(adjustl(data_directory))//'bz/bz_'//trim(adjustl(cycle_ascii)))//'.gda'
+      fileName= trim(trim(data_directory)//'bz/bz_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile(uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
       call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(3),irec_start,ny,nz)
@@ -70,7 +70,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
     ! call MESH_INTERPOLATED_3D(den,uniform_mesh,nonuniform_mesh_global)
     uniform_mesh=den
     if (MPI_IO_format) then
-      fileName= trim(trim(adjustl(data_directory))//'den/den_'//trim(adjustl(cycle_ascii)))//'.gda'
+      fileName= trim(trim(data_directory)//'den/den_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile(uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
       call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(4),irec_start,ny,nz)
@@ -80,7 +80,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
     ! call MESH_INTERPOLATED_3D(ex,uniform_mesh,nonuniform_mesh_global)
     uniform_mesh=ex 
     if (MPI_IO_format) then
-      fileName= trim(trim(adjustl(data_directory))//'ex/ex_'//trim(adjustl(cycle_ascii)))//'.gda'
+      fileName= trim(trim(data_directory)//'ex/ex_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile(uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
       call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(5),irec_start,ny,nz)
@@ -90,7 +90,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
     ! call MESH_INTERPOLATED_3D(ey,uniform_mesh,nonuniform_mesh_global)
     uniform_mesh=ey 
     if (MPI_IO_format) then
-      fileName= trim(trim(adjustl(data_directory))//'ey/ey_'//trim(adjustl(cycle_ascii)))//'.gda'
+      fileName= trim(trim(data_directory)//'ey/ey_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
       call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(6),irec_start,ny,nz)
@@ -100,7 +100,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
     ! call MESH_INTERPOLATED_3D(ez,uniform_mesh,nonuniform_mesh_global)
     uniform_mesh=ez 
     if (MPI_IO_format) then
-      fileName= trim(trim(adjustl(data_directory))//'ez/ez_'//trim(adjustl(cycle_ascii)))//'.gda'
+      fileName= trim(trim(data_directory)//'ez/ez_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
       call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(7),irec_start,ny,nz)
@@ -110,7 +110,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
     ! call MESH_INTERPOLATED_3D(vix,uniform_mesh,nonuniform_mesh_global)
     uniform_mesh=vix
     if (MPI_IO_format) then
-      fileName= trim(trim(adjustl(data_directory))//'vix/vix_'//trim(adjustl(cycle_ascii)))//'.gda'
+      fileName= trim(trim(data_directory)//'vix/vix_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
       call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(8),irec_start,ny,nz)
@@ -120,7 +120,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
     ! call MESH_INTERPOLATED_3D(viy,uniform_mesh,nonuniform_mesh_global)
     uniform_mesh=viy
     if (MPI_IO_format) then
-      fileName= trim(trim(adjustl(data_directory))//'viy/viy_'//trim(adjustl(cycle_ascii)))//'.gda'
+      fileName= trim(trim(data_directory)//'viy/viy_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
       call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(9),irec_start,ny,nz)
@@ -130,7 +130,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
     ! call MESH_INTERPOLATED_3D(viz,uniform_mesh,nonuniform_mesh_global)
     uniform_mesh=viz
     if (MPI_IO_format) then
-      fileName= trim(trim(adjustl(data_directory))//'viz/viz_'//trim(adjustl(cycle_ascii)))//'.gda'
+      fileName= trim(trim(data_directory)//'viz/viz_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
       call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(10),irec_start,ny,nz)
@@ -142,7 +142,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       ! call MESH_INTERPOLATED_3D(tpar,uniform_mesh,nonuniform_mesh_global)
       uniform_mesh=tpar(:,:,:,is)
       if (MPI_IO_format) then
-        fileName= trim(trim(adjustl(data_directory))//'tpar/tpar_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+        fileName= trim(trim(data_directory)//'tpar/tpar_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
         call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(11),irec_start,ny,nz)
@@ -152,7 +152,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       ! call MESH_INTERPOLATED_3D(tperp,uniform_mesh,nonuniform_mesh_global)
       uniform_mesh=tperp(:,:,:,is)
       if (MPI_IO_format) then
-        fileName= trim(trim(adjustl(data_directory))//'tperp/tperp_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+        fileName= trim(trim(data_directory)//'tperp/tperp_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
         call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(12),irec_start,ny,nz)
@@ -161,7 +161,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       rnorm = wpiwci
       uniform_mesh=vxs(:,:,:,is)
       if (MPI_IO_format) then
-        fileName= trim(trim(adjustl(data_directory))//'vxs/vxs_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+        fileName= trim(trim(data_directory)//'vxs/vxs_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
         call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(23),irec_start,ny,nz)
@@ -170,7 +170,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       rnorm = wpiwci
       uniform_mesh=vys(:,:,:,is)
       if (MPI_IO_format) then
-        fileName= trim(trim(adjustl(data_directory))//'vys/vys_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+        fileName= trim(trim(data_directory)//'vys/vys_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
         call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(24),irec_start,ny,nz)
@@ -179,7 +179,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       rnorm = wpiwci
       uniform_mesh=vzs(:,:,:,is)
       if (MPI_IO_format) then
-        fileName= trim(trim(adjustl(data_directory))//'vzs/vzs_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+        fileName= trim(trim(data_directory)//'vzs/vzs_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
         call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(25),irec_start,ny,nz)
@@ -189,7 +189,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       ! call MESH_INTERPOLATED_3D(p_xx,uniform_mesh,nonuniform_mesh_global)
       uniform_mesh=p_xx(:,:,:,is)
       if (MPI_IO_format) then
-        fileName= trim(trim(adjustl(data_directory))//'p-xx/p-xx_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+        fileName= trim(trim(data_directory)//'p-xx/p-xx_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
         call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(14),irec_start,ny,nz)
@@ -199,7 +199,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       ! call MESH_INTERPOLATED_3D(p_xy,uniform_mesh,nonuniform_mesh_global)
       uniform_mesh=p_xy(:,:,:,is)
       if (MPI_IO_format) then
-        fileName= trim(trim(adjustl(data_directory))//'p-xy/p-xy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+        fileName= trim(trim(data_directory)//'p-xy/p-xy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
         call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(15),irec_start,ny,nz)
@@ -209,7 +209,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       ! call MESH_INTERPOLATED_3D(p_xz,uniform_mesh,nonuniform_mesh_global)
       uniform_mesh=p_xz(:,:,:,is)
       if (MPI_IO_format) then
-        fileName= trim(trim(adjustl(data_directory))//'p-xz/p-xz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+        fileName= trim(trim(data_directory)//'p-xz/p-xz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
         call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(16),irec_start,ny,nz)
@@ -219,7 +219,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       ! call MESH_INTERPOLATED_3D(p_yy,uniform_mesh,nonuniform_mesh_global)
       uniform_mesh=p_yy(:,:,:,is)
       if (MPI_IO_format) then
-        fileName= trim(trim(adjustl(data_directory))//'p-yy/p-yy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+        fileName= trim(trim(data_directory)//'p-yy/p-yy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
         call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(17),irec_start,ny,nz)
@@ -229,7 +229,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       ! call MESH_INTERPOLATED_3D(p_yz,uniform_mesh,nonuniform_mesh_global)
       uniform_mesh=p_yz(:,:,:,is)
       if (MPI_IO_format) then
-        fileName= trim(trim(adjustl(data_directory))//'p-yz/p-yz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+        fileName= trim(trim(data_directory)//'p-yz/p-yz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
         call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(18),irec_start,ny,nz)
@@ -239,7 +239,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       ! call MESH_INTERPOLATED_3D(p_zz,uniform_mesh,nonuniform_mesh_global)
       uniform_mesh=p_zz(:,:,:,is)
       if (MPI_IO_format) then
-        fileName= trim(trim(adjustl(data_directory))//'p-zz/p-zz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+        fileName= trim(trim(data_directory)//'p-zz/p-zz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
         call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(19),irec_start,ny,nz)
@@ -249,7 +249,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
     rnorm=1.
     uniform_mesh=fox
     if (MPI_IO_format) then
-      fileName= trim(trim(adjustl(data_directory))//'fox/fox_'//trim(adjustl(cycle_ascii)))//'.gda'
+      fileName= trim(trim(data_directory)//'fox/fox_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
       call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(20),irec_start,ny,nz)
@@ -258,7 +258,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
     rnorm=1.
     uniform_mesh=foy
     if (MPI_IO_format) then
-      fileName= trim(trim(adjustl(data_directory))//'foy/foy_'//trim(adjustl(cycle_ascii)))//'.gda'
+      fileName= trim(trim(data_directory)//'foy/foy_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
       call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(21),irec_start,ny,nz)
@@ -267,7 +267,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
     rnorm=1.
     uniform_mesh=foz
     if (MPI_IO_format) then
-      fileName= trim(trim(adjustl(data_directory))//'foz/foz_'//trim(adjustl(cycle_ascii)))//'.gda'
+      fileName= trim(trim(data_directory)//'foz/foz_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
       call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(22),irec_start,ny,nz)
@@ -278,7 +278,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       ! call MESH_INTERPOLATED_3D(eta,uniform_mesh,nonuniform_mesh_global)
       uniform_mesh=eta
       if (MPI_IO_format) then
-        fileName= trim(trim(adjustl(data_directory))//'eta/eta_'//trim(adjustl(cycle_ascii)))//'.gda'
+        fileName= trim(trim(data_directory)//'eta/eta_'//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
         call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(13),irec_start,ny,nz)
@@ -288,7 +288,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       ! call MESH_INTERPOLATED_3D(eta_times_b_dot_j,uniform_mesh,nonuniform_mesh_global)
       uniform_mesh=eta_times_b_dot_j
       if (MPI_IO_format) then
-        fileName= trim(trim(adjustl(data_directory))//'eta_par/eta_par_'//trim(adjustl(cycle_ascii)))//'.gda'
+        fileName= trim(trim(data_directory)//'eta_par/eta_par_'//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
         call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(13),irec_start,ny,nz)
@@ -303,22 +303,23 @@ end subroutine dataout
 
 
 !---------------------------------------------------------------------
+! read or write restart data
+! rw = +1.0: write 
+! rw = -1.0: read
 subroutine restrtrw(rw, itstart)
   use parameter_mod
   implicit none
 
   integer*8 :: f_unit, itstart, np_count, is, ixe, iye, ize, noresete
   real :: rw
-  double precision, dimension(:), allocatable :: particle_tmp_array
+  real*8, dimension(:), allocatable :: particle_tmp_array
   integer, dimension(:), allocatable :: particle_tmp_array2 
  
   if (rw == +1.0) then
     t_stopped = t_stopped + (it - itstart + 1) * dtwci
     f_unit = 215 + myid
-    ! open(unit=f_unit,file='restfld_'//trim(adjustl(myid_char))//'.bin'//restart_index_suffix(restart_index)&
-    open(unit=f_unit, file=trim(adjustl(restart_directory))//'restfld_'//trim(adjustl(myid_char))  &
-                        //'.bin'//restart_index_suffix(restart_index)  &
-                      ,form='unformatted',status='unknown')
+    open(unit=f_unit, file=trim(restart_directory)//'restfld_'//trim(adjustl(myid_char))  &
+            //'.bin'//restart_index_suffix(restart_index), form='unformatted', status='unknown')
   
     ! Old restart format - dump all allocated particle memory
     ! write(f_unit) x,y,z,vx,vy,vz,qp,link,porder
@@ -491,14 +492,14 @@ subroutine restrtrw(rw, itstart)
     nskipz, testorbt, restart, etamin, etamax, ieta, eta_par
 
     write(f_unit) hx,hy,hz,hxi,hyi,hzi                           &
-    ,pi,efld,bfld,efluidt,ethermt,eptclt,time,te0                                        &
-    ,prntinfo,wrtdat,itfin,iwt                                    &
-    ,nx1,nx2,ny1,ny2,nz1,nz2,it                                   &
-    ! ,ipstore,nptot,npleaving,npentering,myid_stop                 &
-    ,nptot,npleaving,npentering,myid_stop                 &
-    ,iclock_speed,iopen,iseed, file_unit,file_unit_read           &
-    ,file_unit_time,notime,file_unit_tmp                          &
-    ,clock_time_init,clock_time_old,clock_time                    &
+    ,pi,efld,bfld,efluidt,ethermt,eptclt,time,te0                &
+    ,prntinfo,wrtdat,itfin,iwt                                   &
+    ,nx1,nx2,ny1,ny2,nz1,nz2,it                                  &
+    ! ,ipstore,nptot,npleaving,npentering,myid_stop                &
+    ,nptot,npleaving,npentering,myid_stop                        &
+    ,iclock_speed,iopen,iseed, file_unit,file_unit_read          &
+    ,file_unit_time,notime,file_unit_tmp                         &
+    ,clock_time_init,clock_time_old,clock_time                   &
     ,clock_time1
 
     write(f_unit) dfac,nskip,ipleft,iprite,ipsendleft,ipsendrite &
@@ -519,17 +520,16 @@ subroutine restrtrw(rw, itstart)
     close(unit=f_unit)
 
   else if (rw == -1.0) then
-    f_unit=215+myid
-    ! open(unit=f_unit,file='restfld_'//trim(adjustl(myid_char))//'.bin'//restart_index_suffix(restart_index)&
-    open(unit=f_unit,file=trim(adjustl(restart_directory))//'restfld_'//trim(adjustl(myid_char))  &
-                        //'.bin'//restart_index_suffix(restart_index)  &
-                    ,form='unformatted',status='unknown')
+    f_unit = 215 + myid
+    open(unit=f_unit, file=trim(restart_directory)//'restfld_'//trim(adjustl(myid_char))  &
+            //'.bin'//restart_index_suffix(restart_index), form='unformatted', status='unknown')
       
     ! Old restart format - dump all allocated particle memory
     ! read(f_unit) x,y,z,vx,vy,vz,qp,link,porder
 
     ! New restart format - dump only non-trivial particles
     read(f_unit) nspec
+
     do is = 1, nspec
       read(f_unit) NPTOTP
       allocate (particle_tmp_array(nptotp))
@@ -687,7 +687,7 @@ subroutine restrtrw(rw, itstart)
   call sortit
 
   return
-  
+
 end subroutine restrtrw
 
 
@@ -701,25 +701,25 @@ subroutine open_hist_diag_files()
 
   if (myid == 0) then
     if (restart) then
-      open(unit=11,file=trim(adjustl(data_directory))//'energy.dat' ,status='old',position='append')
-      open(unit=14,file=trim(adjustl(data_directory))//'time.dat' ,status='old',position='append')
+      open(unit=11,file=trim(data_directory)//'energy.dat' ,status='old',position='append')
+      open(unit=14,file=trim(data_directory)//'time.dat' ,status='old',position='append')
       if (.not. tracking_mpi)then
-        open(unit=12,file=trim(adjustl(data_directory))//'probes.dat' ,status='old',position='append')
+        open(unit=12,file=trim(data_directory)//'probes.dat' ,status='old',position='append')
         if (tracking_binary) then
-          open(unit=13,file=trim(adjustl(data_directory))//'tracking_b.dat' ,form='unformatted',status='old',position='append')
+          open(unit=13,file=trim(data_directory)//'tracking_b.dat' ,form='unformatted',status='old',position='append')
         else
-          open(unit=13,file=trim(adjustl(data_directory))//'tracking.dat' ,status='old',position='append')
+          open(unit=13,file=trim(data_directory)//'tracking.dat' ,status='old',position='append')
         endif
       endif
     else
-      open(unit=11,file=trim(adjustl(data_directory))//'energy.dat' ,status='unknown')
-      open(unit=14,file=trim(adjustl(data_directory))//'time.dat' ,status='unknown')
+      open(unit=11,file=trim(data_directory)//'energy.dat' ,status='unknown')
+      open(unit=14,file=trim(data_directory)//'time.dat' ,status='unknown')
       if (.not. tracking_mpi)then
-        open(unit=12,file=trim(adjustl(data_directory))//'probes.dat' ,status='unknown')
+        open(unit=12,file=trim(data_directory)//'probes.dat' ,status='unknown')
         if (tracking_binary) then
-          open(unit=13,file=trim(adjustl(data_directory))//'tracking_b.dat' ,form='unformatted',status='unknown')
+          open(unit=13,file=trim(data_directory)//'tracking_b.dat' ,form='unformatted',status='unknown')
         else
-          open(unit=13,file=trim(adjustl(data_directory))//'tracking.dat' ,status='unknown')
+          open(unit=13,file=trim(data_directory)//'tracking.dat' ,status='unknown')
         endif
       endif
     endif
@@ -729,13 +729,13 @@ subroutine open_hist_diag_files()
     write(filename,"(a,i4.4,a)") 'tracking/tracking_', myid, '.dat'
     write(filename2,"(a,i4.4,a)") 'probes/probes_', myid, '.dat'
     if (restart) then
-      open(unit=12,file=trim(adjustl(data_directory))//filename2, status='old',position='append')
-      open(unit=13,file=trim(adjustl(data_directory))//filename,form='unformatted',status='old',access='append')
+      open(unit=12,file=trim(data_directory)//filename2, status='old',position='append')
+      open(unit=13,file=trim(data_directory)//filename,form='unformatted',status='old',access='append')
     else
-      open(unit=12,file=trim(adjustl(data_directory))//filename2, status='unknown')
-      open(unit=13,file=trim(adjustl(data_directory))//filename,form='unformatted',status='unknown')
+      open(unit=12,file=trim(data_directory)//filename2, status='unknown')
+      open(unit=13,file=trim(data_directory)//filename,form='unformatted',status='unknown')
     endif
-    !call MPI_File_open(MPI_COMM_WORLD, trim(adjustl(data_directory))//filename, MPI_MODE_WRONLY+MPI_MODE_CREATE, MPI_INFO_NULL, tracking_fh, ierr)
+    !call MPI_File_open(MPI_COMM_WORLD, trim(data_directory)//filename, MPI_MODE_WRONLY+MPI_MODE_CREATE, MPI_INFO_NULL, tracking_fh, ierr)
     ! if (ierr.ne.MPI_SUCCESS) then
     !   call MPI_Error_string(iErr,eStr,eStrLen,iErr2)
     !   write(0,*)'Error: Could not open file: ',filename
@@ -767,122 +767,122 @@ subroutine open_files
 
     open (file_unit(1),                                                                         &
           ! file= 'bx_'//trim(adjustl(cycle_ascii))//'.gda', &
-          file= trim(trim(adjustl(data_directory))//'bx/bx_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'bx/bx_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',                                                                   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(2),                                                                         &
           ! file= 'by_'//trim(adjustl(cycle_ascii))//'.gda', &
-          file= trim(trim(adjustl(data_directory))//'by/by_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'by/by_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(3),                                                                         &
           ! file= 'bz_'//trim(adjustl(cycle_ascii))//'.gda', &
-          file= trim(trim(adjustl(data_directory))//'bz/bz_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'bz/bz_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(4),                                                                         &
           ! file='den_'//trim(adjustl(cycle_ascii))//'.gda', &
-          file= trim(trim(adjustl(data_directory))//'den/den_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'den/den_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(5),                                                                         &
           ! file= 'ex_'//trim(adjustl(cycle_ascii))//'.gda', &
-          file= trim(trim(adjustl(data_directory))//'ex/ex_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'ex/ex_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(6),                                                                         &
           ! file= 'ey_'//trim(adjustl(cycle_ascii))//'.gda', &
-          file= trim(trim(adjustl(data_directory))//'ey/ey_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'ey/ey_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(7),                                                                         &
           ! file= 'ez_'//trim(adjustl(cycle_ascii))//'.gda', &
-          file= trim(trim(adjustl(data_directory))//'ez/ez_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'ez/ez_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(8),                                                                         &
           ! file='vix_'//trim(adjustl(cycle_ascii))//'.gda', &
-          file= trim(trim(adjustl(data_directory))//'vix/vix_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'vix/vix_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(9),                                                                          &
           ! file='viy_'//trim(adjustl(cycle_ascii))//'.gda', &
-          file= trim(trim(adjustl(data_directory))//'viy/viy_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'viy/viy_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(10),                                                                         &
           ! file='viz_'//trim(adjustl(cycle_ascii))//'.gda', &
-          file= trim(trim(adjustl(data_directory))//'viz/viz_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'viz/viz_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(11),                                                                          &
           ! file='tpar_'//trim(adjustl(cycle_ascii))//'.gda',&
-          file= trim(trim(adjustl(data_directory))//'tpar/tpar_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'tpar/tpar_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(12),                                                                           &
           ! file='tperp_'//trim(adjustl(cycle_ascii))//'.gda',&
-          file= trim(trim(adjustl(data_directory))//'tperp/tperp_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'tperp/tperp_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
 
     if (eta_par == 0) then
       open (file_unit(13),                                                                         &
             ! file='eta_'//trim(adjustl(cycle_ascii))//'.gda',&
-            file= trim(trim(adjustl(data_directory))//'eta/eta_'//trim(adjustl(cycle_ascii)))//'.gda', &
+            file= trim(trim(data_directory)//'eta/eta_'//trim(adjustl(cycle_ascii)))//'.gda', &
             form='unformatted',   &
             action='write',access='direct', status='unknown',recl=lenrec)
     else
       open (file_unit(13),                                                                             &
             ! file='eta_par_'//trim(adjustl(cycle_ascii))//'.gda',&
-            file= trim(trim(adjustl(data_directory))//'eta_par/eta_par_'//trim(adjustl(cycle_ascii)))//'.gda', &
+            file= trim(trim(data_directory)//'eta_par/eta_par_'//trim(adjustl(cycle_ascii)))//'.gda', &
             form='unformatted',   &
             action='write',access='direct', status='unknown',recl=lenrec)
     endif
 
     open (file_unit(14),                                                                          &
           ! file='tpar_'//trim(adjustl(cycle_ascii))//'.gda',&
-          file= trim(trim(adjustl(data_directory))//'p-xx/p-xx_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'p-xx/p-xx_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(15),                                                                          &
           ! file='tpar_'//trim(adjustl(cycle_ascii))//'.gda',&
-          file= trim(trim(adjustl(data_directory))//'p-xy/p-xy_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'p-xy/p-xy_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(16),                                                                          &
           ! file='tpar_'//trim(adjustl(cycle_ascii))//'.gda',&
-          file= trim(trim(adjustl(data_directory))//'p-xz/p-xz_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'p-xz/p-xz_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(17),                                                                          &
           ! file='tpar_'//trim(adjustl(cycle_ascii))//'.gda',&
-          file= trim(trim(adjustl(data_directory))//'p-yy/p-yy_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'p-yy/p-yy_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(18),                                                                          &
           ! file='tpar_'//trim(adjustl(cycle_ascii))//'.gda',&
-          file= trim(trim(adjustl(data_directory))//'p-yz/p-yz_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'p-yz/p-yz_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(19),                                                                          &
           ! file='tpar_'//trim(adjustl(cycle_ascii))//'.gda',&
-          file= trim(trim(adjustl(data_directory))//'p-zz/p-zz_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'p-zz/p-zz_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(20),                                                                          &
           ! file='tpar_'//trim(adjustl(cycle_ascii))//'.gda',&
-          file= trim(trim(adjustl(data_directory))//'fox/fox_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'fox/fox_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(21),                                                                          &
           ! file='tpar_'//trim(adjustl(cycle_ascii))//'.gda',&
-          file= trim(trim(adjustl(data_directory))//'foy/foy_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'foy/foy_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(22),                                                                          &
           ! file='tpar_'//trim(adjustl(cycle_ascii))//'.gda',&
-          file= trim(trim(adjustl(data_directory))//'foz/foz_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          file= trim(trim(data_directory)//'foz/foz_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
   endif
@@ -904,7 +904,7 @@ subroutine open_timing_diag_files
 
   file_unit_time = myid + 500
   write(timeunit,"(i4.4)") file_unit_time
-  file_name = trim(adjustl(data_directory))//"timing" // timeunit // ".txt" 
+  file_name = trim(data_directory)//"timing" // timeunit // ".txt" 
   open(unit=file_unit_time, file=file_name, status='unknown')
 
   return
@@ -918,7 +918,7 @@ subroutine wrtdatum(ndatum,datum,f_unit)
 
   integer*8 :: ndatum, f_unit
   integer :: ndatum_4
-  double precision :: datum(ndatum), datum_tmp(ndatum)
+  real*8 :: datum(ndatum), datum_tmp(ndatum)
 
   ndatum_4=ndatum
   do ipe = 0, numprocs-1
@@ -950,7 +950,7 @@ subroutine readdatum(ndatum,datum,f_unit)
   implicit none
   integer*8:: ndatum,f_unit
   integer:: ndatum_4
-  double precision:: datum(ndatum),datum_tmp(ndatum)
+  real*8 :: datum(ndatum),datum_tmp(ndatum)
 
   ndatum_4=ndatum
   do ipe=0,numprocs-1
@@ -982,12 +982,12 @@ subroutine particle_in_volume_write
   use mesh2d
   implicit none
       
-  double precision :: fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8
-  double precision :: foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8
-  double precision :: foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8
-  double precision :: arb_x,arb_y,arb_z,btota,bxa,bya,bza
-  double precision :: perp1_x,perp1_y,perp1_z,perp2_x,perp2_y,perp2_z
-  double precision :: par_x,par_y,par_z
+  real*8 :: fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8
+  real*8 :: foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8
+  real*8 :: foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8
+  real*8 :: arb_x,arb_y,arb_z,btota,bxa,bya,bza
+  real*8 :: perp1_x,perp1_y,perp1_z,perp2_x,perp2_y,perp2_z
+  real*8 :: par_x,par_y,par_z
   integer :: ierror
 
   integer*8 :: count_kbq,time_begin(8),time_end(8)
@@ -997,25 +997,25 @@ subroutine particle_in_volume_write
   data foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8/0,0,0,0,0,0,0,0/
   integer*8 :: nsendactual,nsendactualp,nrecvactualp,nrecvactual,jj,kk,ix,iy,iz,ixe,iye,ize           &
               ,ixep1,iyep1,izep1,ixp1,iyp1,izp1,is
-  double precision :: pdata(7),rx,ry,rz,fx,fy,fz,w1,w2,w3,w4,w5,w6,w7,w8,xpart,ypart,zpart,r_particle
-  double precision :: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
-  double precision :: v_limit,eps2,rx0,ry0,rz0,rrat,sqrr,outer_radius,myranf,fluxran,vxa,vya,vza
+  real*8 :: pdata(7),rx,ry,rz,fx,fy,fz,w1,w2,w3,w4,w5,w6,w7,w8,xpart,ypart,zpart,r_particle
+  real*8 :: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
+  real*8 :: v_limit,eps2,rx0,ry0,rz0,rrat,sqrr,outer_radius,myranf,fluxran,vxa,vya,vza
   INTEGER*8 :: L, EXIT_CODE_P, EXIT_CODE
   integer*8 :: n_fast_removed,n_fast_removed_local,nptot_max,Courant_Violation,Courant_Violation_p,Field_Diverge,Field_Diverge_p
-  double precision :: hxmin,hxmax,hymin,hymax,hzmin,hzmax,cell_size_min,x_disp,y_disp,z_disp          &
+  real*8 :: hxmin,hxmax,hymin,hymax,hzmin,hzmax,cell_size_min,x_disp,y_disp,z_disp          &
                     ,y_disp_max_p,x_disp_max_p,z_disp_max_p,y_disp_max,x_disp_max,z_disp_max
-  double precision :: disp_max_p(3),disp_max(3),tx,ty,tz,v_x,v_y,v_z  
+  real*8 :: disp_max_p(3),disp_max(3),tx,ty,tz,v_x,v_y,v_z  
   INTEGER*4 :: nescapearr(8),nescapearr_global(8)
   INTEGER*4 :: ppacket(3),ppacketg(3),dpacket(4),dpacketg(4)
   INTEGER*8 :: epacket(2),epacketg(2),indx,loop
   INTEGER*8, dimension(:), allocatable :: nparr
-  double precision, dimension(3,nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax) :: bxyz_av
-  double precision :: TEX1,TEX2,TEX3,TEX4,TEX5,TEX6,TEX7,TEX8  
-  double precision :: TEY1,TEY2,TEY3,TEY4,TEY5,TEY6,TEY7,TEY8  
-  double precision :: TEZ1,TEZ2,TEZ3,TEZ4,TEZ5,TEZ6,TEZ7,TEZ8  
-  double precision :: mX_xa,mX_ta,mX_ca1,mX_ca2,mX_xb,mX_dtdx,mX_tb,mX_cb1,mX_cb2
-  double precision :: mY_xa,mY_ta,mY_ca1,mY_ca2,mY_xb,mY_dtdx,mY_tb,mY_cb1,mY_cb2
-  double precision :: mZ_xa,mZ_ta,mZ_ca1,mZ_ca2,mZ_xb,mZ_dtdx,mZ_tb,mZ_cb1,mZ_cb2
+  real*8, dimension(3,nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax) :: bxyz_av
+  real*8 :: TEX1,TEX2,TEX3,TEX4,TEX5,TEX6,TEX7,TEX8  
+  real*8 :: TEY1,TEY2,TEY3,TEY4,TEY5,TEY6,TEY7,TEY8  
+  real*8 :: TEZ1,TEZ2,TEZ3,TEZ4,TEZ5,TEZ6,TEZ7,TEZ8  
+  real*8 :: mX_xa,mX_ta,mX_ca1,mX_ca2,mX_xb,mX_dtdx,mX_tb,mX_cb1,mX_cb2
+  real*8 :: mY_xa,mY_ta,mY_ca1,mY_ca2,mY_xb,mY_dtdx,mY_tb,mY_cb1,mY_cb2
+  real*8 :: mZ_xa,mZ_ta,mZ_ca1,mZ_ca2,mZ_xb,mZ_dtdx,mZ_tb,mZ_cb1,mZ_cb2
   character(len=160) :: filename
   integer :: N_IN_VOLUME
   integer :: iErr1,iErr2,file,eStrLen,subArray,stat(MPI_STATUS_SIZE),mode
@@ -1162,11 +1162,11 @@ subroutine particle_in_volume_write
   if (myid == 0) then
       filenum = 101
       open (filenum,                                                       &
-            file= trim(adjustl(data_directory))//'particle/particle_'//             &
+            file= trim(data_directory)//'particle/particle_'//             &
             trim(adjustl(cycle_ascii))//'.bin',                            &
             form='unformatted',                                            &
             action='write',access='direct', status='unknown',recl=lenrec)
-      write(6,*) " FILE_NAME = ",trim(adjustl(data_directory))//'particle/particle_'//             &
+      write(6,*) " FILE_NAME = ",trim(data_directory)//'particle/particle_'//             &
             trim(adjustl(cycle_ascii))//'.bin'
       recnum = 1
       write(filenum,rec=recnum) N_TOTAL

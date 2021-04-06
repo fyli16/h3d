@@ -68,7 +68,7 @@ module initialize
     restart_index_suffix(2) = '.2'
 
     my_short_int = myid
-    call integer_to_character(myid_char,len(myid_char), my_short_int)
+    call integer_to_character(myid_char, len(myid_char), my_short_int)
     if (myid_char == '') myid_char='0'
 
     ! read input deck

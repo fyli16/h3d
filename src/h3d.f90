@@ -72,7 +72,6 @@
         write(6,*) " "
       endif
 
-      ! comment out for timing on LANL machine
       do iwrite = 0, npes_over_60 
         if (mod( int(myid,8), npes_over_60 + 1) .eq. iwrite) then
             call restrtrw(-1.0, itstart)
@@ -244,7 +243,7 @@
       
           do iwrite = 0,npes_over_60 
             if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
-                call restrtrw(1.0,itstart)
+                call restrtrw(1.0, itstart)
             endif
             call MPI_BARRIER(MPI_COMM_WORLD,IERR)
           enddo
@@ -442,9 +441,9 @@
 
         itfin = it
 
-        do iwrite = 0,npes_over_60  
+        do iwrite = 0, npes_over_60  
           if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
-            call restrtrw(1.0,itstart)
+            call restrtrw(1.0, itstart)
           endif
           call MPI_BARRIER(MPI_COMM_WORLD,IERR)
         enddo
