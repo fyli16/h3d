@@ -18,7 +18,6 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
   integer*8 :: ny,nz,eta_par
   real*8 :: rnorm, wpiwci
   integer*8 :: irecdel, ir1, ir2, irec_start , idebug,IERR
-  ! real*8:: uniform_mesh(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)
   real*8 :: uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1)
   ! real*8 :: nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1)
   character(len=240) :: fileName

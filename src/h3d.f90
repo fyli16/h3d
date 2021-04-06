@@ -74,7 +74,7 @@
 
     ! main simulation loop
     do while(it <= itfinish)
-      call one_simulation_loop()
+      call one_simulation_loop(itstart, itfinish, uniform_mesh)
     enddo  
 
     ! close files that are open
@@ -266,12 +266,13 @@ end subroutine init_restart
 
 
 !---------------------------------------------------------------------
-subroutine data_output()
+subroutine data_output(uniform_mesh)
   use parameter_mod
   implicit none 
 
   integer :: j
   integer*8 :: numvars, irecnum
+  real*8 :: uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1)
 
   if (myid ==0) then
     my_short_int=it
@@ -324,13 +325,14 @@ end subroutine data_output
 
 
 !---------------------------------------------------------------------
-subroutine one_simulation_loop(itstart, itfinish)
+subroutine one_simulation_loop(itstart, itfinish, uniform_mesh)
   use parameter_mod
   implicit none 
 
   integer, dimension(8) :: curr_time
-  integer :: iwrite,
+  integer :: iwrite, i
   integer*8 :: itstart, itfinish
+  real*8 :: uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1)
 
   call get_cleanup_status(len(cleanup_status))
 
@@ -444,7 +446,7 @@ subroutine one_simulation_loop(itstart, itfinish)
     
   ! VR: this seems to be data output region
   if (.not.testorbt.and.(write_data.or.it==itfinish.or.it==1)) then        
-    call data_output()
+    call data_output(uniform_mesh)
   endif
 
   ! write restart files at specified steps
@@ -489,14 +491,16 @@ subroutine one_simulation_loop(itstart, itfinish)
 
   call date_and_time(values=time_end_array(:,1))
 
-  do j = 1, 5
-    call accumulate_time_difference(time_begin_array(1,j),time_end_array(1,j),time_elapsed(j))
+  do i = 1, 5
+    call accumulate_time_difference(time_begin_array(1,i),time_end_array(1,i),time_elapsed(i))
   enddo
 
   return
 
 end subroutine one_simulation_loop
 
+
+!---------------------------------------------------------------------
 subroutine close_files()
   use parameter_mod, only : myid, tracking_mpi
   implicit none 
