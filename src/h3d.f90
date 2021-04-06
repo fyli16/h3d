@@ -10,7 +10,6 @@
 
   program h3d 
     use parameter_mod
-    use initialize
     use functions_f90
     use mesh2d
     implicit none
@@ -22,7 +21,14 @@
     ! double precision, dimension(:,:,:), allocatable:: nonuniform_mesh_global
 
     ! Initialize MPI
-    call init_mpi()
+    call MPI_INIT(IERR)
+    call MPI_COMM_SIZE(MPI_COMM_WORLD,NUMPROCS,IERR)
+    call MPI_COMM_RANK(MPI_COMM_WORLD,MYID,IERR)
+    if (myid==0) then
+      write(6,*) 
+      write(6,*) "Init mpi ..."
+      write(6,*) "  Total number of processors = ", numprocs
+    endif
 
     ! Read input file
     call read_input()
