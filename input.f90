@@ -76,7 +76,7 @@ nwrtdata=1000, ! frequency at which to write data into files
 nwrtparticle=4000,  ! frequency at which to write particles within a box range
 
 restrt_write=1,  ! whether to write restart files
-nwrtrestart=20000000, ! frequency at which to write restart files
+nwrtrestart=20000, ! frequency at which to write restart files
 
 ! box range within which particles will be dumped
 xbox_l=0., xbox_r=1.0, 
