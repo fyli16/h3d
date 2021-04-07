@@ -329,7 +329,7 @@ subroutine one_simulation_loop(uniform_mesh)
   integer :: iwrite
   real*8 :: uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1)
 
-  call date_and_time(values=time_begin_array(:,1)) ! time one whole loop
+  call date_and_time(values=time_begin_array(:,1)) ! time one-whole-loop
 
   ! print time-step info
   call date_and_time(values=curr_time)
