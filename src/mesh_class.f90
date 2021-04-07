@@ -457,3 +457,18 @@ subroutine BISECT(f,a,b,tol)
 
   return      
 end subroutine BISECT
+
+
+!---------------------------------------------------------------------
+subroutine ERROR_ABORT(message)
+  character(*), intent(in) :: message
+  write(6,*) message
+  stop
+end subroutine ERROR_ABORT
+
+
+!---------------------------------------------------------------------
+subroutine WARNING(message)
+  character(*), intent(in) :: message
+  write(6,*) message
+end subroutine WARNING
