@@ -15,12 +15,12 @@ LIBS        =
 # Define dependecies
 EFILE = h3d
 OBJS =  parameter.of90 \
+		utils.of90\
 		mesh_class.of90 \
 		mesh2d.of90 \
 		functions.of90 \
 		init_wave.of90 \
-		io.of90\
-		utils.of90\
+		io.of90\	
 	 	boundary.of90 \
 		field.of90\
 		write_file.of90 \

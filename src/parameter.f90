@@ -6,27 +6,26 @@ module parameter_mod
 
   integer :: it, my_short_int, i_source, i_destination, i_tag, i_length, i_i
   integer, dimension(8,128) :: time_begin_array, time_end_array
-  real*8, dimension(128):: time_elapsed
+  real*8, dimension(128) :: time_elapsed
   integer, dimension(8) :: curr_time
   integer*8 :: itstart, itfinish
   integer*8 :: nxmax, nymax, nzmax, nspecm, npes, nvar, nylmax, nzlmax, npm, npes_over_60
-  integer :: numprocs, ndim, dims(2), nodey, nodez, ierr, comm2d, myid, req(8)     &
-            ,nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot        &
-            ,nbrleft, nbrrite, ipe, stridery, striderz, iseed(1), coords(2)
-  integer :: status(mpi_status_size),status1(mpi_status_size),status2(mpi_status_size),status_array(mpi_status_size,8)
-  real*8 :: zb,ze,yb,ye,teti,volume_fraction,cell_volume_ratio,zb_logical,ze_logical,yb_logical,ye_logical    &
-            ,xb_logical,xe_logical,xb,xe,smooth_coef
-  real*8, dimension(:), allocatable :: zbglobal,zeglobal,ybglobal,yeglobal,xc_uniform,yc_uniform,zc_uniform   &
-                                    ,xv_uniform,yv_uniform,zv_uniform
-  integer*8, dimension(:), allocatable :: kbglobal, keglobal, jbglobal, jeglobal, nsendp,nrecvp,ixc_2_c_map,iyc_2_c_map,izc_2_c_map   &
-                                          ,ixc_2_v_map,iyc_2_v_map,izc_2_v_map     &
-                                          ,ixv_2_c_map,iyv_2_c_map,izv_2_c_map     &
-                                          ,ixv_2_v_map,iyv_2_v_map,izv_2_v_map     
-  real*8, dimension(:,:,:), allocatable :: ex,ey,ez,bx,by,bz,fox,foy,foz,eta,curlex,curley,curlez,&
-                                          bx_av, by_av, bz_av, &
-                                          bxs,bys,bzs,den,deno,denh,dpedx,dpedy,dpedz,vix,viy,viz,vixo,viyo,   &
-                                          vizo,pe,curlbx,curlby,curlbz,                               &
-                                          eta_times_b_dot_j
+  integer :: numprocs, ndim, dims(2), nodey, nodez, ierr, comm2d, myid, req(8), & 
+             nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot, &      
+             nbrleft, nbrrite, ipe, stridery, striderz, iseed(1), coords(2)
+  integer :: status(mpi_status_size), status1(mpi_status_size), status2(mpi_status_size), &
+              status_array(mpi_status_size,8)
+  real*8 :: zb, ze, yb, ye, teti, volume_fraction, cell_volume_ratio, &
+            zb_logical,ze_logical,yb_logical,ye_logical, &
+            xb_logical,xe_logical,xb,xe,smooth_coef
+  real*8, dimension(:), allocatable :: zbglobal, zeglobal, ybglobal, yeglobal, &
+      xc_uniform, yc_uniform, zc_uniform, xv_uniform,yv_uniform,zv_uniform
+  integer*8, dimension(:), allocatable :: kbglobal, keglobal, jbglobal, jeglobal, &
+      nsendp, nrecvp, ixc_2_c_map, iyc_2_c_map, izc_2_c_map, ixc_2_v_map, iyc_2_v_map, izc_2_v_map, &
+      ixv_2_c_map, iyv_2_c_map, izv_2_c_map, ixv_2_v_map, iyv_2_v_map, izv_2_v_map     
+  real*8, dimension(:,:,:), allocatable :: ex, ey, ez, bx, by, bz, fox, foy, foz, &
+      eta, curlex, curley, curlez, bx_av, by_av, bz_av, bxs, bys, bzs, den, deno, denh, &
+      dpedx, dpedy, dpedz, vix, viy, viz, vixo, viyo, vizo, pe, curlbx, curlby, curlbz, eta_times_b_dot_j
   real*8, dimension(:,:,:,:), allocatable :: dns, dnsh, vxs, vys, vzs, tpar, tperp, qp_cell
   real*8, dimension(:,:,:,:), allocatable :: p_xx,p_xy,p_xz,p_yy,p_yz,p_zz
   real*8, dimension(:,:), allocatable :: ainjxz,ainjzx,deavxz,deavzx,vxavxz,vyavxz,vzavxz,vxavzx,      &
@@ -347,22 +346,22 @@ module parameter_mod
     endif
 
     ! gathered enough info, now allocate arrays
-    allocate (zbglobal(0:npes-1), zeglobal(0:npes-1), ybglobal(0:npes-1), yeglobal(0:npes-1)   &
-              ,kbglobal(0:npes-1), keglobal(0:npes-1), jbglobal(0:npes-1), jeglobal(0:npes-1)  &
-              ,nsendp(0:npes-1), nrecvp(0:npes-1), myid_stop(0:npes-1))
-    allocate (x(nplmax), y(nplmax), z(nplmax), vx(nplmax), vy(nplmax), vz(nplmax),   &
+    allocate(zbglobal(0:npes-1), zeglobal(0:npes-1), ybglobal(0:npes-1), yeglobal(0:npes-1), &
+            kbglobal(0:npes-1), keglobal(0:npes-1), jbglobal(0:npes-1), jeglobal(0:npes-1), &
+            nsendp(0:npes-1), nrecvp(0:npes-1), myid_stop(0:npes-1))
+    allocate(x(nplmax), y(nplmax), z(nplmax), vx(nplmax), vy(nplmax), vz(nplmax), &
             link(nplmax), porder(nplmax), qp(nplmax), ptag(nplmax))
-    allocate ( ninj(nspecm), ninj_global(nspecm),nescape(nspecm),nescape_global(nspecm),npart(nspecm)  &
-              ,npart_global(nspecm),qleft(nspecm),qrite(nspecm))
-    allocate ( nescape_xy(nspecm),nescape_yx(nspecm),nescape_xz(nspecm),nescape_zx(nspecm)                    &
-              ,nescape_yz(nspecm),nescape_zy(nspecm)                                                          &
-              ,nescape_xy_global(nspecm),nescape_yx_global(nspecm),nescape_xz_global(nspecm)                  &
-              ,nescape_zx_global(nspecm),nescape_yz_global(nspecm),nescape_zy_global(nspecm))
-    allocate ( x0(nspecm),x1(nspecm),tx0(nspecm),vpar(nspecm),vper(nspecm),vbal(nxmax,nspecm),bbal(nxmax))
-    allocate ( dfac(nspecm),nskip(nspecm),ipleft(nspecm),iprite(nspecm),ipsendleft(nspecm),ipsendrite(nspecm) &
-              ,iprecv(nspecm),ipsendtop(nspecm),ipsendbot(nspecm),ipsendlefttop(nspecm),ipsendleftbot(nspecm) &
-              ,ipsendritetop(nspecm),ipsendritebot(nspecm),ipsend(nspecm))        
-    allocate ( idmap_yz(0:ny+1,0:nz+1), idmap(0:nzmax), idfft(nzmax), kvec(nzlmax), jvec(nylmax) )
+    allocate(ninj(nspecm), ninj_global(nspecm),nescape(nspecm),nescape_global(nspecm),npart(nspecm), &
+            npart_global(nspecm),qleft(nspecm),qrite(nspecm))
+    allocate(nescape_xy(nspecm),nescape_yx(nspecm),nescape_xz(nspecm),nescape_zx(nspecm), &
+            nescape_yz(nspecm),nescape_zy(nspecm),  &
+            nescape_xy_global(nspecm),nescape_yx_global(nspecm),nescape_xz_global(nspecm), &
+            nescape_zx_global(nspecm),nescape_yz_global(nspecm),nescape_zy_global(nspecm))
+    allocate(x0(nspecm),x1(nspecm),tx0(nspecm),vpar(nspecm),vper(nspecm),vbal(nxmax,nspecm),bbal(nxmax))
+    allocate(dfac(nspecm),nskip(nspecm),ipleft(nspecm),iprite(nspecm),ipsendleft(nspecm),ipsendrite(nspecm), &
+            iprecv(nspecm),ipsendtop(nspecm),ipsendbot(nspecm),ipsendlefttop(nspecm),ipsendleftbot(nspecm), &
+            ipsendritetop(nspecm),ipsendritebot(nspecm),ipsend(nspecm))        
+    allocate(idmap_yz(0:ny+1,0:nz+1), idmap(0:nzmax), idfft(nzmax), kvec(nzlmax), jvec(nylmax))
 
     do i = 1, nspecm
       qleft(i) = 0

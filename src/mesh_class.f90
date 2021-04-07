@@ -32,7 +32,7 @@ module mesh_class
   end type mesh
 
   type meshtype
-    integer*8 type
+    integer*8 :: type
   end type meshtype
 
   type (meshtype), parameter :: CELL = MESHTYPE(0)
@@ -46,13 +46,13 @@ module mesh_class
 
   !---------------------------------------------------------------------
   ! initialize mesh attributes 
-  subroutine mesh_init(m,xa,xb,xl,na,nb,nl)
+  subroutine mesh_init(m, xa, xb, xl, na, nb, nl)
     implicit none
 
-    type(MESH), intent(out) :: m
-    real*8, intent(in) :: xa,xb,xl
-    integer*8, intent(in) :: na,nb,nl
-    integer*8 :: i,nbb
+    type(mesh), intent(out) :: m
+    real*8, intent(in) :: xa, xb, xl
+    integer*8, intent(in) :: na, nb, nl
+    integer*8 :: i, nbb
     real*8 :: FINDEXP
      
     if((xa.ge.xb).or.(na.ge.nb)) then 
@@ -457,18 +457,3 @@ subroutine BISECT(f,a,b,tol)
 
   return      
 end subroutine BISECT
-
-
-!---------------------------------------------------------------------
-subroutine ERROR_ABORT(message)
-  character(*), intent(in) :: message
-  write(6,*) message
-  stop
-end subroutine ERROR_ABORT
-
-
-!---------------------------------------------------------------------
-subroutine WARNING(message)
-  character(*), intent(in) :: message
-  write(6,*) message
-end subroutine WARNING

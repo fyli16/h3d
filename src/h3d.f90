@@ -110,24 +110,24 @@ subroutine setup_mesh()
     open(unit=10,file='mesh_vertices.dat',status='unknown',form='formatted')
     write(10,*) meshX%nl+1, meshY%nl+1, meshZ%nl+1
 
-    do i=2,meshX%nl+2 
+    do i = 2, meshX%nl+2 
       write(10,*) meshX%xn(i)
     enddo
-    do i=2,meshX%nl+2 
+    do i = 2, meshX%nl+2 
       write(10,*) meshX%dxc(i)
     enddo
 
-    do i=2,meshY%nl+2 
+    do i = 2, meshY%nl+2 
       write(10,*) meshY%xn(i)
     enddo
-    do i=2,meshY%nl+2 
+    do i = 2, meshY%nl+2 
       write(10,*) meshY%dxc(i)
     enddo
 
-    do i=2,meshZ%nl+2 
+    do i = 2, meshZ%nl+2 
       write(10,*) meshZ%xn(i)
     enddo
-    do i=2,meshZ%nl+2 
+    do i = 2, meshZ%nl+2 
       write(10,*) meshZ%dxc(i)
     enddo
     
@@ -259,8 +259,9 @@ subroutine data_output(uniform_mesh)
 
   integer :: j
   integer*8 :: numvars, irecnum
-  real*8 :: uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1)
+  real*8 :: uniform_mesh(nxmax, jb-1:je+1, kb-1:ke+1)
 
+  ! ??
   if (myid ==0) then
     my_short_int=it
     call integer_to_character(cycle_ascii, len(cycle_ascii), my_short_int)
@@ -330,7 +331,7 @@ subroutine one_simulation_loop(uniform_mesh)
   call date_and_time(values=curr_time)
   clock_time = curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001
   if (myid == 0.and.mod(it,10_8) == 0) then
-    write(6,*) 'it=', it, 'time=', time, ', delta_t=', real(clock_time-clock_time_old), &
+    write(6,*) 'it=', it, ', time=', time, ', delta_t=', real(clock_time-clock_time_old), &
                 ', tot_t=', real(clock_time-clock_time_init)
     clock_time_old = clock_time
   endif
@@ -397,12 +398,15 @@ subroutine one_simulation_loop(uniform_mesh)
       call MPI_BARRIER(MPI_COMM_WORLD,IERR)
     enddo
 
+    ! write the latest restart dump info into file
     if (myid == 0) then
       open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='unknown')
-        write(222,*) restart_index, itfin
-        close(222)
+      write(222,*) restart_index, itfin
+      close(222)
     endif
 
+    ! keep only two sets of restart files, 
+    ! so overwrite the previous dump by swapping file index 
     if (restart_index == 1) then
       restart_index=2
     else

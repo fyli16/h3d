@@ -21,10 +21,11 @@ subroutine etacalc
 
   data eps /1.e-25/
   itresis=1000
-  
+
   eta = 0. 
   if (ieta == 0) then
     eta = resis
+
   else if (ieta == 1) then
     anetax=real(netax)
     anetay=real(netay)
@@ -37,6 +38,7 @@ subroutine etacalc
       enddo
     enddo
     eta=eta*exp (-float(it)/float(itresis))
+
   else if ((ieta == 2).or.(ieta == 5) ) then
     ! use gradient of |B|, B, and n
     ! good combination is (grad |B|)**4 / (n**4 * B**2)
@@ -98,6 +100,7 @@ subroutine etacalc
         enddo
       enddo
     enddo
+
   else if (ieta == 3) then
     ! use arbitrary power of j
     ! using the sum over all three components
@@ -146,14 +149,11 @@ subroutine etacalc
 
     enddo
 
-  else
-    if ( (ieta .gt. 5).or.(ieta .lt. 0) ) then
-      write(*,*) 'etacalc only accepts ieta 0, through 5, currently'
-      stop
-      return
-    endif
+  else if ( (ieta .gt. 5).or.(ieta .lt. 0) ) then
+    call ERROR_ABORT('Currently etacalc only accepts ieta = 0 ~ 5')
 
   endif
+
 
   if ( (ieta == 4) .or. (ieta == 5) ) then
     ! use 2nd gradient of j

@@ -6,11 +6,11 @@ subroutine accumulate_time(time_begin, time_end, time_elapsed)
   real*8 :: time_elapsed
   
   time_elapsed = time_elapsed &
-       +(time_end(3)-time_begin(3))*3600.*24. &
-       +(time_end(5)-time_begin(5))*3600. &
-       +(time_end(6)-time_begin(6))*60. &
-       +(time_end(7)-time_begin(7)) &
-       +(time_end(8)-time_begin(8))*0.001
+       + (time_end(3)-time_begin(3))*3600.*24. &
+       + (time_end(5)-time_begin(5))*3600. &
+       + (time_end(6)-time_begin(6))*60. &
+       + (time_end(7)-time_begin(7)) &
+       + (time_end(8)-time_begin(8))*0.001
 
   return
 end subroutine accumulate_time
@@ -992,3 +992,18 @@ subroutine energy
         MPI_SUM,MPI_COMM_WORLD,IERR)
   return
 end subroutine energy
+
+
+!---------------------------------------------------------------------
+subroutine ERROR_ABORT(message)
+  character(*), intent(in) :: message
+  write(6,*) message
+  stop
+end subroutine ERROR_ABORT
+
+
+!---------------------------------------------------------------------
+subroutine WARNING(message)
+  character(*), intent(in) :: message
+  write(6,*) message
+end subroutine WARNING

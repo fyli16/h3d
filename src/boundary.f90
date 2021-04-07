@@ -213,117 +213,117 @@
 
 
 !---------------------------------------------------------------------
-      subroutine xrealbcc_pack_e(a_x,a_y,a_z, ibnd, nx1m, ny1m,nz1m)
-      use parameter_mod
-      implicit none
+subroutine xrealbcc_pack_e(a_x,a_y,a_z, ibnd, nx1m, ny1m,nz1m)
+  use parameter_mod
+  implicit none
 
-      integer*8 :: ibnd,i,j,nx1m,ny1m,nz1m,k
-      real*8 :: a_x(nxmax,jb-1:je+1,kb-1:ke+1) &
-                ,a_y(nxmax,jb-1:je+1,kb-1:ke+1) &
-                ,a_z(nxmax,jb-1:je+1,kb-1:ke+1) &
-                ,packed_data_xz_send(nxmax,kb-1:ke+1,3) &
-                ,packed_data_xz_recv(nxmax,kb-1:ke+1,3) &
-                ,packed_data_xy_send(nxmax,jb-1:je+1,3) &
-                ,packed_data_xy_recv(nxmax,jb-1:je+1,3)
- 
-      !VR: pack z right boundary (ke) for all x and y
-      do j=jb-1,je+1
-        do i=1,nxmax
-          packed_data_xy_send(i,j,1)=a_x(i,j,ke)
-          packed_data_xy_send(i,j,2)=a_y(i,j,ke)
-          packed_data_xy_send(i,j,3)=a_z(i,j,ke)
-        enddo
-      enddo
-   
-      !VR send the right boundary in z to "top" processor and recieve from "bottom" processor
-      call MPI_SENDRECV(packed_data_xy_send,size(packed_data_xy_send),MPI_DOUBLE_PRECISION,nbrtop ,0,&
-                        packed_data_xy_recv,size(packed_data_xy_recv),MPI_DOUBLE_PRECISION,nbrbot ,0,&
-                        mpi_comm_world,status,ierr)
+  integer*8 :: ibnd,i,j,nx1m,ny1m,nz1m,k
+  real*8 :: a_x(nxmax,jb-1:je+1,kb-1:ke+1) &
+            ,a_y(nxmax,jb-1:je+1,kb-1:ke+1) &
+            ,a_z(nxmax,jb-1:je+1,kb-1:ke+1) &
+            ,packed_data_xz_send(nxmax,kb-1:ke+1,3) &
+            ,packed_data_xz_recv(nxmax,kb-1:ke+1,3) &
+            ,packed_data_xy_send(nxmax,jb-1:je+1,3) &
+            ,packed_data_xy_recv(nxmax,jb-1:je+1,3)
 
-      !VR : for periodic b.c., simply unpack into the local array
-      do j=jb-1,je+1
-         do i=1,nxmax
-            a_x(i,j,kb-1)=packed_data_xy_recv(i,j,1)
-            a_y(i,j,kb-1)=packed_data_xy_recv(i,j,2)
-            a_z(i,j,kb-1)=packed_data_xy_recv(i,j,3)
-         enddo
-      enddo
+  !VR: pack z right boundary (ke) for all x and y
+  do j=jb-1,je+1
+    do i=1,nxmax
+      packed_data_xy_send(i,j,1)=a_x(i,j,ke)
+      packed_data_xy_send(i,j,2)=a_y(i,j,ke)
+      packed_data_xy_send(i,j,3)=a_z(i,j,ke)
+    enddo
+  enddo
 
-      !VR: now pack the data on the left z boundary
-      do j=jb-1,je+1
-        do i=1,nxmax
-          packed_data_xy_send(i,j,1)=a_x(i,j,kb)
-          packed_data_xy_send(i,j,2)=a_y(i,j,kb)
-          packed_data_xy_send(i,j,3)=a_z(i,j,kb)
-        enddo
-      enddo
-      !VR: send the packed left z boundary to the "bottom" proc. and recieve from "top"
-      call MPI_SENDRECV(packed_data_xy_send,size(packed_data_xy_send),MPI_DOUBLE_PRECISION,nbrbot ,1,&
-                        packed_data_xy_recv,size(packed_data_xy_recv),MPI_DOUBLE_PRECISION,nbrtop ,1,&
-                        mpi_comm_world,status,ierr)
+  !VR send the right boundary in z to "top" processor and recieve from "bottom" processor
+  call MPI_SENDRECV(packed_data_xy_send,size(packed_data_xy_send),MPI_DOUBLE_PRECISION,nbrtop ,0,&
+                    packed_data_xy_recv,size(packed_data_xy_recv),MPI_DOUBLE_PRECISION,nbrbot ,0,&
+                    mpi_comm_world,status,ierr)
 
-      !VR: for periodic B.C., simply unpack the data
-      do j=jb-1,je+1
-         do i=1,nxmax
-            a_x(i,j,ke+1)=packed_data_xy_recv(i,j,1)
-            a_y(i,j,ke+1)=packed_data_xy_recv(i,j,2)
-            a_z(i,j,ke+1)=packed_data_xy_recv(i,j,3)
-         enddo
+  !VR : for periodic b.c., simply unpack into the local array
+  do j=jb-1,je+1
+      do i=1,nxmax
+        a_x(i,j,kb-1)=packed_data_xy_recv(i,j,1)
+        a_y(i,j,kb-1)=packed_data_xy_recv(i,j,2)
+        a_z(i,j,kb-1)=packed_data_xy_recv(i,j,3)
       enddo
-      
-      !VR: pack the data on the right y boundary (je)
-      do k=kb-1,ke+1
-        do i=1,nxmax
-          packed_data_xz_send(i,k,1)=a_x(i,je,k)
-          packed_data_xz_send(i,k,2)=a_y(i,je,k)
-          packed_data_xz_send(i,k,3)=a_z(i,je,k)
-        enddo
-      enddo
-      !VR: send the right y boundary to the "right" processor and recieve it from the "left"
-      call MPI_SENDRECV(packed_data_xz_send,size(packed_data_xz_send),MPI_DOUBLE_PRECISION,nbrrite,0,&
-                        packed_data_xz_recv,size(packed_data_xz_recv),MPI_DOUBLE_PRECISION,nbrleft,0,&
-                        mpi_comm_world,status,ierr)
+  enddo
 
-      !VR: for periodic B.C., simply unpack the data
-      do k=kb-1,ke+1
-         do i=1,nxmax
-            a_x(i,jb-1,k)=packed_data_xz_recv(i,k,1)
-            a_y(i,jb-1,k)=packed_data_xz_recv(i,k,2)
-            a_z(i,jb-1,k)=packed_data_xz_recv(i,k,3)
-         enddo
-      enddo
-      
-      !VR: pack the data on the left y boundary (jb)
-      do k=kb-1,ke+1
-        do i=1,nxmax
-          packed_data_xz_send(i,k,1)=a_x(i,jb,k)
-          packed_data_xz_send(i,k,2)=a_y(i,jb,k)
-          packed_data_xz_send(i,k,3)=a_z(i,jb,k)
-        enddo
-      enddo
-      !VR: send it to the "left" and recieve from the "right" processors
-      call MPI_SENDRECV(packed_data_xz_send,size(packed_data_xz_send),MPI_DOUBLE_PRECISION,nbrleft,0,&
-                        packed_data_xz_recv,size(packed_data_xz_recv),MPI_DOUBLE_PRECISION,nbrrite,0,&
-                        mpi_comm_world,status,ierr)
+  !VR: now pack the data on the left z boundary
+  do j=jb-1,je+1
+    do i=1,nxmax
+      packed_data_xy_send(i,j,1)=a_x(i,j,kb)
+      packed_data_xy_send(i,j,2)=a_y(i,j,kb)
+      packed_data_xy_send(i,j,3)=a_z(i,j,kb)
+    enddo
+  enddo
+  !VR: send the packed left z boundary to the "bottom" proc. and recieve from "top"
+  call MPI_SENDRECV(packed_data_xy_send,size(packed_data_xy_send),MPI_DOUBLE_PRECISION,nbrbot ,1,&
+                    packed_data_xy_recv,size(packed_data_xy_recv),MPI_DOUBLE_PRECISION,nbrtop ,1,&
+                    mpi_comm_world,status,ierr)
 
-      !VR: unpack into the local array
-      do k=kb-1,ke+1
-         do i=1,nxmax
-            a_x(i,je+1,k)=packed_data_xz_recv(i,k,1)
-            a_y(i,je+1,k)=packed_data_xz_recv(i,k,2)
-            a_z(i,je+1,k)=packed_data_xz_recv(i,k,3)
-         enddo
+  !VR: for periodic B.C., simply unpack the data
+  do j=jb-1,je+1
+      do i=1,nxmax
+        a_x(i,j,ke+1)=packed_data_xy_recv(i,j,1)
+        a_y(i,j,ke+1)=packed_data_xy_recv(i,j,2)
+        a_z(i,j,ke+1)=packed_data_xy_recv(i,j,3)
       enddo
- 
-      ! WHY NO-EXCHANGE?
+  enddo
 
-      !VR: update ghost cells in x 
-      a_x(1   ,:,:)   = a_x(nx1m+1   ,:,:)
-      a_x(nx1m+2,:,:) = a_x(2,:,:)
-      a_y(1   ,:,:)   = a_y(nx1m+1   ,:,:)
-      a_y(nx1m+2,:,:) = a_y(2,:,:)
-      a_z(1   ,:,:)   = a_z(nx1m+1   ,:,:)
-      a_z(nx1m+2,:,:) = a_z(2,:,:)
-  
-      return
-    end subroutine xrealbcc_pack_e
+  !VR: pack the data on the right y boundary (je)
+  do k=kb-1,ke+1
+    do i=1,nxmax
+      packed_data_xz_send(i,k,1)=a_x(i,je,k)
+      packed_data_xz_send(i,k,2)=a_y(i,je,k)
+      packed_data_xz_send(i,k,3)=a_z(i,je,k)
+    enddo
+  enddo
+  !VR: send the right y boundary to the "right" processor and recieve it from the "left"
+  call MPI_SENDRECV(packed_data_xz_send,size(packed_data_xz_send),MPI_DOUBLE_PRECISION,nbrrite,0,&
+                    packed_data_xz_recv,size(packed_data_xz_recv),MPI_DOUBLE_PRECISION,nbrleft,0,&
+                    mpi_comm_world,status,ierr)
+
+  !VR: for periodic B.C., simply unpack the data
+  do k=kb-1,ke+1
+      do i=1,nxmax
+        a_x(i,jb-1,k)=packed_data_xz_recv(i,k,1)
+        a_y(i,jb-1,k)=packed_data_xz_recv(i,k,2)
+        a_z(i,jb-1,k)=packed_data_xz_recv(i,k,3)
+      enddo
+  enddo
+
+  !VR: pack the data on the left y boundary (jb)
+  do k=kb-1,ke+1
+    do i=1,nxmax
+      packed_data_xz_send(i,k,1)=a_x(i,jb,k)
+      packed_data_xz_send(i,k,2)=a_y(i,jb,k)
+      packed_data_xz_send(i,k,3)=a_z(i,jb,k)
+    enddo
+  enddo
+  !VR: send it to the "left" and recieve from the "right" processors
+  call MPI_SENDRECV(packed_data_xz_send,size(packed_data_xz_send),MPI_DOUBLE_PRECISION,nbrleft,0,&
+                    packed_data_xz_recv,size(packed_data_xz_recv),MPI_DOUBLE_PRECISION,nbrrite,0,&
+                    mpi_comm_world,status,ierr)
+
+  !VR: unpack into the local array
+  do k=kb-1,ke+1
+      do i=1,nxmax
+        a_x(i,je+1,k)=packed_data_xz_recv(i,k,1)
+        a_y(i,je+1,k)=packed_data_xz_recv(i,k,2)
+        a_z(i,je+1,k)=packed_data_xz_recv(i,k,3)
+      enddo
+  enddo
+
+  ! WHY NO-EXCHANGE?
+
+  !VR: update ghost cells in x 
+  a_x(1   ,:,:)   = a_x(nx1m+1   ,:,:)
+  a_x(nx1m+2,:,:) = a_x(2,:,:)
+  a_y(1   ,:,:)   = a_y(nx1m+1   ,:,:)
+  a_y(nx1m+2,:,:) = a_y(2,:,:)
+  a_z(1   ,:,:)   = a_z(nx1m+1   ,:,:)
+  a_z(nx1m+2,:,:) = a_z(2,:,:)
+
+  return
+end subroutine xrealbcc_pack_e

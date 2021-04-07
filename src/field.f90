@@ -1,5 +1,6 @@
 !---------------------------------------------------------------------
 ! advances electromagnetic field in time
+!---------------------------------------------------------------------
 subroutine field
   use parameter_mod
   implicit none
@@ -40,7 +41,7 @@ end subroutine field
 
 !---------------------------------------------------------------------
 ! computes electron pressure gradient
-! @param iflag memory flag?
+! @param iflag: memory flag?
 !---------------------------------------------------------------------
 subroutine pressgrad(iflag)
   use parameter_mod
@@ -212,9 +213,9 @@ subroutine ecalc( iflag )
           zj = curlbz_scalar
 
           ! From the eta_par conditional
-          tenx=eta(i,j,k)*xj
-          teny=eta(i,j,k)*yj
-          tenz=eta(i,j,k)*zj
+          tenx = eta(i,j,k)*xj
+          teny = eta(i,j,k)*yj
+          tenz = eta(i,j,k)*zj
           ! End content from the eta_par conditional
 
           ex(i,j,k)=(viza*byav-viya*bzav)+(curlby_scalar*bzav-curlbz_scalar*byav)&
@@ -446,11 +447,9 @@ subroutine ecalc( iflag )
 
   ! boundary conditions
   call date_and_time(values=time_begin_array(:,18))
-  call XREALBCC_PACK_E(EX,EY,EZ,1_8,NX,NY,NZ)
+  call xrealbcc_pack_e(EX,EY,EZ,1_8,NX,NY,NZ)
   call date_and_time(values=time_end_array(:,18))
-  call accumulate_time(time_begin_array(1,18) &
-                                  ,time_end_array(1,18) &
-                                  ,time_elapsed(18))
+  call accumulate_time(time_begin_array(1,18),time_end_array(1,18),time_elapsed(18))
 
   ! VR: impose periodic B.C. on E (in x)
   ! this should be part of xrealbcc*
