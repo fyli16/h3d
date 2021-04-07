@@ -313,10 +313,11 @@ subroutine data_output(uniform_mesh)
     enddo
   endif
 
-  if (t_begin*wpiwci <= time .and. time <= t_end*wpiwci .and. mod(int(it,8),n_write_particle)==0 .or. it==1) then
+  if (mod(int(it,8),n_write_particle)==0) then
     if (myid == 0) then
       my_short_int = it
       call integer_to_character(cycle_ascii, len(cycle_ascii), my_short_int)
+      if (cycle_ascii=='') cycle_ascii='0'
       write(6,*) " calling particle_in_volume_write with cycle_ascii = ", cycle_ascii
     endif
     call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
