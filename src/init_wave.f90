@@ -1,4 +1,4 @@
-!---------------------------------------------------------------------
+    !---------------------------------------------------------------------
     subroutine init_wave
       use parameter_mod
       use mesh2d
@@ -27,6 +27,11 @@
       real*8 :: vix8,viy8,viz8
       integer :: ixep1,iyep1,izep1
       integer :: tag,tag0
+
+      if (myid==0) then
+        write(6,*) " "
+        write(6,*) "Initializing wave ..."
+      endif 
 
       remake = 0
 
@@ -149,7 +154,10 @@
       ex = zero; ey = zero; ez = zero
      
       ! initialie perturbation on the grid 
-      if (myid==0) print*, "Initializing the perturbation."
+      if (myid==0) then
+        write(6,*), "  Initializing perturbation on grid ..."
+      endif 
+
       do k=kb-1,ke+1
         z_pos = meshZ%xc(k+1)
         do j=jb-1,je+1  
@@ -247,7 +255,10 @@
       te0=bete/(two*wpiwci**2)
       vbal=one
 
-      if (myid==0) print *, "Initializing particles."
+      if (myid==0) then
+        write(6,*) "  Initializing particles ..."
+      endif 
+
       do is = 1, nspec
         tag0 = maxtags_pe*nspec*myid + (is-1)*maxtags_pe
         tag=1 
@@ -266,14 +277,15 @@
         vper(is) = vpar(is)*sqrt(anisot(is))
 
         if (myid==0) then
-          print *, "species", is
-          print *, "frac", frac(is)
-          print *, "npx", npx(is)
-          print *, "npy", npy(is)
-          print *, "npz", npz(is)
-          print *, "dfrac", dfac(is)
-          print *, "nptot_max", nptot_max
-          print *, "q_p=", hx*hy*hz*dfac(is)*frac(is)
+          write(6,*) "  species #", is
+          write(6,*) "  frac", frac(is)
+          write(6,*) "  npx", npx(is)
+          write(6,*) "  npy", npy(is)
+          write(6,*) "  npz", npz(is)
+          write(6,*) "  dfrac", dfac(is)
+          write(6,*) "  nptot_max", nptot_max
+          write(6,*) "  q_p=", hx*hy*hz*dfac(is)*frac(is)
+          write(6,*) " "
         endif
 
         print_percentage = zero
@@ -398,9 +410,10 @@
           loaded_percentage =  100.0*real(ip-ipb1)/(ipb2-ipb1)
           
           if ((myid==0).and.(loaded_percentage>=print_percentage)) then
-             print '(A,F5.1,A)', "loaded ", loaded_percentage," % of particles"
+             write(6,"(A,F5.1,A)") "  loaded ", loaded_percentage," % of particles"
              print_percentage = print_percentage + 5.0d0
           endif
+
         enddo
       enddo
     
@@ -431,7 +444,11 @@
       call trans
  
       dt=dtsav
-      if (myid == 0) write(6,*) " BEFORE FIELD (CALLED BY INIT)"
+      if (myid == 0) then
+        write(6,*) "  Before field (called by init_wave)"
+        write(6,*) n_subcycles
+      endif 
+
       if (.not.testorbt) then
           do field_subcycle=1,n_subcycles
             if (ndim /= 1) then
@@ -442,7 +459,10 @@
           enddo
       endif
 
-      if (myid == 0) write(6,*) " AFTER  FIELD (CALLED BY INIT)"
+      if (myid == 0) then
+        write(6,*) "  After field (called by init_wave)"
+      endif 
+
       if (ndim /= 1) then
          call etacalc      ! Dietmar's resistivity
       else

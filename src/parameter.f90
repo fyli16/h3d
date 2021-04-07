@@ -123,7 +123,8 @@ module parameter_mod
     Yee, global, harris, fxsho, nxcel, &  ! others
     rcorr, ishape, teti
 
-    ! ??
+    ! convert number 'myid' to character 'myid_char'
+    ! these characters will be in file dumping by rank
     my_short_int = myid
     call integer_to_character(myid_char, len(myid_char), my_short_int)
     if (myid_char=='') myid_char='0'
@@ -277,8 +278,8 @@ module parameter_mod
     if (myid == 0) then
       write(6,*)
       write(6,*) "MPI decompsition ..."
+      write(6,*) "  Total number of processors = ", numprocs
       do i = 1, ndim
-        write(6,*) "  Total number of processors = ", numprocs
         write(6,*) "  Dimension = ", i, " Dims = ", dims(i)
       enddo
     endif
@@ -340,6 +341,10 @@ module parameter_mod
       nptotp = nptotp + npx(i)*npy(i)*npz(i)
     enddo
     nplmax = 2* nptotp  ! pad storage requirement by a factor of 2
+    if (myid==0) then
+      write(6,*) "  total particle # per rank = ", nptotp
+      write(6,*) "  total particle # per rank (padded) = ", nplmax
+    endif
 
     ! number of tags used to track particles per species per rank
     ! maxtags was initialized as 100

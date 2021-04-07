@@ -15,7 +15,6 @@ program h3d
 
   implicit none
 
-  
   ! VR : allocating a global mesh can not work on large runs with small amount of memory per rank
   real*8, dimension(:,:,:), allocatable :: uniform_mesh      
   ! double precision, dimension(:,:,:), allocatable:: nonuniform_mesh_global
@@ -68,8 +67,12 @@ program h3d
 
   ! change how itfinish is computed
   itfinish = (tmax-t_stopped)/dtwci + itstart
-  if (myid == 0) write(6,*) 't_stopped = ', t_stopped
-  if (myid == 0) write(6,*) 'itstart, itfinish = ', itstart, ' ', itfinish
+  if (myid == 0) then
+    write(6,*) " "
+    write(6,*) 't_stopped = ', t_stopped
+    write(6,*) 'itstart, itfinish = ', itstart, ' ', itfinish
+    write(6,*) " "
+  endif 
   
   time_elapsed=0.; time_begin_array=0; time_end_array=0
 
@@ -96,7 +99,7 @@ subroutine setup_mesh()
   integer :: i
 
   if (myid==0) then
-    write(6,*)
+    write(6,*) " "
     write(6,*) "Setting up mesh ..."
   endif
 
