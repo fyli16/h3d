@@ -288,82 +288,6 @@ subroutine MPE_DECOMP1D( n, numprocs, myid, s, e )
 end subroutine MPE_DECOMP1D
 
 
-!---------------------------------------------------------------------
-subroutine get_cleanup_status(maxchar)
-  use parameter_mod
-  implicit none
-
-  integer :: maxchar
-  logical :: fexists
-
-  if (myid==0) then
-      inquire(file=trim(data_directory)//'.cleanup_status', exist=fexists)
-      if (fexists) then
-        open(unit=1,file=trim(data_directory)//'.cleanup_status', status='old')
-        read(1,*) cleanup_status
-        close(unit=1)
-      else
-        cleanup_status='CLEANUP_STATUS=FALSE'
-      endif
-  endif
-
-  call MPI_BCAST(cleanup_status, maxchar, MPI_CHARACTER, 0,MPI_COMM_WORLD, IERR)
-
-end subroutine get_cleanup_status
-
-
-! ========================================
-! generate simple KEY based on date & time
-! ========================================
-subroutine get_sim_id(key)
-  implicit none
-  character (len=8)  :: date
-  character (len=10) :: time
-  character (len=5)  :: zone
-  character (len=27) :: key
-  integer :: values(8)
-
-  call date_and_time(DATE, TIME, ZONE, VALUES) 
-  key = date//'_'//time//'UTC'//zone
-end subroutine get_sim_id
-
-
-! ========================================
-! creat id file 
-! ========================================
-subroutine create_id_file(key)
-  implicit none
-  character (len=27) :: key
-  integer wunit,ierr
-  logical fexist
-
-  inquire(file="sim_id.txt", exist=fexist)
-
-  if (fexist) then
-    open(newunit = wunit, file="sim_id.txt",status='replace',iostat=ierr)
-  else
-    open(newunit = wunit, file="sim_id.txt",status='new',iostat=ierr)
-  endif
-
-  if (ierr==0) then
-    write(wunit,'(A)') key
-    close(wunit)
-  else
-    write(*,*) "Cannot create sim_id file!"
-  endif
-end subroutine create_id_file
-
-
-! ========================================
-! debug
-! ========================================
-subroutine DEBUG(myid,ln)
-  implicit none
-  integer :: myid,ln
-  write(6,*)"myid=",myid,"line number=",ln
-end subroutine
-
-
 !-----------------------------------------------------------------
 !    computes velocities?
 !    what is the difference between vxs and vix?
@@ -403,12 +327,6 @@ subroutine trans
       enddo
     enddo
   enddo
-
-  if (notime == 0) then
-    call date_and_time(values=time_end)
-    clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
-    write(file_unit_time,"(i4,' parmov   ',f15.3)") it,real(clock_time-clock_time_init)
-  endif
 
   call date_and_time(values=time_begin_array(:,7))
   if (ndim /= 1) then

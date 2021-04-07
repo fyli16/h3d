@@ -84,9 +84,6 @@ xbox_l=0., xbox_r=1.0,
 ybox_l=0., ybox_r=1.0, 
 zbox_l=0., zbox_r=2.24,
 
-notime=1, ! notime=0 will output detailed timing
-! this diagnostic is only used during diagnostic runs
-
 ! ------------------------- others ---------------------!
 ! these seem not really implemented
 Yee=.false., ! ?

@@ -41,9 +41,6 @@ program h3d
   ! open history diagnostic files
   call open_hist_diag_files()
 
-  ! notime=0 will output detailed timing
-  if (notime==0) call open_timing_diag_files
-
   ! make list of particles (see utils.f90)
   call makelist
 
@@ -81,10 +78,8 @@ program h3d
     call one_simulation_loop(uniform_mesh)
   enddo  
 
-  ! close files that are open
-  call close_files()
-
-  ! print misc timing info, finalize MPI, and shutdown the program
+  ! close files, print misc timing info, 
+  ! finalize MPI, and shutdown the program
   call shutdown()
 
 end program h3d
@@ -347,19 +342,10 @@ subroutine one_simulation_loop(uniform_mesh)
   integer :: iwrite, i
   real*8 :: uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1)
 
-  call get_cleanup_status(len(cleanup_status))
-
-  if (cleanup_status=='CLEANUP_STATUS=EXIT') then
-    call shutdown()
-  endif
-
   call date_and_time(values=time_begin_array(:,1))
   call date_and_time(values=curr_time)
   clock_time = curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001
 
-  if (notime == 0) then
-    write(file_unit_time,"(i4,' begin    ',f15.3)") it, real(clock_time-clock_time_init)
-  endif
   if (myid == 0.and.mod(it,10_8) == 0) then
     write(6,*) 'it=', it, 'time=', time, ', delta_t=', real(clock_time - clock_time_old), &
                 ', tot_t=', real(clock_time-clock_time_init)
@@ -397,12 +383,6 @@ subroutine one_simulation_loop(uniform_mesh)
   else
     call etacalc_2d    ! Dietmar's resistivity
   endif
-     
-  if (notime == 0) then
-    call date_and_time(values=curr_time)
-    clock_time=( curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
-    write(file_unit_time,"(i4,' trans    ',f15.3)") it, real(clock_time-clock_time_init)
-  endif
 
   ! VR: trans computes density and v's 
   ! VR: note that trans calls parmov, i.e. it also does a particle push
@@ -416,22 +396,10 @@ subroutine one_simulation_loop(uniform_mesh)
     write(14,*) it, time_elapsed(1:40)  ! time.dat
   endif
 
-  if (notime == 0) then
-    call date_and_time(values=curr_time)
-    clock_time=( curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
-    write(file_unit_time,"(i4,' sortit   ',f15.3)") it,real(clock_time-clock_time_init)
-  endif
-
   ! VR: sort particles
   call date_and_time(values=time_begin_array(:,4))
   if (mod(it,10_8) == 0) call sortit    !  sort the particles
   call date_and_time(values=time_end_array(:,4))
-
-  if (notime == 0) then
-    call date_and_time(values=curr_time)
-    clock_time=( curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
-    write(file_unit_time,"(i4,' field    ',f15.3)") it,real(clock_time-clock_time_init)
-  endif
 
   ! VR: call field solver
   call date_and_time(values=time_begin_array(:,5))
@@ -447,11 +415,6 @@ subroutine one_simulation_loop(uniform_mesh)
   ! ??
   ! if (it == 21000) call inject_wave
   ! if (mod(it,100) == 0) call kick
-  if (notime == 0) then
-    call date_and_time(values=curr_time)
-    clock_time=( curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
-    write(file_unit_time,"(i4,' diagnose ',f15.3)") it, real(clock_time-clock_time_init)
-  endif
 
   ! VR: call user diagnostics
   call date_and_time(values=time_begin_array(:,30))
@@ -495,12 +458,6 @@ subroutine one_simulation_loop(uniform_mesh)
 
   endif
 
-  if (notime == 0) then
-    call date_and_time(values=curr_time)
-    clock_time=( curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
-    write(file_unit_time,"(i4,' end      ',f15.3)") it,real(clock_time-clock_time_init)
-  endif
-
   time = time + dtwci
   it = it + 1
 
@@ -516,10 +473,10 @@ end subroutine one_simulation_loop
 
 
 !---------------------------------------------------------------------
-! close files
+! shutdown the simulation and exit
 !---------------------------------------------------------------------
-subroutine close_files()
-  use parameter_mod, only : myid, tracking_mpi
+subroutine shutdown()
+  use parameter_mod
   implicit none 
 
   if (myid == 0) then
@@ -532,19 +489,6 @@ subroutine close_files()
   if (tracking_mpi) then
     close(unit=13)
   endif
-
-  return 
-end subroutine close_files
-
-
-!---------------------------------------------------------------------
-! shutdown the simulation and exit
-!---------------------------------------------------------------------
-subroutine shutdown()
-  use parameter_mod
-  implicit none 
-
-  if (notime == 0) close(file_unit_time)
       
   if (myid==0) then
     write(6,*) " "

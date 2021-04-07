@@ -497,7 +497,6 @@ subroutine restart_read_write(rw)
     ! ,ipstore,nptot,npleaving,npentering,myid_stop                &
     ,nptot,npleaving,npentering,myid_stop                        &
     ,iclock_speed,iopen,iseed, file_unit,file_unit_read          &
-    ,file_unit_time,notime,file_unit_tmp                         &
     ,clock_time_init,clock_time_old,clock_time                   &
     ,clock_time1
 
@@ -653,7 +652,6 @@ subroutine restart_read_write(rw)
     ! ,ipstore,nptot,npleaving,npentering,myid_stop                 &
     ,nptot,npleaving,npentering,myid_stop                 &
     ,iclock_speed,iopen,iseed, file_unit,file_unit_read           &
-    ,file_unit_time,notime,file_unit_tmp                          &
     ,clock_time_init,clock_time_old,clock_time                    &
     ,clock_time1
 
@@ -867,26 +865,6 @@ subroutine open_files
   
   return
 end subroutine open_files
-
-
-!---------------------------------------------------------------------
-! open diagnostic files for timing on each MPI rank
-! The diagnostic timing file is defined as a standard COS blocked file. 
-! Note that this diagnostic is ONLY used during diagnostic runs
-subroutine open_timing_diag_files
-  use parameter_mod
-  implicit none
-
-  character :: timeunit*4, file_name*40
-  integer*8 :: file_unit_ref
-
-  file_unit_time = myid + 500
-  write(timeunit,"(i4.4)") file_unit_time
-  file_name = trim(data_directory)//"timing" // timeunit // ".txt" 
-  open(unit=file_unit_time, file=file_name, status='unknown')
-
-  return
-end subroutine open_timing_diag_files  
 
 
 !---------------------------------------------------------------------

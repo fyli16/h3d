@@ -1,53 +1,52 @@
 !===============================================================
-! by Yuri Omelchenko, Scibernet Inc., 2003
-!> This module constructs a 1-D mesh by mapping a logical
-!! node-centered grid, t=[0,1] to a physical node-centered grid x=[0,xl] surrounded by ghost grid points. 
+! By Yuri Omelchenko, Scibernet Inc., 2003
+! This module constructs a 1-D mesh by mapping a logical
+! node-centered grid, t=[0,1] to a physical node-centered grid x=[0,xl] surrounded by ghost grid points. 
 
-!! The cell-centered grid points are also computed.
-!! The following mapping is used (dt=1/nl):
-!! 0 <= t <= ta(=dt*na):
-!! x = xa - xa*[exp(alph1*(ta-t))-1]/[exp(alph1*ta)-1]
-!! ta <= t <= tb(=dt*nb):
-!! x = xa + dx*(t-ta)/dt, where dx = (xb-xa)/(nb-na)
-!! tb <= t <= 1:
-!! x = xb + (xl-xb)*[exp(alph2*(t-tb))-1]/[exp(alph2*(1-tb))-1]
+! The cell-centered grid points are also computed.
+! The following mapping is used (dt=1/nl):
+! 0 <= t <= ta(=dt*na):
+! x = xa - xa*[exp(alph1*(ta-t))-1]/[exp(alph1*ta)-1]
+! ta <= t <= tb(=dt*nb):
+! x = xa + dx*(t-ta)/dt, where dx = (xb-xa)/(nb-na)
+! tb <= t <= 1:
+! x = xb + (xl-xb)*[exp(alph2*(t-tb))-1]/[exp(alph2*(1-tb))-1]
 
-!! We define eps == exp(alph*dt)
-!! The first steps on both nonuniform grids are matched to be equal to dx.
-!! We solve nonlinear equations to find eps1 and eps2:
-!! eps1: (eps1-1)/(eps1**na-1) = dx/xa 
-!! eps2: (eps2-1)/(eps2**(nl-nb)-1) = dx/(xl-xb)
-!! NOTE: in order eps1>0 and eps2>0 we require:
-!! xa/na > dx and (xl-xb)/(nl-nb) > dx
-!!
+! We define eps == exp(alph*dt)
+! The first steps on both nonuniform grids are matched to be equal to dx.
+! We solve nonlinear equations to find eps1 and eps2:
+! eps1: (eps1-1)/(eps1**na-1) = dx/xa 
+! eps2: (eps2-1)/(eps2**(nl-nb)-1) = dx/(xl-xb)
+! Notice that: in order eps1>0 and eps2>0 we require:
+! xa/na > dx and (xl-xb)/(nl-nb) > dx
 !===============================================================
 
-module MESH_CLASS
+module mesh_class
   implicit none
 
-  type MESH
+  type mesh
     real*8, dimension(:), pointer :: xn, xc, dxn, dxc
     integer*8 :: na, nb, nl
     real*8 :: xa, xb, xl
     real*8 :: dt, dx, dtdx, ta, tb, epsa, epsb, ca1, ca2, cb1, cb2
-  end type MESH
+  end type mesh
 
-  type MESHTYPE
+  type meshtype
     integer*8 type
-  end type MESHTYPE
+  end type meshtype
 
-  type (MESHTYPE), parameter :: CELL = MESHTYPE(0)
-  type (MESHTYPE), parameter :: NODE = MESHTYPE(1)
+  type (meshtype), parameter :: CELL = MESHTYPE(0)
+  type (meshtype), parameter :: NODE = MESHTYPE(1)
 
-  interface MESH_INDEX
-      module procedure MESH_INDEX_YURI,MESH_INDEX_HXV
+  interface mesh_index
+    module procedure mesh_index_yuri, mesh_index_hxv
   end interface
 
   contains
 
   !---------------------------------------------------------------------
   ! initialize mesh attributes 
-  subroutine MESH_INIT(m,xa,xb,xl,na,nb,nl)
+  subroutine mesh_init(m,xa,xb,xl,na,nb,nl)
     implicit none
 
     type(MESH), intent(out) :: m
@@ -130,15 +129,15 @@ module MESH_CLASS
     m%dxn(nl+3) = m%dxn(nl+2) ! fictitous
       
     return
-  end subroutine MESH_INIT
+  end subroutine mesh_init
 
 
   !---------------------------------------------------------------------
   ! destroy mesh
-  subroutine MESH_DESTRUCT(m)
+  subroutine mesh_destruct(m)
     implicit none
 
-    type(MESH), intent(inout) :: m
+    type(mesh), intent(inout) :: m
 
     if(associated(m%xn)) then
       deallocate(m%xn)  
@@ -152,7 +151,9 @@ module MESH_CLASS
     endif
 
     m%na = 0 ; m%nb = 0 ; m%nl = 0
-  end subroutine MESH_DESTRUCT
+
+    return
+  end subroutine mesh_destruct
 
 
   !---------------------------------------------------------------------
@@ -361,7 +362,7 @@ module MESH_CLASS
 
   end subroutine MESH_INTERPOLATE2D
 
-end module MESH_CLASS
+end module mesh_class
 
 
 !---------------------------------------------------------------------1

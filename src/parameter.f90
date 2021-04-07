@@ -4,7 +4,7 @@ module parameter_mod
   implicit none
   save
 
-  integer :: my_short_int, i_source, i_destination, i_tag, i_length, i_i
+  integer :: it, my_short_int, i_source, i_destination, i_tag, i_length, i_i
   integer, dimension(8,128) :: time_begin_array, time_end_array
   real*8, dimension(128):: time_elapsed
   integer, dimension(8) :: curr_time
@@ -66,9 +66,8 @@ module parameter_mod
   logical :: testorbt, restart, uniform_loading_in_logical_grid, MPI_IO_format, smoothing, &
               global, harris, Yee, print_info, write_data, write_restart
   real*8 ::  hx, hy, hz, hxi, hyi, hzi, efld, bfld, efluidt, ethermt, eptclt, time, te0
-  integer :: it, notime
-  integer*8 :: nsteps0, itfin=0, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(25), file_unit_time,            &
-                file_unit_tmp,file_unit_read(20),nptot,npleaving,npentering,iclock_speed, nptotp
+  integer*8 :: nsteps0, itfin=0, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(25),             &
+              file_unit_read(20),nptot,npleaving,npentering,iclock_speed, nptotp
   real*8 :: clock_time_init, clock_time_old, clock_time, clock_time1
   real*8, dimension(:), allocatable :: dfac
   integer*8, dimension(:), allocatable :: nskip,ipleft,iprite,ipsendleft,ipsendrite,iprecv,ipsendtop,ipsendbot     &
@@ -122,7 +121,7 @@ module parameter_mod
     anisot, gama, ave1, ave2, phib, smoothing, smooth_coef, &
     dB_B0, num_cycles, &  ! init waves
     n_print, n_write_data, write_restart, n_write_restart, n_write_particle, &  ! diagnostics
-    tracking_binary, tracking_mpi, xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, notime, &
+    tracking_binary, tracking_mpi, xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
     Yee, global, harris, fxsho, nxcel, &  ! others
     rcorr, ishape, teti
 
@@ -225,7 +224,6 @@ module parameter_mod
     call MPI_BCAST(ybox_r                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(zbox_l                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(zbox_r                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(notime                 ,1     ,MPI_INTEGER         ,0,MPI_COMM_WORLD,IERR)
     ! others 
     call MPI_BCAST(Yee                    ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(global                 ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
