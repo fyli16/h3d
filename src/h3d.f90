@@ -60,7 +60,7 @@ program h3d
 
   ! time stamp just before entering the simulation loop
   call date_and_time(values=curr_time)
-  clock_time_init=( curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
+  clock_time_init = curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001
   clock_time_old = clock_time_init
 
   ! march forward in time
@@ -346,6 +346,7 @@ subroutine one_simulation_loop(itstart, itfinish, uniform_mesh)
   call date_and_time(values=time_begin_array(:,1))
   call date_and_time(values=curr_time)
   clock_time = curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001
+  
   if (notime == 0) then
     write(file_unit_time,"(i4,' begin    ',f15.3)") it, real(clock_time-clock_time_init)
   endif

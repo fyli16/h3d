@@ -316,6 +316,7 @@ module parameter_mod
     implicit none
 
     integer :: i, j, k
+
     double_prec = 0.
     single_prec = 0.
     inquire (IOLENGTH=recl_for_double_precision) double_prec
@@ -323,20 +324,20 @@ module parameter_mod
 
     if (myid==0) then
       write(6,*) " "
-      write(6,*) "Setting up global parameters ..."
+      write(6,*) "Setting up global arrays ..."
     endif
 
     ! nparbuf = nxmax*(nylmax+2)*(nzlmax+2)
-    nspecm = nspec  ! nspecm is just a mirror of nspec
-    npes = numprocs  ! npes is a copy of numprocs
-    npes_over_60 = npes / 512  ! if numprocs > 512?
+    nspecm = nspec  ! nspecm is just a mirror copy of nspec
+    npes = numprocs  ! npes is just a mirror copy of numprocs
+    npes_over_60 = npes/512  ! if numprocs > 512?
 
     ! estimate on particle storage requirement
     nptotp = 0  ! total number of particles per rank
     do i = 1, nspec
       nptotp = nptotp + npx(i)*npy(i)*npz(i)
     enddo
-    nplmax = 2* nplmax  ! pad storage requirement by a factor of 2
+    nplmax = 2* nptotp  ! pad storage requirement by a factor of 2
 
     ! number of tags used to track particles per species per rank
     ! maxtags was initialized as 100
@@ -347,12 +348,12 @@ module parameter_mod
     endif
 
     ! gathered enough info, now allocate arrays
-    allocate (zbglobal(0:npes-1), zeglobal(0:npes-1), ybglobal(0:npes-1), yeglobal(0:npes-1)                     &
-              ,kbglobal(0:npes-1), keglobal(0:npes-1), jbglobal(0:npes-1), jeglobal(0:npes-1)                     &
+    allocate (zbglobal(0:npes-1), zeglobal(0:npes-1), ybglobal(0:npes-1), yeglobal(0:npes-1)   &
+              ,kbglobal(0:npes-1), keglobal(0:npes-1), jbglobal(0:npes-1), jeglobal(0:npes-1)  &
               ,nsendp(0:npes-1), nrecvp(0:npes-1), myid_stop(0:npes-1))
-    allocate (x(nplmax),y(nplmax),z(nplmax),vx(nplmax),vy(nplmax),vz(nplmax),link(nplmax),porder(nplmax),qp(nplmax))
-    allocate (ptag(nplmax))
-    allocate ( ninj(nspecm), ninj_global(nspecm),nescape(nspecm),nescape_global(nspecm),npart(nspecm)         &
+    allocate (x(nplmax), y(nplmax), z(nplmax), vx(nplmax), vy(nplmax), vz(nplmax),   &
+            link(nplmax), porder(nplmax), qp(nplmax), ptag(nplmax))
+    allocate ( ninj(nspecm), ninj_global(nspecm),nescape(nspecm),nescape_global(nspecm),npart(nspecm)  &
               ,npart_global(nspecm),qleft(nspecm),qrite(nspecm))
     allocate ( nescape_xy(nspecm),nescape_yx(nspecm),nescape_xz(nspecm),nescape_zx(nspecm)                    &
               ,nescape_yz(nspecm),nescape_zy(nspecm)                                                          &
