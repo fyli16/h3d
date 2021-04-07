@@ -448,9 +448,9 @@
       endif
 
       if (ndim /= 1) then
-         call etacalc      ! Dietmar's resistivity
+         call eta_calc      ! Dietmar's resistivity
       else
-         call etacalc_2d   ! Dietmar's resistivity
+         call eta_calc_2d   ! Dietmar's resistivity
       endif
       
 999   CONTINUE

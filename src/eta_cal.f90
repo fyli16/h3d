@@ -9,7 +9,7 @@
 ! (4): Homas method: 2nd derivative of current
 ! (5): (2) and (4) combined, with (4) reduced by a factor (1/5)
 !---------------------------------------------------------------------
-subroutine etacalc
+subroutine eta_calc
   use parameter_mod
   use mesh2d
   implicit none
@@ -150,7 +150,7 @@ subroutine etacalc
     enddo
 
   else if ( (ieta .gt. 5).or.(ieta .lt. 0) ) then
-    call ERROR_ABORT('Currently etacalc only accepts ieta = 0 ~ 5')
+    call ERROR_ABORT('Currently eta_calc only accepts ieta = 0 ~ 5')
 
   endif
 
@@ -263,5 +263,5 @@ subroutine etacalc
   endif
 
   return
-end subroutine etacalc
+end subroutine eta_calc
 

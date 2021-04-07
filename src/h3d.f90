@@ -339,12 +339,12 @@ subroutine one_simulation_loop(uniform_mesh)
   ! compute resistivity (which could depend on local parameters such as current)
   call date_and_time(values=time_begin_array(:,2))
   if (ndim /= 1) then
-    call etacalc       ! Dietmar's resistivity
+    call eta_calc       ! Dietmar's resistivity
   else
-    call etacalc_2d    ! Dietmar's resistivity
+    call eta_calc_2d    ! Dietmar's resistivity
   endif
   ntot = 0 ! for particle tracking
-  call trans ! trans computes density and v's; it also calls parmov, i.e., it does a particle push
+  call trans ! trans computes density and v's; it also calls parmov, i.e., it does particle push
   call date_and_time(values=time_end_array(:,2))
   call accumulate_time(time_begin_array(1,2),time_end_array(1,2),time_elapsed(2))
 

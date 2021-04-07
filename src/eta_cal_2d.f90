@@ -8,7 +8,7 @@
 ! (3) Arbitrary power of curent (here: 4)
 ! (4) Homas method: 2nd derivative of current
 ! (5) (2) and (4) combined, with (4) reduced by a factor (1/5)
-    subroutine etacalc_2d
+    subroutine eta_calc_2d
       use parameter_mod
       implicit none
 
@@ -133,7 +133,7 @@
 
       else
         if ( (ieta .gt. 5).or.(ieta .lt. 0) )   then
-          write(*,*) 'etacalc only accepts ieta 0, through 5, currently'
+          write(*,*) 'eta_calc only accepts ieta 0, through 5, currently'
           stop
           return
         endif
@@ -219,7 +219,7 @@
       endif
 
       return
-    end subroutine etacalc_2d
+    end subroutine eta_calc_2d
  
  
 
