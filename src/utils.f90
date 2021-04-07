@@ -409,14 +409,13 @@ subroutine trans
     clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
     write(file_unit_time,"(i4,' parmov   ',f15.3)") it,real(clock_time-clock_time_init)
   endif
-  call date_and_time(values=time_begin_array(:,7))
 
+  call date_and_time(values=time_begin_array(:,7))
   if (ndim /= 1) then
     call parmov
   else
     call parmov_2d
   endif
-
   call date_and_time(values=time_end_array(:,7))
   call accumulate_time_difference(time_begin_array(1,7),time_end_array(1,7),time_elapsed(7))
 
@@ -521,9 +520,7 @@ subroutine trans
   endif
 
   call date_and_time(values=time_begin_array(:,8))
-
   if (mod(it,10)==0) call energy
-
   call date_and_time(values=time_end_array(:,8))
   call accumulate_time_difference(time_begin_array(1,8),time_end_array(1,8),time_elapsed(8))
 
