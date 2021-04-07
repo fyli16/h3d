@@ -155,7 +155,7 @@
      
       ! initialie perturbation on the grid 
       if (myid==0) then
-        write(6,*), "  Initializing perturbation on grid ..."
+        write(6,*) "  Initializing perturbation on grid ..."
       endif 
 
       do k=kb-1,ke+1
