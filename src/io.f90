@@ -519,6 +519,7 @@ subroutine restart_read_write(rw, itstart)
     close(unit=f_unit)
 
   else if (rw == -1.0) then ! read restart data
+    
     f_unit = 215 + myid
     open(unit=f_unit, file=trim(restart_directory)//'restfld_'//trim(adjustl(myid_char))  &
             //'.bin'//restart_index_suffix(restart_index), form='unformatted', status='unknown')

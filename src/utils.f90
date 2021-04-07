@@ -11,7 +11,7 @@ subroutine accumulate_time_difference(time_begin, time_end, time_elapsed)
        +(time_end(6)-time_begin(6))*60. &
        +(time_end(7)-time_begin(7)) &
        +(time_end(8)-time_begin(8))*0.001
-       
+
   return
 end subroutine accumulate_time_difference
 
@@ -243,16 +243,17 @@ end subroutine clock_write
 subroutine makelist
   use parameter_mod
   implicit none
+
   integer*8:: ip
 
-  ipstore=1
-  ipleft =0
-  iprite =0
-  iprecv =0
-  iphead =0
-  iptemp =0
-  do ip=1,nplmax-1
-      link(ip)=ip+1
+  ipstore = 1
+  ipleft = 0
+  iprite = 0
+  iprecv = 0
+  iphead = 0
+  iptemp = 0
+  do ip = 1, nplmax-1
+      link(ip) = ip+1
   enddo
   link(nplmax)=0
   return

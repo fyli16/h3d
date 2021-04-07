@@ -68,9 +68,9 @@ module parameter_mod
   integer*8 :: nsteps0, itfin, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(25), file_unit_time,            &
                 file_unit_tmp,file_unit_read(20),nptot,npleaving,npentering,iclock_speed, nptotp
   real*8 :: clock_time_init, clock_time_old, clock_time, clock_time1
-  real*8, dimension(:) ,allocatable:: dfac
-  integer*8, dimension(:) ,allocatable:: nskip,ipleft,iprite,ipsendleft,ipsendrite,iprecv,ipsendtop,ipsendbot     &
-                                          ,ipsendlefttop,ipsendleftbot,ipsendritetop,ipsendritebot,ipsend
+  real*8, dimension(:), allocatable :: dfac
+  integer*8, dimension(:), allocatable :: nskip,ipleft,iprite,ipsendleft,ipsendrite,iprecv,ipsendtop,ipsendbot     &
+                                      ,ipsendlefttop,ipsendleftbot,ipsendritetop,ipsendritebot,ipsend
   integer*8:: idum
   integer*8, dimension(:), allocatable:: idmap
   integer*8, dimension(:,:), allocatable:: idmap_yz
@@ -256,7 +256,7 @@ module parameter_mod
 
 
   !---------------------------------------------------------------------
-  subroutine domain_decomp()
+  subroutine domain_decomposition()
     implicit none
 
     integer :: i
@@ -307,7 +307,7 @@ module parameter_mod
     endif
 
     return
-  end subroutine domain_decomp
+  end subroutine domain_decomposition
 
 
   !---------------------------------------------------------------------
@@ -322,7 +322,7 @@ module parameter_mod
     inquire (IOLENGTH=recl_for_real) single_prec
 
     if (myid==0) then
-      write(6,*)
+      write(6,*) " "
       write(6,*) "Setting up global parameters ..."
     endif
 
@@ -332,26 +332,25 @@ module parameter_mod
     npes_over_60 = npes / 512  ! if numprocs > 512?
 
     ! estimate on particle storage requirement
-    nplmax = 0  ! max number of local particles in each process
+    nptotp = 0  ! total number of particles per rank
     do i = 1, nspec
-        nplmax = nplmax + npx(i)*npy(i)*npz(i)  ! notice npy, npz are already divided by nodey, nodez respectively
+      nptotp = nptotp + npx(i)*npy(i)*npz(i)
     enddo
-    nplmax = 5*nplmax  ! pad storage requirement by a factor of 5
+    nplmax = 2* nplmax  ! pad storage requirement by a factor of 2
 
-    ! number of tags used to track particles
+    ! number of tags used to track particles per species per rank
     ! maxtags was initialized as 100
     maxtags_pe = maxtags/npes/nspec
     if (maxtags_pe==0) then
-        maxtags_pe = 1  ! at least tracking one particle per species per pe
-        maxtags = maxtags_pe*npes
+        maxtags_pe = 1  ! at least tracking one particle per species per rank
+        maxtags = maxtags_pe * npes
     endif
 
     ! gathered enough info, now allocate arrays
     allocate (zbglobal(0:npes-1), zeglobal(0:npes-1), ybglobal(0:npes-1), yeglobal(0:npes-1)                     &
               ,kbglobal(0:npes-1), keglobal(0:npes-1), jbglobal(0:npes-1), jeglobal(0:npes-1)                     &
               ,nsendp(0:npes-1), nrecvp(0:npes-1), myid_stop(0:npes-1))
-    allocate ( x(nplmax),y(nplmax),z(nplmax),vx(nplmax),vy(nplmax),vz(nplmax),link(nplmax),porder(nplmax)     &
-              ,qp(nplmax))
+    allocate (x(nplmax),y(nplmax),z(nplmax),vx(nplmax),vy(nplmax),vz(nplmax),link(nplmax),porder(nplmax),qp(nplmax))
     allocate (ptag(nplmax))
     allocate ( ninj(nspecm), ninj_global(nspecm),nescape(nspecm),nescape_global(nspecm),npart(nspecm)         &
               ,npart_global(nspecm),qleft(nspecm),qrite(nspecm))
@@ -430,6 +429,7 @@ module parameter_mod
     else
       isendid(2)=0
     endif
+
     if (mod(coords(1)  ,2) == 0.and.mod(coords(2)  ,2) == 0) then
       irecvid(1,2)=nbrrite
       irecvid(2,2)=-1
@@ -452,6 +452,7 @@ module parameter_mod
     else
       isendid(3)=0
     endif
+
     if (mod(coords(1)+1,2) == 0.and.mod(coords(2)+1,2) == 0) then
       irecvid(1,3)=nbrrite
       irecvid(2,3)=-1
@@ -474,6 +475,7 @@ module parameter_mod
     else
       isendid(4)=0
     endif
+
     if (mod(coords(1)  ,2) == 0.and.mod(coords(2)+1,2) == 0) then
       irecvid(1,4)=nbrrite
       irecvid(2,4)=-1
@@ -522,11 +524,6 @@ module parameter_mod
     call MPI_TYPE_COMMIT(stridery, IERR)
     call MPI_TYPE_VECTOR(int(nylmax+2,4), int(nx+2,4), int(nx+2,4), MPI_DOUBLE_PRECISION, STRIDERZ, IERR)
     call MPI_TYPE_COMMIT(STRIDERZ, IERR)
-
-    nptotp = 0  ! total number of particles per processor
-    do i = 1, nspec
-        nptotp = nptotp + npx(i)*npy(i)*npz(i)
-    enddo
         
     if (.not.testorbt) norbskip=1
 

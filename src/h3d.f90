@@ -30,7 +30,7 @@ program h3d
   call read_input()
   
   ! Decompose MPI/simulation domain  
-  call domain_decomp()
+  call domain_decomposition()
   
   ! allocate global parameters
   call allocate_global_arrays()  
@@ -165,20 +165,18 @@ subroutine init_restart()
   if (myid == 0) then
     open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='old')
     read(222,*) restart_index, itfin
-    close(222)
-  endif
-  call MPI_BCAST(restart_index,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-  call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-
-  if (myid == 0) then
     write(6,*) " "
     write(6,*) " Restart from set # ", restart_index
     write(6,*) " Restart at iteration # ", itfin
     write(6,*) " "
+    close(222)
   endif
 
+  call MPI_BCAST(restart_index,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
+  call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
+
   do iwrite = 0, npes_over_60 
-    if (mod( int(myid,8), npes_over_60 + 1) .eq. iwrite) then
+    if (mod(int(myid,8), npes_over_60+1) .eq. iwrite) then 
         call restart_read_write(-1.0, itstart)  ! read restart data
         call MPI_BCAST(itfin,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
     endif
@@ -243,20 +241,22 @@ subroutine init_restart()
     xc_uniform(i) = hx*(i-1.5)
     xv_uniform(i) = hx*(i-2.0)
   enddo
+
   do j = 1, nymax
     yc_uniform(j) = hy*(j-0.5)
     yv_uniform(j) = hy*(j-1.0)
   enddo
+
   do k=1,nzmax
     zc_uniform(k) = hz*(k-0.5)
     zv_uniform(k) = hz*(k-1.0)
   enddo
     
   if (myid ==0) then
-      my_short_int = it
-      call integer_to_character(cycle_ascii,len(cycle_ascii),my_short_int)
-      cycle_ascii_new=trim(adjustl(cycle_ascii))
-      write(6,*) " cycle = ", cycle_ascii_new
+    my_short_int = it
+    call integer_to_character(cycle_ascii,len(cycle_ascii),my_short_int)
+    cycle_ascii_new=trim(adjustl(cycle_ascii))
+    write(6,*) " cycle = ", cycle_ascii_new
   endif
   
   call MPI_BCAST(cycle_ascii    ,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
@@ -298,6 +298,7 @@ subroutine data_output(uniform_mesh)
 
   numvars = 18
   irecnum = 1
+
   ! VR: in the old version, "nonuniform_mesh_global" was passed to dataout
   call dataout(bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,                   &
       p_xx,p_xy,p_xz,p_yy,p_yz,p_zz,fox,foy,foz, vxs,vys,vzs,                 &
@@ -344,12 +345,13 @@ subroutine one_simulation_loop(itstart, itfinish, uniform_mesh)
 
   call date_and_time(values=time_begin_array(:,1))
   call date_and_time(values=curr_time)
-  clock_time=( curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001)
+  clock_time = curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001
   if (notime == 0) then
     write(file_unit_time,"(i4,' begin    ',f15.3)") it, real(clock_time-clock_time_init)
   endif
   if (myid == 0.and.mod(it,10_8) == 0) then
-    write(6,*) 'it=', it, ', delta_time=', real(clock_time - clock_time_old), ', tot_time=', real(clock_time-clock_time_init)
+    write(6,*) 'it=', it, ', delta_time=', real(clock_time - clock_time_old), &
+                ', tot_time=', real(clock_time-clock_time_init)
     clock_time_old = clock_time
   endif
 
@@ -533,7 +535,7 @@ subroutine shutdown()
   if (myid==0) then
     write(6,*) " "
     write(6,*) " "
-    write(6,*) " *** RUN COMPLETED *** RUN COMPLETED *** RUN COMPLETED "
+    write(6,*) " *** RUN COMPLETED *** "
     write(6,*) " "
     write(6,*) " "
     write(6,*) " subroutine trans             (s)          =",time_elapsed(2)
@@ -566,41 +568,41 @@ subroutine shutdown()
     write(6,*) "   total field                (s)          =",time_elapsed(21)
     write(6,*) " "
     write(6,*) " "
-    write(6,*) "   In subroutine parmov,"
-    write(6,*) "     particle pushing         (s)          =",time_elapsed(13)
-    write(6,*) "     particle exchange        (s)          =",time_elapsed(14)
-    write(6,*) "     moment calculation       (s)          =",time_elapsed(15)
-    write(6,*) "     total parmov             (s)          =",time_elapsed(19)
+    write(6,*) " In subroutine parmov,"
+    write(6,*) "   particle pushing           (s)          =",time_elapsed(13)
+    write(6,*) "   particle exchange          (s)          =",time_elapsed(14)
+    write(6,*) "   moment calculation         (s)          =",time_elapsed(15)
+    write(6,*) "   total parmov               (s)          =",time_elapsed(19)
     write(6,*) " "
     write(6,*) " "
-    write(6,*) "   In subroutine bcalc,"
-    write(6,*) "     subroutine ecalc         (s)          =",time_elapsed(16)
-    write(6,*) "     subroutine xrealbcc      (s)          =",time_elapsed(17)
-    write(6,*) "     total bcalc              (s)          =",time_elapsed(22)
+    write(6,*) " In subroutine bcalc,"
+    write(6,*) "   subroutine ecalc           (s)          =",time_elapsed(16)
+    write(6,*) "   subroutine xrealbcc        (s)          =",time_elapsed(17)
+    write(6,*) "   total bcalc                (s)          =",time_elapsed(22)
     write(6,*) " "
     write(6,*) " "
-    write(6,*) "   In subroutine user_diagnostics,"
-    write(6,*) "     sub virtual_probes       (s)          =",time_elapsed(31)
-    write(6,*) "     sub track_particle       (s)          =",time_elapsed(32)
-    write(6,*) "     total user_diagnose      (s)          =",time_elapsed(30)
+    write(6,*) " In subroutine user_diagnostics,"
+    write(6,*) "   sub virtual_probes         (s)          =",time_elapsed(31)
+    write(6,*) "   sub track_particle         (s)          =",time_elapsed(32)
+    write(6,*) "   total user_diagnose        (s)          =",time_elapsed(30)
     write(6,*) " "
     write(6,*) " "
-    write(6,*) "     In subroutine ecalc (called from subroutine bcalc and field),"
-    write(6,*) "       subroutine xrealbcc    (s)          =",time_elapsed(18)
+    write(6,*) " In subroutine ecalc (called from subroutine bcalc and field),"
+    write(6,*) "   subroutine xrealbcc        (s)          =",time_elapsed(18)
     write(6,*) " "
     write(6,*) " "
     write(6,*) "communication time/total time (%)          =" &
-    ,100.*(time_elapsed(24)+time_elapsed(25)+time_elapsed(14)+time_elapsed(17) &
-    +time_elapsed(18))/time_elapsed(1)
+                ,100.*(time_elapsed(24)+time_elapsed(25)+time_elapsed(14) &
+                +time_elapsed(17)+time_elapsed(18))/time_elapsed(1)
     write(6,*) " "
     write(6,*) " "
     write(6,*) "Further breakdown of communication time "
     write(6,*) "  particle exchage in subroutine parmov (%) =" &
-    ,100.*time_elapsed(14)/time_elapsed(1)
+                ,100.*time_elapsed(14)/time_elapsed(1)
     write(6,*) "  subroutine xrealbcc                   (%) =" &
-    ,100.*(time_elapsed(25)+time_elapsed(17)+time_elapsed(18))/time_elapsed(1)
+                ,100.*(time_elapsed(25)+time_elapsed(17)+time_elapsed(18))/time_elapsed(1)
     write(6,*) "  subroutine xreal                      (%) =" &
-    ,100.*time_elapsed(24)/time_elapsed(1)
+                ,100.*time_elapsed(24)/time_elapsed(1)
   endif
 
   call MPI_FINALIZE(IERR)

@@ -77,8 +77,8 @@ n_write_particle=4000,  ! frequency at which to write particles within a box ran
 write_restart=.true.,  ! whether to write restart files
 n_write_restart=20000, ! frequency at which to write restart files
 
-tracking_binary=.true.
-tracking_mpi=.true.
+tracking_binary=.true. ! write tracking data in binary (unformatted) or formatted form
+tracking_mpi=.true. ! write tracking files by mpi rank
 
 ! box range within which particles will be dumped
 xbox_l=0., xbox_r=1.0, 
