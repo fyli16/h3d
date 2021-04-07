@@ -361,8 +361,8 @@ subroutine one_simulation_loop(uniform_mesh)
     write(file_unit_time,"(i4,' begin    ',f15.3)") it, real(clock_time-clock_time_init)
   endif
   if (myid == 0.and.mod(it,10_8) == 0) then
-    write(6,*) 'it=', it, ', delta_time=', real(clock_time - clock_time_old), &
-                ', tot_time=', real(clock_time-clock_time_init)
+    write(6,*) 'it=', it, 'time=', time, ', delta_t=', real(clock_time - clock_time_old), &
+                ', tot_t=', real(clock_time-clock_time_init)
     clock_time_old = clock_time
   endif
 
@@ -501,7 +501,7 @@ subroutine one_simulation_loop(uniform_mesh)
     write(file_unit_time,"(i4,' end      ',f15.3)") it,real(clock_time-clock_time_init)
   endif
 
-  time = time + dt
+  time = time + dtwci
   it = it + 1
 
   call date_and_time(values=time_end_array(:,1))
