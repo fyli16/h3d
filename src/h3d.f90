@@ -176,11 +176,6 @@ subroutine init_restart()
   endif
 
   ! Uniform mesh - Same as is in version 5.0
-  if (myid==0) then
-    write(6,*) " "
-    write(6,*) "hx, hy, hz =", hx, hy, hz
-    write(6,*) " "
-  endif
   yb = (jb-1)*hy  ! where is hy, hz defined before this?
   ye = je    *hy
   zb = (kb-1)*hz
