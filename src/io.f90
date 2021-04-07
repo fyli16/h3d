@@ -305,11 +305,11 @@ end subroutine dataout
 ! read or write restart data
 ! rw = +1.0: write 
 ! rw = -1.0: read
-subroutine restart_read_write(rw, itstart)
+subroutine restart_read_write(rw)
   use parameter_mod
   implicit none
 
-  integer*8 :: f_unit, itstart, np_count, is, ixe, iye, ize, noresete
+  integer*8 :: f_unit, np_count, is, ixe, iye, ize, noresete
   real :: rw
   real*8, dimension(:), allocatable :: particle_tmp_array
   integer, dimension(:), allocatable :: particle_tmp_array2 
@@ -519,7 +519,7 @@ subroutine restart_read_write(rw, itstart)
     close(unit=f_unit)
 
   else if (rw == -1.0) then ! read restart data
-    
+
     f_unit = 215 + myid
     open(unit=f_unit, file=trim(restart_directory)//'restfld_'//trim(adjustl(myid_char))  &
             //'.bin'//restart_index_suffix(restart_index), form='unformatted', status='unknown')

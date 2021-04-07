@@ -15,8 +15,7 @@ program h3d
 
   implicit none
 
-  integer, dimension(8) :: curr_time
-  integer*8 :: itstart, itfinish
+  
   ! VR : allocating a global mesh can not work on large runs with small amount of memory per rank
   real*8, dimension(:,:,:), allocatable :: uniform_mesh      
   ! double precision, dimension(:,:,:), allocatable:: nonuniform_mesh_global
@@ -64,11 +63,11 @@ program h3d
   clock_time_old = clock_time_init
 
   ! march forward in time
-  itstart = itfin + 1
+  itstart = itfin
   it = itstart
 
   ! change how itfinish is computed
-  itfinish = (tmax-t_stopped)/dtwci + itstart - 1
+  itfinish = (tmax-t_stopped)/dtwci + itstart
   if (myid == 0) write(6,*) 't_stopped = ', t_stopped
   if (myid == 0) write(6,*) 'itstart, itfinish = ', itstart, ' ', itfinish
   
@@ -159,15 +158,15 @@ subroutine init_restart()
   use mesh2d
   implicit none 
 
-  integer*8 :: ixe, iye, ize, i, j, k, itstart
+  integer*8 :: ixe, iye, ize, i, j, k
   integer :: is, iwrite
 
   if (myid == 0) then
-    open(unit=222,file=trim(adjustl(restart_directory))//'restart_index.dat' ,status='old')
-    read(222,*) restart_index, itfin
+    open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='old')
+    read(222,*) restart_index, itfin ! itfin is the final restart dump of previous run
     write(6,*) " "
     write(6,*) " Restart from set # ", restart_index
-    write(6,*) " Restart at iteration # ", itfin
+    write(6,*) " Restart from iteration # ", itfin
     write(6,*) " "
     close(222)
   endif
@@ -177,7 +176,7 @@ subroutine init_restart()
 
   do iwrite = 0, npes_over_60 
     if (mod(int(myid,8), npes_over_60+1) .eq. iwrite) then 
-        call restart_read_write(-1.0, itstart)  ! read restart data
+        call restart_read_write(-1.0)  ! read restart data
         call MPI_BCAST(itfin,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
     endif
   enddo
@@ -237,7 +236,7 @@ subroutine init_restart()
     enddo
   enddo
           
-  do i=1,nxmax
+  do i = 1, nxmax
     xc_uniform(i) = hx*(i-1.5)
     xv_uniform(i) = hx*(i-2.0)
   enddo
@@ -247,7 +246,7 @@ subroutine init_restart()
     yv_uniform(j) = hy*(j-1.0)
   enddo
 
-  do k=1,nzmax
+  do k = 1, nzmax
     zc_uniform(k) = hz*(k-0.5)
     zv_uniform(k) = hz*(k-1.0)
   enddo
@@ -328,13 +327,11 @@ end subroutine data_output
 
 
 !---------------------------------------------------------------------
-subroutine one_simulation_loop(itstart, itfinish, uniform_mesh)
+subroutine one_simulation_loop(uniform_mesh)
   use parameter_mod
   implicit none 
 
-  integer, dimension(8) :: curr_time
   integer :: iwrite, i
-  integer*8 :: itstart, itfinish
   real*8 :: uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1)
 
   call get_cleanup_status(len(cleanup_status))
@@ -346,7 +343,7 @@ subroutine one_simulation_loop(itstart, itfinish, uniform_mesh)
   call date_and_time(values=time_begin_array(:,1))
   call date_and_time(values=curr_time)
   clock_time = curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001
-  
+
   if (notime == 0) then
     write(file_unit_time,"(i4,' begin    ',f15.3)") it, real(clock_time-clock_time_init)
   endif
@@ -450,12 +447,12 @@ subroutine one_simulation_loop(itstart, itfinish, uniform_mesh)
   call accumulate_time_difference(time_begin_array(1,30),time_end_array(1,30),time_elapsed(30))
     
   ! VR: this seems to be data output region
-  if (.not.testorbt.and.(write_data.or.it==itfinish.or.it==1)) then        
+  if (.not.testorbt.and.write_data) then        
     call data_output(uniform_mesh)
   endif
 
   ! write restart files at specified steps
-  if (write_restart .and. mod(int(it,8), n_write_restart)==0) then
+  if (write_restart .and. mod(int(it,8),n_write_restart)==0 .and. (it>itstart)) then
     if (myid == 0) then
       WRITE(6,*)
       WRITE(6,*) 'Writing restart files ...'
@@ -466,13 +463,13 @@ subroutine one_simulation_loop(itstart, itfinish, uniform_mesh)
 
     do iwrite = 0, npes_over_60  
       if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
-        call restart_read_write(1.0, itstart)
+        call restart_read_write(1.0)
       endif
       call MPI_BARRIER(MPI_COMM_WORLD,IERR)
     enddo
 
     if (myid == 0) then
-    open(unit=222,file=trim(restart_directory)//'restart_index.dat' ,status='unknown')
+    open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='unknown')
       write(222,*) restart_index, itfin
       close(222)
     endif

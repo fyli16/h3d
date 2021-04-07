@@ -7,6 +7,8 @@ module parameter_mod
   integer :: my_short_int, i_source, i_destination, i_tag, i_length, i_i
   integer, dimension(8,128) :: time_begin_array, time_end_array
   real*8, dimension(128):: time_elapsed
+  integer, dimension(8) :: curr_time
+  integer*8 :: itstart, itfinish
   integer*8 :: nxmax, nymax, nzmax, nspecm, npes, nvar, nylmax, nzlmax, npm, npes_over_60
   integer :: numprocs, ndim, dims(2), nodey, nodez, ierr, comm2d, myid, req(8)     &
             ,nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot        &
@@ -65,7 +67,7 @@ module parameter_mod
               global, harris, Yee, print_info, write_data, write_restart
   real*8 ::  hx, hy, hz, hxi, hyi, hzi, efld, bfld, efluidt, ethermt, eptclt, time, te0
   integer :: it, notime
-  integer*8 :: nsteps0, itfin, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(25), file_unit_time,            &
+  integer*8 :: nsteps0, itfin=0, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(25), file_unit_time,            &
                 file_unit_tmp,file_unit_read(20),nptot,npleaving,npentering,iclock_speed, nptotp
   real*8 :: clock_time_init, clock_time_old, clock_time, clock_time1
   real*8, dimension(:), allocatable :: dfac
