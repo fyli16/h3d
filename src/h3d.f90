@@ -75,7 +75,7 @@ program h3d
 
   ! main simulation loop
   do while(it <= itfinish)
-    call one_simulation_loop(itstart, itfinish, uniform_mesh)
+    call one_simulation_loop(uniform_mesh)
   enddo  
 
   ! close files that are open
