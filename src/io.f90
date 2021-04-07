@@ -486,13 +486,13 @@ subroutine restart_read_write(rw)
     anisot, denmin, resis, wpiwci, bete, fxsho,ave1,             &
     ave2,phib, xmax,ymax,zmax,gama,                              &
     npx, npy, npz,                                               &
-    iterb,norbskip,write_restart,nxcel,netax,netay,netaz,nspec,   &
+    iterb,norbskip,nxcel,netax,netay,netaz,nspec,   &
     nx,ny,nz,nskipx,nskipy,                                      &
     nskipz, testorbt, restart, etamin, etamax, ieta, eta_par
 
     write(f_unit) hx,hy,hz,hxi,hyi,hzi                           &
     ,pi,efld,bfld,efluidt,ethermt,eptclt,time,te0                &
-    ,print_info,write_data,itfin,iwt                                   &
+    ,itfin,iwt                                   &
     ,nx1,nx2,ny1,ny2,nz1,nz2,it                                  &
     ! ,ipstore,nptot,npleaving,npentering,myid_stop                &
     ,nptot,npleaving,npentering,myid_stop                        &
@@ -641,13 +641,13 @@ subroutine restart_read_write(rw)
     anisot, denmin, resis, wpiwci, bete, fxsho,ave1,      &
     ave2,phib, xmax,ymax,zmax,gama,                  &
     npx, npy, npz,                                               &
-    iterb,norbskip,write_restart,nxcel,netax,netay,netaz,nspec,   &
+    iterb,norbskip,nxcel,netax,netay,netaz,nspec,   &
     nx,ny,nz,nskipx,nskipy,                                      &
     nskipz, testorbt, restart,etamin,etamax,ieta,eta_par
 
     read(f_unit) hx,hy,hz,hxi,hyi,hzi                            &
     ,efld,bfld,efluidt,ethermt,eptclt,time,te0                                        &
-    ,print_info,write_data,itfin,iwt                     &
+    ,itfin,iwt                     &
     ,nx1,nx2,ny1,ny2,nz1,nz2,it                                   &
     ! ,ipstore,nptot,npleaving,npentering,myid_stop                 &
     ,nptot,npleaving,npentering,myid_stop                 &

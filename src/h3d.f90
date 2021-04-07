@@ -48,8 +48,6 @@ program h3d
   if (restart) then
     call init_restart()
   else  ! fresh start
-    time = 0.0
-    restart_index = 1
     call init_wave
   endif
 
@@ -78,8 +76,7 @@ program h3d
     call one_simulation_loop(uniform_mesh)
   enddo  
 
-  ! close files, print misc timing info, 
-  ! finalize MPI, and shutdown the program
+  ! shutdown the program
   call shutdown()
 
 end program h3d
@@ -352,20 +349,6 @@ subroutine one_simulation_loop(uniform_mesh)
     clock_time_old = clock_time
   endif
 
-  ! determine whether or not to print diagnostic information
-  if (mod(it,n_print) == 0) then
-    print_info=.true.
-  else
-    print_info=.false.
-  endif
-
-  ! determine whether or not to write data into files
-  if (mod(it,n_write_data) == 0 ) then
-    write_data=.true.
-  else
-    write_data=.false.
-  endif
-
   call date_and_time(values=time_begin_array(:,3))
 
   ! VR: we do not need injection from the boundary 
@@ -422,21 +405,15 @@ subroutine one_simulation_loop(uniform_mesh)
   call date_and_time(values=time_end_array(:,30))
   call accumulate_time_difference(time_begin_array(1,30),time_end_array(1,30),time_elapsed(30))
     
-  ! VR: this seems to be data output region
-  if (.not.testorbt.and.write_data) then        
+  ! write data
+  if (.not.testorbt.and.mod(it,n_write_data)==0) then        
     call data_output(uniform_mesh)
   endif
 
-  ! write restart files at specified steps
-  if (write_restart .and. mod(int(it,8),n_write_restart)==0 .and. (it>itstart)) then
-    if (myid == 0) then
-      WRITE(6,*)
-      WRITE(6,*) 'Writing restart files ...'
-      WRITE(6,*)
-    endif
-
+  ! write restart files
+  if (mod(int(it,8),n_write_restart)==0 .and. (it>itstart)) then
+    if (myid == 0) write(6,*) 'Writing restart files ...'
     itfin = it
-
     do iwrite = 0, npes_over_60  
       if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
         call restart_read_write(1.0)
@@ -445,9 +422,9 @@ subroutine one_simulation_loop(uniform_mesh)
     enddo
 
     if (myid == 0) then
-    open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='unknown')
-      write(222,*) restart_index, itfin
-      close(222)
+      open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='unknown')
+        write(222,*) restart_index, itfin
+        close(222)
     endif
 
     if (restart_index == 1) then

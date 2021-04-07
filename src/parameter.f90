@@ -63,8 +63,7 @@ module parameter_mod
             n_write_data, n_write_particle, n_write_restart, nskipx,nskipy,nskipz
   real*8 :: etamin,etamax,moat_zone
   integer*8 :: ieta, profile_power
-  logical :: testorbt, restart, uniform_loading_in_logical_grid, MPI_IO_format, smoothing, &
-              global, harris, Yee, print_info, write_data, write_restart
+  logical :: testorbt, restart, uniform_loading_in_logical_grid, MPI_IO_format, smoothing  
   real*8 ::  hx, hy, hz, hxi, hyi, hzi, efld, bfld, efluidt, ethermt, eptclt, time, te0
   integer*8 :: nsteps0, itfin=0, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(25),             &
               file_unit_read(20),nptot,npleaving,npentering,iclock_speed, nptotp
@@ -87,10 +86,9 @@ module parameter_mod
   integer :: maxtags=100, maxtags_pe, ntot 
   logical :: tracking_binary, tracking_mpi
   integer :: tracking_fh
-
   integer*8 :: recl_for_real, recl_for_double_precision
   logical :: periods(2), reorder
-  integer*8 :: restart_index
+  integer*8 :: restart_index=1
   character(len=2) :: restart_index_suffix(2)
   character(len=160) :: data_directory, restart_directory, cycle_ascii, cycle_ascii_new, &
                       myid_char, cleanup_status
@@ -120,10 +118,9 @@ module parameter_mod
     ieta, resis, netax, netay, netaz, etamin, etamax, eta_par, &
     anisot, gama, ave1, ave2, phib, smoothing, smooth_coef, &
     dB_B0, num_cycles, &  ! init waves
-    n_print, n_write_data, write_restart, n_write_restart, n_write_particle, &  ! diagnostics
+    n_print, n_write_data, n_write_restart, n_write_particle, &  ! diagnostics
     tracking_binary, tracking_mpi, xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
-    Yee, global, harris, fxsho, nxcel, &  ! others
-    rcorr, ishape, teti
+    fxsho, nxcel, rcorr, ishape, teti  ! others
 
     ! convert number 'myid' to character 'myid_char'
     ! these characters will be in file dumping by rank
@@ -145,7 +142,6 @@ module parameter_mod
     call MPI_BCAST(tmax                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(dtwci                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(restart                ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(write_restart          ,1     ,MPI_LOGICAL        ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(MPI_IO_format          ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
     ! sim. domain
     call MPI_BCAST(nx                     ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
@@ -217,7 +213,6 @@ module parameter_mod
     call MPI_BCAST(n_write_particle       ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(tracking_binary        ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(tracking_mpi           ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(Yee                    ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(xbox_l                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(xbox_r                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(ybox_l                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
@@ -225,9 +220,6 @@ module parameter_mod
     call MPI_BCAST(zbox_l                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(zbox_r                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     ! others 
-    call MPI_BCAST(Yee                    ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(global                 ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(harris                 ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(fxsho                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(nxcel                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(rcorr                  ,5     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)

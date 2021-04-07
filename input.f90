@@ -72,8 +72,6 @@ num_cycles=5,
 n_print=100,  ! frequency at which to print simulation information
 n_write_data=1000, ! frequency at which to write data into files
 n_write_particle=4000,  ! frequency at which to write particles within a box range
-
-write_restart=.true.,  ! whether to write restart files
 n_write_restart=20000, ! frequency at which to write restart files
 
 tracking_binary=.true. ! write tracking data in binary (unformatted) or formatted form
@@ -85,10 +83,6 @@ ybox_l=0., ybox_r=1.0,
 zbox_l=0., zbox_r=2.24,
 
 ! ------------------------- others ---------------------!
-! these seem not really implemented
-Yee=.false., ! ?
-global=.true., ! ?
-harris=.false., ! ?
 ! sth used in 'io.f90'
 fxsho=1.0,  ! seems not implemented
 nxcel=4,  ! seems not implemented
