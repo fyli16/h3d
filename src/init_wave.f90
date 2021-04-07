@@ -278,13 +278,13 @@
 
         if (myid==0) then
           write(6,*) "  species #", is
-          write(6,*) "  frac", frac(is)
-          write(6,*) "  npx", npx(is)
-          write(6,*) "  npy", npy(is)
-          write(6,*) "  npz", npz(is)
-          write(6,*) "  dfrac", dfac(is)
-          write(6,*) "  nptot_max", nptot_max
-          write(6,*) "  q_p=", hx*hy*hz*dfac(is)*frac(is)
+          write(6,*) "  frac = ", frac(is)
+          write(6,*) "  npx = ", npx(is)
+          write(6,*) "  npy = ", npy(is)
+          write(6,*) "  npz = ", npz(is)
+          write(6,*) "  dfrac = ", dfac(is)
+          write(6,*) "  nptot_max = ", nptot_max
+          write(6,*) "  q_p =", hx*hy*hz*dfac(is)*frac(is)
           write(6,*) " "
         endif
 
@@ -452,8 +452,10 @@
       if (.not.testorbt) then
           do field_subcycle=1,n_subcycles
             if (ndim /= 1) then
+              if (myid==0) write(6,*) "  calling field"
               call field
             else
+              if (myid==0) write(6,*) "  calling field_2d"
               call field_2d
             endif
           enddo
