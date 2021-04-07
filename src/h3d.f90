@@ -254,6 +254,7 @@ subroutine init_restart()
   if (myid ==0) then
     my_short_int = it
     call integer_to_character(cycle_ascii,len(cycle_ascii),my_short_int)
+    if (cycle_ascii=='') cycle_ascii='0'
     cycle_ascii_new=trim(adjustl(cycle_ascii))
     write(6,*) " cycle = ", cycle_ascii_new
   endif
@@ -278,6 +279,7 @@ subroutine data_output(uniform_mesh)
   if (myid ==0) then
     my_short_int=it
     call integer_to_character(cycle_ascii, len(cycle_ascii), my_short_int)
+    if (cycle_ascii=='') cycle_ascii='0'
     cycle_ascii_new=trim(adjustl(cycle_ascii))
     write(6,*) " cycle = ",cycle_ascii_new
   endif
