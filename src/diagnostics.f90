@@ -1,10 +1,7 @@
-!VR*****************************************************
-!VR: wrapper for user diagnotics
-!VR: eventually, it will be transition the whole code to 
-!VR: modular layout similar to other modern codes,
-!VR: where the "engine" is separate from output, etc
-!VR*****************************************************
-
+! VR: wrapper for user diagnotics
+! VR: eventually, it will be transitioned to 
+! VR: modular layout similar to other modern codes,
+! VR: where the "engine" is separate from output, etc
 !---------------------------------------------------------------------
 subroutine user_diagnostics
   use parameter_mod, only: time_begin_array, time_end_array, time_elapsed, tracking_mpi

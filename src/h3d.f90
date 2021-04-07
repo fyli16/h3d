@@ -313,12 +313,12 @@ subroutine data_output(uniform_mesh)
     enddo
   endif
 
-  if (mod(int(it,8),n_write_particle)==0) then
+  if (mod(it,n_write_particle)==0) then
     if (myid == 0) then
       my_short_int = it
       call integer_to_character(cycle_ascii, len(cycle_ascii), my_short_int)
       if (cycle_ascii=='') cycle_ascii='0'
-      write(6,*) " calling particle_in_volume_write with cycle_ascii = ", cycle_ascii
+      write(6,*) " calling particle_in_volume_write at cycle = ", cycle_ascii
     endif
     call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
     call particle_in_volume_write
@@ -339,38 +339,33 @@ subroutine one_simulation_loop(uniform_mesh)
   integer :: iwrite, i
   real*8 :: uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1)
 
-  call date_and_time(values=time_begin_array(:,1))
-  call date_and_time(values=curr_time)
-  clock_time = curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001
-
+  ! print time-step info
   if (myid == 0.and.mod(it,10_8) == 0) then
     write(6,*) 'it=', it, 'time=', time, ', delta_t=', real(clock_time - clock_time_old), &
                 ', tot_t=', real(clock_time-clock_time_init)
     clock_time_old = clock_time
   endif
 
-  call date_and_time(values=time_begin_array(:,3))
+  call date_and_time(values=time_begin_array(:,1)) ! time one whole loop
+  call date_and_time(values=curr_time)
+  clock_time = curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001
 
   ! VR: we do not need injection from the boundary 
-  ! do is=1,nspec
+  call date_and_time(values=time_begin_array(:,3)) ! time particle injection
+  ! do is = 1, nspec
   !   call particle_newinject_linked_list(is)
   ! enddo
-
   call date_and_time(values=time_end_array(:,3))
-  call date_and_time(values=time_begin_array(:,2))
 
-  !VR: compute values of resistivity (that could depend on local parameters, such as
-  !VR: current
+  ! VR: compute resistivity (which could depend on local parameters such as current)
+  call date_and_time(values=time_begin_array(:,2))
   if (ndim /= 1) then
     call etacalc       ! Dietmar's resistivity
   else
     call etacalc_2d    ! Dietmar's resistivity
   endif
-
-  ! VR: trans computes density and v's 
-  ! VR: note that trans calls parmov, i.e. it also does a particle push
-  ntot=0 ! for particle tracking
-  call trans
+  ntot = 0 ! for particle tracking
+  call trans ! trans computes density and v's; it also calls parmov, i.e., it does a particle push
   call date_and_time(values=time_end_array(:,2))
 
   ! write output to energy.dat
@@ -379,12 +374,12 @@ subroutine one_simulation_loop(uniform_mesh)
     write(14,*) it, time_elapsed(1:40)  ! time.dat
   endif
 
-  ! VR: sort particles
+  ! sort particles
   call date_and_time(values=time_begin_array(:,4))
   if (mod(it,10_8) == 0) call sortit    !  sort the particles
   call date_and_time(values=time_end_array(:,4))
 
-  ! VR: call field solver
+  ! call field solver
   call date_and_time(values=time_begin_array(:,5))
   if (.not.testorbt) then
     if (ndim /=1) then 
@@ -395,7 +390,7 @@ subroutine one_simulation_loop(uniform_mesh)
   endif        
   call date_and_time(values=time_end_array(:,5))
 
-  ! ??
+  ! inject_wave ?
   ! if (it == 21000) call inject_wave
   ! if (mod(it,100) == 0) call kick
 
@@ -463,9 +458,7 @@ subroutine shutdown()
     close(unit=14) ! time.dat
   endif
 
-  if (tracking_mpi) then
-    close(unit=13)
-  endif
+  if (tracking_mpi) close(unit=13)
       
   if (myid==0) then
     write(6,*) " "
