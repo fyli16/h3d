@@ -15,8 +15,8 @@ program h3d
 
   implicit none
 
-  ! VR : allocating a global mesh can not work on large runs with small amount of memory per rank
-  real*8, dimension(:,:,:), allocatable :: uniform_mesh      
+  real*8, dimension(:,:,:), allocatable :: uniform_mesh     
+  ! VR : allocating a global mesh can not work on large runs with small amount of memory per rank 
   ! double precision, dimension(:,:,:), allocatable:: nonuniform_mesh_global
 
   ! Initialize MPI
@@ -91,6 +91,8 @@ end program h3d
 
 
 !---------------------------------------------------------------------
+! set up uniform mesh
+!---------------------------------------------------------------------
 subroutine setup_mesh()
   use parameter_mod
   use mesh2d
@@ -156,6 +158,7 @@ end subroutine setup_mesh
 
 !---------------------------------------------------------------------
 ! initialize data for a restart run
+!---------------------------------------------------------------------
 subroutine init_restart()
   use parameter_mod
   use mesh2d
@@ -271,6 +274,8 @@ end subroutine init_restart
 
 
 !---------------------------------------------------------------------
+! diagnostic data output
+!---------------------------------------------------------------------
 subroutine data_output(uniform_mesh)
   use parameter_mod
   implicit none 
@@ -332,6 +337,8 @@ subroutine data_output(uniform_mesh)
 end subroutine data_output
 
 
+!---------------------------------------------------------------------
+! simulation loop
 !---------------------------------------------------------------------
 subroutine one_simulation_loop(uniform_mesh)
   use parameter_mod
@@ -509,6 +516,8 @@ end subroutine one_simulation_loop
 
 
 !---------------------------------------------------------------------
+! close files
+!---------------------------------------------------------------------
 subroutine close_files()
   use parameter_mod, only : myid, tracking_mpi
   implicit none 
@@ -530,6 +539,7 @@ end subroutine close_files
 
 !---------------------------------------------------------------------
 ! shutdown the simulation and exit
+!---------------------------------------------------------------------
 subroutine shutdown()
   use parameter_mod
   implicit none 

@@ -66,6 +66,7 @@ end subroutine nsmth
 
 !---------------------------------------------------------------------
 ! sort the particles
+!---------------------------------------------------------------------
 subroutine sortit
   use parameter_mod
   use mesh2d
@@ -403,7 +404,6 @@ subroutine trans
     enddo
   enddo
 
-
   if (notime == 0) then
     call date_and_time(values=time_end)
     clock_time=( time_end(5)*3600.+time_end(6)*60.+time_end(7)+time_end(8)*0.001)
@@ -411,12 +411,11 @@ subroutine trans
   endif
   call date_and_time(values=time_begin_array(:,7))
 
-
   if (ndim /= 1) then
-     call parmov
-   else
-     call parmov_2d
-   endif
+    call parmov
+  else
+    call parmov_2d
+  endif
 
   call date_and_time(values=time_end_array(:,7))
   call accumulate_time_difference(time_begin_array(1,7),time_end_array(1,7),time_elapsed(7))
@@ -424,37 +423,35 @@ subroutine trans
   if (testorbt) return
 
   if (.false.) then
-  do is=1,nspec
-    do k=kb-1,ke+1
-      do j=jb-1,je+1
-        do i=1,nx2
+    do is=1,nspec
+      do k=kb-1,ke+1
+        do j=jb-1,je+1
+          do i=1,nx2
+            ! Nonuniform mesh
+            cell_volume_ratio = hx*hy*hz/(meshX%dxc(i)*meshY%dxc(j+1)*meshZ%dxc(k+1))
 
-        ! Nonuniform mesh
-          cell_volume_ratio = hx*hy*hz/(meshX%dxc(i)*meshY%dxc(j+1)*meshZ%dxc(k+1))
+            dns_tmp=dnsh(i,j,k,is)
 
-          dns_tmp=dnsh(i,j,k,is)
+            ! Uniform mesh - Same as is in version 5.0
+            ! if (dns_tmp <= denmin) dns_tmp=1.d+10
 
-        ! Uniform mesh - Same as is in version 5.0
-        !  if (dns_tmp <= denmin) dns_tmp=1.d+10
+            ! Nonuniform mesh
+            ! if (dns_tmp*cell_volume_ratio <= denmin) dns_tmp=1.d+10
+            if (dns_tmp*cell_volume_ratio <= denmin) dns_tmp=denmin/cell_volume_ratio ! July 21, 2010
 
-        ! Nonuniform mesh
-        !  if (dns_tmp*cell_volume_ratio <= denmin) dns_tmp=1.d+10
-          if (dns_tmp*cell_volume_ratio <= denmin) dns_tmp=denmin/cell_volume_ratio ! July 21, 2010
+            vxs(i,j,k,is)=vxs(i,j,k,is)/dns_tmp
+            vys(i,j,k,is)=vys(i,j,k,is)/dns_tmp
+            vzs(i,j,k,is)=vzs(i,j,k,is)/dns_tmp
 
-          vxs(i,j,k,is)=vxs(i,j,k,is)/dns_tmp
-          vys(i,j,k,is)=vys(i,j,k,is)/dns_tmp
-          vzs(i,j,k,is)=vzs(i,j,k,is)/dns_tmp
+            ! Uniform mesh - Same as is in version 5.0
+            ! dns(i,j,k,is)=dns(i,j,k,is)
 
-        ! Uniform mesh - Same as is in version 5.0
-        !  dns(i,j,k,is)=dns(i,j,k,is)
-
-        ! Nonuniform mesh
-        !  dns(i,j,k,is)=dns(i,j,k,is)*cell_volume_ratio
-
+            ! Nonuniform mesh
+            ! dns(i,j,k,is)=dns(i,j,k,is)*cell_volume_ratio
+          enddo
         enddo
       enddo
     enddo
-  enddo
   endif
 
   do is=1,nspec
@@ -463,9 +460,9 @@ subroutine trans
         do i=1,nx2 
         den(i,j,k)=den(i,j,k)+dns(i,j,k,is)*qspec(is) 
         denh(i,j,k)=denh(i,j,k)+dnsh(i,j,k,is)*qspec(is) 
-        !vix(i,j,k)=vix(i,j,k)+qspec(is)*dnsh(i,j,k,is)*vxs(i,j,k,is) 
-        !viy(i,j,k)=viy(i,j,k)+qspec(is)*dnsh(i,j,k,is)*vys(i,j,k,is) 
-        !viz(i,j,k)=viz(i,j,k)+qspec(is)*dnsh(i,j,k,is)*vzs(i,j,k,is)
+        ! vix(i,j,k)=vix(i,j,k)+qspec(is)*dnsh(i,j,k,is)*vxs(i,j,k,is) 
+        ! viy(i,j,k)=viy(i,j,k)+qspec(is)*dnsh(i,j,k,is)*vys(i,j,k,is) 
+        ! viz(i,j,k)=viz(i,j,k)+qspec(is)*dnsh(i,j,k,is)*vzs(i,j,k,is)
         vix(i,j,k)=vix(i,j,k)+qspec(is)*vxs(i,j,k,is) 
         viy(i,j,k)=viy(i,j,k)+qspec(is)*vys(i,j,k,is) 
         viz(i,j,k)=viz(i,j,k)+qspec(is)*vzs(i,j,k,is)
@@ -474,22 +471,22 @@ subroutine trans
     enddo
   enddo
 
-! Apply Boundary Conditions
+  ! Apply Boundary Conditions
   if (ndim /= 1) then
-  call XREALBCC(DEN,1_8,NX,NY,NZ)
-  call XREALBCC(DENH,1_8,NX,NY,NZ)
-  call XREALBCC(VIX,1_8,NX,NY,NZ)
-  call XREALBCC(VIY,1_8,NX,NY,NZ)
-  call XREALBCC(VIZ,1_8,NX,NY,NZ)
+    call XREALBCC(DEN,1_8,NX,NY,NZ)
+    call XREALBCC(DENH,1_8,NX,NY,NZ)
+    call XREALBCC(VIX,1_8,NX,NY,NZ)
+    call XREALBCC(VIY,1_8,NX,NY,NZ)
+    call XREALBCC(VIZ,1_8,NX,NY,NZ)
   else
-  call XREALBCC_2D(DEN,1_8,NX,NY,NZ)
-  call XREALBCC_2D(DENH,1_8,NX,NY,NZ)
-  call XREALBCC_2D(VIX,1_8,NX,NY,NZ)
-  call XREALBCC_2D(VIY,1_8,NX,NY,NZ)
-  call XREALBCC_2D(VIZ,1_8,NX,NY,NZ)
+    call XREALBCC_2D(DEN,1_8,NX,NY,NZ)
+    call XREALBCC_2D(DENH,1_8,NX,NY,NZ)
+    call XREALBCC_2D(VIX,1_8,NX,NY,NZ)
+    call XREALBCC_2D(VIY,1_8,NX,NY,NZ)
+    call XREALBCC_2D(VIZ,1_8,NX,NY,NZ)
   endif
 
-! smooth density and velocity
+  ! smooth density and velocity
   if (smoothing) then
     if (ndim /=1) then
       call nsmth(DEN)
@@ -507,11 +504,11 @@ subroutine trans
   endif
 
   do k=kb-1,ke+1
-      do j=jb-1,je+1
+    do j=jb-1,je+1
       do i=1,nx2
         den(i,j,k)=max(denmin,den(i,j,k))
-        !pressure calculation moved to pressgrad
-        !pe(i,j,k) =te0*den(i,j,k)**gama
+        ! pressure calculation moved to pressgrad
+        ! pe(i,j,k) =te0*den(i,j,k)**gama
         vix(i,j,k)=vix(i,j,k)/denh(i,j,k)
         viy(i,j,k)=viy(i,j,k)/denh(i,j,k)
         viz(i,j,k)=viz(i,j,k)/denh(i,j,k)

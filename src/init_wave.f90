@@ -1,10 +1,11 @@
     !---------------------------------------------------------------------
+    ! init waves
     subroutine init_wave
       use parameter_mod
       use mesh2d
       implicit none
 
-      integer*8:: ibp1,ibp2,nptot_max,i,remake,field_subcycle
+      integer*8 :: ibp1,ibp2,nptot_max,i,remake,field_subcycle
       real*8 :: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi     &
                         ,x_p,y_p,z_p,x_p_logical,y_p_logical        &
                         ,z_p_logical,r_c,q_p,dtsav
@@ -33,7 +34,7 @@
         write(6,*) "Initializing wave ..."
       endif 
 
-      remake = 0
+      remake = 0  !??
 
       dtxi = one/meshX%dt
       dtyi = one/meshY%dt
@@ -43,28 +44,21 @@
       ! seed for different processors
       call random_seed(size=seed_size) ! find out size of seed
       allocate(seed(seed_size))
-      !VR arbirary, but reproducable numbers for phases
+      ! VR arbirary, but reproducable numbers for phases
       if (myid==0) then
         call random_seed() ! set default seed
         call random_seed(get=seed) ! get default seed
       endif
-      call MPI_BCAST(seed,seed_size,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)  ! propagate master process's version
+      ! propagate master process's version
+      call MPI_BCAST(seed,seed_size,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)  
       call random_seed(put=myid*seed) ! set current seed
 
-      it=0
-      itfin = 0
-      nx1 = nx+1
-      nx2 = nx+2
-      ny1 = ny+1
-      ny2 = ny+2
-      nz1 = nz+1
-      nz2 = nz+2
-      hx = xmax/nx
-      hy = ymax/ny
-      hz = zmax/nz
-      hxi = one/hx
-      hyi = one/hy
-      hzi = one/hz
+      it=0; itfin = 0
+      nx1 = nx+1; nx2 = nx+2
+      ny1 = ny+1; ny2 = ny+2
+      nz1 = nz+1; nz2 = nz+2
+      hx = xmax/nx; hy = ymax/ny; hz = zmax/nz
+      hxi = one/hx; hyi = one/hy; hzi = one/hz
 
       ! Nonuniform mesh
       zb=meshZ%xn(kb+1)
@@ -90,8 +84,8 @@
       zb_logical = MESH_UNMAP(meshZ,zb)
       ze_logical = MESH_UNMAP(meshZ,ze)
 
-      do is=1,nspec
-        npm=npx(is)*npy(is)*npz(is)*npes
+      do is = 1, nspec
+        npm = npx(is)*npy(is)*npz(is)*npes
         dfac(is)=real(ny*nz*nx)/real(npm)
         do ixe=1,nx2 
           do iye=jb-1,je+1
@@ -155,7 +149,7 @@
      
       ! initialie perturbation on the grid 
       if (myid==0) then
-        write(6,*) "  Initializing perturbation on grid ..."
+        write(6,*) "  Initializing waves on the mesh grid ..."
       endif 
 
       do k=kb-1,ke+1
@@ -243,7 +237,7 @@
 
       if (remake /= 0) call makelist
 
-      do is=1,nspec
+      do is = 1, nspec
         ninj(is)=0
         ninj_global(is)=0
         npart(is)=0
@@ -255,10 +249,7 @@
       te0=bete/(two*wpiwci**2)
       vbal=one
 
-      if (myid==0) then
-        write(6,*) "  Initializing particles ..."
-      endif 
-
+      if (myid==0) write(6,*) "  Initializing particles ..." 
       do is = 1, nspec
         tag0 = maxtags_pe*nspec*myid + (is-1)*maxtags_pe
         tag=1 
@@ -294,23 +285,23 @@
           if (ipb2 == ipb1) write(6,*) "myid = , # particles = ", myid,ipb1,ipb2
           call random_number(harvest=ranval)
           if (uniform_loading_in_logical_grid) then
-             X_P_LOGICAL  = XB_LOGICAL+(XE_LOGICAL-XB_LOGICAL)*ranval(1)
-             Y_P_LOGICAL  = YB_LOGICAL+(YE_LOGICAL-YB_LOGICAL)*ranval(2)
-             Z_P_LOGICAL  = ZB_LOGICAL+(ZE_LOGICAL-ZB_LOGICAL)*ranval(3)
-             X_P          = MESH_MAP(meshX,X_P_LOGICAL)
-             Y_P          = MESH_MAP(meshY,Y_P_LOGICAL)
-             Z_P          = MESH_MAP(meshZ,Z_P_LOGICAL)
-             IXE          = dtxi*X_P_LOGICAL+1.50000000000d+00
-             IYE          = dtyi*Y_P_LOGICAL+1.50000000000d+00
-             IZE          = dtzi*Z_P_LOGICAL+1.50000000000d+00
-             q_p          = meshX%dxc(ixe)*meshY%dxc(iye)*meshZ%dxc(ize)*dfac(is)*frac(is)
+            X_P_LOGICAL  = XB_LOGICAL+(XE_LOGICAL-XB_LOGICAL)*ranval(1)
+            Y_P_LOGICAL  = YB_LOGICAL+(YE_LOGICAL-YB_LOGICAL)*ranval(2)
+            Z_P_LOGICAL  = ZB_LOGICAL+(ZE_LOGICAL-ZB_LOGICAL)*ranval(3)
+            X_P          = MESH_MAP(meshX,X_P_LOGICAL)
+            Y_P          = MESH_MAP(meshY,Y_P_LOGICAL)
+            Z_P          = MESH_MAP(meshZ,Z_P_LOGICAL)
+            IXE          = dtxi*X_P_LOGICAL+1.50000000000d+00
+            IYE          = dtyi*Y_P_LOGICAL+1.50000000000d+00
+            IZE          = dtzi*Z_P_LOGICAL+1.50000000000d+00
+            q_p          = meshX%dxc(ixe)*meshY%dxc(iye)*meshZ%dxc(ize)*dfac(is)*frac(is)
           else
             X_P  = X0(IS)+(X1(IS)-X0(IS))*ranval(1)
             Y_P  = YB+(YE-YB)*ranval(2)
             Z_P  = ZB+(ZE-ZB)*ranval(3)
             q_p  = hx*hy*hz*dfac(is)*frac(is)
           endif
-         
+
           if (q_p == 0) write(6,*) "q_p = ",q_p,ixe,iye,ize
   
           np     = ipstore
@@ -323,7 +314,7 @@
           else
             ptag(np)=0 ! do not track
           endif
-          tag=tag+1
+          tag = tag+1
 
           ! Nonuniform mesh - using MESH_UNMAP
           rxe=dtxi*MESH_UNMAP(meshX,x(np))+1.50000000000d+00
@@ -332,8 +323,8 @@
           ixe=rxe
           iye=rye
           ize=rze
-          iye=iye-1             ! integer index in y direction starts at 0
-          ize=ize-1             ! integer index in z direction starts at 0
+          iye=iye-1  ! integer index in y direction starts at 0
+          ize=ize-1  ! integer index in z direction starts at 0
 
           fxe=rxe-ixe
           fye=rye-iye
@@ -442,28 +433,18 @@
       dtsav=dt
       dt=zero
       call trans
- 
       dt=dtsav
-      if (myid == 0) then
-        write(6,*) "  Before field (called by init_wave)"
-        write(6,*) n_subcycles
-      endif 
 
       if (.not.testorbt) then
-          do field_subcycle=1,n_subcycles
-            if (ndim /= 1) then
-              if (myid==0) write(6,*) "  calling field"
-              call field
-            else
-              if (myid==0) write(6,*) "  calling field_2d"
-              call field_2d
-            endif
-          enddo
+        ! n_subcycles=0, so this block is not executed.
+        do field_subcycle=1,n_subcycles  
+          if (ndim /= 1) then
+            call field
+          else
+            call field_2d
+          endif
+        enddo
       endif
-
-      if (myid == 0) then
-        write(6,*) "  After field (called by init_wave)"
-      endif 
 
       if (ndim /= 1) then
          call etacalc      ! Dietmar's resistivity

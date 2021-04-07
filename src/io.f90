@@ -684,7 +684,7 @@ subroutine restart_read_write(rw)
 
   endif
     
-  call sortit
+  call sortit  ! see 'utils.f90'
 
   return
 
@@ -735,7 +735,8 @@ subroutine open_hist_diag_files()
       open(unit=12,file=trim(data_directory)//filename2, status='unknown')
       open(unit=13,file=trim(data_directory)//filename,form='unformatted',status='unknown')
     endif
-    !call MPI_File_open(MPI_COMM_WORLD, trim(data_directory)//filename, MPI_MODE_WRONLY+MPI_MODE_CREATE, MPI_INFO_NULL, tracking_fh, ierr)
+
+    ! call MPI_File_open(MPI_COMM_WORLD, trim(data_directory)//filename, MPI_MODE_WRONLY+MPI_MODE_CREATE, MPI_INFO_NULL, tracking_fh, ierr)
     ! if (ierr.ne.MPI_SUCCESS) then
     !   call MPI_Error_string(iErr,eStr,eStrLen,iErr2)
     !   write(0,*)'Error: Could not open file: ',filename
@@ -864,7 +865,7 @@ subroutine open_files
           action='write',access='direct', status='unknown',recl=lenrec)
   endif
   
-return
+  return
 end subroutine open_files
 
 
@@ -889,7 +890,7 @@ end subroutine open_timing_diag_files
 
 
 !---------------------------------------------------------------------
-subroutine wrtdatum(ndatum,datum,f_unit)
+subroutine write_datum(ndatum,datum,f_unit)
   use parameter_mod
   implicit none
 
@@ -918,13 +919,14 @@ subroutine wrtdatum(ndatum,datum,f_unit)
   enddo
 
 return
-end subroutine wrtdatum
+end subroutine write_datum
 
 
 !---------------------------------------------------------------------
-subroutine readdatum(ndatum,datum,f_unit)
+subroutine read_datum(ndatum,datum,f_unit)
   use parameter_mod
   implicit none
+
   integer*8:: ndatum,f_unit
   integer:: ndatum_4
   real*8 :: datum(ndatum),datum_tmp(ndatum)
@@ -950,7 +952,7 @@ subroutine readdatum(ndatum,datum,f_unit)
   enddo
 
 return
-end subroutine readdatum
+end subroutine read_datum
 
 
 !---------------------------------------------------------------------

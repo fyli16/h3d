@@ -2,7 +2,6 @@
 
 ! ------------------ global simulation info -----------!
 tmax=1000.0, ! max sim. time, in units of 1/wci
-t_begin=0.0, t_end=2000.0, 
 dtwci=0.01,  ! value of dt*wci
 restart=.false.,  ! whether to restart from 'restart' directory
 MPI_IO_format =.true. ! use MPI IO instead of traditional binary output
@@ -33,7 +32,7 @@ n_subcycles=0
 nskipx=1,  nskipy=1,  nskipz=1, ! not implemented?
 
 iterb=5,  ! ion push can use a larger step than field advance
-testorbt=.false., 
+testorbt=.false.,  ! test orbit?
 norbskip=1,
 
 ! ------------------ plasma setup ----------------!
@@ -86,6 +85,7 @@ ybox_l=0., ybox_r=1.0,
 zbox_l=0., zbox_r=2.24,
 
 notime=1, ! notime=0 will output detailed timing
+! this diagnostic is only used during diagnostic runs
 
 ! ------------------------- others ---------------------!
 ! these seem not really implemented

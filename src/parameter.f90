@@ -80,7 +80,7 @@ module parameter_mod
   integer*8, dimension(:), allocatable :: idfft, kvec, jvec, myid_stop
   integer*8 :: ihstb, ihste, isendid(4), irecvid(4,4)
   real*4 :: single_prec
-  real*8 :: double_prec, xtmp1m, xtmp2m, xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, t_begin, t_end
+  real*8 :: double_prec, xtmp1m, xtmp2m, xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r
   real*8, dimension(:,:), allocatable :: buf, buf2, buf_p1
   real*8, dimension(:,:,:), allocatable :: buf_particle
   integer, dimension(:), allocatable :: buftime
@@ -99,6 +99,9 @@ module parameter_mod
   real*8, parameter :: zero=0.0d0, one=1.0d0, two=2.0d0, one_half=0.5d0, pi=acos(-1.)
 
   contains
+
+  !---------------------------------------------------------------------
+  ! master process reads input parameters and broadcasts to all ranks
   !---------------------------------------------------------------------
   subroutine read_input()
     implicit none
@@ -106,7 +109,7 @@ module parameter_mod
     integer :: input_error
 
     namelist /datum/ &
-    tmax, t_begin, t_end, dtwci, restart, &   ! global info
+    tmax, dtwci, restart, &   ! global info
     MPI_IO_format, &
     nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, &  ! simulation domain
     nodey, nodez, &
@@ -141,8 +144,6 @@ module parameter_mod
     ! Broadcast input parameters (read in at rank 0) to all other ranks
     ! global sim. info
     call MPI_BCAST(tmax                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(t_begin                ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(t_end                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(dtwci                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(restart                ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(write_restart          ,1     ,MPI_LOGICAL        ,0,MPI_COMM_WORLD,IERR)
@@ -240,6 +241,7 @@ module parameter_mod
     dt = dtwci * wpiwci
     ! field subcycling
     ! n_subcycles=max(n_subcycles,1_8)
+
     data_directory = 'data/'
     restart_directory = 'restart/'
     restart_index_suffix(1) = '.1'
