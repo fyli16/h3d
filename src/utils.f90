@@ -1,5 +1,5 @@
 !---------------------------------------------------------------------
-subroutine accumulate_time_difference(time_begin, time_end, time_elapsed)
+subroutine accumulate_time(time_begin, time_end, time_elapsed)
   implicit none
 
   integer, dimension(8) :: time_begin, time_end
@@ -13,7 +13,7 @@ subroutine accumulate_time_difference(time_begin, time_end, time_elapsed)
        +(time_end(8)-time_begin(8))*0.001
 
   return
-end subroutine accumulate_time_difference
+end subroutine accumulate_time
 
 
 !********************************************************
@@ -335,7 +335,7 @@ subroutine trans
     call parmov_2d
   endif
   call date_and_time(values=time_end_array(:,7))
-  call accumulate_time_difference(time_begin_array(1,7),time_end_array(1,7),time_elapsed(7))
+  call accumulate_time(time_begin_array(1,7),time_end_array(1,7),time_elapsed(7))
 
   if (testorbt) return
 
@@ -440,7 +440,7 @@ subroutine trans
   call date_and_time(values=time_begin_array(:,8))
   if (mod(it,10)==0) call energy
   call date_and_time(values=time_end_array(:,8))
-  call accumulate_time_difference(time_begin_array(1,8),time_end_array(1,8),time_elapsed(8))
+  call accumulate_time(time_begin_array(1,8),time_end_array(1,8),time_elapsed(8))
 
   kbmin = kb-1
   kbmax = ke+1
@@ -449,7 +449,7 @@ subroutine trans
   jbmax = je+1
 
   call date_and_time(values=time_end_array(:,20))
-  call accumulate_time_difference(time_begin_array(1,20),time_end_array(1,20),time_elapsed(20))
+  call accumulate_time(time_begin_array(1,20),time_end_array(1,20),time_elapsed(20))
 
   return
 end subroutine trans
@@ -728,7 +728,7 @@ end subroutine trans
 
   ENDDO
   call date_and_time(values=time_end_array(:,26))
-  call accumulate_time_difference(time_begin_array(1,26) &
+  call accumulate_time(time_begin_array(1,26) &
  &                               ,time_end_array(1,26) &
  &                                ,time_elapsed(26))
 
@@ -738,7 +738,7 @@ end subroutine trans
 !    call XREAL(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
 !    call XREAL(tperp(1,jb-1,kb-1,is),NX,NY,NZ)
 !    call date_and_time(values=time_end_array(:,24))
-!    call accumulate_time_difference(time_begin_array(1,24) &
+!    call accumulate_time(time_begin_array(1,24) &
 ! &                                 ,time_end_array(1,24) &
 ! &                                 ,time_elapsed(24))
 
@@ -746,7 +746,7 @@ end subroutine trans
 !    call XREALBCC(tpar (1,jb-1,kb-1,is),1,NX,NY,NZ)
 !    call XREALBCC(tperp(1,jb-1,kb-1,is),1,NX,NY,NZ)
 !    call date_and_time(values=time_end_array(:,25))
-!    call accumulate_time_difference(time_begin_array(1,25) &
+!    call accumulate_time(time_begin_array(1,25) &
 ! &                                 ,time_end_array(1,25) &
 ! &                                 ,time_elapsed(25))
 
@@ -778,12 +778,12 @@ end subroutine trans
 !    enddo
 !  enddo
 !  call date_and_time(values=time_end_array(:,26))
-!  call accumulate_time_difference(time_begin_array(1,26) &
+!  call accumulate_time(time_begin_array(1,26) &
 ! &                               ,time_end_array(1,26) &
 ! &                               ,time_elapsed(26))
 
    call date_and_time(values=time_end_array(:,23))
-   call accumulate_time_difference(time_begin_array(1,23) &
+   call accumulate_time(time_begin_array(1,23) &
  &                                ,time_end_array(1,23) &
  &                                ,time_elapsed(23))
 

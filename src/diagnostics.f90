@@ -13,7 +13,7 @@ subroutine user_diagnostics
     call virtual_probes
   endif
   call date_and_time(values=time_end_array(:,31))
-  call accumulate_time_difference(time_begin_array(1,31),time_end_array(1,31),time_elapsed(31))
+  call accumulate_time(time_begin_array(1,31),time_end_array(1,31),time_elapsed(31))
 
   call date_and_time(values=time_begin_array(:,32))
   if (tracking_mpi) then
@@ -22,7 +22,7 @@ subroutine user_diagnostics
     call track_particles
   endif
   call date_and_time(values=time_end_array(:,32))
-  call accumulate_time_difference(time_begin_array(1,32),time_end_array(1,32),time_elapsed(32))
+  call accumulate_time(time_begin_array(1,32),time_end_array(1,32),time_elapsed(32))
 end subroutine user_diagnostics
 
 

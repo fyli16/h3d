@@ -8,30 +8,30 @@ subroutine field_2d
   call date_and_time(values=time_begin_array(:,9))
   call pressgrad_2d(1)
   call date_and_time(values=time_end_array(:,9))
-  call accumulate_time_difference(time_begin_array(1,9),time_end_array(1,9),time_elapsed(9))
+  call accumulate_time(time_begin_array(1,9),time_end_array(1,9),time_elapsed(9))
 
   call date_and_time(values=time_begin_array(:,10))
   call bcalc_2d
   call date_and_time(values=time_end_array(:,10))
-  call accumulate_time_difference(time_begin_array(1,10),time_end_array(1,10),time_elapsed(10))
+  call accumulate_time(time_begin_array(1,10),time_end_array(1,10),time_elapsed(10))
 
   call date_and_time(values=time_begin_array(:,9))
   call pressgrad_2d(0)
   call date_and_time(values=time_end_array(:,9))
-  call accumulate_time_difference(time_begin_array(1,9),time_end_array(1,9),time_elapsed(9))
+  call accumulate_time(time_begin_array(1,9),time_end_array(1,9),time_elapsed(9))
 
   call date_and_time(values=time_begin_array(:,11))
   call ecalc_2d( 0)
   call date_and_time(values=time_end_array(:,11))
-  call accumulate_time_difference(time_begin_array(1,11),time_end_array(1,11),time_elapsed(11))
+  call accumulate_time(time_begin_array(1,11),time_end_array(1,11),time_elapsed(11))
 
   call date_and_time(values=time_begin_array(:,12))
   call focalc_2d
   call date_and_time(values=time_end_array(:,12))
-  call accumulate_time_difference(time_begin_array(1,12),time_end_array(1,12),time_elapsed(12))
+  call accumulate_time(time_begin_array(1,12),time_end_array(1,12),time_elapsed(12))
 
   call date_and_time(values=time_end_array(:,21))
-  call accumulate_time_difference(time_begin_array(1,21),time_end_array(1,21),time_elapsed(21))
+  call accumulate_time(time_begin_array(1,21),time_end_array(1,21),time_elapsed(21))
 
   return
 end subroutine field_2d
@@ -196,7 +196,7 @@ subroutine ecalc_2d( iflag)
   call date_and_time(values=time_begin_array(:,18))
   call XREALBCC_PACK_E_2D(EX,EY,EZ,1_8,NX,NY,NZ)
   call date_and_time(values=time_end_array(:,18))
-  call accumulate_time_difference(time_begin_array(1,18),time_end_array(1,18),time_elapsed(18))
+  call accumulate_time(time_begin_array(1,18),time_end_array(1,18),time_elapsed(18))
 
   !VR: boundaries in x & z
   ex(nx2,:,:)=ex(2,:,:)
@@ -274,7 +274,7 @@ subroutine bcalc_2d
     call date_and_time(values=time_begin_array(:,16))
     call ecalc_2d( 1 )
     call date_and_time(values=time_end_array(:,16))
-    call accumulate_time_difference(time_begin_array(1,16),time_end_array(1,16),time_elapsed(16))
+    call accumulate_time(time_begin_array(1,16),time_end_array(1,16),time_elapsed(16))
  
     ! B = B(n)+dt*K1/2
     bx=bxs-dts2*curlex
@@ -290,7 +290,7 @@ subroutine bcalc_2d
     call date_and_time(values=time_begin_array(:,16))
     call ecalc_2d( 1 )
     call date_and_time(values=time_end_array(:,16))
-    call accumulate_time_difference(time_begin_array(1,16),time_end_array(1,16),time_elapsed(16))
+    call accumulate_time(time_begin_array(1,16),time_end_array(1,16),time_elapsed(16))
  
     ! B = B(n)+dt*K2/2
     bx=bxs-dts2*curlex
@@ -306,7 +306,7 @@ subroutine bcalc_2d
     call date_and_time(values=time_begin_array(:,16))
     call ecalc_2d( 1 )
     call date_and_time(values=time_end_array(:,16))
-    call accumulate_time_difference(time_begin_array(1,16),time_end_array(1,16),time_elapsed(16))
+    call accumulate_time(time_begin_array(1,16),time_end_array(1,16),time_elapsed(16))
 
     ! B = B(n)+dt*K3
     bx=bxs-dts*curlex
@@ -322,7 +322,7 @@ subroutine bcalc_2d
     call date_and_time(values=time_begin_array(:,16))
     call ecalc_2d( 1 )
     call date_and_time(values=time_end_array(:,16)) 
-    call accumulate_time_difference(time_begin_array(1,16),time_end_array(1,16),time_elapsed(16))
+    call accumulate_time(time_begin_array(1,16),time_end_array(1,16),time_elapsed(16))
  
     ! B = B(n) + dt*(K1+2K2+2K3+K4)/6
     bx=bxs-dts6*(tempx1+curlex)
@@ -393,7 +393,7 @@ subroutine bcalc_2d
   ! bz(:,:,kb+1)=bz(:,:,kb)
  
   call date_and_time(values=time_end_array(:,22))
-  call accumulate_time_difference(time_begin_array(1,22),time_end_array(1,22),time_elapsed(22))
+  call accumulate_time(time_begin_array(1,22),time_end_array(1,22),time_elapsed(22))
 
   return
 end subroutine bcalc_2d
@@ -893,7 +893,7 @@ subroutine parmov_2d
       endif
 
       call date_and_time(values=time_end_array(:,13))
-      call accumulate_time_difference(time_begin_array(1,13),time_end_array(1,13),time_elapsed(13))
+      call accumulate_time(time_begin_array(1,13),time_end_array(1,13),time_elapsed(13))
 
       call date_and_time(values=time_begin_array(:,14))
       ICOUNT=0                  !ICOUNT records how many times the particle
@@ -1260,7 +1260,7 @@ subroutine parmov_2d
 999   continue
  
       call date_and_time(values=time_end_array(:,14))
-      call accumulate_time_difference(time_begin_array(1,14),time_end_array(1,14),time_elapsed(14))
+      call accumulate_time(time_begin_array(1,14),time_end_array(1,14),time_elapsed(14))
 
       call date_and_time(values=time_begin_array(:,15))
       if (testorbt) goto 10
@@ -1410,7 +1410,7 @@ subroutine parmov_2d
       enddo
 
       call date_and_time(values=time_end_array(:,15))
-      call accumulate_time_difference(time_begin_array(1,15),time_end_array(1,15),time_elapsed(15))
+      call accumulate_time(time_begin_array(1,15),time_end_array(1,15),time_elapsed(15))
  
     enddo  ! IS DO LOOP
 
@@ -1463,7 +1463,7 @@ subroutine parmov_2d
     ninj_global = 0
 
     call date_and_time(values=time_end_array(:,19))
-    call accumulate_time_difference(time_begin_array(1,19),time_end_array(1,19),time_elapsed(19))
+    call accumulate_time(time_begin_array(1,19),time_end_array(1,19),time_elapsed(19))
  
     return
 end subroutine parmov_2d
@@ -1804,21 +1804,21 @@ subroutine caltemp2_global_2d
   enddo
 
   call date_and_time(values=time_end_array(:,26))
-  call accumulate_time_difference(time_begin_array(1,26),time_end_array(1,26),time_elapsed(26))
+  call accumulate_time(time_begin_array(1,26),time_end_array(1,26),time_elapsed(26))
 
   ! do is=1,nspec
   !   call date_and_time(values=time_begin_array(:,24))
   !   call XREAL_2D(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
   !   call XREAL_2D(tperp(1,jb-1,kb-1,is),NX,NY,NZ)
   !   call date_and_time(values=time_end_array(:,24))
-  !   call accumulate_time_difference(time_begin_array(1,24),time_end_array(1,24),time_elapsed(24))
+  !   call accumulate_time(time_begin_array(1,24),time_end_array(1,24),time_elapsed(24))
 
 
   !   call date_and_time(values=time_begin_array(:,25))
   !   call XREALBCC_2D(tpar (1,jb-1,kb-1,is),1,NX,NY,NZ)
   !   call XREALBCC_2D(tperp(1,jb-1,kb-1,is),1,NX,NY,NZ)
   !   call date_and_time(values=time_end_array(:,25))
-  !   call accumulate_time_difference(time_begin_array(1,25),time_end_array(1,25),time_elapsed(25))
+  !   call accumulate_time(time_begin_array(1,25),time_end_array(1,25),time_elapsed(25))
   ! enddo
   
   call date_and_time(values=time_begin_array(:,26))
@@ -1852,10 +1852,10 @@ subroutine caltemp2_global_2d
   ! 10   continue
 
   call date_and_time(values=time_end_array(:,26))
-  call accumulate_time_difference(time_begin_array(1,26),time_end_array(1,26),time_elapsed(26))
+  call accumulate_time(time_begin_array(1,26),time_end_array(1,26),time_elapsed(26))
 
   call date_and_time(values=time_end_array(:,23))
-  call accumulate_time_difference(time_begin_array(1,23),time_end_array(1,23),time_elapsed(23))
+  call accumulate_time(time_begin_array(1,23),time_end_array(1,23),time_elapsed(23))
 
   return
 end subroutine caltemp2_global_2d

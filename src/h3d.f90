@@ -41,10 +41,8 @@ program h3d
   ! open history diagnostic files
   call open_hist_diag_files()
 
-  ! make list of particles (see utils.f90)
-  call makelist
-
   ! restart or a fresh start
+  call makelist  ! make list of particles (see utils.f90)
   if (restart) then
     call init_restart()
   else  ! fresh start
@@ -56,22 +54,14 @@ program h3d
   clock_time_init = curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001
   clock_time_old = clock_time_init
 
-  ! march forward in time
+  ! determine start, finish number of steps
   itstart = itfin
   it = itstart
-
-  ! change how itfinish is computed
   itfinish = (tmax-t_stopped)/dtwci + itstart
-  if (myid == 0) then
-    write(6,*) " "
-    write(6,*) 't_stopped = ', t_stopped
-    write(6,*) 'itstart, itfinish = ', itstart, ' ', itfinish
-    write(6,*) " "
-  endif 
+  if (myid==0) write(6,*) 't_stopped=', t_stopped, 'itstart=', itstart, 'itfinish = ', itfinish
   
-  time_elapsed=0.; time_begin_array=0; time_end_array=0
-
   ! main simulation loop
+  time_elapsed=0.; time_begin_array=0; time_end_array=0
   do while(it <= itfinish)
     call one_simulation_loop(uniform_mesh)
   enddo  
@@ -295,7 +285,7 @@ subroutine data_output(uniform_mesh)
     call caltemp2_global_2d
   endif
   call date_and_time(values=time_end_array(:,6))
-  call accumulate_time_difference(time_begin_array(1,6),time_end_array(1,6),time_elapsed(6))
+  call accumulate_time(time_begin_array(1,6),time_end_array(1,6),time_elapsed(6))
 
   numvars = 18
   irecnum = 1
@@ -336,28 +326,21 @@ subroutine one_simulation_loop(uniform_mesh)
   use parameter_mod
   implicit none 
 
-  integer :: iwrite, i
+  integer :: iwrite
   real*8 :: uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1)
 
+  call date_and_time(values=time_begin_array(:,1)) ! time one whole loop
+
   ! print time-step info
+  call date_and_time(values=curr_time)
+  clock_time = curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001
   if (myid == 0.and.mod(it,10_8) == 0) then
-    write(6,*) 'it=', it, 'time=', time, ', delta_t=', real(clock_time - clock_time_old), &
+    write(6,*) 'it=', it, 'time=', time, ', delta_t=', real(clock_time-clock_time_old), &
                 ', tot_t=', real(clock_time-clock_time_init)
     clock_time_old = clock_time
   endif
 
-  call date_and_time(values=time_begin_array(:,1)) ! time one whole loop
-  call date_and_time(values=curr_time)
-  clock_time = curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001
-
-  ! VR: we do not need injection from the boundary 
-  call date_and_time(values=time_begin_array(:,3)) ! time particle injection
-  ! do is = 1, nspec
-  !   call particle_newinject_linked_list(is)
-  ! enddo
-  call date_and_time(values=time_end_array(:,3))
-
-  ! VR: compute resistivity (which could depend on local parameters such as current)
+  ! compute resistivity (which could depend on local parameters such as current)
   call date_and_time(values=time_begin_array(:,2))
   if (ndim /= 1) then
     call etacalc       ! Dietmar's resistivity
@@ -367,6 +350,7 @@ subroutine one_simulation_loop(uniform_mesh)
   ntot = 0 ! for particle tracking
   call trans ! trans computes density and v's; it also calls parmov, i.e., it does a particle push
   call date_and_time(values=time_end_array(:,2))
+  call accumulate_time(time_begin_array(1,2),time_end_array(1,2),time_elapsed(2))
 
   ! write output to energy.dat
   if (myid==0) then
@@ -378,6 +362,7 @@ subroutine one_simulation_loop(uniform_mesh)
   call date_and_time(values=time_begin_array(:,4))
   if (mod(it,10_8) == 0) call sortit    !  sort the particles
   call date_and_time(values=time_end_array(:,4))
+  call accumulate_time(time_begin_array(1,4),time_end_array(1,4),time_elapsed(4))
 
   ! call field solver
   call date_and_time(values=time_begin_array(:,5))
@@ -389,6 +374,7 @@ subroutine one_simulation_loop(uniform_mesh)
     endif
   endif        
   call date_and_time(values=time_end_array(:,5))
+  call accumulate_time(time_begin_array(1,5),time_end_array(1,5),time_elapsed(5))
 
   ! inject_wave ?
   ! if (it == 21000) call inject_wave
@@ -398,7 +384,7 @@ subroutine one_simulation_loop(uniform_mesh)
   call date_and_time(values=time_begin_array(:,30))
   call user_diagnostics
   call date_and_time(values=time_end_array(:,30))
-  call accumulate_time_difference(time_begin_array(1,30),time_end_array(1,30),time_elapsed(30))
+  call accumulate_time(time_begin_array(1,30),time_end_array(1,30),time_elapsed(30))
     
   ! write data
   if (.not.testorbt.and.mod(it,n_write_data)==0) then        
@@ -434,10 +420,7 @@ subroutine one_simulation_loop(uniform_mesh)
   it = it + 1
 
   call date_and_time(values=time_end_array(:,1))
-
-  do i = 1, 5
-    call accumulate_time_difference(time_begin_array(1,i),time_end_array(1,i),time_elapsed(i))
-  enddo
+  call accumulate_time(time_begin_array(1,1),time_end_array(1,1),time_elapsed(1))
 
   return
 
@@ -467,7 +450,6 @@ subroutine shutdown()
     write(6,*) " "
     write(6,*) " "
     write(6,*) " subroutine trans             (s)          =",time_elapsed(2)
-    write(6,*) " subroutine injectpar         (s)          =",time_elapsed(3)
     write(6,*) " subroutine sort              (s)          =",time_elapsed(4)
     write(6,*) " subroutine field             (s)          =",time_elapsed(5)
     write(6,*) " subroutine caltemp2          (s)          =",time_elapsed(6)

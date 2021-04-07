@@ -9,30 +9,30 @@ subroutine field
   call date_and_time(values=time_begin_array(:,9))
   call pressgrad(1)
   call date_and_time(values=time_end_array(:,9))
-  call accumulate_time_difference(time_begin_array(1,9), time_end_array(1,9), time_elapsed(9))
+  call accumulate_time(time_begin_array(1,9), time_end_array(1,9), time_elapsed(9))
 
   call date_and_time(values=time_begin_array(:,10))
   call bcalc
   call date_and_time(values=time_end_array(:,10))
-  call accumulate_time_difference(time_begin_array(1,10), time_end_array(1,10), time_elapsed(10))
+  call accumulate_time(time_begin_array(1,10), time_end_array(1,10), time_elapsed(10))
 
   call date_and_time(values=time_begin_array(:,9))
   call pressgrad(0)
   call date_and_time(values=time_end_array(:,9))
-  call accumulate_time_difference(time_begin_array(1,9), time_end_array(1,9), time_elapsed(9))
+  call accumulate_time(time_begin_array(1,9), time_end_array(1,9), time_elapsed(9))
 
   call date_and_time(values=time_begin_array(:,11))
   call ecalc( 0 )
   call date_and_time(values=time_end_array(:,11))
-  call accumulate_time_difference(time_begin_array(1,11), time_end_array(1,11), time_elapsed(11))
+  call accumulate_time(time_begin_array(1,11), time_end_array(1,11), time_elapsed(11))
 
   call date_and_time(values=time_begin_array(:,12))
   call focalc
   call date_and_time(values=time_end_array(:,12))
-  call accumulate_time_difference(time_begin_array(1,12), time_end_array(1,12), time_elapsed(12))
+  call accumulate_time(time_begin_array(1,12), time_end_array(1,12), time_elapsed(12))
 
   call date_and_time(values=time_end_array(:,21))
-  call accumulate_time_difference(time_begin_array(1,21), time_end_array(1,21), time_elapsed(21))
+  call accumulate_time(time_begin_array(1,21), time_end_array(1,21), time_elapsed(21))
 
   return
 end subroutine field
@@ -448,7 +448,7 @@ subroutine ecalc( iflag )
   call date_and_time(values=time_begin_array(:,18))
   call XREALBCC_PACK_E(EX,EY,EZ,1_8,NX,NY,NZ)
   call date_and_time(values=time_end_array(:,18))
-  call accumulate_time_difference(time_begin_array(1,18) &
+  call accumulate_time(time_begin_array(1,18) &
                                   ,time_end_array(1,18) &
                                   ,time_elapsed(18))
 
@@ -555,7 +555,7 @@ subroutine bcalc
     call date_and_time(values=time_begin_array(:,16))
     call ecalc( 1 )
     call date_and_time(values=time_end_array(:,16))
-    call accumulate_time_difference(time_begin_array(1,16) &
+    call accumulate_time(time_begin_array(1,16) &
                                   ,time_end_array(1,16) &
                                   ,time_elapsed(16))
       
@@ -585,7 +585,7 @@ subroutine bcalc
     call date_and_time(values=time_begin_array(:,16))
     call ecalc( 1 )
     call date_and_time(values=time_end_array(:,16))
-    call accumulate_time_difference(time_begin_array(1,16) &
+    call accumulate_time(time_begin_array(1,16) &
                                   ,time_end_array(1,16) &
                                   ,time_elapsed(16))
       
@@ -615,7 +615,7 @@ subroutine bcalc
     call date_and_time(values=time_begin_array(:,16))
     call ecalc( 1 )
     call date_and_time(values=time_end_array(:,16))
-    call accumulate_time_difference(time_begin_array(1,16) &
+    call accumulate_time(time_begin_array(1,16) &
                                   ,time_end_array(1,16) &
                                   ,time_elapsed(16))
       
@@ -645,7 +645,7 @@ subroutine bcalc
     call date_and_time(values=time_begin_array(:,16))
     call ecalc( 1 )
     call date_and_time(values=time_end_array(:,16))
-    call accumulate_time_difference(time_begin_array(1,16) &
+    call accumulate_time(time_begin_array(1,16) &
                                   ,time_end_array(1,16) &
                                   ,time_elapsed(16))
 
@@ -683,7 +683,7 @@ subroutine bcalc
   
   
   call date_and_time(values=time_end_array(:,22))
-  call accumulate_time_difference(time_begin_array(1,22) &
+  call accumulate_time(time_begin_array(1,22) &
                                 ,time_end_array(1,22) &
                                 ,time_elapsed(22))
 

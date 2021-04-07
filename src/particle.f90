@@ -114,13 +114,13 @@ subroutine parmov   ! particle move?
       call date_and_time(values=time_begin_array(:,13))
       call push
       call date_and_time(values=time_end_array(:,13))
-      call accumulate_time_difference(time_begin_array(1,13),time_end_array(1,13),time_elapsed(13))
+      call accumulate_time(time_begin_array(1,13),time_end_array(1,13),time_elapsed(13))
 
       ! check particles
       call date_and_time(values=time_begin_array(:,14))
       call particle_boundary
       call date_and_time(values=time_end_array(:,14))
-      call accumulate_time_difference(time_begin_array(1,14),time_end_array(1,14),time_elapsed(14))
+      call accumulate_time(time_begin_array(1,14),time_end_array(1,14),time_elapsed(14))
 
       ! collect Vi, ni at half step
       call date_and_time(values=time_begin_array(:,15))
@@ -228,7 +228,7 @@ subroutine parmov   ! particle move?
 
       enddo ! for is
       call date_and_time(values=time_end_array(:,15))
-      call accumulate_time_difference(time_begin_array(1,15),time_end_array(1,15),time_elapsed(15))
+      call accumulate_time(time_begin_array(1,15),time_end_array(1,15),time_elapsed(15))
 
       ! advance particles for a seconnd half step
       call date_and_time(values=time_begin_array(:,13))
@@ -256,7 +256,7 @@ subroutine parmov   ! particle move?
       enddo ! for is
       
       call date_and_time(values=time_end_array(:,13))
-      call accumulate_time_difference(time_begin_array(1,13),time_end_array(1,13),time_elapsed(13))
+      call accumulate_time(time_begin_array(1,13),time_end_array(1,13),time_elapsed(13))
 
     endif ! dt<>0
 
@@ -265,7 +265,7 @@ subroutine parmov   ! particle move?
     call date_and_time(values=time_begin_array(:,14))
     call particle_boundary
     call date_and_time(values=time_end_array(:,14))
-    call accumulate_time_difference(time_begin_array(1,14),time_end_array(1,14),time_elapsed(14))
+    call accumulate_time(time_begin_array(1,14),time_end_array(1,14),time_elapsed(14))
 
     ! collect density
     call date_and_time(values=time_begin_array(:,15))
@@ -404,7 +404,7 @@ subroutine parmov   ! particle move?
     enddo ! for is
 
     call date_and_time(values=time_end_array(:,15))
-    call accumulate_time_difference(time_begin_array(1,15),time_end_array(1,15),time_elapsed(15))
+    call accumulate_time(time_begin_array(1,15),time_end_array(1,15),time_elapsed(15))
 
     ! diagnostic info
     epacket(1) = nptotp
@@ -454,7 +454,7 @@ subroutine parmov   ! particle move?
     ninj_global = 0
 
     call date_and_time(values=time_end_array(:,19))
-    call accumulate_time_difference(time_begin_array(1,19),time_end_array(1,19),time_elapsed(19))
+    call accumulate_time(time_begin_array(1,19),time_end_array(1,19),time_elapsed(19))
 
     return
 end subroutine parmov
