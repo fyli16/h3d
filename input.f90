@@ -23,10 +23,6 @@ zaa=0., zbb=224., naz=0, nbz=224
 
 uniform_loading_in_logical_grid = .false., ! used in loading particles? see 'init waves'
 
-buffer_zone=0., ! 'epsilon=buffer_zone' in parmov.f90 ??
-moat_zone=3., ! seems not implemented
-profile_power=0,  ! seems not implemented
-
 ! ------------------ field solver ----------------!
 n_subcycles=0
 nskipx=1,  nskipy=1,  nskipz=1, ! not implemented?

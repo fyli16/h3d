@@ -25,9 +25,9 @@ program h3d
   call MPI_COMM_RANK(MPI_COMM_WORLD,MYID,IERR)
 
   ! Read input file
-  call read_input()
+  call read_input
   ! Decompose MPI/simulation domain  
-  call domain_decomposition()
+  call domain_decomp
   ! allocate global parameters
   call allocate_global_arrays()  
     
@@ -260,17 +260,17 @@ subroutine data_output(uniform_mesh)
   real*8 :: uniform_mesh(nxmax, jb-1:je+1, kb-1:ke+1)
 
   ! ??
-  if (myid ==0) then
-    my_short_int=it
+  if (myid==0) then
+    my_short_int = it
     call integer_to_character(cycle_ascii, len(cycle_ascii), my_short_int)
     if (cycle_ascii=='') cycle_ascii='0'
     cycle_ascii_new=trim(adjustl(cycle_ascii))
-    write(6,*) " cycle = ",cycle_ascii_new
+    write(6,*) " cycle = ", cycle_ascii_new
   endif
   call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
   call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
   
-  if (myid == 0 .and. .not. MPI_IO_format) call open_files
+  if (myid==0 .and. .not.MPI_IO_format) call open_files
   
   call date_and_time(values=time_begin_array(:,6))
   if (ndim /= 1) then

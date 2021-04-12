@@ -494,8 +494,8 @@ subroutine restart_read_write(rw)
     ,pi,efld,bfld,efluidt,ethermt,eptclt,time,te0                &
     ,itfin,iwt                                   &
     ,nx1,nx2,ny1,ny2,nz1,nz2,it                                  &
-    ! ,ipstore,nptot,npleaving,npentering,myid_stop                &
-    ,nptot,npleaving,npentering,myid_stop                        &
+    ! ,ipstore,nptot,npleaving,npentering                &
+    ,nptot,npleaving,npenteringß                        &
     ,iclock_speed,iopen,iseed, file_unit,file_unit_read          &
     ,clock_time_init,clock_time_old,clock_time                   &
     ,clock_time1
@@ -649,8 +649,8 @@ subroutine restart_read_write(rw)
     ,efld,bfld,efluidt,ethermt,eptclt,time,te0                                        &
     ,itfin,iwt                     &
     ,nx1,nx2,ny1,ny2,nz1,nz2,it                                   &
-    ! ,ipstore,nptot,npleaving,npentering,myid_stop                 &
-    ,nptot,npleaving,npentering,myid_stop                 &
+    ! ,ipstore,nptot,npleaving,npentering                 &
+    ,nptot,npleaving,npentering                 &
     ,iclock_speed,iopen,iseed, file_unit,file_unit_read           &
     ,clock_time_init,clock_time_old,clock_time                    &
     ,clock_time1

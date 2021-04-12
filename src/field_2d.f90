@@ -538,7 +538,7 @@ subroutine parmov_2d
     real*8 :: ex1,ex2,ex3,ex4,ex5,ex6,ex7,ex8,ey1,ey2,ey3,ey4,ey5,ey6,ey7,ey8, &
               ez1,ez2,ez3,ez4,ez5,ez6,ez7,ez8,exa,eya,eza
 
-    real*8 :: d_ranf,deltime1,deltime2,epsilon,ff,h,hh
+    real*8 :: d_ranf,deltime1,deltime2,ff,h,hh
     real*8 :: fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8,foxa
     real*8 :: foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8,foya
     real*8 :: foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8,foza
@@ -592,7 +592,6 @@ subroutine parmov_2d
     dtyi = 1./meshY%dt
     dtzi = 1./meshZ%dt
 
-    epsilon= buffer_zone
     d_ranf=1./1001.
     eps2=1.d-25
  

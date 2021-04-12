@@ -63,18 +63,18 @@ module parameter_mod
 
   real*8, dimension(5) :: btspec, qspec, wspec, frac, anisot
   real*8 :: denmin, resis, wpiwci, bete, fxsho,ave1,ave2,phib,demin2, &
-            xmax, ymax, zmax, dt, gama, dtwci, wall_clock_elapsed,tmax,buffer_zone,  &
+            xmax, ymax, zmax, dt, gama, dtwci, wall_clock_elapsed, tmax,  &
             xaa, xbb, yaa, ybb, zaa, zbb, t_stopped=0.
 
-  integer*8 :: nax,nbx,nay,nby,naz,nbz
+  integer*8 :: nax, nbx, nay, nby, naz, nbz
   integer*8, dimension(8) :: wall_clock_begin,wall_clock_end
   integer*8 :: eta_par, nparbuf
   integer*8, dimension(5) :: npx, npy, npz
   integer*8 :: iterb, norbskip, nxcel, netax, netay, netaz, nspec, nx, ny, nz, n_print, &
             n_write_data, n_write_particle, n_write_restart, nskipx,nskipy,nskipz
-  real*8 :: etamin, etamax, moat_zone
+  real*8 :: etamin, etamax
    
-  integer*8 :: ieta, profile_power
+  integer*8 :: ieta
   logical :: testorbt, restart, uniform_loading_in_logical_grid, MPI_IO_format, smoothing  
 
   real*8 ::  hx, hy, hz, hxi, hyi, hzi, efld, bfld, efluidt, ethermt, eptclt, time, te0
@@ -88,7 +88,7 @@ module parameter_mod
   integer*8, dimension(:), allocatable:: idmap
   integer*8, dimension(:,:), allocatable:: idmap_yz
   integer*8 :: kb, ke, jb, je, nsendtotp, nrecvtotp, nsendtot, nrecvtot
-  integer*8, dimension(:), allocatable :: idfft, kvec, jvec, myid_stop
+  integer*8, dimension(:), allocatable :: idfft, kvec, jvec
   integer*8 :: ihstb, ihste, isendid(4), irecvid(4,4)
   real*4 :: single_prec
   real*8 :: double_prec, xtmp1m, xtmp2m, xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r
@@ -115,7 +115,7 @@ module parameter_mod
   !---------------------------------------------------------------------
   ! master process reads input parameters and broadcasts to all ranks
   !---------------------------------------------------------------------
-  subroutine read_input()
+  subroutine read_input
     integer :: input_error
 
     namelist /datum/ &
@@ -125,7 +125,6 @@ module parameter_mod
     nodey, nodez, &
     xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
     uniform_loading_in_logical_grid, &
-    buffer_zone, moat_zone, profile_power, &
     n_subcycles, nskipx, nskipy, nskipz, iterb, testorbt, norbskip, &  ! field solver
     nspec, qspec, wspec, frac, denmin, wpiwci, btspec, bete, &  ! plasma setup
     ieta, resis, netax, netay, netaz, etamin, etamax, eta_par, &
@@ -135,11 +134,10 @@ module parameter_mod
     tracking_binary, tracking_mpi, xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
     fxsho, nxcel, rcorr, ishape, teti  ! others
 
-    ! convert number 'myid' to character 'myid_char'
-    ! these characters will be in file dumping by rank
+    ! convert number 'myid' to character
+    ! these characters will be used in dumping restart files by rank
     my_short_int = myid
     call integer_to_character(myid_char, len(myid_char), my_short_int)
-    if (myid_char=='') myid_char='0'
 
     ! read input deck
     if (myid == 0) then
@@ -147,7 +145,7 @@ module parameter_mod
       write(6,*) "Reading input file ..."
       open(5, file='input.f90', form='formatted', status='old')
       read(5, nml=datum, iostat=input_error)
-      write(6, datum)
+      ! write(6, datum)
     endif
 
     ! Broadcast input parameters (read in at rank 0) to all other ranks
@@ -181,9 +179,6 @@ module parameter_mod
     call MPI_BCAST(naz                    ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(nbz                    ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(uniform_loading_in_logical_grid,1     ,MPI_LOGICAL,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(buffer_zone            ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(moat_zone              ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(profile_power          ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
     ! field solver
     call MPI_BCAST(n_subcycles            ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(nskipx                 ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
@@ -242,6 +237,7 @@ module parameter_mod
     ! The unit of dt is 1/wci in input file, 
     ! but now converted to 1/wpi inside the code
     dt = dtwci * wpiwci
+
     ! field subcycling
     ! n_subcycles=max(n_subcycles,1_8)
 
@@ -250,21 +246,39 @@ module parameter_mod
     restart_index_suffix(1) = '.1'
     restart_index_suffix(2) = '.2'
 
+    ! print some simulation info
     if (myid==0) then
       write(6,*)
       if (restart) then
-        write(6,*) "*** Restarted run ***"
+        write(6,*) '  Restart from an old run'
       else
-        write(6,*) "*** New run ***"
+        write(6,*) '  Fresh new run'
       endif
+      write(6,*) "  xmax, ymax, zmax = ", xmax, ymax, zmax
+      write(6,*) "  nx, ny, nz = ", nx, ny, nz
+      write(6,*) "  tmax, dtwci = ", tmax, dtwci
+      write(6,*) "  npx, npy, npz = ", npx, npy, npz
+      write(6,*) "  nodex, nodey, nodez = ", 1, nodey, nodez
+      write(6,*) "  xaa, xbb = ", xaa, xbb
+      write(6,*) "  nax, nbx = ", nax, nbx 
+      write(6,*) "  yaa, ybb = ", yaa, ybb
+      write(6,*) "  nay, nby = ", nay, nby 
+      write(6,*) "  zaa, zbb = ", zaa, zbb
+      write(6,*) "  naz, nbz = ", naz, nbz 
+
     endif 
 
-    return
+    
+    if (myid==0) then
+      
+
+    endif 
+
   end subroutine read_input
 
 
   !---------------------------------------------------------------------
-  subroutine domain_decomposition()
+  subroutine domain_decomp
     integer :: i
 
     ! set MPI Cartesian geometry, define stride vector types, obtain new
@@ -272,10 +286,9 @@ module parameter_mod
     ! computational mesh, and find nearest neighbors (in y and z directions).
     ! specify decomposition (along y, z only; no decomposition along x) 
     ndim=2; dims(1)=nodey; dims(2)=nodez
-    ! create division of processors in a cartesian grid
-    call MPI_DIMS_CREATE(NUMPROCS, NDIM, DIMS, IERR)
 
-    ! now npy means number of particles in each core along y
+    ! npy means number of particles in each rank along y
+    ! npz means number of particles in each rank along z
     npy=npy/dims(1); npz=npz/dims(2)
 
     if (myid == 0) then
@@ -293,7 +306,7 @@ module parameter_mod
     call MPI_CART_CREATE(MPI_COMM_WORLD, NDIM, DIMS, PERIODS, REORDER, COMM2D, IERR) 
     ! Determines the rank of the calling process in the new communicator
     call MPI_COMM_RANK(COMM2D, MYID, IERR)
-    ! Retrieves Cartesian topology information associated with the new communicator
+    ! Retrieves Cartesian topology information (especially 'COORDS') associated with the new communicator
     call MPI_CART_GET(COMM2D, NDIM, DIMS, PERIODS, COORDS, IERR)
     ! splits N elements between numprocs processors
     call MPE_DECOMP1D(NY, DIMS(1), COORDS(1), JB, JE)
@@ -312,15 +325,15 @@ module parameter_mod
       write(6,*) "  Local array size in z-direction = ", nzlmax
     endif
 
-    return
-  end subroutine domain_decomposition
+  end subroutine domain_decomp
 
 
   !---------------------------------------------------------------------
   ! Set global parameters
-  subroutine allocate_global_arrays()
+  subroutine allocate_global_arrays
     integer :: i, j, k
 
+    ! what's doing here?
     double_prec = 0.
     single_prec = 0.
     inquire (IOLENGTH=recl_for_double_precision) double_prec
@@ -334,7 +347,7 @@ module parameter_mod
     ! nparbuf = nxmax*(nylmax+2)*(nzlmax+2)
     nspecm = nspec  ! nspecm is just a mirror copy of nspec
     npes = numprocs  ! npes is just a mirror copy of numprocs
-    npes_over_60 = npes/512  ! if numprocs > 512?
+    npes_over_60 = npes/512  ! if numprocs > 512? shouldn't it be npes_over_512?
 
     ! estimate on particle storage requirement
     nptotp = 0  ! total number of particles per rank
@@ -349,6 +362,7 @@ module parameter_mod
 
     ! number of tags used to track particles per species per rank
     ! maxtags was initialized as 100
+    ! (this is a poor design)
     maxtags_pe = maxtags/npes/nspec
     if (maxtags_pe==0) then
         maxtags_pe = 1  ! at least tracking one particle per species per rank
@@ -358,7 +372,7 @@ module parameter_mod
     ! gathered enough info, now allocate arrays
     allocate(zbglobal(0:npes-1), zeglobal(0:npes-1), ybglobal(0:npes-1), yeglobal(0:npes-1), &
             kbglobal(0:npes-1), keglobal(0:npes-1), jbglobal(0:npes-1), jeglobal(0:npes-1), &
-            nsendp(0:npes-1), nrecvp(0:npes-1), myid_stop(0:npes-1))
+            nsendp(0:npes-1), nrecvp(0:npes-1))
     allocate(x(nplmax), y(nplmax), z(nplmax), vx(nplmax), vy(nplmax), vz(nplmax), &
             link(nplmax), porder(nplmax), qp(nplmax), ptag(nplmax))
     allocate(ninj(nspecm), ninj_global(nspecm),nescape(nspecm),nescape_global(nspecm),npart(nspecm), &
@@ -376,9 +390,7 @@ module parameter_mod
     do i = 1, nspecm
       qleft(i) = 0
       qrite(i) = 0
-    enddo
-
-    myid_stop(myid) = 0  
+    enddo 
 
     !  Use CART_SHIFT to determine processor to immediate left (NBRLEFT) and right (NBRRITE) of processor MYID
     !  Since code is aperiodic in z, need to manually set the left boundary for processor 0 and right boundary for npes-1
@@ -594,7 +606,6 @@ module parameter_mod
     allocate (buf_particle(tracking_width,nspec*maxtags,nbufsteps))
     allocate (buf_p1(tracking_width,nspec*maxtags))
 
-    return
   end subroutine allocate_global_arrays 
 
 end module parameter_mod
