@@ -27,9 +27,9 @@ program h3d
   ! Read input file
   call read_input
   ! Decompose MPI/simulation domain  
-  call domain_decomp
+  call domain_decomposition
   ! allocate global parameters
-  call allocate_global_arrays()  
+  call allocate_global_arrays  
     
   ! set up mesh 
   call setup_mesh()
@@ -57,6 +57,7 @@ program h3d
   it = itstart
   itfinish = (tmax-t_stopped)/dtwci + itstart
   if (myid==0) then 
+    print*, " "
     print*, 't_stopped = ', t_stopped
     print*, 'itstart = ', itstart
     print*, 'itfinish = ', itfinish
@@ -91,6 +92,7 @@ subroutine setup_mesh()
   endif
 
   ! Initialize nonuniform mesh
+  ! where meshX, meshY, meshZ are declared in 'mesh2d'
   call MESH_INIT(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh
   call MESH_INIT(meshY,yaa,ybb,ymax,nay,nby,ny) ! initialize y-mesh
   call MESH_INIT(meshZ,zaa,zbb,zmax,naz,nbz,nz) ! initialize z-mesh

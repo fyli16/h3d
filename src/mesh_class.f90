@@ -366,10 +366,10 @@ end module mesh_class
 
 
 !---------------------------------------------------------------------1
-!     Helper functions
-!---------------------------------------------------------------------1
+! Helper functions
 ! Solve for x: (x-1)/(x^N-1) - rhs = 0 
 ! by using a simple bisection method
+!---------------------------------------------------------------------1
 double precision function FINDEXP(rhsi,ni)
   implicit none
 
@@ -457,18 +457,3 @@ subroutine BISECT(f,a,b,tol)
 
   return      
 end subroutine BISECT
-
-
-!---------------------------------------------------------------------
-subroutine ERROR_ABORT(message)
-  character(*), intent(in) :: message
-  write(6,*) message
-  stop
-end subroutine ERROR_ABORT
-
-
-!---------------------------------------------------------------------
-subroutine WARNING(message)
-  character(*), intent(in) :: message
-  write(6,*) message
-end subroutine WARNING

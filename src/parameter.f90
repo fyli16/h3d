@@ -45,7 +45,7 @@ module parameter_mod
 
   real*8, dimension(:), allocatable :: x, y, z, vx, vy, vz, qp
   integer, dimension(:), allocatable :: ptag ! tag used to trace particles
-  integer*8, dimension(:), allocatable :: link,porder
+  integer*8, dimension(:), allocatable :: link, porder
   integer*8 :: nplmax, ipstore, np, n_subcycles
   integer*8, dimension(:,:,:,:), allocatable:: iphead, iptemp
   integer*8, dimension(:), allocatable ::  ninj,ninj_global,nescape,nescape_global,npart,npart_global
@@ -258,7 +258,7 @@ module parameter_mod
       write(6,*) "  npx = ", npx
       write(6,*) "  npy = ", npy
       write(6,*) "  npz = ", npz
-      write(6,*) "  nodex, nodey, nodez = ", 1, nodey, nodez
+      write(6,*) "  nodey, nodez = ", nodey, nodez
       write(6,*) "  xaa, xbb = ", xaa, xbb
       write(6,*) "  nax, nbx = ", nax, nbx 
       write(6,*) "  yaa, ybb = ", yaa, ybb
@@ -271,7 +271,7 @@ module parameter_mod
 
 
   !---------------------------------------------------------------------
-  subroutine domain_decomp
+  subroutine domain_decomposition
     integer :: i
 
     ! set MPI Cartesian geometry, define stride vector types, obtain new
@@ -318,7 +318,7 @@ module parameter_mod
       write(6,*) "  Local array size in z-direction = ", nzlmax
     endif
 
-  end subroutine domain_decomp
+  end subroutine domain_decomposition
 
 
   !---------------------------------------------------------------------
@@ -387,19 +387,21 @@ module parameter_mod
 
     !  Use CART_SHIFT to determine processor to immediate left (NBRLEFT) and right (NBRRITE) of processor MYID
     !  Since code is aperiodic in z, need to manually set the left boundary for processor 0 and right boundary for npes-1
-    if (ndim == 2) then
-      call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
-      call MPI_CART_SHIFT(COMM2D,1,1,NBRBOT ,NBRTOP ,IERR)
-    else if (ndim == 1) then
-      call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
-      NBRTOP = MYID
-      NBRBOT = MYID
-    else if (ndim == 0) then
-      NBRLEFT = MYID
-      NBRRITE = MYID
-      NBRTOP = MYID
-      NBRBOT = MYID
-    endif
+    call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
+    call MPI_CART_SHIFT(COMM2D,1,1,NBRBOT ,NBRTOP ,IERR)
+    ! if (ndim == 2) then
+    !   call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
+    !   call MPI_CART_SHIFT(COMM2D,1,1,NBRBOT ,NBRTOP ,IERR)
+    ! else if (ndim == 1) then
+    !   call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
+    !   NBRTOP = MYID
+    !   NBRBOT = MYID
+    ! else if (ndim == 0) then
+    !   NBRLEFT = MYID
+    !   NBRRITE = MYID
+    !   NBRTOP = MYID
+    !   NBRBOT = MYID
+    ! endif
 
     call MPI_SENDRECV(NBRTOP    ,1,MPI_INTEGER ,NBRRITE,0,&
                       NBRLEFTTOP,1,MPI_INTEGER ,NBRLEFT,0,&
@@ -444,7 +446,7 @@ module parameter_mod
       isendid(2)=0
     endif
 
-    if (mod(coords(1)  ,2) == 0.and.mod(coords(2)  ,2) == 0) then
+    if (mod(coords(1),2) == 0.and.mod(coords(2),2) == 0) then
       irecvid(1,2)=nbrrite
       irecvid(2,2)=-1
       irecvid(3,2)=nbrleft
@@ -454,14 +456,14 @@ module parameter_mod
       irecvid(2,2)=nbrtop
       irecvid(3,2)=-1
       irecvid(4,2)=nbrbot
-    else if (mod(coords(1)  ,2) == 0.and.mod(coords(2)+1,2) == 0) then
+    else if (mod(coords(1),2) == 0.and.mod(coords(2)+1,2) == 0) then
       irecvid(1,2)=nbrritetop
       irecvid(2,2)=nbrlefttop
       irecvid(3,2)=nbrleftbot
       irecvid(4,2)=nbrritebot
     endif
     
-    if (mod(coords(1)  ,2) == 0.and.mod(coords(2)+1,2) == 0) then
+    if (mod(coords(1),2) == 0.and.mod(coords(2)+1,2) == 0) then
       isendid(3)=1
     else
       isendid(3)=0
@@ -513,7 +515,7 @@ module parameter_mod
     call MPI_ALLGATHER(kb,1,MPI_INTEGER8,kbglobal,1,MPI_INTEGER8,MPI_COMM_WORLD,IERR)
     call MPI_ALLGATHER(ke,1,MPI_INTEGER8,keglobal,1,MPI_INTEGER8,MPI_COMM_WORLD,IERR)
 
-    !VR: again, this is much simpler than the commented block
+    ! VR: again, this is much simpler than the commented block
     do i = 0, numprocs-1
       do k = kbglobal(i), keglobal(i)
         do j = jbglobal(i), jeglobal(i)
@@ -522,7 +524,7 @@ module parameter_mod
       enddo
     enddo
 
-    !VR: fill in ghost cells in idmap     
+    ! VR: fill in ghost cells in idmap     
     idmap_yz(1:ny,0)    = idmap_yz(1:ny,nz)
     idmap_yz(1:ny,nz+1) = idmap_yz(1:ny,1)
 
@@ -538,7 +540,8 @@ module parameter_mod
     call MPI_TYPE_COMMIT(stridery, IERR)
     call MPI_TYPE_VECTOR(int(nylmax+2,4), int(nx+2,4), int(nx+2,4), MPI_DOUBLE_PRECISION, STRIDERZ, IERR)
     call MPI_TYPE_COMMIT(STRIDERZ, IERR)
-        
+    
+    ! what does this mean?
     if (.not.testorbt) norbskip=1
 
     allocate ( ex       (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),ey       (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
