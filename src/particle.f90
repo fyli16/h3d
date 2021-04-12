@@ -1,19 +1,24 @@
 !---------------------------------------------------------------------
 subroutine parmov   ! particle move?    
     use parameter_mod
-    use MESH2D
+    use mesh2d
     implicit none
-    double precision bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8,by1,by2,by3,by4,by5,by6,by7,by8,bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8,bxa,bya,bza
-    double precision ex1,ex2,ex3,ex4,ex5,ex6,ex7,ex8,ey1,ey2,ey3,ey4,ey5,ey6,ey7,ey8,ez1,ez2,ez3,ez4,ez5,ez6,ez7,ez8
 
-    double precision d_ranf,deltime1,deltime2,epsilon,ff,h,hh
-    double precision fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8,foxa
-    double precision foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8,foya
-    double precision foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8,foza
-    double precision w1e,w2e,w3e,w4e,w5e,w6e,w7e,w8e
-    double precision vex,vey,vez,vmag,vx_tmp,vy_tmp,vz_tmp
-    double precision p2xs,p2ys,p2zs,q_p,th
-    double precision wmult
+    real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8, &
+              by1,by2,by3,by4,by5,by6,by7,by8, &
+              bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8, &
+              bxa,bya,bza
+    real*8 :: ex1,ex2,ex3,ex4,ex5,ex6,ex7,ex8, &
+              ey1,ey2,ey3,ey4,ey5,ey6,ey7,ey8, &
+              ez1,ez2,ez3,ez4,ez5,ez6,ez7,ez8
+    real*8 :: d_ranf,deltime1,deltime2,epsilon,ff,h,hh
+    real*8 :: fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8,foxa
+    real*8 :: foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8,foya
+    real*8 :: foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8,foza
+    real*8 :: w1e,w2e,w3e,w4e,w5e,w6e,w7e,w8e
+    real*8 :: vex,vey,vez,vmag,vx_tmp,vy_tmp,vz_tmp
+    real*8 :: p2xs,p2ys,p2zs,q_p,th
+    real*8 :: wmult
 
     integer*8 i,ii,iix,iixe,iiy,iiye,iiz,iize,irepeat,irepeatp,is,itmp
     integer*8 iv,iye_cc,ize_cc,j,jv,k,npleavingp,nprecv,nprecvtmp
@@ -21,34 +26,35 @@ subroutine parmov   ! particle move?
     data fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8/0,0,0,0,0,0,0,0/
     data foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8/0,0,0,0,0,0,0,0/
     data foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8/0,0,0,0,0,0,0,0/
-    integer*8:: nsendactual,nsendactualp,nrecvactualp,nrecvactual,jj,kk,ix,iy,iz,ixe,iye,ize           &
-                ,ixep1,iyep1,izep1,ixp1,iyp1,izp1
-    double precision:: pdata(7),rx,ry,rz,fx,fy,fz,w1,w2,w3,w4,w5,w6,w7,w8,xpart,ypart,zpart
-    double precision:: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
-    double precision:: x_disp,y_disp,z_disp 
-    double precision:: dth ! dt/2
-    double precision:: eps2,myranf,fluxran,vxa,vyz,vza
+    integer*8:: nsendactual,nsendactualp,nrecvactualp,nrecvactual, &
+                jj,kk,ix,iy,iz,ixe,iye,ize, &
+                ixep1,iyep1,izep1,ixp1,iyp1,izp1
+    real*8 :: pdata(7),rx,ry,rz,fx,fy,fz,w1,w2,w3,w4,w5,w6,w7,w8,xpart,ypart,zpart
+    real*8 :: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
+    real*8 :: x_disp,y_disp,z_disp 
+    real*8 :: dth ! dt half, i.e., dt/2
+    real*8 :: eps2,myranf,fluxran,vxa,vyz,vza
     INTEGER*8:: L, EXIT_CODE_P, EXIT_CODE
     integer*8:: n_fast_removed,n_fast_removed_local,nptot_max,Field_Diverge,Field_Diverge_p
-    double precision:: tx,ty,tz,v_x,v_y,v_z  
+    real*8 :: tx,ty,tz,v_x,v_y,v_z  
     INTEGER*4 :: nescapearr(8),nescapearr_global(8)
     INTEGER*4 :: ppacket(3),ppacketg(3),dpacket(4),dpacketg(4)
     INTEGER*8 :: epacket(2),epacketg(2),loop
-    double precision, dimension(3,nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax) :: bxyz_av
-    double precision:: TEX1,TEX2,TEX3,TEX4,TEX5,TEX6,TEX7,TEX8  
-    double precision:: TEY1,TEY2,TEY3,TEY4,TEY5,TEY6,TEY7,TEY8  
-    double precision:: TEZ1,TEZ2,TEZ3,TEZ4,TEZ5,TEZ6,TEZ7,TEZ8  
-    double precision:: mX_xa,mX_ta,mX_ca1,mX_ca2,mX_xb,mX_dtdx,mX_tb,mX_cb1,mX_cb2
-    double precision:: mY_xa,mY_ta,mY_ca1,mY_ca2,mY_xb,mY_dtdx,mY_tb,mY_cb1,mY_cb2
-    double precision:: mZ_xa,mZ_ta,mZ_ca1,mZ_ca2,mZ_xb,mZ_dtdx,mZ_tb,mZ_cb1,mZ_cb2
+    real*8, dimension(3,nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax) :: bxyz_av
+    real*8 :: TEX1,TEX2,TEX3,TEX4,TEX5,TEX6,TEX7,TEX8  
+    real*8 :: TEY1,TEY2,TEY3,TEY4,TEY5,TEY6,TEY7,TEY8  
+    real*8 :: TEZ1,TEZ2,TEZ3,TEZ4,TEZ5,TEZ6,TEZ7,TEZ8  
+    real*8 :: mX_xa,mX_ta,mX_ca1,mX_ca2,mX_xb,mX_dtdx,mX_tb,mX_cb1,mX_cb2
+    real*8 :: mY_xa,mY_ta,mY_ca1,mY_ca2,mY_xb,mY_dtdx,mY_tb,mY_cb1,mY_cb2
+    real*8 :: mZ_xa,mZ_ta,mZ_ca1,mZ_ca2,mZ_xb,mZ_dtdx,mZ_tb,mZ_cb1,mZ_cb2
 
     integer,dimension(8) :: nsend_to_nbr, nbrs
     integer :: idest,max_nsend,max_nrecv
-    double precision,dimension(:,:,:),allocatable,target :: packed_pdata_send
-    double precision,dimension(:,:),allocatable,target :: packed_pdata_recv
-    double precision, pointer :: pp(:,:)
+    real*8,dimension(:,:,:),allocatable,target :: packed_pdata_send
+    real*8,dimension(:,:),allocatable,target :: packed_pdata_recv
+    real*8, pointer :: pp(:,:)
     integer exchange_send_request(8)
-    ! double precision :: mp_elapsed
+    ! real*8 :: mp_elapsed
 
     call date_and_time(values=time_begin_array(:,19))
 
@@ -468,18 +474,25 @@ subroutine push
   implicit none
   integer*8 :: is,iixe,iiye,iize,l
   integer*8:: ix,iy,iz,ixe,iye,ize,ixep1,iyep1,izep1,ixp1,iyp1,izp1
-  double precision :: wmult, h, hh, dth
-  double precision bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8,by1,by2,by3,by4,by5,by6,by7,by8,bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8,bxa,bya,bza
-  double precision ex1,ex2,ex3,ex4,ex5,ex6,ex7,ex8,ey1,ey2,ey3,ey4,ey5,ey6,ey7,ey8,ez1,ez2,ez3,ez4,ez5,ez6,ez7,ez8,exa,eya,eza
-  double precision fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8,foxa
-  double precision foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8,foya
-  double precision foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8,foza
-  double precision w1e,w2e,w3e,w4e,w5e,w6e,w7e,w8e
-  double precision vex,vey,vez
-  double precision:: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
-  double precision p2xs,p2ys,p2zs,ff
-  double precision:: x_disp,y_disp,z_disp,disp_max_p(3),disp_max(3)&
-                    ,y_disp_max_p,x_disp_max_p,z_disp_max_p,y_disp_max,x_disp_max,z_disp_max
+  real*8 :: wmult, h, hh, dth
+  real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8, &
+            by1,by2,by3,by4,by5,by6,by7,by8, &
+            bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8, & 
+            bxa,bya,bza
+  real*8 :: ex1,ex2,ex3,ex4,ex5,ex6,ex7,ex8, &
+            ey1,ey2,ey3,ey4,ey5,ey6,ey7,ey8, &
+            ez1,ez2,ez3,ez4,ez5,ez6,ez7,ez8, &
+            exa,eya,eza
+  real*8 :: fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8,foxa
+  real*8 :: foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8,foya
+  real*8 :: foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8,foza
+  real*8 :: w1e,w2e,w3e,w4e,w5e,w6e,w7e,w8e
+  real*8 :: vex,vey,vez
+  real*8:: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
+  real*8 :: p2xs,p2ys,p2zs,ff
+  real*8:: x_disp,y_disp,z_disp,disp_max_p(3),disp_max(3), &
+          y_disp_max_p, x_disp_max_p, z_disp_max_p, &
+          y_disp_max, x_disp_max, z_disp_max
   integer*8 :: Courant_Violation,Courant_Violation_p 
 
   dtxi = 1./meshX%dt
@@ -753,27 +766,27 @@ end subroutine push
 !---------------------------------------------------------------------
 subroutine particle_boundary
     use parameter_mod
-    use MESH2D
+    use mesh2d
     implicit none
     INTEGER*4 :: ppacket(3),ppacketg(3),dpacket(4),dpacketg(4)
     INTEGER*8 :: epacket(2),epacketg(2),loop
-    double precision:: xpart,ypart,zpart
-    double precision:: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
-    integer*8:: nsendactual,nsendactualp,nrecvactualp,nrecvactual,jj,kk,ix,iy,iz,ixe,iye,ize           &
+    real*8 :: xpart,ypart,zpart
+    real*8 :: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
+    integer*8 :: nsendactual,nsendactualp,nrecvactualp,nrecvactual,jj,kk,ix,iy,iz,ixe,iye,ize           &
                 ,ixep1,iyep1,izep1,ixp1,iyp1,izp1
     integer*8 :: Storage_Error_p,Storage_Error
     integer*8 :: l
-    integer,dimension(8) :: nsend_to_nbr, nbrs
+    integer, dimension(8) :: nsend_to_nbr, nbrs
     integer :: idest,max_nsend,max_nrecv
-    double precision,dimension(:,:,:),allocatable,target :: packed_pdata_send
-    double precision,dimension(:,:),allocatable,target :: packed_pdata_recv
-    double precision, pointer :: pp(:,:)
+    real*8, dimension(:,:,:),allocatable,target :: packed_pdata_send
+    real*8, dimension(:,:),allocatable,target :: packed_pdata_recv
+    real*8, pointer :: pp(:,:)
     integer :: exchange_send_request(8)
     integer*8 :: iv,iye_cc,ize_cc,j,jv,k,npleavingp,nprecv,nprecvtmp
-    double precision:: v_limit
-    integer*8:: n_fast_removed,n_fast_removed_local,nptot_max,Field_Diverge,Field_Diverge_p
-    integer*8 i,ii,iix,iixe,iiy,iiye,iiz,iize,irepeat,irepeatp,is,itmp
-    double precision:: hxmin,hxmax,hymin,hymax,hzmin,hzmax,cell_size_min
+    real*8 :: v_limit
+    integer*8 :: n_fast_removed,n_fast_removed_local,nptot_max,Field_Diverge,Field_Diverge_p
+    integer*8 :: i,ii,iix,iixe,iiy,iiye,iiz,iize,irepeat,irepeatp,is,itmp
+    real*8 :: hxmin,hxmax,hymin,hymax,hzmin,hzmax,cell_size_min
     Storage_Error_p = 0
     Field_Diverge_p = 0
     dtxi = 1./meshX%dt
@@ -1386,7 +1399,7 @@ subroutine particle_boundary
                 !VR head into the list of "empty" particles
                 ipstore=link(nprecv)
                     
-                if ((ixe > nx+1  .or. ixe < 1 ) .or. (iye > je+1    .or. iye < jb-1) .or. (ize > ke+1    .or. ize < kb-1)) then
+                if ((ixe>nx+1 .or. ixe<1) .or. (iye>je+1 .or. iye<jb-1) .or. (ize>ke+1 .or. ize < kb-1)) then
                     Field_Diverge_p = 1
                     ixe = min(max(iye,1_8 ),nx+1)
                     iye = min(max(iye,jb-1),je+1)
@@ -1490,4 +1503,3 @@ subroutine particle_boundary
       enddo ! for IS
  
 end subroutine particle_boundary
-

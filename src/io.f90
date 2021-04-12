@@ -766,101 +766,79 @@ subroutine open_files
 
     open (file_unit(1),                                                                         &
           file= trim(trim(data_directory)//'bx/bx_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',                                                                   &
-          action='write',access='direct', status='unknown',recl=lenrec)
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(2),                                                                         &
           file= trim(trim(data_directory)//'by/by_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(3),                                                                         &
           file= trim(trim(data_directory)//'bz/bz_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(4),                                                                         &
           file= trim(trim(data_directory)//'den/den_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(5),                                                                         &
           file= trim(trim(data_directory)//'ex/ex_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(6),                                                                         &
           file= trim(trim(data_directory)//'ey/ey_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(7),                                                                         &
           file= trim(trim(data_directory)//'ez/ez_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',   &
           action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(8),                                                                         &
           file= trim(trim(data_directory)//'vix/vix_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(9),                                                                          &
           file= trim(trim(data_directory)//'viy/viy_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(10),                                                                         &
           file= trim(trim(data_directory)//'viz/viz_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(11),                                                                          &
           file= trim(trim(data_directory)//'tpar/tpar_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
     open (file_unit(12),                                                                           &
           file= trim(trim(data_directory)//'tperp/tperp_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
 
     if (eta_par == 0) then
       open (file_unit(13),                                                                         &
             file= trim(trim(data_directory)//'eta/eta_'//trim(adjustl(cycle_ascii)))//'.gda', &
-            form='unformatted',   &
-            action='write',access='direct', status='unknown',recl=lenrec)
+            form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
     else
       open (file_unit(13),                                                                             &
             file= trim(trim(data_directory)//'eta_par/eta_par_'//trim(adjustl(cycle_ascii)))//'.gda', &
-            form='unformatted',   &
-            action='write',access='direct', status='unknown',recl=lenrec)
+            form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
     endif
 
-    open (file_unit(14),                                                                          &
+    open (file_unit(14),                                                                      &
           file= trim(trim(data_directory)//'p-xx/p-xx_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
-    open (file_unit(15),                                                                          &
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+    open (file_unit(15),                                                                      &
           file= trim(trim(data_directory)//'p-xy/p-xy_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
-    open (file_unit(16),                                                                          &
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+    open (file_unit(16),                                                                      &
           file= trim(trim(data_directory)//'p-xz/p-xz_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
-    open (file_unit(17),                                                                          &
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+    open (file_unit(17),                                                                      &
           file= trim(trim(data_directory)//'p-yy/p-yy_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
-    open (file_unit(18),                                                                          &
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+    open (file_unit(18),                                                                      &
           file= trim(trim(data_directory)//'p-yz/p-yz_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
-    open (file_unit(19),                                                                          &
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+    open (file_unit(19),                                                                      &
           file= trim(trim(data_directory)//'p-zz/p-zz_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
-    open (file_unit(20),                                                                          &
-          file= trim(trim(data_directory)//'fox/fox_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
-    open (file_unit(21),                                                                          &
-          file= trim(trim(data_directory)//'foy/foy_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
-    open (file_unit(22),                                                                          &
-          file= trim(trim(data_directory)//'foz/foz_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',   &
-          action='write',access='direct', status='unknown',recl=lenrec)
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+    open (file_unit(20),                                                                      &
+          file= trim(trim(data_directory)//'fox/fox_'//trim(adjustl(cycle_ascii)))//'.gda',   &
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+    open (file_unit(21),                                                                      &
+          file= trim(trim(data_directory)//'foy/foy_'//trim(adjustl(cycle_ascii)))//'.gda',   &
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+    open (file_unit(22),                                                                      &
+          file= trim(trim(data_directory)//'foz/foz_'//trim(adjustl(cycle_ascii)))//'.gda',   &
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
   endif
   
   return

@@ -5,27 +5,35 @@ module parameter_mod
   save
 
   integer :: it, my_short_int, i_source, i_destination, i_tag, i_length, i_i
+
   integer, dimension(8,128) :: time_begin_array, time_end_array
   real*8, dimension(128) :: time_elapsed
   integer, dimension(8) :: curr_time
   integer*8 :: itstart, itfinish
+
   integer*8 :: nxmax, nymax, nzmax, nspecm, npes, nvar, nylmax, nzlmax, npm, npes_over_60
   integer :: numprocs, ndim, dims(2), nodey, nodez, ierr, comm2d, myid, req(8), & 
              nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot, &      
              nbrleft, nbrrite, ipe, stridery, striderz, iseed(1), coords(2)
+
   integer :: status(mpi_status_size), status1(mpi_status_size), status2(mpi_status_size), &
               status_array(mpi_status_size,8)
+
   real*8 :: zb, ze, yb, ye, teti, volume_fraction, cell_volume_ratio, &
             zb_logical,ze_logical,yb_logical,ye_logical, &
             xb_logical,xe_logical,xb,xe,smooth_coef
+
   real*8, dimension(:), allocatable :: zbglobal, zeglobal, ybglobal, yeglobal, &
       xc_uniform, yc_uniform, zc_uniform, xv_uniform,yv_uniform,zv_uniform
+
   integer*8, dimension(:), allocatable :: kbglobal, keglobal, jbglobal, jeglobal, &
       nsendp, nrecvp, ixc_2_c_map, iyc_2_c_map, izc_2_c_map, ixc_2_v_map, iyc_2_v_map, izc_2_v_map, &
-      ixv_2_c_map, iyv_2_c_map, izv_2_c_map, ixv_2_v_map, iyv_2_v_map, izv_2_v_map     
+      ixv_2_c_map, iyv_2_c_map, izv_2_c_map, ixv_2_v_map, iyv_2_v_map, izv_2_v_map  
+
   real*8, dimension(:,:,:), allocatable :: ex, ey, ez, bx, by, bz, fox, foy, foz, &
       eta, curlex, curley, curlez, bx_av, by_av, bz_av, bxs, bys, bzs, den, deno, denh, &
       dpedx, dpedy, dpedz, vix, viy, viz, vixo, viyo, vizo, pe, curlbx, curlby, curlbz, eta_times_b_dot_j
+
   real*8, dimension(:,:,:,:), allocatable :: dns, dnsh, vxs, vys, vzs, tpar, tperp, qp_cell
   real*8, dimension(:,:,:,:), allocatable :: p_xx,p_xy,p_xz,p_yy,p_yz,p_zz
   real*8, dimension(:,:), allocatable :: ainjxz,ainjzx,deavxz,deavzx,vxavxz,vyavxz,vzavxz,vxavzx,      &
@@ -34,6 +42,7 @@ module parameter_mod
                                         vyavzy,vzavzy,vxcayz,vycayz,vzcayz,vxcazy,vycazy,vzcazy,      &
                                         ainjxy,ainjyx,deavxy,deavyx,vxavxy,vyavxy,vzavxy,vxavyx,      &
                                         vyavyx,vzavyx,vxcaxy,vycaxy,vzcaxy,vxcayx,vycayx,vzcayx
+
   real*8, dimension(:), allocatable :: x, y, z, vx, vy, vz, qp
   integer, dimension(:), allocatable :: ptag ! tag used to trace particles
   integer*8, dimension(:), allocatable :: link,porder
@@ -41,34 +50,39 @@ module parameter_mod
   integer*8, dimension(:,:,:,:), allocatable:: iphead, iptemp
   integer*8, dimension(:), allocatable ::  ninj,ninj_global,nescape,nescape_global,npart,npart_global
   integer*8, dimension(:),allocatable :: nescape_yz,nescape_zy,nescape_xy                 &
-                                    ,nescape_yx,nescape_xz,nescape_zx                 &
-                                    ,nescape_yz_global,nescape_zy_global              &
-                                    ,nescape_xy_global,nescape_yx_global              &
-                                    ,nescape_xz_global,nescape_zx_global
+                                        ,nescape_yx,nescape_xz,nescape_zx                 &
+                                        ,nescape_yz_global,nescape_zy_global              &
+                                        ,nescape_xy_global,nescape_yx_global              &
+                                        ,nescape_xz_global,nescape_zx_global
+
   real*8, dimension(:), allocatable :: qleft,qrite
   real*8, dimension(:), allocatable:: x0,x1,tx0,vpar,vper,bbal
   real*8, dimension(:,:), allocatable :: vbal
   real*8, dimension(5) :: rcorr
   integer*8, dimension(5) :: ishape
+
   real*8, dimension(5) :: btspec, qspec, wspec, frac, anisot
   real*8 :: denmin, resis, wpiwci, bete, fxsho,ave1,ave2,phib,demin2, &
             xmax, ymax, zmax, dt, gama, dtwci, wall_clock_elapsed,tmax,buffer_zone,  &
             xaa, xbb, yaa, ybb, zaa, zbb, t_stopped=0.
+
   integer*8 :: nax,nbx,nay,nby,naz,nbz
   integer*8, dimension(8) :: wall_clock_begin,wall_clock_end
   integer*8 :: eta_par, nparbuf
   integer*8, dimension(5) :: npx, npy, npz
   integer*8 :: iterb, norbskip, nxcel, netax, netay, netaz, nspec, nx, ny, nz, n_print, &
             n_write_data, n_write_particle, n_write_restart, nskipx,nskipy,nskipz
-  real*8 :: etamin,etamax,moat_zone
+  real*8 :: etamin, etamax, moat_zone
+   
   integer*8 :: ieta, profile_power
   logical :: testorbt, restart, uniform_loading_in_logical_grid, MPI_IO_format, smoothing  
+
   real*8 ::  hx, hy, hz, hxi, hyi, hzi, efld, bfld, efluidt, ethermt, eptclt, time, te0
-  integer*8 :: nsteps0, itfin=0, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(25),             &
+  integer*8 :: nsteps0, itfin=0, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(25), &
               file_unit_read(20),nptot,npleaving,npentering,iclock_speed, nptotp
   real*8 :: clock_time_init, clock_time_old, clock_time, clock_time1
   real*8, dimension(:), allocatable :: dfac
-  integer*8, dimension(:), allocatable :: nskip,ipleft,iprite,ipsendleft,ipsendrite,iprecv,ipsendtop,ipsendbot     &
+  integer*8, dimension(:), allocatable :: nskip,ipleft,iprite,ipsendleft,ipsendrite,iprecv,ipsendtop,ipsendbot &
                                       ,ipsendlefttop,ipsendleftbot,ipsendritetop,ipsendritebot,ipsend
   integer*8:: idum
   integer*8, dimension(:), allocatable:: idmap
@@ -91,7 +105,9 @@ module parameter_mod
   character(len=2) :: restart_index_suffix(2)
   character(len=160) :: data_directory, restart_directory, cycle_ascii, cycle_ascii_new, &
                       myid_char, cleanup_status
+
   real*8 :: dB_B0, num_cycles ! for init_wave
+
   real*8, parameter :: zero=0.0d0, one=1.0d0, two=2.0d0, one_half=0.5d0, pi=acos(-1.)
 
   contains
@@ -100,8 +116,6 @@ module parameter_mod
   ! master process reads input parameters and broadcasts to all ranks
   !---------------------------------------------------------------------
   subroutine read_input()
-    implicit none
-
     integer :: input_error
 
     namelist /datum/ &
@@ -251,20 +265,18 @@ module parameter_mod
 
   !---------------------------------------------------------------------
   subroutine domain_decomposition()
-    implicit none
-
     integer :: i
 
     ! set MPI Cartesian geometry, define stride vector types, obtain new
     ! ID for the processors, perform 2D decomposition of the
     ! computational mesh, and find nearest neighbors (in y and z directions).
     ! specify decomposition (along y, z only; no decomposition along x) 
-    ndim = 2; dims(1) = nodey; dims(2) = nodez
+    ndim=2; dims(1)=nodey; dims(2)=nodez
     ! create division of processors in a cartesian grid
     call MPI_DIMS_CREATE(NUMPROCS, NDIM, DIMS, IERR)
 
     ! now npy means number of particles in each core along y
-    npy = npy/dims(1); npz = npz/dims(2)
+    npy=npy/dims(1); npz=npz/dims(2)
 
     if (myid == 0) then
       write(6,*)
@@ -307,8 +319,6 @@ module parameter_mod
   !---------------------------------------------------------------------
   ! Set global parameters
   subroutine allocate_global_arrays()
-    implicit none
-
     integer :: i, j, k
 
     double_prec = 0.

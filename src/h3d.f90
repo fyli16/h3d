@@ -17,7 +17,7 @@ program h3d
 
   real*8, dimension(:,:,:), allocatable :: uniform_mesh     
   ! VR : allocating a global mesh can not work on large runs with small amount of memory per rank 
-  ! double precision, dimension(:,:,:), allocatable:: nonuniform_mesh_global
+  ! real*8, dimension(:,:,:), allocatable:: nonuniform_mesh_global
 
   ! Initialize MPI
   call MPI_INIT(IERR)
@@ -26,10 +26,8 @@ program h3d
 
   ! Read input file
   call read_input()
-  
   ! Decompose MPI/simulation domain  
   call domain_decomposition()
-  
   ! allocate global parameters
   call allocate_global_arrays()  
     

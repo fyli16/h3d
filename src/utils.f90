@@ -26,7 +26,7 @@ subroutine nsmth (a)
   use parameter_mod
   implicit none
   integer*8 i,j,k
-  double precision, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
+  real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
 
   ! copy input array "a" to "temp" including ghost cells
   do k=kb-1,ke+1
@@ -72,10 +72,10 @@ subroutine sortit
   use mesh2d
   implicit none
 
-  double precision pstore(nplmax)
+  real*8 :: pstore(nplmax)
   integer pstore2(nplmax)
   integer*8 id, kb1, is, ix, iy, iz, ixe ,iye, ize, l, nttot, nplist
-  double precision:: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
+  real*8 :: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
   
   dtxi = 1./meshX%dt
   dtyi = 1./meshY%dt
@@ -90,7 +90,7 @@ subroutine sortit
       do iy = jb-1,je
         do ix = 1, nx1
           np = iphead(ix,iy,iz,is)
-          do while (NP.NE.0)
+          do while (np.ne.0)
             ! Uniform mesh - Same as in version 5.0
             ! ixe = hxi*x(np)+1.5000000000000001d+00
             ! iye = hyi*y(np)+0.5000000000000001d+00
@@ -253,27 +253,26 @@ subroutine makelist
   iprecv = 0
   iphead = 0
   iptemp = 0
+
   do ip = 1, nplmax-1
       link(ip) = ip+1
   enddo
   link(nplmax)=0
+
   return
 end subroutine makelist
 
 
-!***********************************************************************
-!>    domain decompostion util: splits n elements between numprocs processors
-!!    @param n number of elements
-!!    @param numprocs number of processors
-!!    @param s,e : start/end indices
-!***********************************************************************
-subroutine MPE_DECOMP1D( n, numprocs, myid, s, e )
+!-----------------------------------------------------------------
+! domain decompostion util: splits n elements between numprocs processors
+! @param n: number of elements
+! @param numprocs: number of processors
+! @param s, e : start/end indices
+!-----------------------------------------------------------------
+subroutine mpe_decomp1d(n, numprocs, myid, s, e)
   implicit none  
-  integer   numprocs, myid
-  integer*8 n
-  integer*8 s, e
-  integer*8 nlocal
-  integer*8 deficit
+  integer ::   numprocs, myid
+  integer*8 :: n, s, e, nlocal, deficit
 
   nlocal  = n / numprocs
   s       = myid * nlocal + 1
@@ -283,9 +282,10 @@ subroutine MPE_DECOMP1D( n, numprocs, myid, s, e )
       nlocal = nlocal + 1
   endif
   e = s + nlocal - 1
-  if (e  >  n .or. myid  ==  numprocs-1) e = n
+  if (e > n .or. myid == numprocs-1) e = n
+
   return
-end subroutine MPE_DECOMP1D
+end subroutine mpe_decomp1d
 
 
 !-----------------------------------------------------------------
@@ -299,7 +299,7 @@ subroutine trans
 
   integer*8:: is,i,j,k,jbmin,jbmax,kbmin,kbmax
   integer*4:: time_begin(8),time_end(8)
-  double precision:: dttmp,dns_tmp
+  real*8 :: dttmp,dns_tmp
 
   call date_and_time(values=time_begin_array(:,20))
 
@@ -464,11 +464,11 @@ end subroutine trans
   use MESH2D
   implicit none
 
-  double precision:: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,xx,xy,xz,yy,yz,zz
+  real*8 :: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,xx,xy,xz,yy,yz,zz
   integer*8 ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,is,l,iix,iixe
-  double precision vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
+  real*8 :: vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
        ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar,wmult
-  double precision w1,w2,w3,w4,w5,w6,w7,w8,h,hh,dns1,dns2,bxa,bya,bza,btota,dnst
+  real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,h,hh,dns1,dns2,bxa,bya,bza,btota,dnst
 
   call date_and_time(values=time_begin_array(:,23))
 
@@ -799,13 +799,13 @@ subroutine energy
   use parameter_mod
   use MESH2D
   implicit none
-  double precision:: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,xx,xy,xz,yy,yz,zz
+  real*8 :: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,xx,xy,xz,yy,yz,zz
   integer*8 ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,is,l,iix,iixe
-  double precision vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
+  real*8 :: vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
         ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar,wmult
-  double precision w1,w2,w3,w4,w5,w6,w7,w8,h,hh,dns1,dns2,bxa,bya,bza,btota,dnst
-  double precision bfldp,efldp,e_fluid,e_thermal,v2
-  integer*8 i,j,k
+  real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,h,hh,dns1,dns2,bxa,bya,bza,btota,dnst
+  real*8 :: bfldp,efldp,e_fluid,e_thermal,v2
+  integer*8 :: i,j,k
   
   efldp=0.
   bfldp=0.
