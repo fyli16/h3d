@@ -249,11 +249,9 @@ module parameter_mod
     ! print some simulation info
     if (myid==0) then
       write(6,*)
-      if (restart) then
-        write(6,*) '  Restart from an old run'
-      else
-        write(6,*) '  Fresh new run'
-      endif
+      if (.not. restart) write(6,*) "  *** New run ***"
+      if (restart) write(6,*) "  *** Restart run ***"
+      write(6,*)
       write(6,*) "  xmax, ymax, zmax = ", xmax, ymax, zmax
       write(6,*) "  nx, ny, nz = ", nx, ny, nz
       write(6,*) "  tmax, dtwci = ", tmax, dtwci

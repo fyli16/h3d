@@ -437,13 +437,6 @@
       dt=dtsav
 
       if (.not.testorbt) then
-        ! n_subcycles=0, so this block is not executed.
-        if (myid==0) then
-          print*, " "
-          print*, 'n_subcycles = ', n_subcycles
-          print*, " "
-        endif 
-        
         do field_subcycle = 1, n_subcycles  
           if (ndim /= 1) then
             if (myid==0) print*, 'calling field'

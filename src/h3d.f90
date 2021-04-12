@@ -56,7 +56,12 @@ program h3d
   itstart = itfin
   it = itstart
   itfinish = (tmax-t_stopped)/dtwci + itstart
-  if (myid==0) write(6,*) 't_stopped=', t_stopped, 'itstart=', itstart, 'itfinish = ', itfinish
+  if (myid==0) then 
+    write(6,*) 't_stopped=', t_stopped
+    write(6,*) 'itstart=', itstart, 
+    write(6,*) 'itfinish = ', itfinish
+    wirte(6,*)
+  endif 
   
   ! main simulation loop
   time_elapsed=0.; time_begin_array=0; time_end_array=0
