@@ -239,7 +239,7 @@ module parameter_mod
     dt = dtwci * wpiwci
 
     ! field subcycling
-    ! n_subcycles=max(n_subcycles,1_8)
+    ! n_subcycles = max(n_subcycles, 1_8)
 
     data_directory = 'data/'
     restart_directory = 'restart/'
@@ -257,7 +257,9 @@ module parameter_mod
       write(6,*) "  xmax, ymax, zmax = ", xmax, ymax, zmax
       write(6,*) "  nx, ny, nz = ", nx, ny, nz
       write(6,*) "  tmax, dtwci = ", tmax, dtwci
-      write(6,*) "  npx, npy, npz = ", npx, npy, npz
+      write(6,*) "  npx = ", npx
+      write(6,*) "  npy = ", npy
+      write(6,*) "  npz = ", npz
       write(6,*) "  nodex, nodey, nodez = ", 1, nodey, nodez
       write(6,*) "  xaa, xbb = ", xaa, xbb
       write(6,*) "  nax, nbx = ", nax, nbx 
@@ -265,14 +267,7 @@ module parameter_mod
       write(6,*) "  nay, nby = ", nay, nby 
       write(6,*) "  zaa, zbb = ", zaa, zbb
       write(6,*) "  naz, nbz = ", naz, nbz 
-
-    endif 
-
-    
-    if (myid==0) then
-      
-
-    endif 
+    endif  
 
   end subroutine read_input
 

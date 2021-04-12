@@ -444,8 +444,9 @@
           print*, " "
         endif 
         
-        do field_subcycle=1,n_subcycles  
+        do field_subcycle = 1, n_subcycles  
           if (ndim /= 1) then
+            if (myid==0) print*, 'calling field'
             call field
           else
             call field_2d
