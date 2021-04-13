@@ -222,7 +222,7 @@
       endif
 
       call MPI_ALLREDUCE(nptotp,nptot_max,1,MPI_INTEGER8,MPI_MAX,MPI_COMM_WORLD,IERR)
-      if(myid==0) print*, 'nptotp_max, nplmax = ', nptotp_max, nplmax
+      if(myid==0) print*, 'nptotp_max, nplmax = ', nptot_max, nplmax
 
       remake = 0  ! re-allocate particle arrays
       if (nptot_max > nplmax) then
