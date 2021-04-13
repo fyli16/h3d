@@ -48,7 +48,7 @@ module parameter_mod
   integer*8, dimension(:), allocatable :: link, porder
   integer*8 :: nplmax, ipstore, np, n_subcycles
   integer*8, dimension(:,:,:,:), allocatable:: iphead, iptemp
-  integer*8, dimension(:), allocatable ::  ninj,ninj_global,nescape,nescape_global,npart,npart_global
+  integer*8, dimension(:), allocatable ::  ninj, ninj_global, nescape,nescape_global, npart, npart_global
   integer*8, dimension(:),allocatable :: nescape_yz,nescape_zy,nescape_xy                 &
                                         ,nescape_yx,nescape_xz,nescape_zx                 &
                                         ,nescape_yz_global,nescape_zy_global              &

@@ -6,7 +6,7 @@
       use mesh_mod
       implicit none
 
-      integer*8 :: ibp1, ibp2, nptot_max, i, remake, field_subcycle
+      integer*8 :: ibp1, ibp2, i, remake, field_subcycle
       real*8 :: rxe, rye, rze, fxe, fye, fze, dtxi, dtyi, dtzi, &
                 x_p, y_p, z_p, x_p_logical, y_p_logical, z_p_logical, &
                 r_c, q_p, dtsav
@@ -24,11 +24,6 @@
 
       integer :: seed_size
       integer, allocatable :: seed(:)
-
-      if (myid==0) then
-        write(6,*) " "
-        write(6,*) "Initializing wave ..."
-      endif 
 
       dtxi = one/meshX%dt ! dtxi=nx
       dtyi = one/meshY%dt ! dtyi=ny
@@ -149,8 +144,12 @@
       ex = zero; ey = zero; ez = zero
      
       ! initialie perturbation on the mesh 
-      if (myid==0) print*, "  Initializing waves on the mesh ..." 
-
+      if (myid==0) then
+        print*, " "
+        print*, "Initializing wave on the mesh ..."
+        print*, " "
+      endif 
+      
       do k = kb-1, ke+1
         z_pos = meshZ%xc(k+1)
         do j = jb-1, je+1  
@@ -206,7 +205,10 @@
       enddo
      
       ! load particles
-      if (myid==0) write(6,*) "  Initializing particles ..." 
+      if (myid==0) then
+        print*, " "
+        print*, "Initializing particles ..." 
+      endif
 
       do is = 1, nspec
         ninj(is)=0
@@ -244,8 +246,6 @@
           write(6,*) "  npy = ", npy(is)
           write(6,*) "  npz = ", npz(is)
           write(6,*) "  dfrac = ", dfac(is)
-          write(6,*) "  nptot_max = ", nptot_max
-          write(6,*) "  q_p =", hx*hy*hz*dfac(is)*frac(is)
           write(6,*) " "
         endif
 
@@ -263,7 +263,7 @@
             IXE          = dtxi*X_P_LOGICAL+1.50000000000d+00
             IYE          = dtyi*Y_P_LOGICAL+1.50000000000d+00
             IZE          = dtzi*Z_P_LOGICAL+1.50000000000d+00
-            q_p          = meshX%dxc(ixe)*meshY%dxc(iye)*meshZ%dxc(ize)*dfac(is)*frac(is)
+            q_p          = meshX%dxc(ixe) * meshY%dxc(iye) * meshZ%dxc(ize) * dfac(is)*frac(is)
           else
             X_P  = X0(IS)+(X1(IS)-X0(IS))*ranval(1)
             Y_P  = YB+(YE-YB)*ranval(2)

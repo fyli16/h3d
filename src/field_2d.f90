@@ -562,7 +562,7 @@ subroutine parmov_2d
     real*8 :: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
     real*8 :: v_limit,eps2,myranf,fluxran,vxa,vyz,vza
     INTEGER*8:: L, EXIT_CODE_P, EXIT_CODE
-    integer*8:: n_fast_removed,n_fast_removed_local,nptot_max,Courant_Violation,Courant_Violation_p,Field_Diverge,Field_Diverge_p
+    integer*8:: n_fast_removed,n_fast_removed_local,Courant_Violation,Courant_Violation_p,Field_Diverge,Field_Diverge_p
     real*8 :: hxmin,hxmax,hymin,hymax,hzmin,hzmax,cell_size_min,x_disp,y_disp,z_disp          &
                       ,y_disp_max_p,x_disp_max_p,z_disp_max_p,y_disp_max,x_disp_max,z_disp_max
     real*8 :: disp_max_p(3),disp_max(3),tx,ty,tz,v_x,v_y,v_z  
@@ -678,13 +678,6 @@ subroutine parmov_2d
           enddo
         enddo
       enddo
-
-      ! Diagnostic print statement
-      ! call MPI_ALLREDUCE(nptotp,nptot_max,1,MPI_INTEGER8,MPI_MAX,MPI_COMM_WORLD,IERR)
-      ! if (nptotp  == nptot_max) then
-      !   write(6,*) " PROCESSOR # ",MYID,", # OF PARTICLES = ",NPTOTP
-      !   write(6,*) " MAXIMUM # OF PARTICLES ALLOWED      = ",NPLMAX
-      ! endif
 
       call MPI_ALLREDUCE(nptotp,nptot,1,MPI_INTEGER8,MPI_SUM,MPI_COMM_WORLD,IERR)
       if ((MYID.EQ.0).and.mod(it,n_print)==0) then
