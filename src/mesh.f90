@@ -48,6 +48,7 @@ module mesh_mod
   !---------------------------------------------------------------------
   ! initialize mesh attributes 
   subroutine mesh_init(m, xa, xb, xl, na, nb, nl)
+    use findexp_mod
     implicit none
 
     type(mesh), intent(out) :: m

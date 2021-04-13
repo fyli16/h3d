@@ -1,57 +1,25 @@
 !---------------------------------------------------------------------
 ! F(t) = 0 to solve
 !---------------------------------------------------------------------
-double precision function func(t) 
+module func_mod
   implicit none
+  contains
+  double precision function func(t) 
+    implicit none
 
-  real*8, intent(in) :: t 
-  real*8 :: rhs
-  integer*8 :: n
+    real*8, intent(in) :: t 
+    real*8 :: rhs
+    integer*8 :: n
 
-  common /fparams/ rhs,n
-  if(t.le.1.) then
-    func = 1./real(n)-rhs
-  else
-    func = (t-1.)/(t**n-1.)-rhs
-  endif
-  return
-end function func 
-
-
-!---------------------------------------------------------------------1
-! Helper functions
-! Solve for x: (x-1)/(x^N-1) - rhs = 0 
-! by using a simple bisection method
-!---------------------------------------------------------------------1
-double precision function findexp(rhsi,ni)
-  implicit none
-
-  real*8, intent(in) :: rhsi
-  integer*8, intent(in) :: ni
-  real*8 :: tol,rhs,af,bf
-  integer*8 n
-  common /fparams/ rhs,n
-  ! real*8 :: func
-  ! external func
-
-  tol = 10.*epsilon(real(0))
-  ! These are common block parameters
-  rhs=rhsi
-  n = ni
-  ! These are common block parameters
-  if(func(1.0D0).le.tol) then
-    call error_abort('findexp(): dx_uniform too large --- stop!')
-  endif
-  af = 1.
-  bf = af
-  do while(func(bf).ge.0.)
-    bf = bf*2.
-  enddo
-  call bisect(func,af,bf,tol)
-  findexp = 0.5*(af+bf)
-
-  return
-end function findexp
+    common /fparams/ rhs,n
+    if(t.le.1.) then
+      func = 1./real(n)-rhs
+    else
+      func = (t-1.)/(t**n-1.)-rhs
+    endif
+    return
+  end function func 
+end func_mod
 
 
 !---------------------------------------------------------------------
@@ -92,6 +60,49 @@ subroutine bisect(f,a,b,tol)
 
   return      
 end subroutine bisect
+
+
+!---------------------------------------------------------------------1
+! Helper functions
+! Solve for x: (x-1)/(x^N-1) - rhs = 0 
+! by using a simple bisection method
+!---------------------------------------------------------------------1
+module findexp_mod
+  implicit none
+  contains  
+  double precision function findexp(rhsi,ni)
+    use func_mod
+    
+    real*8, intent(in) :: rhsi
+    integer*8, intent(in) :: ni
+    real*8 :: tol,rhs,af,bf
+    integer*8 n
+    common /fparams/ rhs,n
+    ! real*8 :: func
+    ! external func
+
+    tol = 10.*epsilon(real(0))
+    ! These are common block parameters
+    rhs=rhsi
+    n = ni
+    ! These are common block parameters
+    if(func(1.0D0).le.tol) then
+      call error_abort('findexp(): dx_uniform too large --- stop!')
+    endif
+    af = 1.
+    bf = af
+    do while(func(bf).ge.0.)
+      bf = bf*2.
+    enddo
+    call bisect(func,af,bf,tol)
+    findexp = 0.5*(af+bf)
+
+    return
+  end function findexp
+end module findexp_mod
+
+
+
 
     
     double precision function myranf()
