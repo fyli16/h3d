@@ -49,7 +49,6 @@ module mesh_mod
   ! initialize mesh attributes 
   subroutine mesh_init(m, xa, xb, xl, na, nb, nl)
     use findexp_mod
-    implicit none
 
     type(mesh), intent(out) :: m
     real*8, intent(in) :: xa, xb, xl
@@ -138,7 +137,6 @@ module mesh_mod
   ! destroy mesh
   !---------------------------------------------------------------------
   subroutine mesh_destruct(m)
-    implicit none
 
     type(mesh), intent(inout) :: m
 
@@ -163,7 +161,6 @@ module mesh_mod
   ! transform physical coordinate to logical space 
   ! MESH_INIT() must be called prior to this call
   double precision function mesh_unmap(m,x) 
-    implicit none
 
     type(mesh), intent(in) :: m
     real*8, intent(in) :: x 
@@ -189,7 +186,6 @@ module mesh_mod
   ! transform physical coordinate to logical space 
   ! MESH_INIT() must be called prior to this call
   double precision function mesh_map(m,t)
-    implicit none
 
     type(mesh), intent(in) :: m
     real*8, intent(in) :: t 
@@ -218,7 +214,6 @@ module mesh_mod
   ! MESH_INIT() must be called prior to this call
   !---------------------------------------------------------------------
   subroutine mesh_index_hxv(m, inode, ix, inode_uniform)
-    implicit none
 
     type(mesh), intent(in) :: m
     type(meshtype), intent(in) :: inode,inode_uniform
@@ -265,7 +260,6 @@ module mesh_mod
   ! MESH_INIT() must be called prior to this call
   !---------------------------------------------------------------------
   subroutine mesh_index_yuri(m, inode, ix)
-    implicit none
 
     type(mesh), intent(in) :: m
     type(meshtype), intent(in) :: inode
@@ -303,7 +297,6 @@ module mesh_mod
   ! interpolate (1:nx2,1:ny2) arrays from a nonuniform cell-centered grid 
   ! to a uniform node-centered grid (1:nnx,1:nny) 
   subroutine mesh_interpolated2d(inode,mx,my,a,ncx,ncy,ap,nnx,nny,lfirst)
-    implicit none
 
     type(meshtype), intent(in) :: inode
     type(mesh), intent(in) :: mx,my 
@@ -371,7 +364,6 @@ module mesh_mod
   !---------------------------------------------------------------------
   ! subroutine mesh_interpolated_3d(nonuniform_mesh, uniform_mesh, nonuniform_mesh_global)
   !   use parameter_mod
-  !   implicit none
 
   !   real*8 :: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,w1,w2,w3,w4,w5,w6,w7,w8
   !   integer*8:: ix,iy,iz,ixp1,iyp1,izp1,i,j,k,jmin,jmax,kmin,kmax
@@ -467,5 +459,71 @@ module mesh_mod
 
   !   return
   ! end subroutine mesh_interpolated_3d
+
+
+  !---------------------------------------------------------------------
+  ! set up uniform mesh
+  !---------------------------------------------------------------------
+  subroutine setup_mesh
+    use parameter_mod
+
+    integer :: i
+
+    if (myid==0) then
+      print*, " "
+      print*, "Setting up mesh ..."
+    endif
+
+    ! Initialize uniform mesh
+    ! where meshX, meshY, meshZ are declared in 'mesh_mod'
+    call mesh_init(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh
+    call mesh_init(meshY,yaa,ybb,ymax,nay,nby,ny) ! initialize y-mesh
+    call mesh_init(meshZ,zaa,zbb,zmax,naz,nbz,nz) ! initialize z-mesh
+
+    ! mesh_index_yuri
+    call mesh_index(meshX,CELL,ixv_2_c_map)
+    call mesh_index(meshY,CELL,iyv_2_c_map)
+    call mesh_index(meshZ,CELL,izv_2_c_map)
+    call mesh_index(meshX,NODE,ixv_2_v_map)
+    call mesh_index(meshY,NODE,iyv_2_v_map)
+    call mesh_index(meshZ,NODE,izv_2_v_map)
+    ! mesh_index_hxv
+    call mesh_index(meshX,CELL,ixc_2_c_map,CELL)
+    call mesh_index(meshY,CELL,iyc_2_c_map,CELL)
+    call mesh_index(meshZ,CELL,izc_2_c_map,CELL)
+    call mesh_index(meshX,NODE,ixc_2_v_map,CELL)
+    call mesh_index(meshY,NODE,iyc_2_v_map,CELL)
+    call mesh_index(meshZ,NODE,izc_2_v_map,CELL)
+
+    ! write mesh properties into a file
+    if (myid == 0) then
+      open(unit=10, file='mesh_vertices.dat', status='unknown', form='formatted')
+      write(10,*) meshX%nl+1, meshY%nl+1, meshZ%nl+1
+
+      do i = 2, meshX%nl+2 
+        write(10,*) meshX%xn(i)
+      enddo
+      do i = 2, meshX%nl+2 
+        write(10,*) meshX%dxc(i)
+      enddo
+
+      do i = 2, meshY%nl+2 
+        write(10,*) meshY%xn(i)
+      enddo
+      do i = 2, meshY%nl+2 
+        write(10,*) meshY%dxc(i)
+      enddo
+
+      do i = 2, meshZ%nl+2 
+        write(10,*) meshZ%xn(i)
+      enddo
+      do i = 2, meshZ%nl+2 
+        write(10,*) meshZ%dxc(i)
+      enddo
+      
+      close(unit=10)
+    endif
+
+  end subroutine setup_mesh
 
 end module mesh_mod
