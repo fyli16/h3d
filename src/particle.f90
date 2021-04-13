@@ -243,7 +243,7 @@ subroutine parmov   ! particle move?
             do IIXE = 1, NX1
               NP=IPHEAD(IIXE,IIYE,IIZE,IS)
 
-              do WHILE (NP.NE.0)
+              do while (NP.ne.0)
                 L=NP
                 x_disp = dth*vx(l)
                 y_disp = dth*vy(l)
@@ -513,7 +513,7 @@ subroutine push
       do IIYE = JB-1,JE
         do IIXE = 1, NX1
           NP=IPHEAD(IIXE,IIYE,IIZE,IS)
-          do while (NP.NE.0)
+          do while (NP.ne.0)
             L=NP
 
             ! Uniform mesh - Same as in version 5.0
@@ -862,7 +862,7 @@ subroutine particle_boundary
 
             ! mark particles that need to be sent to other processors
             NP=IPHEAD(IXE,IYE,IZE,IS)  !VR: the first particle in the cell
-            do WHILE (NP.NE.0)         !VR: loop over particles in the cell
+            do while (NP.ne.0)         !VR: loop over particles in the cell
               xpart=x(np)
               ypart=y(np)
               zpart=z(np)
@@ -1039,7 +1039,7 @@ subroutine particle_boundary
           write(6,*) " # OF PARTICLES TO BE RECEIVED = ",NRECVTOT
           write(6,*) " # OF PARTICLES REMOVED BECAUSE V > VLIMIT = ",n_fast_removed
         endif
-        if (NSENDTOT.NE.NRECVTOT) THEN
+        if (NSENDTOT.ne.NRECVTOT) THEN
           CALL MPI_FINALIZE(IERR)
           WRITE(*,*)"Error: NSENDTOT != NRECVTOT. Terminating"
           STOP
@@ -1067,7 +1067,7 @@ subroutine particle_boundary
         ! do irepeat=1,4
         !    if (isendid(irepeat) == 1) then
         !       NP=IPSEND(IS)
-        !       do WHILE (NP.NE.0)
+        !       do while (NP.ne.0)
         !          nsendactualp=nsendactualp+1
 
         !          !             Uniform mesh - Same as in version 5.0
@@ -1247,7 +1247,7 @@ subroutine particle_boundary
             NP=IPSEND(IS)
             
             ! loop over particles in the ipsend list
-            do WHILE (NP.NE.0)           
+            do while (NP.ne.0)           
                 nsendactualp = nsendactualp + 1
 
                 ! map this particle to the logical mesh
@@ -1483,7 +1483,7 @@ subroutine particle_boundary
         !   do iye=jb-1,je
         !     do ixe=1,nx1
         !           NP=IPHEAD(ixe,iye,ize,is)
-        !           do WHILE (NP.NE.0)
+        !           do while (NP.ne.0)
         !             NPTOTP=NPTOTP+1
         !             NP=LINK(NP)
         !           enddo
@@ -1563,12 +1563,12 @@ subroutine sortit
         do ix = 1, nx1
           np = iptemp(ix,iy,iz,is)
           nplist = 0
-          DO WHILE (NP.NE.0)
+          do while (NP.ne.0)
             nplist = nplist+1
             l = l+1
             link(l) = np
             np = porder(np)
-          ENDDO
+          enddo
           nttot = nttot + nplist
           iphead(ix,iy,iz,is) = nplist
         enddo
@@ -1670,8 +1670,8 @@ end subroutine sortit
 
 
 !-----------------------------------------------------------------
-!    computes velocities?
-!    what is the difference between vxs and vix?
+! computes velocities?
+! what is the difference between vxs and vix?
 !-----------------------------------------------------------------
 subroutine trans        
   use parameter_mod
@@ -1837,18 +1837,17 @@ end subroutine trans
 
 
 !-----------------------------------------------------------------
-!     compute perp and par temperature and pressure tensor
+! compute perp and par temperature and pressure tensor
 !-----------------------------------------------------------------
 subroutine caltemp2_global
-
   use parameter_mod
   use mesh_mod
   implicit none
 
   real*8 :: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,xx,xy,xz,yy,yz,zz
-  integer*8 ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,is,l,iix,iixe
+  integer*8 :: ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,is,l,iix,iixe
   real*8 :: vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
-       ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar,wmult
+            ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar,wmult
   real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,h,hh,dns1,dns2,bxa,bya,bza,btota,dnst
 
   call date_and_time(values=time_begin_array(:,23))
@@ -1856,7 +1855,6 @@ subroutine caltemp2_global
   dtxi = 1./meshX%dt
   dtyi = 1./meshY%dt
   dtzi = 1./meshZ%dt
-
 
   tpar=0.
   tperp=0.
@@ -1870,20 +1868,20 @@ subroutine caltemp2_global
   endif
 
   call date_and_time(values=time_begin_array(:,26))
-  DO IS=1,NSPEC
+  do IS=1,NSPEC
     wmult=wspec(is)
     h=dt*qspec(is)/wmult
     hh=.5*h
     dpedx = 0.
-    DO IIZE = KB-1,KE
-      DO IIYE = JB-1,JE
-        DO IIXE = 1, NX1
+    do IIZE = KB-1,KE
+      do IIYE = JB-1,JE
+        do IIXE = 1, NX1
           NP=IPHEAD(IIXE,IIYE,IIZE,IS)
 
 !  begin advance of particle position and velocity
 !  If dt=0, skip
 !
-          DO WHILE (NP.NE.0)
+          do while (NP.ne.0)
             L=NP
 
           ! Uniform mesh - Same as is in version 5.0
@@ -2059,10 +2057,10 @@ subroutine caltemp2_global
             p_zz (ixp1,iyp1,izp1,is)=p_zz (ixp1,iyp1,izp1,is)+qp(np)*w8*zz 
 
             np=link(np)
-          ENDDO
-        ENDDO
-      ENDDO
-    ENDDO
+          enddo
+        enddo
+      enddo
+    enddo
 
 
     call XREAL(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
@@ -2076,29 +2074,29 @@ subroutine caltemp2_global
     call XREAL(p_yz (1,jb-1,kb-1,is),NX,NY,NZ)
     call XREAL(p_zz (1,jb-1,kb-1,is),NX,NY,NZ)
 
-    DO IZ = KB-1,KE
-      DO IY = JB-1,JE
-        DO IX = 1, NX1
+    do IZ = KB-1,KE
+      do IY = JB-1,JE
+        do IX = 1, NX1
           if (dpedx(ix,iy,iz) /= 0.) then
             tpar (ix,iy,iz,is) = tpar (ix,iy,iz,is)/(   tx0(is)*dpedx(ix,iy,iz))
             tperp(ix,iy,iz,is) = tperp(ix,iy,iz,is)/(2.*tx0(is)*dpedx(ix,iy,iz))
           endif
-        ENDDO
-      ENDDO
-    ENDDO
+        enddo
+      enddo
+    enddo
 
-    DO IIZ=KB-1,KE+1
-      DO IIY=JB-1,JE+1
-        DO IIX=1,NX2
+    do IIZ=KB-1,KE+1
+      do IIY=JB-1,JE+1
+        do IIX=1,NX2
           p_xx(iix,iiy,iiz,is) = p_xx(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
           p_xy(iix,iiy,iiz,is) = p_xy(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
           p_xz(iix,iiy,iiz,is) = p_xz(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
           p_yy(iix,iiy,iiz,is) = p_yy(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
           p_yz(iix,iiy,iiz,is) = p_yz(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
           p_zz(iix,iiy,iiz,is) = p_zz(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
-        ENDDO
-      ENDDO
-    ENDDO
+        enddo
+      enddo
+    enddo
 
   !  p_xx(:,:,:,is)=p_xx(:,:,:,is)/(tx0(is)*frac(is))
   !  p_xy(:,:,:,is)=p_xy(:,:,:,is)/(tx0(is)*frac(is))
@@ -2107,7 +2105,7 @@ subroutine caltemp2_global
   !  p_yz(:,:,:,is)=p_yz(:,:,:,is)/(tx0(is)*frac(is))
   !  p_zz(:,:,:,is)=p_zz(:,:,:,is)/(tx0(is)*frac(is))
 
-  ENDDO
+  enddo
   call date_and_time(values=time_end_array(:,26))
   call accumulate_time(time_begin_array(1,26) &
  &                               ,time_end_array(1,26) &
@@ -2200,13 +2198,13 @@ subroutine energy
   dtzi = 1./meshZ%dt
   p_xx=0.; p_yy=0.; p_zz=0.
 
-  DO IS=1,1
-    DO IIZE = KB-1,KE
-      DO IIYE = JB-1,JE
-        DO IIXE = 1, NX1
+  do IS=1,1
+    do IIZE = KB-1,KE
+      do IIYE = JB-1,JE
+        do IIXE = 1, NX1
           NP=IPHEAD(IIXE,IIYE,IIZE,IS)
 
-          DO WHILE (NP.NE.0)
+          do while (NP.ne.0)
             L=NP
 
           ! Uniform mesh - Same as is in version 5.0
@@ -2320,27 +2318,27 @@ subroutine energy
             v2=v2+qp(l)*(vx(l)**2+vy(l)**2+vz(l)**2)
 
             np=link(np)
-          ENDDO
-        ENDDO
-      ENDDO
-    ENDDO
+          enddo
+        enddo
+      enddo
+    enddo
 
 
     call XREAL(p_xx (1,jb-1,kb-1,is),NX,NY,NZ)
     call XREAL(p_yy (1,jb-1,kb-1,is),NX,NY,NZ)
     call XREAL(p_zz (1,jb-1,kb-1,is),NX,NY,NZ)
 
-    DO IIZ=KB-1,KE+1
-      DO IIY=JB-1,JE+1
-        DO IIX=1,NX2
+    do IIZ=KB-1,KE+1
+      do IIY=JB-1,JE+1
+        do IIX=1,NX2
           p_xx(iix,iiy,iiz,is) = p_xx(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
           p_yy(iix,iiy,iiz,is) = p_yy(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
           p_zz(iix,iiy,iiz,is) = p_zz(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
-        ENDDO
-      ENDDO
-    ENDDO
+        enddo
+      enddo
+    enddo
 
-  ENDDO
+  enddo
 
   ! field energy calculation
   do k=kb,ke

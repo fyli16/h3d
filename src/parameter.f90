@@ -548,55 +548,55 @@ module parameter_mod
     ! what does this mean?
     if (.not.testorbt) norbskip=1
 
-    allocate ( ex       (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),ey       (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
-              ,ez       (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),bx       (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
-              ,by       (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),bz       (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
-              ,bx_av    (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),by_av    (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
-              ,bz_av    (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)  &
-              ,fox      (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),foy      (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
-              ,foz      (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),eta      (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
-              ,curlex   (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),curley   (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
-              ,curlez   (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),bxs      (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
-              ,bys      (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),bzs      (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
-              ,den      (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),deno     (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
-              ,denh     (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
-              ,dpedx    (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),dpedy    (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
-              ,dpedz    (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),vix      (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
-              ,viy      (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),viz      (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
-              ,vixo     (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),viyo     (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
-              ,vizo     (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),pe       (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
-              ,curlbx   (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax),curlby   (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)   &
-              ,curlbz   (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax)                                                  &
-              ,eta_times_b_dot_j(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax))
-    allocate ( dns(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax,nspecm),vxs   (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax,nspecm) &
-              ,dnsh(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax,nspecm) &
-              ,vys(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax,nspecm),vzs   (nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax,nspecm) &
-              ,tpar(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax,nspecm),tperp(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax,nspecm) &
-              ,qp_cell(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax,nspecm)) 
-    allocate ( p_xx(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax,nspecm),p_xy(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax,nspecm)&
-              ,p_xz(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax,nspecm),p_yy(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax,nspecm)&
-              ,p_yz(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax,nspecm),p_zz(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax,nspecm) )
-    allocate ( ainjxz(nxmax,kb-1:kb+nzlmax),ainjzx(nxmax,kb-1:kb+nzlmax),deavxz(nxmax,kb-1:kb+nzlmax)          &
-              ,deavzx(nxmax,kb-1:kb+nzlmax),vxavxz(nxmax,kb-1:kb+nzlmax),vyavxz(nxmax,kb-1:kb+nzlmax)          &
-              ,vzavxz(nxmax,kb-1:kb+nzlmax),vxavzx(nxmax,kb-1:kb+nzlmax),vyavzx(nxmax,kb-1:kb+nzlmax)          &
-              ,vzavzx(nxmax,kb-1:kb+nzlmax),vxcaxz(nxmax,kb-1:kb+nzlmax),vycaxz(nxmax,kb-1:kb+nzlmax)          &
-              ,vzcaxz(nxmax,kb-1:kb+nzlmax),vxcazx(nxmax,kb-1:kb+nzlmax),vycazx(nxmax,kb-1:kb+nzlmax)          &
-              ,vzcazx(nxmax,kb-1:kb+nzlmax))
-    allocate ( ainjyz(jb-1:jb+nylmax,kb-1:kb+nzlmax),ainjzy(jb-1:jb+nylmax,kb-1:kb+nzlmax)                     &
-              ,deavyz(jb-1:jb+nylmax,kb-1:kb+nzlmax),deavzy(jb-1:jb+nylmax,kb-1:kb+nzlmax)                     &
-              ,vxavyz(jb-1:jb+nylmax,kb-1:kb+nzlmax),vyavyz(jb-1:jb+nylmax,kb-1:kb+nzlmax)                     &
-              ,vzavyz(jb-1:jb+nylmax,kb-1:kb+nzlmax),vxavzy(jb-1:jb+nylmax,kb-1:kb+nzlmax)                     &
-              ,vyavzy(jb-1:jb+nylmax,kb-1:kb+nzlmax),vzavzy(jb-1:jb+nylmax,kb-1:kb+nzlmax)                     &
-              ,vxcayz(jb-1:jb+nylmax,kb-1:kb+nzlmax),vycayz(jb-1:jb+nylmax,kb-1:kb+nzlmax)                     &
-              ,vzcayz(jb-1:jb+nylmax,kb-1:kb+nzlmax),vxcazy(jb-1:jb+nylmax,kb-1:kb+nzlmax)                     &
-              ,vycazy(jb-1:jb+nylmax,kb-1:kb+nzlmax),vzcazy(jb-1:jb+nylmax,kb-1:kb+nzlmax))
-    allocate ( ainjxy(nxmax,jb-1:jb+nylmax),ainjyx(nxmax,jb-1:jb+nylmax),deavxy(nxmax,jb-1:jb+nylmax)          &
-              ,deavyx(nxmax,jb-1:jb+nylmax),vxavxy(nxmax,jb-1:jb+nylmax),vyavxy(nxmax,jb-1:jb+nylmax)          &
-              ,vzavxy(nxmax,jb-1:jb+nylmax),vxavyx(nxmax,jb-1:jb+nylmax),vyavyx(nxmax,jb-1:jb+nylmax)          &
-              ,vzavyx(nxmax,jb-1:jb+nylmax),vxcaxy(nxmax,jb-1:jb+nylmax),vycaxy(nxmax,jb-1:jb+nylmax)          &
-              ,vzcaxy(nxmax,jb-1:jb+nylmax),vxcayx(nxmax,jb-1:jb+nylmax),vycayx(nxmax,jb-1:jb+nylmax)          &
-              ,vzcayx(nxmax,jb-1:jb+nylmax))
-    allocate (iphead(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax,nspecm),iptemp(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax,nspecm))
+    allocate ( ex       (nxmax,jb-1:je+1,kb-1:ke+1),ey       (nxmax,jb-1:je+1,kb-1:ke+1)   &
+              ,ez       (nxmax,jb-1:je+1,kb-1:ke+1),bx       (nxmax,jb-1:je+1,kb-1:ke+1)   &
+              ,by       (nxmax,jb-1:je+1,kb-1:ke+1),bz       (nxmax,jb-1:je+1,kb-1:ke+1)   &
+              ,bx_av    (nxmax,jb-1:je+1,kb-1:ke+1),by_av    (nxmax,jb-1:je+1,kb-1:ke+1)   &
+              ,bz_av    (nxmax,jb-1:je+1,kb-1:ke+1)  &
+              ,fox      (nxmax,jb-1:je+1,kb-1:ke+1),foy      (nxmax,jb-1:je+1,kb-1:ke+1)   &
+              ,foz      (nxmax,jb-1:je+1,kb-1:ke+1),eta      (nxmax,jb-1:je+1,kb-1:ke+1)   &
+              ,curlex   (nxmax,jb-1:je+1,kb-1:ke+1),curley   (nxmax,jb-1:je+1,kb-1:ke+1)   &
+              ,curlez   (nxmax,jb-1:je+1,kb-1:ke+1),bxs      (nxmax,jb-1:je+1,kb-1:ke+1)   &
+              ,bys      (nxmax,jb-1:je+1,kb-1:ke+1),bzs      (nxmax,jb-1:je+1,kb-1:ke+1)   &
+              ,den      (nxmax,jb-1:je+1,kb-1:ke+1),deno     (nxmax,jb-1:je+1,kb-1:ke+1)   &
+              ,denh     (nxmax,jb-1:je+1,kb-1:ke+1)   &
+              ,dpedx    (nxmax,jb-1:je+1,kb-1:ke+1),dpedy    (nxmax,jb-1:je+1,kb-1:ke+1)   &
+              ,dpedz    (nxmax,jb-1:je+1,kb-1:ke+1),vix      (nxmax,jb-1:je+1,kb-1:ke+1)   &
+              ,viy      (nxmax,jb-1:je+1,kb-1:ke+1),viz      (nxmax,jb-1:je+1,kb-1:ke+1)   &
+              ,vixo     (nxmax,jb-1:je+1,kb-1:ke+1),viyo     (nxmax,jb-1:je+1,kb-1:ke+1)   &
+              ,vizo     (nxmax,jb-1:je+1,kb-1:ke+1),pe       (nxmax,jb-1:je+1,kb-1:ke+1)   &
+              ,curlbx   (nxmax,jb-1:je+1,kb-1:ke+1),curlby   (nxmax,jb-1:je+1,kb-1:ke+1)   &
+              ,curlbz   (nxmax,jb-1:je+1,kb-1:ke+1)                                                  &
+              ,eta_times_b_dot_j(nxmax,jb-1:je+1,kb-1:ke+1))
+    allocate ( dns(nxmax,jb-1:je+1,kb-1:ke+1,nspecm),vxs   (nxmax,jb-1:je+1,kb-1:ke+1,nspecm) &
+              ,dnsh(nxmax,jb-1:je+1,kb-1:ke+1,nspecm) &
+              ,vys(nxmax,jb-1:je+1,kb-1:ke+1,nspecm),vzs   (nxmax,jb-1:je+1,kb-1:ke+1,nspecm) &
+              ,tpar(nxmax,jb-1:je+1,kb-1:ke+1,nspecm),tperp(nxmax,jb-1:je+1,kb-1:ke+1,nspecm) &
+              ,qp_cell(nxmax,jb-1:je+1,kb-1:ke+1,nspecm)) 
+    allocate ( p_xx(nxmax,jb-1:je+1,kb-1:ke+1,nspecm),p_xy(nxmax,jb-1:je+1,kb-1:ke+1,nspecm)&
+              ,p_xz(nxmax,jb-1:je+1,kb-1:ke+1,nspecm),p_yy(nxmax,jb-1:je+1,kb-1:ke+1,nspecm)&
+              ,p_yz(nxmax,jb-1:je+1,kb-1:ke+1,nspecm),p_zz(nxmax,jb-1:je+1,kb-1:ke+1,nspecm) )
+    allocate ( ainjxz(nxmax,kb-1:ke+1),ainjzx(nxmax,kb-1:ke+1),deavxz(nxmax,kb-1:ke+1)          &
+              ,deavzx(nxmax,kb-1:ke+1),vxavxz(nxmax,kb-1:ke+1),vyavxz(nxmax,kb-1:ke+1)          &
+              ,vzavxz(nxmax,kb-1:ke+1),vxavzx(nxmax,kb-1:ke+1),vyavzx(nxmax,kb-1:ke+1)          &
+              ,vzavzx(nxmax,kb-1:ke+1),vxcaxz(nxmax,kb-1:ke+1),vycaxz(nxmax,kb-1:ke+1)          &
+              ,vzcaxz(nxmax,kb-1:ke+1),vxcazx(nxmax,kb-1:ke+1),vycazx(nxmax,kb-1:ke+1)          &
+              ,vzcazx(nxmax,kb-1:ke+1))
+    allocate ( ainjyz(jb-1:je+1,kb-1:ke+1),ainjzy(jb-1:je+1,kb-1:ke+1)                     &
+              ,deavyz(jb-1:je+1,kb-1:ke+1),deavzy(jb-1:je+1,kb-1:ke+1)                     &
+              ,vxavyz(jb-1:je+1,kb-1:ke+1),vyavyz(jb-1:je+1,kb-1:ke+1)                     &
+              ,vzavyz(jb-1:je+1,kb-1:ke+1),vxavzy(jb-1:je+1,kb-1:ke+1)                     &
+              ,vyavzy(jb-1:je+1,kb-1:ke+1),vzavzy(jb-1:je+1,kb-1:ke+1)                     &
+              ,vxcayz(jb-1:je+1,kb-1:ke+1),vycayz(jb-1:je+1,kb-1:ke+1)                     &
+              ,vzcayz(jb-1:je+1,kb-1:ke+1),vxcazy(jb-1:je+1,kb-1:ke+1)                     &
+              ,vycazy(jb-1:je+1,kb-1:ke+1),vzcazy(jb-1:je+1,kb-1:ke+1))
+    allocate ( ainjxy(nxmax,jb-1:je+1),ainjyx(nxmax,jb-1:je+1),deavxy(nxmax,jb-1:je+1)          &
+              ,deavyx(nxmax,jb-1:je+1),vxavxy(nxmax,jb-1:je+1),vyavxy(nxmax,jb-1:je+1)          &
+              ,vzavxy(nxmax,jb-1:je+1),vxavyx(nxmax,jb-1:je+1),vyavyx(nxmax,jb-1:je+1)          &
+              ,vzavyx(nxmax,jb-1:je+1),vxcaxy(nxmax,jb-1:je+1),vycaxy(nxmax,jb-1:je+1)          &
+              ,vzcaxy(nxmax,jb-1:je+1),vxcayx(nxmax,jb-1:je+1),vycayx(nxmax,jb-1:je+1)          &
+              ,vzcayx(nxmax,jb-1:je+1))
+    allocate (iphead(nxmax,jb-1:je+1,kb-1:ke+1,nspecm),iptemp(nxmax,jb-1:je+1,kb-1:ke+1,nspecm))
     allocate (xc_uniform(nxmax),yc_uniform(nymax),zc_uniform(nzmax),xv_uniform(nxmax),yv_uniform(nymax),zv_uniform(nzmax))
     allocate (ixc_2_c_map(nx+1),iyc_2_c_map(ny+1),izc_2_c_map(nz+1))
     allocate (ixc_2_v_map(nx+1),iyc_2_v_map(ny+1),izc_2_v_map(nz+1))

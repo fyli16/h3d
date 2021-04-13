@@ -254,12 +254,11 @@ subroutine data_output
   integer :: i
   integer*8 :: numvars, irecnum
 
-  ! ??
+  ! convert 'it' to char and broadcast to all ranks
   if (myid==0) then
     my_short_int = it
     call integer_to_character(cycle_ascii, len(cycle_ascii), my_short_int)
     cycle_ascii_new=trim(adjustl(cycle_ascii))
-    print*, "writing output at cycle = ", cycle_ascii_new
   endif
   call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
   call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
@@ -281,14 +280,8 @@ subroutine data_output
   numvars = 18
   irecnum = 1
 
-  ! VR: in the old version, "nonuniform_mesh_global" was passed to dataout
-  call dataout(bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,                   &
-      p_xx,p_xy,p_xz,p_yy,p_yz,p_zz,fox,foy,foz, vxs,vys,vzs,                 &
-      nxmax,nymax,nzmax,file_unit,myid,                                       &
-      numvars,irecnum,kb,ke,numprocs,wpiwci,jb,je,ny,nz,nylmax,nzlmax,nspecm, &
-      eta, eta_times_b_dot_j, eta_par,            &
-      trim(data_directory), trim(adjustl(cycle_ascii)), MPI_IO_format)
-      ! uniform_mesh, trim(data_directory), trim(adjustl(cycle_ascii)), MPI_IO_format)
+  ! write data
+  call dataout
   
   ! this block is not executed when MPI_IO_format=.true.
   if (myid==0 .and. .not.MPI_IO_format) then
@@ -297,7 +290,7 @@ subroutine data_output
     enddo
   endif
 
-  ! write particles with a given volume
+  ! write particles (within a given volume)
   if (mod(it,n_write_particle)==0) then
     if (myid == 0) then
       my_short_int = it
@@ -307,7 +300,33 @@ subroutine data_output
     call particle_in_volume_write
   endif
 
-  return 
+  ! write restart files
+  if (mod(int(it,8),n_write_restart)==0 .and. (it>itstart)) then
+    if (myid == 0) print*, 'Writing restart files ...'
+    itfin = it
+    do i = 0, npes_over_60  
+      if (mod( int(myid,8) ,npes_over_60 + 1).eq.i) then
+        call restart_read_write(1.0)
+      endif
+      call MPI_BARRIER(MPI_COMM_WORLD,IERR)
+    enddo
+
+    ! write the latest restart dump info into file
+    if (myid == 0) then
+      open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='unknown')
+      write(222,*) restart_index, itfin
+      close(222)
+    endif
+
+    ! keep only two sets of restart files, 
+    ! so overwrite the previous dump by swapping file index 
+    if (restart_index == 1) then
+      restart_index=2
+    else
+      restart_index=1
+    endif
+
+  endif 
 
 end subroutine data_output
 
@@ -388,37 +407,9 @@ subroutine sim_loops
     call date_and_time(values=time_end_array(:,30))
     call accumulate_time(time_begin_array(1,30),time_end_array(1,30),time_elapsed(30))
       
-    ! write data
+    ! data output (mesh data, particles, restart files, etc.)
     if (.not.testorbt.and.mod(it,n_write_data)==0) then        
       call data_output
-    endif
-
-    ! write restart files
-    if (mod(int(it,8),n_write_restart)==0 .and. (it>itstart)) then
-      if (myid == 0) print*, 'Writing restart files ...'
-      itfin = it
-      do i = 0, npes_over_60  
-        if (mod( int(myid,8) ,npes_over_60 + 1).eq.i) then
-          call restart_read_write(1.0)
-        endif
-        call MPI_BARRIER(MPI_COMM_WORLD,IERR)
-      enddo
-
-      ! write the latest restart dump info into file
-      if (myid == 0) then
-        open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='unknown')
-        write(222,*) restart_index, itfin
-        close(222)
-      endif
-
-      ! keep only two sets of restart files, 
-      ! so overwrite the previous dump by swapping file index 
-      if (restart_index == 1) then
-        restart_index=2
-      else
-        restart_index=1
-      endif
-
     endif
 
     time = time + dtwci
