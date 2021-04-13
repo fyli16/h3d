@@ -82,8 +82,8 @@ module parameter_mod
               file_unit_read(20),nptot,npleaving,npentering,iclock_speed, nptotp
   real*8 :: clock_time_init, clock_time_old, clock_time, clock_time1
   real*8, dimension(:), allocatable :: dfac
-  integer*8, dimension(:), allocatable :: nskip,ipleft,iprite,ipsendleft,ipsendrite,iprecv,ipsendtop,ipsendbot &
-                                      ,ipsendlefttop,ipsendleftbot,ipsendritetop,ipsendritebot,ipsend
+  integer*8, dimension(:), allocatable :: nskip, ipleft, iprite, ipsendleft, ipsendrite, iprecv, &
+            ipsendtop, ipsendbot, ipsendlefttop,ipsendleftbot,ipsendritetop,ipsendritebot,ipsend
   integer*8:: idum
   integer*8, dimension(:), allocatable:: idmap
   integer*8, dimension(:,:), allocatable:: idmap_yz
@@ -104,7 +104,11 @@ module parameter_mod
   integer*8 :: restart_index=1
   character(len=2) :: restart_index_suffix(2)
   character(len=160) :: data_directory, restart_directory, cycle_ascii, cycle_ascii_new, &
-                      myid_char, cleanup_status
+              myid_char, cleanup_status
+  
+  real*8, dimension(:,:,:), allocatable :: uniform_mesh     
+  ! VR : allocating a global mesh can not work on large runs with small amount of memory per rank 
+  ! real*8, dimension(:,:,:), allocatable:: nonuniform_mesh_global
 
   real*8 :: dB_B0, num_cycles ! for init_wave
 

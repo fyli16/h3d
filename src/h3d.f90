@@ -15,10 +15,6 @@ program h3d
 
   implicit none
 
-  real*8, dimension(:,:,:), allocatable :: uniform_mesh     
-  ! VR : allocating a global mesh can not work on large runs with small amount of memory per rank 
-  ! real*8, dimension(:,:,:), allocatable:: nonuniform_mesh_global
-
   ! Initialize MPI
   call MPI_INIT(IERR)
   call MPI_COMM_SIZE(MPI_COMM_WORLD,NUMPROCS,IERR)
@@ -32,9 +28,7 @@ program h3d
   call allocate_global_arrays  
     
   ! set up mesh 
-  call setup_mesh()
-  allocate ( uniform_mesh(nxmax, jb-1:je+1, kb-1:ke+1) )
-  ! VR: allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
+  call setup_mesh
 
   ! open history diagnostic files
   call open_hist_diag_files()
@@ -67,7 +61,7 @@ program h3d
   ! main simulation loop
   time_elapsed=0.; time_begin_array=0; time_end_array=0
   do while(it <= itfinish)
-    call one_simulation_loop(uniform_mesh)
+    call one_simulation_loop
   enddo  
 
   ! shutdown the program
@@ -79,7 +73,7 @@ end program h3d
 !---------------------------------------------------------------------
 ! set up uniform mesh
 !---------------------------------------------------------------------
-subroutine setup_mesh()
+subroutine setup_mesh
   use parameter_mod
   use mesh_mod
   implicit none
@@ -91,28 +85,33 @@ subroutine setup_mesh()
     write(6,*) "Setting up mesh ..."
   endif
 
-  ! Initialize nonuniform mesh
-  ! where meshX, meshY, meshZ are declared in 'mesh2d'
-  call MESH_INIT(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh
-  call MESH_INIT(meshY,yaa,ybb,ymax,nay,nby,ny) ! initialize y-mesh
-  call MESH_INIT(meshZ,zaa,zbb,zmax,naz,nbz,nz) ! initialize z-mesh
+  ! Initialize uniform mesh
+  ! where meshX, meshY, meshZ are declared in 'mesh_mod'
+  call mesh_init(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh
+  call mesh_init(meshY,yaa,ybb,ymax,nay,nby,ny) ! initialize y-mesh
+  call mesh_init(meshZ,zaa,zbb,zmax,naz,nbz,nz) ! initialize z-mesh
 
-  call MESH_INDEX(meshX,CELL,ixv_2_c_map)
-  call MESH_INDEX(meshY,CELL,iyv_2_c_map)
-  call MESH_INDEX(meshZ,CELL,izv_2_c_map)
-  call MESH_INDEX(meshX,NODE,ixv_2_v_map)
-  call MESH_INDEX(meshY,NODE,iyv_2_v_map)
-  call MESH_INDEX(meshZ,NODE,izv_2_v_map)
-  call MESH_INDEX(meshX,CELL,ixc_2_c_map,CELL)
-  call MESH_INDEX(meshY,CELL,iyc_2_c_map,CELL)
-  call MESH_INDEX(meshZ,CELL,izc_2_c_map,CELL)
-  call MESH_INDEX(meshX,NODE,ixc_2_v_map,CELL)
-  call MESH_INDEX(meshY,NODE,iyc_2_v_map,CELL)
-  call MESH_INDEX(meshZ,NODE,izc_2_v_map,CELL)
+  ! mesh_index_yuri
+  call mesh_index(meshX,CELL,ixv_2_c_map)
+  call mesh_index(meshY,CELL,iyv_2_c_map)
+  call mesh_index(meshZ,CELL,izv_2_c_map)
+  call mesh_index(meshX,NODE,ixv_2_v_map)
+  call mesh_index(meshY,NODE,iyv_2_v_map)
+  call mesh_index(meshZ,NODE,izv_2_v_map)
+  ! mesh_index_hxv
+  call mesh_index(meshX,CELL,ixc_2_c_map,CELL)
+  call mesh_index(meshY,CELL,iyc_2_c_map,CELL)
+  call mesh_index(meshZ,CELL,izc_2_c_map,CELL)
+  call mesh_index(meshX,NODE,ixc_2_v_map,CELL)
+  call mesh_index(meshY,NODE,iyc_2_v_map,CELL)
+  call mesh_index(meshZ,NODE,izc_2_v_map,CELL)
+
+  allocate ( uniform_mesh(nxmax, jb-1:je+1, kb-1:ke+1) )
+  ! VR: allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
 
   ! write mesh properties into a file
   if (myid == 0) then
-    open(unit=10,file='mesh_vertices.dat',status='unknown',form='formatted')
+    open(unit=10, file='mesh_vertices.dat', status='unknown', form='formatted')
     write(10,*) meshX%nl+1, meshY%nl+1, meshZ%nl+1
 
     do i = 2, meshX%nl+2 
@@ -258,13 +257,14 @@ end subroutine init_restart
 !---------------------------------------------------------------------
 ! diagnostic data output
 !---------------------------------------------------------------------
-subroutine data_output(uniform_mesh)
+! subroutine data_output(uniform_mesh)
+subroutine data_output
   use parameter_mod
   implicit none 
 
   integer :: j
   integer*8 :: numvars, irecnum
-  real*8 :: uniform_mesh(nxmax, jb-1:je+1, kb-1:ke+1)
+  ! real*8 :: uniform_mesh(nxmax, jb-1:je+1, kb-1:ke+1)
 
   ! ??
   if (myid==0) then
@@ -297,7 +297,9 @@ subroutine data_output(uniform_mesh)
       nxmax,nymax,nzmax,file_unit,myid,                                       &
       numvars,irecnum,kb,ke,numprocs,wpiwci,jb,je,ny,nz,nylmax,nzlmax,nspecm, &
       eta, eta_times_b_dot_j, eta_par,            &
-      uniform_mesh, trim(data_directory), trim(adjustl(cycle_ascii)), MPI_IO_format)
+      trim(data_directory), trim(adjustl(cycle_ascii)), MPI_IO_format)
+      ! uniform_mesh, trim(data_directory), trim(adjustl(cycle_ascii)), MPI_IO_format)
+      
   if (myid == 0 .and. .not. MPI_IO_format) then
     do j = 1, 25
       close(file_unit(j))
@@ -323,12 +325,12 @@ end subroutine data_output
 !---------------------------------------------------------------------
 ! simulation loop
 !---------------------------------------------------------------------
-subroutine one_simulation_loop(uniform_mesh)
+subroutine one_simulation_loop
   use parameter_mod
   implicit none 
 
   integer :: iwrite
-  real*8 :: uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1)
+  ! real*8 :: uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1)
 
   call date_and_time(values=time_begin_array(:,1)) ! time one-whole-loop
 
@@ -389,7 +391,7 @@ subroutine one_simulation_loop(uniform_mesh)
     
   ! write data
   if (.not.testorbt.and.mod(it,n_write_data)==0) then        
-    call data_output(uniform_mesh)
+    call data_output
   endif
 
   ! write restart files
@@ -425,8 +427,6 @@ subroutine one_simulation_loop(uniform_mesh)
 
   call date_and_time(values=time_end_array(:,1))
   call accumulate_time(time_begin_array(1,1),time_end_array(1,1),time_elapsed(1))
-
-  return
 
 end subroutine one_simulation_loop
 

@@ -129,7 +129,7 @@ end subroutine BoundsToDimensions
 
 
 !---------------------------------------------------------------------
-subroutine wrtfile_Non_MPIO(dat,rnorm,filenum, irec_start,ny1m,nz1m) 
+subroutine wrtfile_non_mpio(dat,rnorm,filenum, irec_start,ny1m,nz1m) 
   use parameter_mod
   implicit none
 
@@ -232,6 +232,6 @@ subroutine wrtfile_Non_MPIO(dat,rnorm,filenum, irec_start,ny1m,nz1m)
   endif
 
   return
-end subroutine wrtfile_Non_MPIO
+end subroutine wrtfile_non_mpio
 
 

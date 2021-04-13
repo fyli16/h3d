@@ -6,7 +6,7 @@
       use mesh_mod
       implicit none
 
-      integer*8 :: ibp1,ibp2,nptot_max,i,remake,field_subcycle
+      integer*8 :: ibp1, ibp2, nptot_max, i, remake, field_subcycle
       real*8 :: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi     &
                         ,x_p,y_p,z_p,x_p_logical,y_p_logical        &
                         ,z_p_logical,r_c,q_p,dtsav

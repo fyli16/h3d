@@ -36,7 +36,6 @@ module mesh_mod
   end type meshtype
 
   type(mesh) :: meshX, meshY, meshZ 
-
   type (meshtype), parameter :: cell = meshtype(0)
   type (meshtype), parameter :: NODE = meshtype(1)
 
@@ -58,12 +57,12 @@ module mesh_mod
     real*8 :: findexp
      
     if((xa.ge.xb).or.(na.ge.nb)) then 
-      call error_abort('MESH_INIT(): bad parameters --- stop!')
+      call error_abort('mesh_init(): bad parameters --- stop!')
     endif
 
     m%na=na ; m%nb=nb ; m%nl=nl
     m%xa=xa ; m%xb=xb ; m%xl=xl
-    nbb = nl-nb
+    nbb = nl - nb
 
     allocate(m%xn(nl+3))  ! -1:nl+1
     allocate(m%xc(nl+2))  ! -1:nl
@@ -136,6 +135,7 @@ module mesh_mod
 
   !---------------------------------------------------------------------
   ! destroy mesh
+  !---------------------------------------------------------------------
   subroutine mesh_destruct(m)
     implicit none
 
@@ -164,7 +164,7 @@ module mesh_mod
   double precision function mesh_unmap(m,x) 
     implicit none
 
-    type(MESH), intent(in) :: m
+    type(mesh), intent(in) :: m
     real*8, intent(in) :: x 
     real*8 :: t
 
@@ -190,7 +190,7 @@ module mesh_mod
   double precision function mesh_map(m,t)
     implicit none
 
-    type(MESH), intent(in) :: m
+    type(mesh), intent(in) :: m
     real*8, intent(in) :: t 
     real*8 :: x
 
@@ -215,10 +215,11 @@ module mesh_mod
   ! m%xc(ix) <= xu(i) < m%xc(ix+1) if inode==cell
   ! m%xn(ix) <= xu(i) < m%xn(ix+1) if inode==NODE
   ! MESH_INIT() must be called prior to this call
-  subroutine mesh_index_hxv(m,inode,ix,inode_uniform)
+  !---------------------------------------------------------------------
+  subroutine mesh_index_hxv(m, inode, ix, inode_uniform)
     implicit none
 
-    type(MESH), intent(in) :: m
+    type(mesh), intent(in) :: m
     type(meshtype), intent(in) :: inode,inode_uniform
     integer*8, intent(out), dimension(:) :: ix
     real*8, dimension(:), pointer :: pp
@@ -261,10 +262,11 @@ module mesh_mod
   ! m%xc(ix) <= xu(i) < m%xc(ix+1) if inode==cell
   ! m%xn(ix) <= xu(i) < m%xn(ix+1) if inode==NODE
   ! MESH_INIT() must be called prior to this call
-  subroutine mesh_index_yuri(m,inode,ix)
+  !---------------------------------------------------------------------
+  subroutine mesh_index_yuri(m, inode, ix)
     implicit none
 
-    type(MESH), intent(in) :: m
+    type(mesh), intent(in) :: m
     type(meshtype), intent(in) :: inode
     integer*8, intent(out), dimension(:) :: ix
     real*8, dimension(:), pointer :: pp
@@ -303,7 +305,7 @@ module mesh_mod
     implicit none
 
     type(meshtype), intent(in) :: inode
-    type(MESH), intent(in) :: mx,my 
+    type(mesh), intent(in) :: mx,my 
     integer*8, intent(in) :: ncx,ncy,nnx,nny
     real*8, dimension(ncx,ncy), intent(in) :: a
     real*8, dimension(nnx,nny), intent(out) :: ap
@@ -337,8 +339,8 @@ module mesh_mod
         endif 
         allocate(ix(nnx))
         allocate(iy(nny))
-        call MESH_INDEX(mx,inode,ix)
-        call MESH_INDEX(my,inode,iy)
+        call mesh_index(mx,inode,ix)
+        call mesh_index(my,inode,iy)
         dx = mx%xl/(nnx-1)
         dy = my%xl/(nny-1)
     endif
@@ -506,6 +508,7 @@ end function findexp
 
 !---------------------------------------------------------------------
 ! F(t) = 0 to solve
+!---------------------------------------------------------------------
 double precision function func(t) 
   implicit none
 
@@ -525,6 +528,7 @@ end function func
 
 !---------------------------------------------------------------------
 ! simple root finder
+!---------------------------------------------------------------------
 subroutine bisect(f,a,b,tol)
   implicit none
 

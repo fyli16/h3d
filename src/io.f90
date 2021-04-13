@@ -4,7 +4,8 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
                     nxmax, nymax, nzmax, file_unit, myid,                                       &
                     numvars, irecnum, kb, ke, numprocs, wpiwci, jb, je, ny, nz, nylmax, nzlmax, nspecm, &
                     eta, eta_times_b_dot_j, eta_par,            &
-                    uniform_mesh, data_directory, cycle_ascii, MPI_IO_format)
+                    data_directory, cycle_ascii, MPI_IO_format)
+                    ! uniform_mesh, data_directory, cycle_ascii, MPI_IO_format)
   use parameter_mod, only : frac,tx0,one,nspec
   implicit none  
 
@@ -18,7 +19,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
   integer*8 :: ny,nz,eta_par
   real*8 :: rnorm, wpiwci
   integer*8 :: irecdel, ir1, ir2, irec_start , idebug,IERR
-  real*8 :: uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1)
+  ! real*8 :: uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1)
   ! real*8 :: nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1)
   character(len=240) :: fileName
   character(len=2) :: specname
@@ -40,7 +41,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
     fileName= trim(trim(data_directory)//'bx/bx_'//trim(adjustl(cycle_ascii)))//'.gda'
     call wrtfile(uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
   else
-    call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(1),irec_start,ny,nz)
+    call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(1),irec_start,ny,nz)
   endif
 
   idebug = 0
@@ -52,7 +53,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       fileName = trim(trim(data_directory)//'by/by_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile(uniform_mesh, rnorm, trim(adjustl(fileName)), irec_start, ny, nz)
     else
-      call wrtfile_NON_MPIO(uniform_mesh, rnorm, file_unit(2), irec_start, ny, nz)
+      call wrtfile_non_mpio(uniform_mesh, rnorm, file_unit(2), irec_start, ny, nz)
     endif
 
     rnorm = wpiwci
@@ -62,7 +63,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       fileName= trim(trim(data_directory)//'bz/bz_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile(uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
-      call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(3),irec_start,ny,nz)
+      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(3),irec_start,ny,nz)
     endif
 
     rnorm = 1.
@@ -72,7 +73,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       fileName= trim(trim(data_directory)//'den/den_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile(uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
-      call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(4),irec_start,ny,nz)
+      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(4),irec_start,ny,nz)
     endif
 
     rnorm = wpiwci**2
@@ -82,7 +83,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       fileName= trim(trim(data_directory)//'ex/ex_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile(uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
-      call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(5),irec_start,ny,nz)
+      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(5),irec_start,ny,nz)
     endif
 
     rnorm = wpiwci**2
@@ -92,7 +93,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       fileName= trim(trim(data_directory)//'ey/ey_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
-      call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(6),irec_start,ny,nz)
+      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(6),irec_start,ny,nz)
     endif
 
     rnorm = wpiwci**2
@@ -102,7 +103,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       fileName= trim(trim(data_directory)//'ez/ez_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
-      call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(7),irec_start,ny,nz)
+      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(7),irec_start,ny,nz)
     endif
 
     rnorm = wpiwci
@@ -112,7 +113,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       fileName= trim(trim(data_directory)//'vix/vix_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
-      call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(8),irec_start,ny,nz)
+      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(8),irec_start,ny,nz)
     endif
 
     rnorm = wpiwci
@@ -122,7 +123,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       fileName= trim(trim(data_directory)//'viy/viy_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
-      call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(9),irec_start,ny,nz)
+      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(9),irec_start,ny,nz)
     endif
 
     rnorm = wpiwci 
@@ -132,7 +133,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       fileName= trim(trim(data_directory)//'viz/viz_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
-      call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(10),irec_start,ny,nz)
+      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(10),irec_start,ny,nz)
     endif
 
     do is=1,nspec
@@ -144,7 +145,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
         fileName= trim(trim(data_directory)//'tpar/tpar_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
-        call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(11),irec_start,ny,nz)
+        call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(11),irec_start,ny,nz)
       endif
 
       rnorm = 1.
@@ -154,7 +155,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
         fileName= trim(trim(data_directory)//'tperp/tperp_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
-        call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(12),irec_start,ny,nz)
+        call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(12),irec_start,ny,nz)
       endif
 
       rnorm = wpiwci
@@ -163,7 +164,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
         fileName= trim(trim(data_directory)//'vxs/vxs_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
-        call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(23),irec_start,ny,nz)
+        call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(23),irec_start,ny,nz)
       endif
 
       rnorm = wpiwci
@@ -172,7 +173,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
         fileName= trim(trim(data_directory)//'vys/vys_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
-        call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(24),irec_start,ny,nz)
+        call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(24),irec_start,ny,nz)
       endif
 
       rnorm = wpiwci
@@ -181,7 +182,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
         fileName= trim(trim(data_directory)//'vzs/vzs_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
-        call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(25),irec_start,ny,nz)
+        call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(25),irec_start,ny,nz)
       endif
 
       rnorm = one/(tx0(is)*frac(is))
@@ -191,7 +192,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
         fileName= trim(trim(data_directory)//'p-xx/p-xx_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
-        call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(14),irec_start,ny,nz)
+        call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(14),irec_start,ny,nz)
       endif
 
       rnorm = one/(tx0(is)*frac(is))
@@ -201,7 +202,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
         fileName= trim(trim(data_directory)//'p-xy/p-xy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
-        call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(15),irec_start,ny,nz)
+        call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(15),irec_start,ny,nz)
       endif
 
       rnorm = one/(tx0(is)*frac(is))
@@ -211,7 +212,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
         fileName= trim(trim(data_directory)//'p-xz/p-xz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
-        call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(16),irec_start,ny,nz)
+        call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(16),irec_start,ny,nz)
       endif
 
       rnorm = one/(tx0(is)*frac(is))
@@ -221,7 +222,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
         fileName= trim(trim(data_directory)//'p-yy/p-yy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
-        call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(17),irec_start,ny,nz)
+        call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(17),irec_start,ny,nz)
       endif
 
       rnorm = one/(tx0(is)*frac(is))
@@ -231,7 +232,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
         fileName= trim(trim(data_directory)//'p-yz/p-yz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
-        call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(18),irec_start,ny,nz)
+        call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(18),irec_start,ny,nz)
       endif
 
       rnorm = one/(tx0(is)*frac(is))
@@ -241,7 +242,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
         fileName= trim(trim(data_directory)//'p-zz/p-zz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
-        call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(19),irec_start,ny,nz)
+        call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(19),irec_start,ny,nz)
       endif
     enddo
 
@@ -251,7 +252,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       fileName= trim(trim(data_directory)//'fox/fox_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
-      call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(20),irec_start,ny,nz)
+      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(20),irec_start,ny,nz)
     endif
 
     rnorm=1.
@@ -260,7 +261,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       fileName= trim(trim(data_directory)//'foy/foy_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
-      call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(21),irec_start,ny,nz)
+      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(21),irec_start,ny,nz)
     endif
 
     rnorm=1.
@@ -269,7 +270,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
       fileName= trim(trim(data_directory)//'foz/foz_'//trim(adjustl(cycle_ascii)))//'.gda'
       call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
     else
-      call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(22),irec_start,ny,nz)
+      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(22),irec_start,ny,nz)
     endif
 
     if (eta_par == 0) then
@@ -280,7 +281,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
         fileName= trim(trim(data_directory)//'eta/eta_'//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
-        call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(13),irec_start,ny,nz)
+        call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(13),irec_start,ny,nz)
       endif
     else
       rnorm = 1.
@@ -290,7 +291,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
         fileName= trim(trim(data_directory)//'eta_par/eta_par_'//trim(adjustl(cycle_ascii)))//'.gda'
         call wrtfile         (uniform_mesh,rnorm,trim(adjustl(fileName)),irec_start,ny,nz)
       else
-        call wrtfile_NON_MPIO(uniform_mesh,rnorm,file_unit(13),irec_start,ny,nz)
+        call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(13),irec_start,ny,nz)
       endif
     endif
 
@@ -327,14 +328,14 @@ subroutine restart_read_write(rw)
     write(f_unit) nspec
 
     do is = 1, nspec
-      NPTOTP=0
+      nptotp=0
       do ize = kb-1, ke
         do iye = jb-1, je
           do ixe = 1, nx1   
-              NP = IPHEAD(ixe, iye, ize, is)
-              do while (NP.ne.0)
-                NPTOTP = NPTOTP + 1
-                NP = LINK(NP)
+              np = IPHEAD(ixe, iye, ize, is)
+              do while (np.ne.0)
+                nptotp = nptotp + 1
+                np = link(np)
               enddo
           enddo
         enddo
@@ -345,128 +346,128 @@ subroutine restart_read_write(rw)
       allocate (particle_tmp_array2(nptotp))
 
       ! x
-      NPTOTP=0
+      nptotp=0
       do ize=kb-1,ke
         do iye=jb-1,je
           do ixe=1,nx1   
-              NP=IPHEAD(ixe,iye,ize,is)
-              DO WHILE (NP.NE.0)
-                NPTOTP=NPTOTP+1
+              np=IPHEAD(ixe,iye,ize,is)
+              do while (np.ne.0)
+                nptotp=nptotp+1
                 particle_tmp_array(nptotp) = x(np)
-                NP=LINK(NP)
-              ENDDO
+                np=link(np)
+              enddo
           enddo
         enddo
       enddo
       write(f_unit) particle_tmp_array
 
       ! y
-      NPTOTP=0
+      nptotp=0
       do ize=kb-1,ke
         do iye=jb-1,je
           do ixe=1,nx1   
-              NP=IPHEAD(ixe,iye,ize,is)
-              DO WHILE (NP.NE.0)
-                NPTOTP=NPTOTP+1
+              np=IPHEAD(ixe,iye,ize,is)
+              do while (np.ne.0)
+                nptotp=nptotp+1
                 particle_tmp_array(nptotp) = y(np)
-                NP=LINK(NP)
-              ENDDO
+                np=link(np)
+              enddo
           enddo
         enddo
       enddo
       write(f_unit) particle_tmp_array
 
       ! z
-      NPTOTP=0
+      nptotp=0
       do ize=kb-1,ke
         do iye=jb-1,je
           do ixe=1,nx1   
-              NP=IPHEAD(ixe,iye,ize,is)
-              DO WHILE (NP.NE.0)
-                NPTOTP=NPTOTP+1
+              np=IPHEAD(ixe,iye,ize,is)
+              do while (np.ne.0)
+                nptotp=nptotp+1
                 particle_tmp_array(nptotp) = z(np)
-                NP=LINK(NP)
-              ENDDO
+                np=link(np)
+              enddo
           enddo
         enddo
       enddo
       write(f_unit) particle_tmp_array
 
       ! vx
-      NPTOTP=0
+      nptotp=0
       do ize=kb-1,ke
         do iye=jb-1,je
           do ixe=1,nx1   
-              NP=IPHEAD(ixe,iye,ize,is)
-              DO WHILE (NP.NE.0)
-                NPTOTP=NPTOTP+1
+              np=IPHEAD(ixe,iye,ize,is)
+              do while (np.ne.0)
+                nptotp=nptotp+1
                 particle_tmp_array(nptotp) = vx(np)
-                NP=LINK(NP)
-              ENDDO
+                np=link(np)
+              enddo
           enddo
         enddo
       enddo
       write(f_unit) particle_tmp_array
 
       ! vy
-      NPTOTP=0
+      nptotp=0
       do ize=kb-1,ke
         do iye=jb-1,je
           do ixe=1,nx1   
-              NP=IPHEAD(ixe,iye,ize,is)
-              DO WHILE (NP.NE.0)
-                NPTOTP=NPTOTP+1
+              np=IPHEAD(ixe,iye,ize,is)
+              do while (np.ne.0)
+                nptotp=nptotp+1
                 particle_tmp_array(nptotp) = vy(np)
-                NP=LINK(NP)
-              ENDDO
+                np=link(np)
+              enddo
           enddo
         enddo
       enddo
       write(f_unit) particle_tmp_array
 
       ! vz
-      NPTOTP=0
+      nptotp=0
       do ize=kb-1,ke
         do iye=jb-1,je
           do ixe=1,nx1   
-              NP=IPHEAD(ixe,iye,ize,is)
-              DO WHILE (NP.NE.0)
-                NPTOTP=NPTOTP+1
+              np=IPHEAD(ixe,iye,ize,is)
+              do while (np.ne.0)
+                nptotp=nptotp+1
                 particle_tmp_array(nptotp) = vz(np)
-                NP=LINK(NP)
-              ENDDO
+                np=link(np)
+              enddo
           enddo
         enddo
       enddo
       write(f_unit) particle_tmp_array
 
       ! qp
-      NPTOTP=0
+      nptotp=0
       do ize=kb-1,ke
         do iye=jb-1,je
           do ixe=1,nx1   
-              NP=IPHEAD(ixe,iye,ize,is)
-              DO WHILE (NP.NE.0)
-                NPTOTP=NPTOTP+1
+              np=IPHEAD(ixe,iye,ize,is)
+              do while (np.ne.0)
+                nptotp=nptotp+1
                 particle_tmp_array(nptotp) = qp(np)
-                NP=LINK(NP)
-              ENDDO
+                np=link(np)
+              enddo
           enddo
         enddo
       enddo
       write(f_unit) particle_tmp_array
 
       ! ptag
-      NPTOTP=0
+      nptotp=0
       do ize=kb-1,ke
         do iye=jb-1,je
           do ixe=1,nx1   
-              NP=IPHEAD(ixe,iye,ize,is)
-              DO WHILE (NP.NE.0)
-                NPTOTP=NPTOTP+1
+              np=IPHEAD(ixe,iye,ize,is)
+              do while (np.ne.0)
+                nptotp=nptotp+1
                 particle_tmp_array2(nptotp) = ptag(np)
-                NP=LINK(NP)
-              ENDDO
+                np=link(np)
+              enddo
           enddo
         enddo
       enddo
@@ -539,8 +540,8 @@ subroutine restart_read_write(rw)
       ixe=2
       iye=jb
       ize=kb
-      do np_count=1,NPTOTP
-        NP=IPSTORE
+      do np_count = 1, nptotp
+        np = ipstore
         x(np)=particle_tmp_array(np_count)
         ipstore=link(np)
         link(np)=iphead(ixe,iye,ize,is)
@@ -548,84 +549,84 @@ subroutine restart_read_write(rw)
       enddo
       iptemp(ixe,iye,ize,is)=0
       np=iphead(ixe,iye,ize,is)
-      DO WHILE (NP.NE.0)
+      do while (np.ne.0)
         iphead(ixe,iye,ize,is)=link(np)
         link(np)=iptemp(ixe,iye,ize,is)
         iptemp(ixe,iye,ize,is)=np
         np=iphead(ixe,iye,ize,is)
-      ENDDO
+      enddo
       iphead(ixe,iye,ize,is)=iptemp(ixe,iye,ize,is)
       iptemp(ixe,iye,ize,is)=0
 
       ! y
       read(f_unit) particle_tmp_array
-      NP_COUNT=0
+      np_count=0
       np=iphead(ixe,iye,ize,is)
-      DO WHILE (NP.NE.0)
-        NP_COUNT=NP_COUNT+1
+      do while (np.ne.0)
+        np_count=np_count+1
         y(np)=particle_tmp_array(np_count)
         np=link(np)
-      ENDDO
+      enddo
 
       ! z
       read(f_unit) particle_tmp_array
-      NP_COUNT=0
+      np_count=0
       np=iphead(ixe,iye,ize,is)
-      DO WHILE (NP.NE.0)
-        NP_COUNT=NP_COUNT+1
+      do while (np.ne.0)
+        np_count=np_count+1
         z(np)=particle_tmp_array(np_count)
         np=link(np)
-      ENDDO
+      enddo
 
       ! vx
       read(f_unit) particle_tmp_array
-      NP_COUNT=0
+      np_count=0
       np=iphead(ixe,iye,ize,is)
-      DO WHILE (NP.NE.0)
-        NP_COUNT=NP_COUNT+1
+      do while (np.ne.0)
+        np_count=np_count+1
         vx(np)=particle_tmp_array(np_count)
         np=link(np)
-      ENDDO
+      enddo
 
       ! vy
       read(f_unit) particle_tmp_array
-      NP_COUNT=0
+      np_count=0
       np=iphead(ixe,iye,ize,is)
-      DO WHILE (NP.NE.0)
-        NP_COUNT=NP_COUNT+1
+      do while (np.ne.0)
+        np_count=np_count+1
         vy(np)=particle_tmp_array(np_count)
         np=link(np)
-      ENDDO
+      enddo
    
       ! vz
       read(f_unit) particle_tmp_array
-      NP_COUNT=0
+      np_count=0
       np=iphead(ixe,iye,ize,is)
-      DO WHILE (NP.NE.0)
-        NP_COUNT=NP_COUNT+1
+      do while (np.ne.0)
+        np_count=np_count+1
         vz(np)=particle_tmp_array(np_count)
         np=link(np)
-      ENDDO
+      enddo
 
       ! qp
       read(f_unit) particle_tmp_array
-      NP_COUNT=0
+      np_count=0
       np=iphead(ixe,iye,ize,is)
-      DO WHILE (NP.NE.0)
-        NP_COUNT=NP_COUNT+1
+      do while (np.ne.0)
+        np_count=np_count+1
         qp(np)=particle_tmp_array(np_count)
         np=link(np)
-      ENDDO
+      enddo
 
       ! ptag
       read(f_unit) particle_tmp_array2
-      NP_COUNT=0
+      np_count=0
       np=iphead(ixe,iye,ize,is)
-      DO WHILE (NP.NE.0)
-        NP_COUNT=NP_COUNT+1
+      do while (np.ne.0)
+        np_count=np_count+1
         ptag(np)=particle_tmp_array2(np_count)
         np=link(np)
-      ENDDO
+      enddo
 
       deallocate (particle_tmp_array)
       deallocate (particle_tmp_array2)
@@ -862,14 +863,14 @@ subroutine write_datum(ndatum,datum,f_unit)
       else
           call MPI_IRECV(datum_tmp,ndatum_4,MPI_DOUBLE_PRECISION&
                         ,ipe,0,MPI_COMM_WORLD,req(1),IERR)
-          CALL MPI_WAIT(REQ(1),STATUS1,IERR)
+          call MPI_WAIT(REQ(1),STATUS1,IERR)
           write(f_unit) datum_tmp
       endif
     else
       if (myid == ipe) then
         call MPI_ISEND(datum,ndatum_4,MPI_DOUBLE_PRECISION&
                       ,0,0,MPI_COMM_WORLD,req(2),IERR)
-        CALL MPI_WAIT(REQ(2),STATUS2,IERR)
+        call MPI_WAIT(REQ(2),STATUS2,IERR)
       endif
     endif
   enddo
@@ -896,13 +897,13 @@ subroutine read_datum(ndatum,datum,f_unit)
           read(f_unit) datum_tmp
           call MPI_ISEND(datum_tmp,ndatum_4,MPI_DOUBLE_PRECISION&
                         ,ipe,0,MPI_COMM_WORLD,req(1),IERR)
-          CALL MPI_WAIT(REQ(1),STATUS1,IERR)
+          call MPI_WAIT(REQ(1),STATUS1,IERR)
       endif
     else
       if (myid == ipe) then
         call MPI_IRECV(datum,ndatum_4,MPI_DOUBLE_PRECISION&
                       ,0,0,MPI_COMM_WORLD,req(2),IERR)
-        CALL MPI_WAIT(REQ(2),STATUS2,IERR)
+        call MPI_WAIT(REQ(2),STATUS2,IERR)
       endif
     endif
   enddo
@@ -963,23 +964,23 @@ subroutine particle_in_volume_write
   dtzi = 1./meshZ%dt
  
   N_IN_VOLUME = 0
-  DO IS=1,NSPEC
-    NPTOTP=0
+  do IS=1,NSPEC
+    nptotp=0
     do ize=kb-1,ke
       do iye=jb-1,je
         do ixe=1,nx1   
-            NP=IPHEAD(ixe,iye,ize,is)
-            DO WHILE (NP.NE.0)
-              NPTOTP=NPTOTP+1
-              IF ( X(NP) <= XBOX_R .AND. X(NP) >= XBOX_L .AND.         &
-                    Y(NP) <= YBOX_R .AND. Y(NP) >= YBOX_L .AND.         &
-                    Z(NP) <= ZBOX_R .AND. Z(NP) >= ZBOX_L                 ) N_IN_VOLUME = N_IN_VOLUME + 1
-              NP=LINK(NP)
-            ENDDO
+            np=IPHEAD(ixe,iye,ize,is)
+            do while (np.ne.0)
+              nptotp=nptotp+1
+              if ( X(np) <= XBOX_R .and. X(np) >= XBOX_L .and.         &
+                    Y(np) <= YBOX_R .and. Y(np) >= YBOX_L .and.         &
+                    Z(np) <= ZBOX_R .and. Z(np) >= ZBOX_L                 ) N_IN_VOLUME = N_IN_VOLUME + 1
+              np=link(np)
+            enddo
         enddo
       enddo
     enddo
-  ENDDO
+  enddo
 
   call MPI_ALLREDUCE(N_IN_VOLUME,N_TOTAL,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,IERR)
   call MPI_ALLREDUCE(N_IN_VOLUME,N_MAX  ,1,MPI_INTEGER,MPI_MAX,MPI_COMM_WORLD,IERR)
@@ -987,26 +988,26 @@ subroutine particle_in_volume_write
             ,VWPAR(N_MAX),VWPERP1(N_MAX),VWPERP2(N_MAX))
 
   N_IN_VOLUME = 0
-  DO IS=1,NSPEC
-    NPTOTP=0
+  do IS=1,NSPEC
+    nptotp=0
     do ize=kb-1,ke
       do iye=jb-1,je
         do ixe=1,nx1   
-          NP=IPHEAD(ixe,iye,ize,is)
-          L=NP
-          DO WHILE (NP.NE.0)
-            NPTOTP=NPTOTP+1
-            IF ( X(NP) <= XBOX_R .AND. X(NP) >= XBOX_L .AND.         &
-                  Y(NP) <= YBOX_R .AND. Y(NP) >= YBOX_L .AND.         &
-                  Z(NP) <= ZBOX_R .AND. Z(NP) >= ZBOX_L                 ) THEN
+          np=IPHEAD(ixe,iye,ize,is)
+          L=np
+          do while (np.ne.0)
+            nptotp=nptotp+1
+            if ( X(np) <= XBOX_R .and. X(np) >= XBOX_L .and.         &
+                  Y(np) <= YBOX_R .and. Y(np) >= YBOX_L .and.         &
+                  Z(np) <= ZBOX_R .and. Z(np) >= ZBOX_L                 ) then
               N_IN_VOLUME = N_IN_VOLUME + 1
-              XW(N_IN_VOLUME)  = X(NP)
-              YW(N_IN_VOLUME)  = Y(NP)
-              ZW(N_IN_VOLUME)  = Z(NP)
-              VXW(N_IN_VOLUME) = VX(NP)
-              VYW(N_IN_VOLUME) = VY(NP)
-              VZW(N_IN_VOLUME) = VZ(NP)
-              QW(N_IN_VOLUME)  = QP(NP)
+              XW(N_IN_VOLUME)  = X(np)
+              YW(N_IN_VOLUME)  = Y(np)
+              ZW(N_IN_VOLUME)  = Z(np)
+              VXW(N_IN_VOLUME) = VX(np)
+              VYW(N_IN_VOLUME) = VY(np)
+              VZW(N_IN_VOLUME) = VZ(np)
+              QW(N_IN_VOLUME)  = QP(np)
 
               ! Uniform mesh - Same as is in version 5.0
               ! rx=hxi*x(l)+1.5000000000000001
@@ -1083,15 +1084,13 @@ subroutine particle_in_volume_write
               vwpar  (N_IN_VOLUME)  = vxa*par_x   + vya*par_y   + vza*par_z
               vwperp1(N_IN_VOLUME)  = vxa*perp1_x + vya*perp1_y + vza*perp1_z
               vwperp2(N_IN_VOLUME)  = vxa*perp2_x + vya*perp2_y + vza*perp2_z
-                
-
-            ENDIF
-          NP=LINK(NP)
-          ENDDO
+            endif
+          np=link(np)
+          enddo
         enddo
       enddo
     enddo
-  ENDDO
+  enddo
       
   lenrec=10*recl_for_real
   if (myid == 0) then
@@ -1106,55 +1105,55 @@ subroutine particle_in_volume_write
       recnum = 1
       write(filenum,rec=recnum) N_TOTAL
       recnum = recnum + 1
-      IF (N_IN_VOLUME /= 0) THEN
+      if (N_IN_VOLUME /= 0) then
         write(filenum,rec=recnum) N_IN_VOLUME
         recnum = recnum + 1
-        DO IP=1,N_IN_VOLUME
+        do IP=1,N_IN_VOLUME
           write(filenum,rec=recnum) XW(IP),YW(IP),ZW(IP),VXW(IP),VYW(IP),VZW(IP),QW(IP)                &
                                     ,VWPAR(IP),VWPERP1(IP),VWPERP2(IP)
           recnum = recnum + 1
-        ENDDO
-      ENDIF
+        enddo
+      endif
   endif
 
   if (myid == 0) then
     do ipe=1,numprocs-1
-        CALL MPI_RECV(N_IN_VOLUME,1,MPI_INTEGER,ipe,ipe,MPI_COMM_WORLD,status,ierror)
-        IF (N_IN_VOLUME /= 0) THEN
-          CALL MPI_RECV(XW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
-          CALL MPI_RECV(YW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
-          CALL MPI_RECV(ZW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
-          CALL MPI_RECV(VXW    ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
-          CALL MPI_RECV(VYW    ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
-          CALL MPI_RECV(VZW    ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
-          CALL MPI_RECV(QW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
-          CALL MPI_RECV(VWPAR  ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
-          CALL MPI_RECV(VWPERP1,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
-          CALL MPI_RECV(VWPERP2,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
+        call MPI_RECV(N_IN_VOLUME,1,MPI_INTEGER,ipe,ipe,MPI_COMM_WORLD,status,ierror)
+        if (N_IN_VOLUME /= 0) then
+          call MPI_RECV(XW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(YW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(ZW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(VXW    ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(VYW    ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(VZW    ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(QW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(VWPAR  ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(VWPERP1,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(VWPERP2,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
           write(filenum,rec=recnum) N_IN_VOLUME
           recnum = recnum + 1
-          DO IP=1,N_IN_VOLUME
+          do IP=1,N_IN_VOLUME
             write(filenum,rec=recnum) XW(IP),YW(IP),ZW(IP),VXW(IP),VYW(IP),VZW(IP),QW(IP)                &
                                     ,VWPAR(IP),VWPERP1(IP),VWPERP2(IP)
             recnum = recnum + 1
-          ENDDO
-        ENDIF
+          enddo
+        endif
     enddo
     CLOSE(UNIT=FILENUM)
   else
-      CALL MPI_SEND(N_IN_VOLUME,1,MPI_INTEGER,0,MYID,MPI_COMM_WORLD,ierror)
-      IF (N_IN_VOLUME /= 0) THEN
-        CALL MPI_SEND(XW     ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-        CALL MPI_SEND(YW     ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-        CALL MPI_SEND(ZW     ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-        CALL MPI_SEND(VXW    ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-        CALL MPI_SEND(VYW    ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-        CALL MPI_SEND(VZW    ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-        CALL MPI_SEND(QW     ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-        CALL MPI_SEND(VWPAR  ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-        CALL MPI_SEND(VWPERP1,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-        CALL MPI_SEND(VWPERP2,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-      ENDIF
+      call MPI_SEND(N_IN_VOLUME,1,MPI_INTEGER,0,MYID,MPI_COMM_WORLD,ierror)
+      if (N_IN_VOLUME /= 0) then
+        call MPI_SEND(XW     ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(YW     ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(ZW     ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(VXW    ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(VYW    ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(VZW    ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(QW     ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(VWPAR  ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(VWPERP1,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(VWPERP2,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
+      endif
   endif
 
   deallocate (XW,YW,ZW,VXW,VYW,VZW,QW,VWPAR,VWPERP1,VWPERP2)
