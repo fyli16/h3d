@@ -35,7 +35,7 @@ subroutine parmov   ! particle move?
     real*8 :: dth ! dt half, i.e., dt/2
     real*8 :: eps2,myranf,fluxran,vxa,vyz,vza
     INTEGER*8:: L, EXIT_CODE_P, EXIT_CODE
-    integer*8:: n_fast_removed,n_fast_removed_local,nptot_max,Field_Diverge,Field_Diverge_p
+    integer*8:: n_fast_removed,n_fast_removed_local,Field_Diverge,Field_Diverge_p
     real*8 :: tx,ty,tz,v_x,v_y,v_z  
     INTEGER*4 :: nescapearr(8),nescapearr_global(8)
     INTEGER*4 :: ppacket(3),ppacketg(3),dpacket(4),dpacketg(4)
@@ -783,7 +783,7 @@ subroutine particle_boundary
     integer :: exchange_send_request(8)
     integer*8 :: iv,iye_cc,ize_cc,j,jv,k,npleavingp,nprecv,nprecvtmp
     real*8 :: v_limit
-    integer*8 :: n_fast_removed,n_fast_removed_local,nptot_max,Field_Diverge,Field_Diverge_p
+    integer*8 :: n_fast_removed,n_fast_removed_local,Field_Diverge,Field_Diverge_p
     integer*8 :: i,ii,iix,iixe,iiy,iiye,iiz,iize,irepeat,irepeatp,is,itmp
     real*8 :: hxmin,hxmax,hymin,hymax,hzmin,hzmax,cell_size_min
     Storage_Error_p = 0
