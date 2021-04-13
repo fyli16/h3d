@@ -85,9 +85,6 @@ subroutine setup_mesh
   call mesh_index(meshY,NODE,iyc_2_v_map,CELL)
   call mesh_index(meshZ,NODE,izc_2_v_map,CELL)
 
-  allocate ( uniform_mesh(nxmax, jb-1:je+1, kb-1:ke+1) )
-  ! VR: allocate (nonuniform_mesh_global(nxmax,0:ny+1,0:nz+1))
-
   ! write mesh properties into a file
   if (myid == 0) then
     open(unit=10, file='mesh_vertices.dat', status='unknown', form='formatted')
