@@ -368,8 +368,8 @@
           loaded_percentage = 100.0*real(ip-ipb1)/(ipb2-ipb1)
           
           if (myid==0.and.(loaded_percentage>=print_percentage)) then
-             write(6,"(A,F5.1,A)") "  loaded ", loaded_percentage," % of particles"
-             print_percentage = print_percentage + 5.0d0
+             write(6,"(A,F5.1,A)") "   loaded ", loaded_percentage," % of particles"
+             print_percentage = print_percentage + 20.0d0
           endif
 
         enddo
