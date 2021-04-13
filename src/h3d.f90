@@ -267,7 +267,10 @@ subroutine data_output
   call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
   
   if (myid==0) print*, 'MPI_IO_format = ', MPI_IO_format
-  if (myid==0 .and. .not.MPI_IO_format) call open_files
+  if (myid==0 .and. .not.MPI_IO_format) then
+    print*, 'calling open_files'
+    call open_files
+  endif 
   
   call date_and_time(values=time_begin_array(:,6))
   if (ndim /= 1) then
@@ -300,7 +303,6 @@ subroutine data_output
     if (myid == 0) then
       my_short_int = it
       call integer_to_character(cycle_ascii, len(cycle_ascii), my_short_int)
-      if (cycle_ascii=='') cycle_ascii='0'
       print*, " calling particle_in_volume_write at cycle = ", cycle_ascii
     endif
     call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
