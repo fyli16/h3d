@@ -30,10 +30,9 @@
         write(6,*) "Initializing wave ..."
       endif 
 
-      dtxi = one/meshX%dt
-      dtyi = one/meshY%dt
-      dtzi = one/meshZ%dt
-      if (myid==0) print*, 'dtxi, dtyi, dtzi = ', dtxi, dtyi, dtzi
+      dtxi = one/meshX%dt ! dtxi=nx
+      dtyi = one/meshY%dt ! dtyi=ny
+      dtzi = one/meshZ%dt ! dtzi=nz
 
       ! initialize the random number generator with a different seed for different processors
       call random_seed(size=seed_size) ! obtain seed size
@@ -49,7 +48,8 @@
       call MPI_BCAST(seed, seed_size, MPI_INTEGER, 0, MPI_COMM_WORLD, IERR)  
       call random_seed(put=myid*seed) ! set current seed
 
-      it=0; itfin = 0; itfinish = tmax/dtwci
+      it = 0; itfin = 0; 
+      itstart = it; itfinish = tmax/dtwci
       nx1 = nx+1; nx2 = nx+2
       ny1 = ny+1; ny2 = ny+2
       nz1 = nz+1; nz2 = nz+2

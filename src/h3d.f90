@@ -83,13 +83,6 @@ subroutine init_restart
   itstart = itfin
   it = itstart
   itfinish = (tmax-t_stopped)/dtwci + itstart
-  if (myid==0) then 
-    print*, " "
-    print*, 't_stopped = ', t_stopped
-    print*, 'itstart = ', itstart
-    print*, 'itfinish = ', itfinish
-    print*, " "
-  endif 
     
   if (restart_index == 1) then
     restart_index=2
@@ -263,6 +256,13 @@ subroutine sim_loops
   implicit none 
 
   integer :: i
+
+  ! print start & finish step of iterations
+  if (myid==0) then 
+    print*, " "
+    print*, 'itstart, itfinish = ', itstart, itfinish
+    print*, " "
+  endif 
 
   ! time stamp just before entering the simulation loop
   call date_and_time(values=now)
