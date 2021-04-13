@@ -16,12 +16,12 @@ subroutine accumulate_time(time_begin, time_end, time_elapsed)
 end subroutine accumulate_time
 
 
-!********************************************************
+!---------------------------------------------------------------------
 ! XF:  smoothing routine--for periodic B.C.
 ! 3D version of 3-point binomial smoothing
 !            y(i)=(x(i-1)+2*x(i)+x(i+1))/4
 ! i.e. 27 points are involved
-!********************************************************
+!---------------------------------------------------------------------
 subroutine nsmth (a)
   use parameter_mod
   implicit none
@@ -123,15 +123,15 @@ end subroutine mpe_decomp1d
 
 
 !---------------------------------------------------------------------
-subroutine ERROR_ABORT(message)
+subroutine error_abort(message)
   character(*), intent(in) :: message
   write(6,*) message
   stop
-end subroutine ERROR_ABORT
+end subroutine error_abort
 
 
 !---------------------------------------------------------------------
-subroutine WARNING(message)
+subroutine warning(message)
   character(*), intent(in) :: message
   write(6,*) message
-end subroutine WARNING
+end subroutine warning

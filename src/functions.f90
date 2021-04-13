@@ -284,7 +284,7 @@ module flux_mod
 end module flux_mod
 
 
-module functions_f90
+module functions_mod
   contains
   double precision function sqrnoise(rkx,rky,netot,nitot,rkdesqr,rkdisqr,dx,dy)
     use sinc_mod
@@ -391,4 +391,4 @@ module functions_f90
     endif
   end function gammp
 
-end module functions_f90
+end module functions_mod

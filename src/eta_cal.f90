@@ -11,7 +11,7 @@
 !---------------------------------------------------------------------
 subroutine eta_calc
   use parameter_mod
-  use mesh2d
+  use mesh_mod
   implicit none
 
   real*8 :: ajl(nxmax, jb-1:jb+nylmax, kb-1:kb+nzlmax) 

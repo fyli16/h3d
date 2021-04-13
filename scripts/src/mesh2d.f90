@@ -4,7 +4,7 @@ module mesh2d
 
   contains
 
-  subroutine mesh_interpolated_3d(nonuniform_mesh,uniform_mesh,nonuniform_mesh_global)
+  subroutine mesh_interpolated_3d(nonuniform_mesh, uniform_mesh, nonuniform_mesh_global)
     use parameter_mod
     implicit none
 

@@ -10,8 +10,8 @@
 
 program h3d 
   use parameter_mod
-  use functions_f90
-  use mesh2d
+  use functions_mod
+  use mesh_mod
 
   implicit none
 
@@ -81,7 +81,7 @@ end program h3d
 !---------------------------------------------------------------------
 subroutine setup_mesh()
   use parameter_mod
-  use mesh2d
+  use mesh_mod
   implicit none
   
   integer :: i
@@ -148,7 +148,7 @@ end subroutine setup_mesh
 !---------------------------------------------------------------------
 subroutine init_restart()
   use parameter_mod
-  use mesh2d
+  use mesh_mod
   implicit none 
 
   integer*8 :: ixe, iye, ize, i, j, k

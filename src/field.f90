@@ -45,7 +45,7 @@ end subroutine field
 !---------------------------------------------------------------------
 subroutine pressgrad(iflag)
   use parameter_mod
-  use mesh2d
+  use mesh_mod
   implicit none
 
   integer :: iflag
@@ -112,7 +112,7 @@ end subroutine pressgrad
 !---------------------------------------------------------------------
 subroutine ecalc( iflag )
   use parameter_mod
-  use mesh2d
+  use mesh_mod
   implicit none
 
   integer :: iflag
@@ -525,7 +525,7 @@ end subroutine ecalc
 !---------------------------------------------------------------------
 subroutine bcalc
   use parameter_mod
-  use mesh2d
+  use mesh_mod
   implicit none
 
   integer*8 :: i,j,k,ii
@@ -695,7 +695,7 @@ end subroutine bcalc
 !---------------------------------------------------------------------
 subroutine focalc
   use parameter_mod
-  use mesh2d
+  use mesh_mod
   implicit none
   
   real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8

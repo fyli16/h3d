@@ -3,7 +3,7 @@
     !---------------------------------------------------------------------
     subroutine init_wave
       use parameter_mod
-      use mesh2d
+      use mesh_mod
       implicit none
 
       integer*8 :: ibp1,ibp2,nptot_max,i,remake,field_subcycle

@@ -21,7 +21,7 @@
 ! xa/na > dx and (xl-xb)/(nl-nb) > dx
 !===============================================================
 
-module mesh_class
+module mesh_mod
   implicit none
 
   type mesh
@@ -35,8 +35,10 @@ module mesh_class
     integer*8 :: type
   end type meshtype
 
-  type (meshtype), parameter :: CELL = MESHTYPE(0)
-  type (meshtype), parameter :: NODE = MESHTYPE(1)
+  type(mesh) :: meshX, meshY, meshZ 
+
+  type (meshtype), parameter :: cell = meshtype(0)
+  type (meshtype), parameter :: NODE = meshtype(1)
 
   interface mesh_index
     module procedure mesh_index_yuri, mesh_index_hxv
@@ -53,10 +55,10 @@ module mesh_class
     real*8, intent(in) :: xa, xb, xl
     integer*8, intent(in) :: na, nb, nl
     integer*8 :: i, nbb
-    real*8 :: FINDEXP
+    real*8 :: findexp
      
     if((xa.ge.xb).or.(na.ge.nb)) then 
-      call ERROR_ABORT('MESH_INIT(): bad parameters --- stop!')
+      call error_abort('MESH_INIT(): bad parameters --- stop!')
     endif
 
     m%na=na ; m%nb=nb ; m%nl=nl
@@ -75,7 +77,7 @@ module mesh_class
     m%tb = m%dt*nb
 
     if(na.gt.0)  then
-        m%epsa = FINDEXP(m%dx/xa,na)
+        m%epsa = findexp(m%dx/xa,na)
         m%ca1 = (m%epsa**na-1.)/xa
         m%ca2 = m%dt/log(m%epsa)
     else
@@ -85,7 +87,7 @@ module mesh_class
     endif
 
     if(nbb.gt.0) then
-        m%epsb = FINDEXP(m%dx/(xl-xb),nbb)
+        m%epsb = findexp(m%dx/(xl-xb),nbb)
         m%cb1 = (m%epsb**nbb-1.)/(xl-xb)
         m%cb2 = m%dt/log(m%epsb) 
     else
@@ -159,7 +161,7 @@ module mesh_class
   !---------------------------------------------------------------------
   ! transform physical coordinate to logical space 
   ! MESH_INIT() must be called prior to this call
-  double precision function MESH_UNMAP(m,x) 
+  double precision function mesh_unmap(m,x) 
     implicit none
 
     type(MESH), intent(in) :: m
@@ -176,16 +178,16 @@ module mesh_class
     ! prevent mapping outiside of logical interval [0,1]
     if(t >= 1.) t = 1.-epsilon(real(1)) 
     if(t <= 0.) t = epsilon(real(1)) 
-    MESH_UNMAP = t
+    mesh_unmap = t
 
     return
-  end function MESH_UNMAP
+  end function mesh_unmap
 
 
   !---------------------------------------------------------------------
   ! transform physical coordinate to logical space 
   ! MESH_INIT() must be called prior to this call
-  double precision function MESH_MAP(m,t)
+  double precision function mesh_map(m,t)
     implicit none
 
     type(MESH), intent(in) :: m
@@ -202,22 +204,22 @@ module mesh_class
     ! prevent mapping outside of physical interval [0,xl]
     if(x >= m%xl) x = m%xl-epsilon(real(1)) 
     if(x <= 0.) x = epsilon(real(1)) 
-    MESH_MAP = x
+    mesh_map = x
     return
-  end function MESH_MAP
+  end function mesh_map
 
 
   !---------------------------------------------------------------------
   ! let xu(i=1:nnx)=[0,xl] be a uniform node-centered grid
   ! then for each xu(i) find ix(i) such as 
-  ! m%xc(ix) <= xu(i) < m%xc(ix+1) if inode==CELL
+  ! m%xc(ix) <= xu(i) < m%xc(ix+1) if inode==cell
   ! m%xn(ix) <= xu(i) < m%xn(ix+1) if inode==NODE
   ! MESH_INIT() must be called prior to this call
-  subroutine MESH_INDEX_HXV(m,inode,ix,inode_uniform)
+  subroutine mesh_index_hxv(m,inode,ix,inode_uniform)
     implicit none
 
     type(MESH), intent(in) :: m
-    type(MESHTYPE), intent(in) :: inode,inode_uniform
+    type(meshtype), intent(in) :: inode,inode_uniform
     integer*8, intent(out), dimension(:) :: ix
     real*8, dimension(:), pointer :: pp
     real*8 :: x,hx 
@@ -226,7 +228,7 @@ module mesh_class
     ix(:)=0  
     nullify(pp)
 
-    if(inode%type == CELL%type) then ! cell-centered
+    if(inode%type == cell%type) then ! cell-centered
         pp => m%xc 
     else
         pp => m%xn 
@@ -235,7 +237,7 @@ module mesh_class
     nnx = size(ix)
     hx = m%xl/(nnx-1) ! nnx == number of nodes
     do i=1,nnx
-      if (inode_uniform%type == CELL%type) then     ! Interpolate locations of CELL uniform mesh
+      if (inode_uniform%type == cell%type) then     ! Interpolate locations of cell uniform mesh
         x=(i-1-0.5)*hx
       else                                      ! Interpolate locations of NODE uniform mesh
         x=(i-1    )*hx
@@ -250,20 +252,20 @@ module mesh_class
 
     nullify(pp)
 
-  end subroutine MESH_INDEX_HXV
+  end subroutine mesh_index_hxv
 
 
   !---------------------------------------------------------------------
   ! let xu(i=1:nnx)=[0,xl] be a uniform node-centered grid
   ! then for each xu(i) find ix(i) such as 
-  ! m%xc(ix) <= xu(i) < m%xc(ix+1) if inode==CELL
+  ! m%xc(ix) <= xu(i) < m%xc(ix+1) if inode==cell
   ! m%xn(ix) <= xu(i) < m%xn(ix+1) if inode==NODE
   ! MESH_INIT() must be called prior to this call
-  subroutine MESH_INDEX_YURI(m,inode,ix)
+  subroutine mesh_index_yuri(m,inode,ix)
     implicit none
 
     type(MESH), intent(in) :: m
-    type(MESHTYPE), intent(in) :: inode
+    type(meshtype), intent(in) :: inode
     integer*8, intent(out), dimension(:) :: ix
     real*8, dimension(:), pointer :: pp
     real*8 :: x,hx 
@@ -272,7 +274,7 @@ module mesh_class
     ix(:)=0  
     nullify(pp)
 
-    if(inode%type == CELL%type) then ! cell-centered
+    if(inode%type == cell%type) then ! cell-centered
         pp => m%xc 
     else
         pp => m%xn 
@@ -291,16 +293,16 @@ module mesh_class
     enddo
 
     nullify(pp)
-  end subroutine MESH_INDEX_YURI
+  end subroutine mesh_index_yuri
 
 
   !---------------------------------------------------------------------
   ! interpolate (1:nx2,1:ny2) arrays from a nonuniform cell-centered grid 
   ! to a uniform node-centered grid (1:nnx,1:nny) 
-  subroutine MESH_INTERPOLATE2D(inode,mx,my,a,ncx,ncy,ap,nnx,nny,lfirst)
+  subroutine mesh_interpolated2d(inode,mx,my,a,ncx,ncy,ap,nnx,nny,lfirst)
     implicit none
 
-    type(MESHTYPE), intent(in) :: inode
+    type(meshtype), intent(in) :: inode
     type(MESH), intent(in) :: mx,my 
     integer*8, intent(in) :: ncx,ncy,nnx,nny
     real*8, dimension(ncx,ncy), intent(in) :: a
@@ -320,7 +322,7 @@ module mesh_class
     nullify(ppx)
     nullify(ppy)
 
-    if(inode%type == CELL%type) then
+    if(inode%type == cell%type) then
       ppx => mx%xc
       ppy => my%xc
     else
@@ -360,9 +362,110 @@ module mesh_class
     nullify(ppx)
     nullify(ppy)
 
-  end subroutine MESH_INTERPOLATE2D
+  end subroutine mesh_interpolated2d
 
-end module mesh_class
+
+  !---------------------------------------------------------------------
+  subroutine mesh_interpolated_3d(nonuniform_mesh, uniform_mesh, nonuniform_mesh_global)
+    use parameter_mod
+    implicit none
+
+    real*8 :: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,w1,w2,w3,w4,w5,w6,w7,w8
+    integer*8:: ix,iy,iz,ixp1,iyp1,izp1,i,j,k,jmin,jmax,kmin,kmax
+    real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1), intent(in) :: nonuniform_mesh
+    real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1), intent(out) :: uniform_mesh
+    real*8, dimension(nxmax,0:ny+1,0:nz+1), intent(out):: nonuniform_mesh_global
+    real*8, dimension(nxmax,0:ny+1,0:nz+1):: nonuniform_mesh_local
+    real*8 :: xc_uniform_pos,yc_uniform_pos,zc_uniform_pos
+
+    dtxi = 1./meshX%dt
+    dtyi = 1./meshY%dt
+    dtzi = 1./meshZ%dt
+
+    uniform_mesh          = 0.
+    nonuniform_mesh_local = 0.
+
+    if (jb == 1) then
+      jmin = 0
+    else 
+      jmin = jb
+    endif
+
+    if (je == ny) then
+      jmax = ny+1
+    else 
+      jmax = je
+    endif
+
+    if (kb == 1) then
+      kmin = 0
+    else 
+      kmin = kb
+    endif
+    
+    if (ke == nz) then
+      kmax = nz+1
+    else 
+      kmax = ke
+    endif
+
+    do i=1,nxmax
+      do j=jmin,jmax
+        do k=kmin,kmax
+          nonuniform_mesh_local(i,j,k)=nonuniform_mesh(i,j,k)
+        enddo
+      enddo
+    enddo
+
+    call MPI_ALLREDUCE( nonuniform_mesh_local,nonuniform_mesh_global,size(nonuniform_mesh_local)  &
+                        ,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+
+    do i=2,nx+1
+      xc_uniform_pos = (i-1.5)*hx
+      rx   = dtxi*MESH_UNMAP(meshX,xc_uniform_pos)+1.50000000000d+00
+      ix   = rx
+      fx   = rx-ix
+      ixp1 = ix+1
+      do j=jb,je
+        yc_uniform_pos = (j-0.5)*hy
+        ry   = dtyi*MESH_UNMAP(meshY,yc_uniform_pos)+1.50000000000d+00
+        iy   = ry
+        fy   = ry-iy
+        iy   = iy-1             ! integer index in y direction starts at 0
+        iyp1 = iy+1
+        do k=kb,ke
+          zc_uniform_pos = (k-0.5)*hz
+          rz   = dtzi*MESH_UNMAP(meshZ,zc_uniform_pos)+1.50000000000d+00
+          iz   = rz
+          fz   = rz-iz
+          iz   = iz-1             ! integer index in z direction starts at 0
+          izp1 = iz+1
+      
+          w1=(1.-fx)*(1.-fy)*(1.-fz)
+          w2=fx     *(1.-fy)*(1.-fz)
+          w3=(1.-fx)*fy     *(1.-fz)
+          w4=fx     *fy     *(1.-fz)
+          w5=(1.-fx)*(1.-fy)*fz
+          w6=fx     *(1.-fy)*fz
+          w7=(1.-fx)*fy     *fz
+          w8=fx     *fy     *fz
+ 
+          uniform_mesh(i,j,k) =  w1 * nonuniform_mesh_global(ix  ,iy  ,iz  )     &
+                                + w2 * nonuniform_mesh_global(ixp1,iy  ,iz  )     &
+                                + w3 * nonuniform_mesh_global(ix  ,iyp1,iz  )     &
+                                + w4 * nonuniform_mesh_global(ixp1,iyp1,iz  )     &
+                                + w5 * nonuniform_mesh_global(ix  ,iy  ,izp1)     &
+                                + w6 * nonuniform_mesh_global(ixp1,iy  ,izp1)     &
+                                + w7 * nonuniform_mesh_global(ix  ,iyp1,izp1)     &
+                                + w8 * nonuniform_mesh_global(ixp1,iyp1,izp1)
+        enddo
+      enddo
+    enddo
+
+    return
+  end subroutine mesh_interpolated_3d
+
+end module mesh_mod
 
 
 !---------------------------------------------------------------------1
@@ -370,7 +473,7 @@ end module mesh_class
 ! Solve for x: (x-1)/(x^N-1) - rhs = 0 
 ! by using a simple bisection method
 !---------------------------------------------------------------------1
-double precision function FINDEXP(rhsi,ni)
+double precision function findexp(rhsi,ni)
   implicit none
 
   real*8, intent(in) :: rhsi
@@ -378,32 +481,32 @@ double precision function FINDEXP(rhsi,ni)
   real*8 :: tol,rhs,af,bf
   integer*8 n
   common /fparams/ rhs,n
-  real*8 :: FUNC
-  external FUNC
+  real*8 :: func
+  external func
 
   tol = 10.*epsilon(real(0))
   ! These are common block parameters
   rhs=rhsi
   n = ni
   ! These are common block parameters
-  if(FUNC(1.0D0).le.tol) then
-    call ERROR_ABORT('FINDEXP(): dx_uniform too large --- stop!')
+  if(func(1.0D0).le.tol) then
+    call error_abort('findexp(): dx_uniform too large --- stop!')
   endif
   af = 1.
   bf = af
-  do while(FUNC(bf).ge.0.)
+  do while(func(bf).ge.0.)
     bf = bf*2.
   enddo
-  call BISECT(FUNC,af,bf,tol)
-  FINDEXP = 0.5*(af+bf)
+  call bisect(func,af,bf,tol)
+  findexp = 0.5*(af+bf)
 
   return
-end function FINDEXP
+end function findexp
 
 
 !---------------------------------------------------------------------
 ! F(t) = 0 to solve
-double precision function FUNC(t) 
+double precision function func(t) 
   implicit none
 
   real*8, intent(in) :: t 
@@ -412,17 +515,17 @@ double precision function FUNC(t)
 
   common /fparams/ rhs,n
   if(t.le.1.) then
-    FUNC = 1./real(n)-rhs
+    func = 1./real(n)-rhs
   else
-    FUNC = (t-1.)/(t**n-1.)-rhs
+    func = (t-1.)/(t**n-1.)-rhs
   endif
   return
-end function FUNC 
+end function func 
   
 
 !---------------------------------------------------------------------
 ! simple root finder
-subroutine BISECT(f,a,b,tol)
+subroutine bisect(f,a,b,tol)
   implicit none
 
   real*8, intent(in) :: tol
@@ -432,7 +535,7 @@ subroutine BISECT(f,a,b,tol)
 
   u = f(a) ; v = f(b)      
   if(u*v.gt.0.) then
-    call ERROR_ABORT('BISECT(): bad initial interval --- stop!')
+    call error_abort('bisect(): bad initial interval --- stop!')
   else if(u.eq.0.) then
     b=a
     return
@@ -456,4 +559,4 @@ subroutine BISECT(f,a,b,tol)
   enddo
 
   return      
-end subroutine BISECT
+end subroutine bisect
