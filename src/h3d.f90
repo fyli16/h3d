@@ -151,6 +151,18 @@ subroutine init_restart
         call MPI_BCAST(itfin,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
     endif
   enddo
+
+  ! determine start, finish number of steps
+  itstart = itfin
+  it = itstart
+  itfinish = (tmax-t_stopped)/dtwci + itstart
+  if (myid==0) then 
+    print*, " "
+    print*, 't_stopped = ', t_stopped
+    print*, 'itstart = ', itstart
+    print*, 'itfinish = ', itfinish
+    print*, " "
+  endif 
     
   if (restart_index == 1) then
     restart_index=2
@@ -242,7 +254,6 @@ subroutine data_output
 
   integer :: j
   integer*8 :: numvars, irecnum
-  ! real*8 :: uniform_mesh(nxmax, jb-1:je+1, kb-1:ke+1)
 
   ! ??
   if (myid==0) then
@@ -255,6 +266,7 @@ subroutine data_output
   call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
   call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
   
+  if (myid==0) print*, 'MPI_IO_format = ', MPI_IO_format
   if (myid==0 .and. .not.MPI_IO_format) call open_files
   
   call date_and_time(values=time_begin_array(:,6))
@@ -313,22 +325,12 @@ subroutine sim_loops
   call date_and_time(values=curr_time)
   clock_time_init = curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001
   clock_time_old = clock_time_init
-
-  ! determine start, finish number of steps
-  itstart = itfin
-  it = itstart
-  itfinish = (tmax-t_stopped)/dtwci + itstart
-  if (myid==0) then 
-    print*, " "
-    print*, 't_stopped = ', t_stopped
-    print*, 'itstart = ', itstart
-    print*, 'itfinish = ', itfinish
-    print*, " "
-  endif 
   
   ! main simulation loop
   time_elapsed=0.; time_begin_array=0; time_end_array=0
+
   do while(it <= itfinish)
+  
     call date_and_time(values=time_begin_array(:,1)) ! time one-whole-loop
 
     ! print time-step info
@@ -348,7 +350,7 @@ subroutine sim_loops
       call eta_calc_2d    ! Dietmar's resistivity
     endif
     ntot = 0 ! for particle tracking
-    call trans ! trans computes density and v's; it also calls parmov, i.e., it does particle push
+    call trans ! trans computes density and v's; it also calls parmov (particle push)
     call date_and_time(values=time_end_array(:,2))
     call accumulate_time(time_begin_array(1,2),time_end_array(1,2),time_elapsed(2))
 
