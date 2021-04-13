@@ -1096,12 +1096,8 @@ subroutine particle_in_volume_write
   if (myid == 0) then
       filenum = 101
       open (filenum,                                                       &
-            file= trim(data_directory)//'particle/particle_'//             &
-            trim(adjustl(cycle_ascii))//'.bin',                            &
-            form='unformatted',                                            &
-            action='write',access='direct', status='unknown',recl=lenrec)
-      write(6,*) " FILE_NAME = ",trim(data_directory)//'particle/particle_'//             &
-            trim(adjustl(cycle_ascii))//'.bin'
+            file= trim(data_directory)//'particle/particle_'//trim(adjustl(cycle_ascii))//'.bin',                            &
+            form='unformatted', action='write',access='direct', status='unknown',recl=lenrec)
       recnum = 1
       write(filenum,rec=recnum) N_TOTAL
       recnum = recnum + 1

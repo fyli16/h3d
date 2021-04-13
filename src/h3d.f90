@@ -266,9 +266,8 @@ subroutine data_output
   call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
   call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
   
-  if (myid==0) print*, 'MPI_IO_format = ', MPI_IO_format
+  ! this block is not executed when MPI_IO_format=.true.
   if (myid==0 .and. .not.MPI_IO_format) then
-    print*, 'calling open_files'
     call open_files
   endif 
   
@@ -292,8 +291,9 @@ subroutine data_output
       eta, eta_times_b_dot_j, eta_par,            &
       trim(data_directory), trim(adjustl(cycle_ascii)), MPI_IO_format)
       ! uniform_mesh, trim(data_directory), trim(adjustl(cycle_ascii)), MPI_IO_format)
-      
-  if (myid == 0 .and. .not. MPI_IO_format) then
+  
+  ! this block is not executed when MPI_IO_format=.true.
+  if (myid==0 .and. .not.MPI_IO_format) then
     do j = 1, 25
       close(file_unit(j))
     enddo
@@ -303,7 +303,6 @@ subroutine data_output
     if (myid == 0) then
       my_short_int = it
       call integer_to_character(cycle_ascii, len(cycle_ascii), my_short_int)
-      print*, " calling particle_in_volume_write at cycle = ", cycle_ascii
     endif
     call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
     call particle_in_volume_write
