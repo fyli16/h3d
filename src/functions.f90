@@ -19,7 +19,7 @@ module func_mod
     endif
     return
   end function func 
-end func_mod
+end module func_mod
 
 
 !---------------------------------------------------------------------
@@ -72,7 +72,7 @@ module findexp_mod
   contains  
   double precision function findexp(rhsi,ni)
     use func_mod
-    
+
     real*8, intent(in) :: rhsi
     integer*8, intent(in) :: ni
     real*8 :: tol,rhs,af,bf
