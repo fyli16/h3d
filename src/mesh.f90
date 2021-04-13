@@ -54,7 +54,7 @@ module mesh_mod
     real*8, intent(in) :: xa, xb, xl
     integer*8, intent(in) :: na, nb, nl
     integer*8 :: i, nbb
-    real*8 :: findexp
+    ! real*8 :: findexp
      
     if((xa.ge.xb).or.(na.ge.nb)) then 
       call error_abort('mesh_init(): bad parameters --- stop!')

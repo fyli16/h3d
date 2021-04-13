@@ -1684,16 +1684,16 @@ subroutine trans
 
   call date_and_time(values=time_begin_array(:,20))
 
-  do is=1,nspec
-    DO K=KB-1,KE+1
-      do j=jb-1,je+1
-        do i=1,nx2
+  do is = 1, nspec
+    do k = kb-1, ke+1
+      do j = jb-1, je+1
+        do i = 1, nx2
           dns(i,j,k,is)=1.e-10
           dnsh(i,j,k,is)=1.e-10
           vxs(i,j,k,is)=0.
           vys(i,j,k,is)=0.
           vzs(i,j,k,is)=0.
-          if (is == 1) then
+          if (is==1) then
             deno(i,j,k)=den(i,j,k)
             vixo(i,j,k)=vix(i,j,k)
             viyo(i,j,k)=viy(i,j,k)
