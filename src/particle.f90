@@ -102,7 +102,7 @@ subroutine parmov   ! particle move?
       enddo
     enddo
     
-    call mxrealbcc_pack_b(BX_AV,BY_AV,BZ_AV,1_8,NX,NY,NZ)
+    call xrealbcc_pack_b(BX_AV,BY_AV,BZ_AV,1_8,NX,NY,NZ)
 
     ! if ((myid==0) .and. mod(it,n_print)==0) then
     !   print*, " "
