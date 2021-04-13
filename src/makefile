@@ -17,17 +17,17 @@ EFILE = h3d
 OBJS =  parameter.of90 \
 		utils.of90\
 		c_int_to_char.ogcc \
-		mesh.of90 \
 		functions.of90 \
-		io.of90\
-	 	boundary.of90 \
+		mesh.of90 \
 		field.of90\
-		write_file.of90 \
-		diagnostics.of90\
-		particle.of90 \
 		field_2d.of90 \
+		particle.of90 \
 		eta_cal.of90 \
 		eta_cal_2d.of90 \
+		boundary.of90 \
+		io.of90\
+	 	diagnostics.of90\
+		write_file.of90 \
 		init_wave.of90 \
 		h3d.of90
 
