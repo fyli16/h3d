@@ -50,7 +50,7 @@ end program h3d
 
 
 !---------------------------------------------------------------------
-! initialize data for a restart run
+! initialize data from a previous run
 !---------------------------------------------------------------------
 subroutine init_restart
   use parameter_mod

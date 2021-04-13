@@ -1383,14 +1383,14 @@ subroutine parmov_2d
 
       deltime2 = deltime2 + real(clock_time1-clock_time)
 
-      call XREAL_2D(DNS(1,jb-1,kb-1,is),NX,NY,NZ)
-      call XREAL_2D(VXS(1,jb-1,kb-1,is),NX,NY,NZ)
-      call XREAL_2D(VYS(1,jb-1,kb-1,is),NX,NY,NZ)
-      call XREAL_2D(VZS(1,jb-1,kb-1,is),NX,NY,NZ)
-      call XREALBCC_2D(DNS(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
-      call XREALBCC_2D(VXS(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
-      call XREALBCC_2D(VYS(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
-      call XREALBCC_2D(VZS(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
+      call xreal_2d(DNS(1,jb-1,kb-1,is),NX,NY,NZ)
+      call xreal_2d(VXS(1,jb-1,kb-1,is),NX,NY,NZ)
+      call xreal_2d(VYS(1,jb-1,kb-1,is),NX,NY,NZ)
+      call xreal_2d(VZS(1,jb-1,kb-1,is),NX,NY,NZ)
+      call xrealbcc_2d(DNS(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
+      call xrealbcc_2d(VXS(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
+      call xrealbcc_2d(VYS(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
+      call xrealbcc_2d(VZS(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
 
       do IIZ=KB-1,KE+1
         do IIY=JB-1,JE+1
@@ -1754,16 +1754,16 @@ subroutine caltemp2_global_2d
       enddo
     enddo
 
-    call XREAL_2D(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
-    call XREAL_2D(tperp(1,jb-1,kb-1,is),NX,NY,NZ)
-    call XREAL_2D(dpedx(1,jb-1,kb-1   ),NX,NY,NZ)
+    call xreal_2d(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
+    call xreal_2d(tperp(1,jb-1,kb-1,is),NX,NY,NZ)
+    call xreal_2d(dpedx(1,jb-1,kb-1   ),NX,NY,NZ)
 
-    call XREAL_2D(p_xx (1,jb-1,kb-1,is),NX,NY,NZ)
-    call XREAL_2D(p_xy (1,jb-1,kb-1,is),NX,NY,NZ)
-    call XREAL_2D(p_xz (1,jb-1,kb-1,is),NX,NY,NZ)
-    call XREAL_2D(p_yy (1,jb-1,kb-1,is),NX,NY,NZ)
-    call XREAL_2D(p_yz (1,jb-1,kb-1,is),NX,NY,NZ)
-    call XREAL_2D(p_zz (1,jb-1,kb-1,is),NX,NY,NZ)
+    call xreal_2d(p_xx (1,jb-1,kb-1,is),NX,NY,NZ)
+    call xreal_2d(p_xy (1,jb-1,kb-1,is),NX,NY,NZ)
+    call xreal_2d(p_xz (1,jb-1,kb-1,is),NX,NY,NZ)
+    call xreal_2d(p_yy (1,jb-1,kb-1,is),NX,NY,NZ)
+    call xreal_2d(p_yz (1,jb-1,kb-1,is),NX,NY,NZ)
+    call xreal_2d(p_zz (1,jb-1,kb-1,is),NX,NY,NZ)
 
     do IZ = KB-1,KE
       do IY = JB-1,JE
@@ -1802,15 +1802,15 @@ subroutine caltemp2_global_2d
 
   ! do is=1,nspec
   !   call date_and_time(values=time_begin_array(:,24))
-  !   call XREAL_2D(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
-  !   call XREAL_2D(tperp(1,jb-1,kb-1,is),NX,NY,NZ)
+  !   call xreal_2d(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
+  !   call xreal_2d(tperp(1,jb-1,kb-1,is),NX,NY,NZ)
   !   call date_and_time(values=time_end_array(:,24))
   !   call accumulate_time(time_begin_array(1,24),time_end_array(1,24),time_elapsed(24))
 
 
   !   call date_and_time(values=time_begin_array(:,25))
-  !   call XREALBCC_2D(tpar (1,jb-1,kb-1,is),1,NX,NY,NZ)
-  !   call XREALBCC_2D(tperp(1,jb-1,kb-1,is),1,NX,NY,NZ)
+  !   call xrealbcc_2d(tpar (1,jb-1,kb-1,is),1,NX,NY,NZ)
+  !   call xrealbcc_2d(tperp(1,jb-1,kb-1,is),1,NX,NY,NZ)
   !   call date_and_time(values=time_end_array(:,25))
   !   call accumulate_time(time_begin_array(1,25),time_end_array(1,25),time_elapsed(25))
   ! enddo
@@ -1927,7 +1927,7 @@ subroutine nsmth_2d (a,nx2m,ny2m,nz2m)
   real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
 
   ! smoothing routine--assumes aperiodic in x
-  call XREALBCC_2D(a,0_8,NX,NY,NZ)
+  call xrealbcc_2d(a,0_8,NX,NY,NZ)
   temp=a
 
   do k=kb-1,ke+1
@@ -1949,7 +1949,7 @@ subroutine nsmth_2d (a,nx2m,ny2m,nz2m)
       enddo
   enddo
 
-  call XREALBCC_2D(a,0_8,NX,NY,NZ)
+  call xrealbcc_2d(a,0_8,NX,NY,NZ)
 
   return
 end subroutine nsmth_2d

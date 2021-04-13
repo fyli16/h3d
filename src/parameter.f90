@@ -63,7 +63,7 @@ module parameter_mod
 
   real*8, dimension(5) :: btspec, qspec, wspec, frac, anisot
   real*8 :: denmin, resis, wpiwci, bete, fxsho,ave1,ave2,phib,demin2, &
-            xmax, ymax, zmax, dt, gama, dtwci, wall_clock_elapsed, tmax,  &
+            xmax, ymax, zmax, dt, gamma, dtwci, wall_clock_elapsed, tmax,  &
             xaa, xbb, yaa, ybb, zaa, zbb, t_stopped=0.
 
   integer*8 :: nax, nbx, nay, nby, naz, nbz
@@ -132,7 +132,7 @@ module parameter_mod
     n_subcycles, nskipx, nskipy, nskipz, iterb, testorbt, norbskip, &  ! field solver
     nspec, qspec, wspec, frac, denmin, wpiwci, btspec, bete, &  ! plasma setup
     ieta, resis, netax, netay, netaz, etamin, etamax, eta_par, &
-    anisot, gama, ave1, ave2, phib, smoothing, smooth_coef, &
+    anisot, gamma, ave1, ave2, phib, smoothing, smooth_coef, &
     dB_B0, num_cycles, &  ! init waves
     n_print, n_write_data, n_write_restart, n_write_particle, &  ! diagnostics
     tracking_binary, tracking_mpi, xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
@@ -209,7 +209,7 @@ module parameter_mod
     call MPI_BCAST(etamax                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(eta_par                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(anisot                 ,5     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(gama                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(gamma                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(ave1                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(ave2                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(phib                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
@@ -297,7 +297,7 @@ module parameter_mod
       enddo
     endif
 
-    PERIODS = .TRUE. ! logical array of size ndims specifying whether the grid is periodic (true) or not (false) in each dimension
+    PERIODS = .TRUE. ! logical array of size ndims specifying whether the grid is periodic or not
     REORDER = .TRUE. ! ranking may be reordered (true) or not (false) (logical)
     ! Makes a new communicator to which topology information has been attached
     call MPI_CART_CREATE(MPI_COMM_WORLD, NDIM, DIMS, PERIODS, REORDER, COMM2D, IERR) 
@@ -556,18 +556,18 @@ module parameter_mod
     if (.not.testorbt) norbskip=1
 
     allocate ( uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1), &
-      ex(nxmax,jb-1:je+1,kb-1:ke+1), ey(nxmax,jb-1:je+1,kb-1:ke+1), ez(nxmax,jb-1:je+1,kb-1:ke+1), &
-      bx(nxmax,jb-1:je+1,kb-1:ke+1), by(nxmax,jb-1:je+1,kb-1:ke+1), bz(nxmax,jb-1:je+1,kb-1:ke+1), &
-      bx_av(nxmax,jb-1:je+1,kb-1:ke+1), by_av(nxmax,jb-1:je+1,kb-1:ke+1), bz_av(nxmax,jb-1:je+1,kb-1:ke+1), &
-      fox(nxmax,jb-1:je+1,kb-1:ke+1), foy(nxmax,jb-1:je+1,kb-1:ke+1), foz(nxmax,jb-1:je+1,kb-1:ke+1), &
-      curlex(nxmax,jb-1:je+1,kb-1:ke+1), curley(nxmax,jb-1:je+1,kb-1:ke+1), curlez(nxmax,jb-1:je+1,kb-1:ke+1), &
-      bxs(nxmax,jb-1:je+1,kb-1:ke+1), bys(nxmax,jb-1:je+1,kb-1:ke+1), bzs(nxmax,jb-1:je+1,kb-1:ke+1), &
-      den(nxmax,jb-1:je+1,kb-1:ke+1), deno(nxmax,jb-1:je+1,kb-1:ke+1), denh(nxmax,jb-1:je+1,kb-1:ke+1), &
-      dpedx(nxmax,jb-1:je+1,kb-1:ke+1), dpedy(nxmax,jb-1:je+1,kb-1:ke+1), dpedz(nxmax,jb-1:je+1,kb-1:ke+1), & 
-      vix(nxmax,jb-1:je+1,kb-1:ke+1), viy(nxmax,jb-1:je+1,kb-1:ke+1), viz(nxmax,jb-1:je+1,kb-1:ke+1), &  
-      vixo(nxmax,jb-1:je+1,kb-1:ke+1), viyo(nxmax,jb-1:je+1,kb-1:ke+1), vizo(nxmax,jb-1:je+1,kb-1:ke+1), & 
-      curlbx(nxmax,jb-1:je+1,kb-1:ke+1), curlby(nxmax,jb-1:je+1,kb-1:ke+1), curlbz(nxmax,jb-1:je+1,kb-1:ke+1), & 
-      pe(nxmax,jb-1:je+1,kb-1:ke+1), eta(nxmax,jb-1:je+1,kb-1:ke+1), eta_times_b_dot_j(nxmax,jb-1:je+1,kb-1:ke+1) )
+      ex    (nxmax,jb-1:je+1,kb-1:ke+1), ey     (nxmax,jb-1:je+1,kb-1:ke+1), ez     (nxmax,jb-1:je+1,kb-1:ke+1), &
+      bx    (nxmax,jb-1:je+1,kb-1:ke+1), by     (nxmax,jb-1:je+1,kb-1:ke+1), bz     (nxmax,jb-1:je+1,kb-1:ke+1), &
+      bx_av (nxmax,jb-1:je+1,kb-1:ke+1), by_av  (nxmax,jb-1:je+1,kb-1:ke+1), bz_av  (nxmax,jb-1:je+1,kb-1:ke+1), &
+      fox   (nxmax,jb-1:je+1,kb-1:ke+1), foy    (nxmax,jb-1:je+1,kb-1:ke+1), foz    (nxmax,jb-1:je+1,kb-1:ke+1), &
+      curlex(nxmax,jb-1:je+1,kb-1:ke+1), curley (nxmax,jb-1:je+1,kb-1:ke+1), curlez (nxmax,jb-1:je+1,kb-1:ke+1), &
+      bxs   (nxmax,jb-1:je+1,kb-1:ke+1), bys    (nxmax,jb-1:je+1,kb-1:ke+1), bzs    (nxmax,jb-1:je+1,kb-1:ke+1), &
+      den   (nxmax,jb-1:je+1,kb-1:ke+1), deno   (nxmax,jb-1:je+1,kb-1:ke+1), denh   (nxmax,jb-1:je+1,kb-1:ke+1), &
+      dpedx (nxmax,jb-1:je+1,kb-1:ke+1), dpedy  (nxmax,jb-1:je+1,kb-1:ke+1), dpedz  (nxmax,jb-1:je+1,kb-1:ke+1), & 
+      vix   (nxmax,jb-1:je+1,kb-1:ke+1), viy    (nxmax,jb-1:je+1,kb-1:ke+1), viz    (nxmax,jb-1:je+1,kb-1:ke+1), &  
+      vixo  (nxmax,jb-1:je+1,kb-1:ke+1), viyo   (nxmax,jb-1:je+1,kb-1:ke+1), vizo   (nxmax,jb-1:je+1,kb-1:ke+1), & 
+      curlbx(nxmax,jb-1:je+1,kb-1:ke+1), curlby (nxmax,jb-1:je+1,kb-1:ke+1), curlbz (nxmax,jb-1:je+1,kb-1:ke+1), & 
+      pe    (nxmax,jb-1:je+1,kb-1:ke+1), eta    (nxmax,jb-1:je+1,kb-1:ke+1), eta_times_b_dot_j(nxmax,jb-1:je+1,kb-1:ke+1) )
 
     allocate ( dns(nxmax,jb-1:je+1,kb-1:ke+1,nspecm), &
                dnsh(nxmax,jb-1:je+1,kb-1:ke+1,nspecm), &
@@ -601,12 +601,12 @@ module parameter_mod
                vzcayz(jb-1:je+1,kb-1:ke+1), vxcazy(jb-1:je+1,kb-1:ke+1), &
                vycazy(jb-1:je+1,kb-1:ke+1), vzcazy(jb-1:je+1,kb-1:ke+1) )
 
-    allocate ( ainjxy(nxmax,jb-1:je+1),ainjyx(nxmax,jb-1:je+1),deavxy(nxmax,jb-1:je+1)          &
-              ,deavyx(nxmax,jb-1:je+1),vxavxy(nxmax,jb-1:je+1),vyavxy(nxmax,jb-1:je+1)          &
-              ,vzavxy(nxmax,jb-1:je+1),vxavyx(nxmax,jb-1:je+1),vyavyx(nxmax,jb-1:je+1)          &
-              ,vzavyx(nxmax,jb-1:je+1),vxcaxy(nxmax,jb-1:je+1),vycaxy(nxmax,jb-1:je+1)          &
-              ,vzcaxy(nxmax,jb-1:je+1),vxcayx(nxmax,jb-1:je+1),vycayx(nxmax,jb-1:je+1)          &
-              ,vzcayx(nxmax,jb-1:je+1) )
+    allocate ( ainjxy(nxmax,jb-1:je+1),ainjyx(nxmax,jb-1:je+1),deavxy(nxmax,jb-1:je+1), &
+               deavyx(nxmax,jb-1:je+1),vxavxy(nxmax,jb-1:je+1),vyavxy(nxmax,jb-1:je+1), &
+               vzavxy(nxmax,jb-1:je+1),vxavyx(nxmax,jb-1:je+1),vyavyx(nxmax,jb-1:je+1), &
+               vzavyx(nxmax,jb-1:je+1),vxcaxy(nxmax,jb-1:je+1),vycaxy(nxmax,jb-1:je+1), &
+               vzcaxy(nxmax,jb-1:je+1),vxcayx(nxmax,jb-1:je+1),vycayx(nxmax,jb-1:je+1), &
+               vzcayx(nxmax,jb-1:je+1) )
 
     allocate ( iphead(nxmax,jb-1:je+1,kb-1:ke+1,nspecm), &
                iptemp(nxmax,jb-1:je+1,kb-1:ke+1,nspecm) )

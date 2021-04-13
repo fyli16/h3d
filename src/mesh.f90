@@ -419,20 +419,20 @@ module mesh_mod
 
   !   do i=2,nx+1
   !     xc_uniform_pos = (i-1.5)*hx
-  !     rx   = dtxi*MESH_UNMAP(meshX,xc_uniform_pos)+1.50000000000d+00
+  !     rx   = dtxi*mesh_unmap(meshX,xc_uniform_pos)+1.50000000000d+00
   !     ix   = rx
   !     fx   = rx-ix
   !     ixp1 = ix+1
   !     do j=jb,je
   !       yc_uniform_pos = (j-0.5)*hy
-  !       ry   = dtyi*MESH_UNMAP(meshY,yc_uniform_pos)+1.50000000000d+00
+  !       ry   = dtyi*mesh_unmap(meshY,yc_uniform_pos)+1.50000000000d+00
   !       iy   = ry
   !       fy   = ry-iy
   !       iy   = iy-1             ! integer index in y direction starts at 0
   !       iyp1 = iy+1
   !       do k=kb,ke
   !         zc_uniform_pos = (k-0.5)*hz
-  !         rz   = dtzi*MESH_UNMAP(meshZ,zc_uniform_pos)+1.50000000000d+00
+  !         rz   = dtzi*mesh_unmap(meshZ,zc_uniform_pos)+1.50000000000d+00
   !         iz   = rz
   !         fz   = rz-iz
   !         iz   = iz-1             ! integer index in z direction starts at 0

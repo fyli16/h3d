@@ -11,7 +11,7 @@ subroutine parmov   ! particle move?
     real*8 :: ex1,ex2,ex3,ex4,ex5,ex6,ex7,ex8, &
               ey1,ey2,ey3,ey4,ey5,ey6,ey7,ey8, &
               ez1,ez2,ez3,ez4,ez5,ez6,ez7,ez8
-    real*8 :: d_ranf,deltime1,deltime2,ff,h,hh
+    real*8 :: deltime1,deltime2,ff,h,hh
     real*8 :: fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8,foxa
     real*8 :: foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8,foya
     real*8 :: foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8,foza
@@ -23,17 +23,14 @@ subroutine parmov   ! particle move?
     integer*8 i,ii,iix,iixe,iiy,iiye,iiz,iize,irepeat,irepeatp,is,itmp
     integer*8 iv,iye_cc,ize_cc,j,jv,k,npleavingp,nprecv,nprecvtmp
     integer*8 Storage_Error_p,Storage_Error
-    data fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8/0,0,0,0,0,0,0,0/
-    data foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8/0,0,0,0,0,0,0,0/
-    data foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8/0,0,0,0,0,0,0,0/
     integer*8:: nsendactual, nsendactualp, nrecvactual, nrecvactualp, &
                 jj,kk,ix,iy,iz,ixe,iye,ize, &
                 ixep1,iyep1,izep1,ixp1,iyp1,izp1
     real*8 :: pdata(7),rx,ry,rz,fx,fy,fz,w1,w2,w3,w4,w5,w6,w7,w8,xpart,ypart,zpart
-    real*8 :: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
+    real*8 :: rxe, rye, rze, fxe, fye, fze, dtxi, dtyi, dtzi
     real*8 :: x_disp,y_disp,z_disp 
-    real*8 :: dth ! dt half, i.e., dt/2
-    real*8 :: eps2,myranf,fluxran,vxa,vyz,vza
+    real*8 :: dth
+    real*8 :: myranf,fluxran,vxa,vyz,vza
     integer*8:: L, EXIT_CODE_P, EXIT_CODE
     integer*8:: n_fast_removed, n_fast_removed_local,Field_Diverge,Field_Diverge_p
     real*8 :: tx,ty,tz,v_x,v_y,v_z  
@@ -49,25 +46,27 @@ subroutine parmov   ! particle move?
     real*8 :: mZ_xa,mZ_ta,mZ_ca1,mZ_ca2,mZ_xb,mZ_dtdx,mZ_tb,mZ_cb1,mZ_cb2
 
     integer,dimension(8) :: nsend_to_nbr, nbrs
-    integer :: idest,max_nsend,max_nrecv
+    integer :: idest, max_nsend, max_nrecv
     real*8,dimension(:,:,:),allocatable,target :: packed_pdata_send
     real*8,dimension(:,:),allocatable,target :: packed_pdata_recv
-    real*8, pointer :: pp(:,:)
+    real*8,pointer :: pp(:,:)
     integer exchange_send_request(8)
     ! real*8 :: mp_elapsed
 
+    data fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8/0,0,0,0,0,0,0,0/
+    data foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8/0,0,0,0,0,0,0,0/
+    data foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8/0,0,0,0,0,0,0,0/
+
+    ! timing 'parmov'
     call date_and_time(values=time_begin_array(:,19))
 
-    dtxi = 1./meshX%dt
-    dtyi = 1./meshY%dt
-    dtzi = 1./meshZ%dt
-
-    dth=dt/2
-
-    d_ranf=1./1001.
-    eps2=1.d-25
+    dtxi = one/meshX%dt
+    dtyi = one/meshY%dt
+    dtzi = one/meshZ%dt
+    dth = dt/2
  
-    bx_av=0.;by_av=0.;bz_av=0.
+    ! obtain spatial average of bx, by, bz
+    bx_av=0.; by_av=0.; bz_av=0.
     do k = kb-1, ke
       do j = jb-1, je
         do i = 1, nx1
@@ -102,21 +101,19 @@ subroutine parmov   ! particle move?
       enddo
     enddo
     
-    call xrealbcc_pack_b(BX_AV,BY_AV,BZ_AV,1_8,NX,NY,NZ)
+    call xrealbcc_pack_b(bx_av,by_av,bz_av,1_8,nx,ny,nz)
 
     ! if ((myid==0) .and. mod(it,n_print)==0) then
     !   print*, " "
     !   print*, "  Calling parmov ..."
     ! endif 
 
-    ! initalize diagnostic variables that keep track of
-    ! particle number, injection, and escape
-
+    ! initalize diagnostic variables that keep track of particle number, injection, and escape
     deltime1 = 0.0
     deltime2 = 0.0
-    npleavingp=0
+    npleavingp = 0
  
-    if (dt .ne. 0) then
+    if (dt .ne. 0) then ! if dt==0, no actual particle push is done
       ! advance particles for a first half step
       call date_and_time(values=time_begin_array(:,13))
       call push
@@ -131,24 +128,24 @@ subroutine parmov   ! particle move?
 
       ! collect Vi, ni at half step
       call date_and_time(values=time_begin_array(:,15))
-      do IS=1,NSPEC
-        NPTOTP = 0
+      do is = 1, nspec
+        nptotp = 0
         npart(is) = 0
-        do IIZ=KB-1,KE
-          do IIY=JB-1,JE
-            do IIX=1,NX1
+        do iiz = kb-1, je
+          do iiy = jb-1, je
+            do iix = 1, nx1
               np=iphead(iix,iiy,iiz,is)
               do while (np.ne.0)
-                nptotp=nptotp+1           !count particles
+                nptotp = nptotp+1           !count particles
                 npart(is) = npart(is) + 1 !count particles in each species
                 L=NP
 
                 q_p = qp(l)
 
-                ! Nonuniform mesh - using MESH_UNMAP
-                rx=dtxi*MESH_UNMAP(meshX,x(l))+1.50000000000d+00
-                ry=dtyi*MESH_UNMAP(meshY,y(l))+1.50000000000d+00
-                rz=dtzi*MESH_UNMAP(meshZ,z(l))+1.50000000000d+00
+                ! Nonuniform mesh - using mesh_unmap
+                rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
+                ry=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
+                rz=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
                 ix=rx
                 iy=ry
                 iz=rz
@@ -213,19 +210,19 @@ subroutine parmov   ! particle move?
           enddo !for iiy
         enddo !for iiz
 
-        call XREAL(DNSH(1,jb-1,kb-1,is),NX,NY,NZ)
-        call XREAL(VXS(1,jb-1,kb-1,is),NX,NY,NZ)
-        call XREAL(VYS(1,jb-1,kb-1,is),NX,NY,NZ)
-        call XREAL(VZS(1,jb-1,kb-1,is),NX,NY,NZ)
-        call XREALBCC(DNSH(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
-        call XREALBCC(VXS(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
-        call XREALBCC(VYS(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
-        call XREALBCC(VZS(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
+        call xreal(DNSH(1,jb-1,kb-1,is),nx,ny,nz)
+        call xreal(VXS(1,jb-1,kb-1,is),nx,ny,nz)
+        call xreal(VYS(1,jb-1,kb-1,is),nx,ny,nz)
+        call xreal(VZS(1,jb-1,kb-1,is),nx,ny,nz)
+        call xrealbcc(DNSH(1,jb-1,kb-1,is),1_8,nx,ny,nz)
+        call xrealbcc(VXS(1,jb-1,kb-1,is),1_8,nx,ny,nz)
+        call xrealbcc(VYS(1,jb-1,kb-1,is),1_8,nx,ny,nz)
+        call xrealbcc(VZS(1,jb-1,kb-1,is),1_8,nx,ny,nz)
 
-        do IIZ=KB-1,KE+1
-          do IIY=JB-1,JE+1
-            do IIX=1,NX2
-              dnsh(iix,iiy,iiz,is) = dnsh(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+        do iiz = kb-1, ke+1
+          do iiy = jb-1, je+1
+            do iix = 1, nx2
+              dnsh(iix,iiy,iiz,is)= dnsh(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
               vxs(iix,iiy,iiz,is) = vxs(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
               vys(iix,iiy,iiz,is) = vys(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
               vzs(iix,iiy,iiz,is) = vzs(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
@@ -239,13 +236,12 @@ subroutine parmov   ! particle move?
 
       ! advance particles for a seconnd half step
       call date_and_time(values=time_begin_array(:,13))
-      do IS=1, nspec
-        do IIZE = KB-1,KE
-          do IIYE = JB-1,JE
-            do IIXE = 1, NX1
-              NP=IPHEAD(IIXE,IIYE,IIZE,IS)
-
-              do while (NP.ne.0)
+      do is = 1, nspec
+        do iize = kb-1, ke
+          do iiye = jb-1, je
+            do iixe = 1, nx1
+              np = iphead(iixe,iiye,iize,is)
+              do while (np.ne.0)
                 L=NP
                 x_disp = dth*vx(l)
                 y_disp = dth*vy(l)
@@ -261,11 +257,10 @@ subroutine parmov   ! particle move?
           enddo ! for iiye
         enddo ! for iize
       enddo ! for is
-      
       call date_and_time(values=time_end_array(:,13))
       call accumulate_time(time_begin_array(1,13),time_end_array(1,13),time_elapsed(13))
 
-    endif ! dt<>0
+    endif ! dt>0
 
     ! check particles
     call date_and_time(values=time_begin_array(:,14))
@@ -286,42 +281,14 @@ subroutine parmov   ! particle move?
             do while (np.ne.0)
               nptotp=nptotp+1           !count particles
               npart(is) = npart(is) + 1 !count particles in each species
-              L=NP
+              L = NP
 
               q_p = qp(l)
 
-              ! Uniform mesh - Same as in version 5.0
-              ! rx=hxi*x(l)+1.5000000000000001d+00
-              ! ry=hyi*y(l)+0.5000000000000001d+00
-              ! rz=hzi*z(l)+0.5000000000000001d+00
-              ! ix=rx
-              ! iy=ry
-              ! iz=rz
-              ! ix=max(1,min(ix,nx1))
-              ! iy=max(jb-1,min(iy,je))
-              ! iz=max(kb-1,min(iz,ke))
-              ! fx=rx-ix
-              ! fy=ry-iy
-              ! fz=rz-iz
-
-              ! Nonuniform mesh - without using MESH_UNMAP
-              ! rx=hxi*x(l)+1.500000000000000d+00
-              ! ry=hyi*y(l)+1.500000000000000d+00
-              ! rz=hzi*z(l)+1.500000000000000d+00
-              ! ix=rx
-              ! iy=ry
-              ! iz=rz
-              ! ix=ixc_2_c_map(ix)
-              ! iy=iyc_2_c_map(iy)
-              ! iz=izc_2_c_map(iz)
-              ! fx=(x(l)-meshX%xc(ix))/meshX%dxn(ix+1)
-              ! fy=(y(l)-meshY%xc(iy))/meshY%dxn(iy+1)
-              ! fz=(z(l)-meshZ%xc(iz))/meshZ%dxn(iz+1)
-
-              ! Nonuniform mesh - using MESH_UNMAP
-              rx=dtxi*MESH_UNMAP(meshX,x(l))+1.50000000000d+00
-              ry=dtyi*MESH_UNMAP(meshY,y(l))+1.50000000000d+00
-              rz=dtzi*MESH_UNMAP(meshZ,z(l))+1.50000000000d+00
+              ! Nonuniform mesh - using mesh_unmap
+              rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
+              ry=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
+              rz=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
               ix=rx
               iy=ry
               iz=rz
@@ -334,20 +301,6 @@ subroutine parmov   ! particle move?
               ixp1 = ix+1
               iyp1 = iy+1
               izp1 = iz+1
-
-              ! Diagnosic test on particle cell index algorithm
-              ! if (     fx < 0. .or. fx > 1.                &
-              !     .or. fy < 0. .or. fy > 1.                &
-              !     .or. fz < 0. .or. fz > 1.) then 
-              !     print*, " GATHER LOOP "
-              !     print*, fx,fy,fz
-              !     print*, " x;",x(l),meshX%xn(ix),meshX%xc(ix)
-              !     print*, " y;",y(l),meshY%xn(iy),meshY%xc(iy)
-              !     print*, " z;",z(l),meshZ%xn(iz),meshZ%xc(iz)
-              !     print*, " r; ",rx,ry,rz
-              !     print*, " i; ",ixe,iye,ize
-              !     print*, " ixc_map; ",ix,iy,iz
-              ! endif
  
               w1=q_p*(1.-fx)*(1.-fy)*(1.-fz)
               w2=q_p*fx     *(1.-fy)*(1.-fz)
@@ -383,8 +336,8 @@ subroutine parmov   ! particle move?
       nescapearr(6) = nescape_zx(is)
       nescapearr(7) = nescape_xz(is)
       nescapearr(8) = npart(is)
-      call MPI_ALLREDUCE(nescapearr,nescapearr_global,8,MPI_INTEGER4,&
-                        MPI_SUM,COMM2D,IERR)
+
+      call MPI_ALLREDUCE(nescapearr,nescapearr_global,8,MPI_INTEGER4,MPI_SUM,COMM2D,IERR)
       nescape_global(is)    = nescapearr_global(1)
       nescape_yz_global(is) = nescapearr_global(2)
       nescape_zy_global(is) = nescapearr_global(3)
@@ -396,13 +349,13 @@ subroutine parmov   ! particle move?
 
       deltime2 = deltime2 + real(clock_time1-clock_time)
  
-      call XREAL(DNS(1,jb-1,kb-1,is),NX,NY,NZ)
-      call XREALBCC(DNS(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
+      call xreal(dns(1,jb-1,kb-1,is),nx,ny,nz)
+      call xrealbcc(dns(1,jb-1,kb-1,is),1_8,nx,ny,nz)
 
-      do IIZ=KB-1,KE+1
-        do IIY=JB-1,JE+1
-          do IIX=1,NX2
-            dns(iix,iiy,iiz,is) = dns(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+      do iiz = kb-1, ke+1
+        do iiy = jb-1, je+1
+          do iix = 1, nx2
+            dns(iix,iiy,iiz,is) = dns(iix,iiy,iiz,is)/(meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
           enddo
         enddo
       enddo
@@ -523,7 +476,7 @@ subroutine push
             ! fye=rye-iye
             ! fze=rze-ize
 
-            ! Nonuniform mesh - without using MESH_UNMAP
+            ! Nonuniform mesh - without using mesh_unmap
             ! rxe=hxi*x(l)+1.500000000000000d+00
             ! rye=hyi*y(l)+1.500000000000000d+00
             ! rze=hzi*z(l)+1.500000000000000d+00
@@ -537,10 +490,10 @@ subroutine push
             ! fye=(y(l)-meshY%xc(iye))/meshY%dxn(iyep1)
             ! fze=(z(l)-meshZ%xc(ize))/meshZ%dxn(izep1)
 
-            ! Nonuniform mesh - using MESH_UNMAP
-            rxe=dtxi*MESH_UNMAP(meshX,x(l))+1.50000000000d+00
-            rye=dtyi*MESH_UNMAP(meshY,y(l))+1.50000000000d+00
-            rze=dtzi*MESH_UNMAP(meshZ,z(l))+1.50000000000d+00
+            ! Nonuniform mesh - using mesh_unmap
+            rxe=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
+            rye=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
+            rze=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
             ixe=rxe
             iye=rye
             ize=rze
@@ -886,35 +839,6 @@ subroutine particle_boundary
               xpart = x(l)
               ypart = y(l)
               zpart = z(l)
-
- 
-              ! if (    xpart < 0..or.xpart > xmax&
-              !     .or.ypart < 0..or.ypart > ymax&       
-              !     .or.zpart < 0..or.zpart > zmax) then
-
-              !   ! VR: particle outside of the domain: I will get rid of this section
-              !   if (xpart < 0.) then
-              !     nescape_yz(is)=nescape_yz(is)+1
-              !   else if (xpart > xmax) then
-              !     nescape_zy(is)=nescape_zy(is)+1
-              !   else if (ypart < 0.) then
-              !     nescape_xz(is)=nescape_xz(is)+1
-              !   else if (ypart > ymax) then
-              !     nescape_zx(is)=nescape_zx(is)+1
-              !   else if (zpart < 0.) then
-              !     nescape_xy(is)=nescape_xy(is)+1
-              !   else 
-              !     nescape_yx(is)=nescape_yx(is)+1
-              !   endif
- 
-              !    npleavingp=npleavingp+1             !VR: # of particles leaving domain?
-              !    nescape(is) = nescape(is) + 1       !VR: # of particles escaping? (what's the difference?)
-              !    iphead(ixe,iye,ize,is)=link(np)     !VR: we are removing this particle: iphead points to the next particle
-              !    link(np)=ipstore                    !VR: the next particle is in the "empty" list
-              !    ipstore=np                          !VR: empty list starts at this particle
-              !    np=iphead(ixe,iye,ize,is)           !VR next particle to consider (remember that this is from the link)
-
-              ! else  !VR: particle inside the global domain
                 
               if ((zpart <= ze.and.zpart >= zb).and.(ypart <= ye.and.ypart >= yb)) then
                   ! VR: particle inside local domain (in y and z)
@@ -1067,76 +991,76 @@ subroutine particle_boundary
             
             ! loop over particles in the ipsend list
             do while (NP.ne.0)           
-                nsendactualp = nsendactualp + 1
+              nsendactualp = nsendactualp + 1
 
-                ! map this particle to the logical mesh
-                !             Nonuniform mesh - using MESH_UNMAP
-                rxe=dtxi*MESH_UNMAP(meshX,x(np))+1.50000000000d+00
-                rye=dtyi*MESH_UNMAP(meshY,y(np))+1.50000000000d+00
-                rze=dtzi*MESH_UNMAP(meshZ,z(np))+1.50000000000d+00
-                ixe=rxe
-                iye=rye
-                ize=rze
-                iye=iye-1             ! integer index in y direction starts at 0
-                ize=ize-1             ! integer index in z direction starts at 0
-                 
-                ypart=y(np)
-                zpart=z(np)
-                if (ypart <= ye.and.ypart >= yb) then
-                  iye_cc=jb 
-                else
-                  if (ypart > ye) then
-                      iye_cc=je+1 
-                  else
-                      iye_cc=jb-1 
-                  endif
-                endif
-                if (zpart <= ze.and.zpart >= zb) then
-                  ize_cc=kb 
-                else
-                  if (zpart > ze) then
-                      ize_cc=ke+1 
-                  else
-                      ize_cc=kb-1 
-                  endif
-                endif
-                 
-                ! destination process for this particle
-                i_source = idmap_yz(iye_cc,ize_cc)
+              ! map this particle to the logical mesh
+              !             Nonuniform mesh - using mesh_unmap
+              rxe=dtxi*mesh_unmap(meshX,x(np))+1.50000000000d+00
+              rye=dtyi*mesh_unmap(meshY,y(np))+1.50000000000d+00
+              rze=dtzi*mesh_unmap(meshZ,z(np))+1.50000000000d+00
+              ixe=rxe
+              iye=rye
+              ize=rze
+              iye=iye-1             ! integer index in y direction starts at 0
+              ize=ize-1             ! integer index in z direction starts at 0
                 
-                if (i_source==NBRTOP) then
-                  idest = 1
-                elseif (i_source==NBRLEFTTOP) then
-                  idest = 2
-                elseif (i_source==NBRLEFT) then
-                  idest = 3
-                elseif (i_source==NBRLEFTBOT) then
-                  idest = 4
-                elseif (i_source==NBRBOT) then
-                  idest = 5
-                elseif (i_source==NBRRITEBOT) then
-                  idest = 6
-                elseif (i_source==NBRRITE) then
-                  idest = 7
-                elseif (i_source==NBRRITETOP) then
-                  idest = 8
+              ypart=y(np)
+              zpart=z(np)
+              if (ypart <= ye.and.ypart >= yb) then
+                iye_cc=jb 
+              else
+                if (ypart > ye) then
+                    iye_cc=je+1 
                 else
-                  print *,"myid"," Something is wrong:trying to send particles to procsees that are not immediate neighbors"
-                end if
-                 
-                !VR pack the data
-                nsend_to_nbr(idest) = nsend_to_nbr(idest) + 1
-                ii = nsend_to_nbr(idest)  
-                packed_pdata_send(1,ii,idest)=x(np)
-                packed_pdata_send(2,ii,idest)=y(np)
-                packed_pdata_send(3,ii,idest)=z(np)
-                packed_pdata_send(4,ii,idest)=vx(np)
-                packed_pdata_send(5,ii,idest)=vy(np)
-                packed_pdata_send(6,ii,idest)=vz(np)
-                packed_pdata_send(7,ii,idest)=qp(np)
-                packed_pdata_send(8,ii,idest)=DBLE(ptag(np))
-            
-                np = link(np) !VR next particle in the list
+                    iye_cc=jb-1 
+                endif
+              endif
+              if (zpart <= ze.and.zpart >= zb) then
+                ize_cc=kb 
+              else
+                if (zpart > ze) then
+                    ize_cc=ke+1 
+                else
+                    ize_cc=kb-1 
+                endif
+              endif
+                
+              ! destination process for this particle
+              i_source = idmap_yz(iye_cc,ize_cc)
+              
+              if (i_source==NBRTOP) then
+                idest = 1
+              else if (i_source==NBRLEFTTOP) then
+                idest = 2
+              else if (i_source==NBRLEFT) then
+                idest = 3
+              else if (i_source==NBRLEFTBOT) then
+                idest = 4
+              else if (i_source==NBRBOT) then
+                idest = 5
+              else if (i_source==NBRRITEBOT) then
+                idest = 6
+              else if (i_source==NBRRITE) then
+                idest = 7
+              else if (i_source==NBRRITETOP) then
+                idest = 8
+              else
+                print*, 'myid = ', myid, ": trying to send particles to procsees that are not immediate neighbors"
+              endif
+                
+              !VR pack the data
+              nsend_to_nbr(idest) = nsend_to_nbr(idest) + 1
+              ii = nsend_to_nbr(idest)  
+              packed_pdata_send(1,ii,idest)=x(np)
+              packed_pdata_send(2,ii,idest)=y(np)
+              packed_pdata_send(3,ii,idest)=z(np)
+              packed_pdata_send(4,ii,idest)=vx(np)
+              packed_pdata_send(5,ii,idest)=vy(np)
+              packed_pdata_send(6,ii,idest)=vz(np)
+              packed_pdata_send(7,ii,idest)=qp(np)
+              packed_pdata_send(8,ii,idest)=DBLE(ptag(np))
+          
+              np = link(np) !VR next particle in the list
             enddo
 
             !VR now send all the data
@@ -1152,7 +1076,9 @@ subroutine particle_boundary
               
             !VR: wait for all requests to complete
             call MPI_WAITALL(8,exchange_send_request,status_array,ierr)
+
           else
+
             !VR this process recieves data in this stage from up to 4 different processes
             do itmp=1,4
               !VR loop over possible neighbors
@@ -1205,10 +1131,10 @@ subroutine particle_boundary
                 ! iye=hyi*y(nprecv)+0.5000000000000001d+00
                 ! ize=hzi*z(nprecv)+0.5000000000000001d+00
 
-                ! Nonuniform mesh - using MESH_UNMAP
-                rxe=dtxi*MESH_UNMAP(meshX,x(nprecv))+1.50000000000d+00
-                rye=dtyi*MESH_UNMAP(meshY,y(nprecv))+1.50000000000d+00
-                rze=dtzi*MESH_UNMAP(meshZ,z(nprecv))+1.50000000000d+00
+                ! Nonuniform mesh - using mesh_unmap
+                rxe=dtxi*mesh_unmap(meshX,x(nprecv))+1.50000000000d+00
+                rye=dtyi*mesh_unmap(meshY,y(nprecv))+1.50000000000d+00
+                rze=dtzi*mesh_unmap(meshZ,z(nprecv))+1.50000000000d+00
                 ixe=rxe
                 iye=rye
                 ize=rze
@@ -1317,10 +1243,10 @@ subroutine sortit
             ! iye = hyi*y(np)+0.5000000000000001d+00
             ! ize = hzi*z(np)+0.5000000000000001d+00
 
-            ! Nonuniform mesh - using MESH_UNMAP
-            rxe=dtxi*MESH_UNMAP(meshX,x(np))+1.50000000000d+00
-            rye=dtyi*MESH_UNMAP(meshY,y(np))+1.50000000000d+00
-            rze=dtzi*MESH_UNMAP(meshZ,z(np))+1.50000000000d+00
+            ! Nonuniform mesh - using mesh_unmap
+            rxe=dtxi*mesh_unmap(meshX,x(np))+1.50000000000d+00
+            rye=dtyi*mesh_unmap(meshY,y(np))+1.50000000000d+00
+            rze=dtzi*mesh_unmap(meshZ,z(np))+1.50000000000d+00
             ixe=rxe
             iye=rye
             ize=rze
@@ -1459,12 +1385,14 @@ subroutine trans
   use mesh_mod
   implicit none
 
-  integer*8:: is,i,j,k,jbmin,jbmax,kbmin,kbmax
-  integer*4:: time_begin(8),time_end(8)
-  real*8 :: dttmp,dns_tmp
+  integer*8 :: is, i, j, k, jbmin, jbmax, kbmin, kbmax
+  integer*4 :: time_begin(8), time_end(8)
+  real*8 :: dns_tmp
 
+  ! timing whole 'trans'
   call date_and_time(values=time_begin_array(:,20))
 
+  ! initialize sth
   do is = 1, nspec
     do k = kb-1, ke+1
       do j = jb-1, je+1
@@ -1503,48 +1431,13 @@ subroutine trans
   ! if test orbits, just return by here?
   if (testorbt) return
 
-  ! this block is skipped
-  if (.false.) then
-    do is=1,nspec
-      do k=kb-1,ke+1
-        do j=jb-1,je+1
-          do i=1,nx2
-            ! Nonuniform mesh
-            cell_volume_ratio = hx*hy*hz/(meshX%dxc(i)*meshY%dxc(j+1)*meshZ%dxc(k+1))
-
-            dns_tmp=dnsh(i,j,k,is)
-
-            ! Uniform mesh - Same as is in version 5.0
-            ! if (dns_tmp <= denmin) dns_tmp=1.d+10
-
-            ! Nonuniform mesh
-            ! if (dns_tmp*cell_volume_ratio <= denmin) dns_tmp=1.d+10
-            if (dns_tmp*cell_volume_ratio <= denmin) dns_tmp=denmin/cell_volume_ratio ! July 21, 2010
-
-            vxs(i,j,k,is)=vxs(i,j,k,is)/dns_tmp
-            vys(i,j,k,is)=vys(i,j,k,is)/dns_tmp
-            vzs(i,j,k,is)=vzs(i,j,k,is)/dns_tmp
-
-            ! Uniform mesh - Same as is in version 5.0
-            ! dns(i,j,k,is)=dns(i,j,k,is)
-
-            ! Nonuniform mesh
-            ! dns(i,j,k,is)=dns(i,j,k,is)*cell_volume_ratio
-          enddo
-        enddo
-      enddo
-    enddo
-  endif
-
+  ! what
   do is = 1, nspec
     do k = kb-1, ke+1
       do j = jb-1, je+1
         do i = 1, nx2 
           den(i,j,k)=den(i,j,k)+dns(i,j,k,is)*qspec(is) 
           denh(i,j,k)=denh(i,j,k)+dnsh(i,j,k,is)*qspec(is) 
-          ! vix(i,j,k)=vix(i,j,k)+qspec(is)*dnsh(i,j,k,is)*vxs(i,j,k,is) 
-          ! viy(i,j,k)=viy(i,j,k)+qspec(is)*dnsh(i,j,k,is)*vys(i,j,k,is) 
-          ! viz(i,j,k)=viz(i,j,k)+qspec(is)*dnsh(i,j,k,is)*vzs(i,j,k,is)
           vix(i,j,k)=vix(i,j,k)+qspec(is)*vxs(i,j,k,is) 
           viy(i,j,k)=viy(i,j,k)+qspec(is)*vys(i,j,k,is) 
           viz(i,j,k)=viz(i,j,k)+qspec(is)*vzs(i,j,k,is)
@@ -1553,44 +1446,43 @@ subroutine trans
     enddo
   enddo
 
-  ! Apply Boundary Conditions
+  ! apply boundary conditions
   if (ndim /= 1) then
-    call XREALBCC(DEN,1_8,NX,NY,NZ)
-    call XREALBCC(DENH,1_8,NX,NY,NZ)
-    call XREALBCC(VIX,1_8,NX,NY,NZ)
-    call XREALBCC(VIY,1_8,NX,NY,NZ)
-    call XREALBCC(VIZ,1_8,NX,NY,NZ)
+    call xrealbcc(den,1_8,nx,ny,nz)
+    call xrealbcc(denh,1_8,nx,ny,nz)
+    call xrealbcc(vix,1_8,nx,ny,nz)
+    call xrealbcc(viy,1_8,nx,ny,nz)
+    call xrealbcc(viz,1_8,nx,ny,nz)
   else
-    call XREALBCC_2D(DEN,1_8,NX,NY,NZ)
-    call XREALBCC_2D(DENH,1_8,NX,NY,NZ)
-    call XREALBCC_2D(VIX,1_8,NX,NY,NZ)
-    call XREALBCC_2D(VIY,1_8,NX,NY,NZ)
-    call XREALBCC_2D(VIZ,1_8,NX,NY,NZ)
+    call xrealbcc_2d(den,1_8,nx,ny,nz)
+    call xrealbcc_2d(denh,1_8,nx,ny,nz)
+    call xrealbcc_2d(vix,1_8,nx,ny,nz)
+    call xrealbcc_2d(viy,1_8,nx,ny,nz)
+    call xrealbcc_2d(viz,1_8,nx,ny,nz)
   endif
 
   ! smooth density and velocity
   if (smoothing) then
     if (ndim /=1) then
-      call nsmth(DEN)
-      call nsmth(DENH)
-      call nsmth(VIX)
-      call nsmth(VIY)
-      call nsmth(VIZ)
+      call nsmth(den)
+      call nsmth(denh)
+      call nsmth(vix)
+      call nsmth(viy)
+      call nsmth(viz)
     else
-      call nsmth_2d(DEN,NX2,NY2,NZ2)
-      call nsmth_2d(DENH,NX2,NY2,NZ2)
-      call nsmth_2d(VIX,NX2,NY2,NZ2)
-      call nsmth_2d(VIY,NX2,NY2,NZ2)
-      call nsmth_2d(VIZ,NX2,NY2,NZ2)
+      call nsmth_2d(den, nx2, ny2, nz2)
+      call nsmth_2d(denh, nx2, ny2, nz2)
+      call nsmth_2d(vix, nx2, ny2, nz2)
+      call nsmth_2d(viy, nx2, ny2, nz2)
+      call nsmth_2d(viz, nx2, ny2, nz2)
     endif
   endif
 
-  do k=kb-1,ke+1
-    do j=jb-1,je+1
-      do i=1,nx2
+  do k = kb-1, ke+1
+    do j = jb-1, je+1
+      do i = 1, nx2
         den(i,j,k)=max(denmin,den(i,j,k))
-        ! pressure calculation moved to pressgrad
-        ! pe(i,j,k) =te0*den(i,j,k)**gama
+        ! pe(i,j,k) =te0*den(i,j,k)**gamma ! pressure calculation moved to pressgrad
         vix(i,j,k)=vix(i,j,k)/denh(i,j,k)
         viy(i,j,k)=viy(i,j,k)/denh(i,j,k)
         viz(i,j,k)=viz(i,j,k)/denh(i,j,k)
@@ -1598,20 +1490,19 @@ subroutine trans
     enddo
   enddo
 
+  ! for 1st step?
   if (it == 0) then
-     deno=den;vixo=vix;viyo=viy;vizo=viz
+     deno=den; vixo=vix; viyo=viy; vizo=viz
   endif
 
+  ! what does 'energy' do?
   call date_and_time(values=time_begin_array(:,8))
   if (mod(it,10)==0) call energy
   call date_and_time(values=time_end_array(:,8))
   call accumulate_time(time_begin_array(1,8),time_end_array(1,8),time_elapsed(8))
 
-  kbmin = kb-1
-  kbmax = ke+1
-
-  jbmin = jb-1
-  jbmax = je+1
+  kbmin = kb-1; kbmax = ke+1
+  jbmin = jb-1; jbmax = je+1
 
   call date_and_time(values=time_end_array(:,20))
   call accumulate_time(time_begin_array(1,20),time_end_array(1,20),time_elapsed(20))
@@ -1679,10 +1570,10 @@ subroutine caltemp2_global
           !  fy=ry-iy
           !  fz=rz-iz
 
-          ! Nonuniform mesh - using MESH_UNMAP
-            rx=dtxi*MESH_UNMAP(meshX,x(l))+1.50000000000d+00
-            ry=dtyi*MESH_UNMAP(meshY,y(l))+1.50000000000d+00
-            rz=dtzi*MESH_UNMAP(meshZ,z(l))+1.50000000000d+00
+          ! Nonuniform mesh - using mesh_unmap
+            rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
+            ry=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
+            rz=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
             ix=rx
             iy=ry
             iz=rz
@@ -1847,16 +1738,16 @@ subroutine caltemp2_global
     enddo
 
 
-    call XREAL(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
-    call XREAL(tperp(1,jb-1,kb-1,is),NX,NY,NZ)
-    call XREAL(dpedx(1,jb-1,kb-1   ),NX,NY,NZ)
+    call xreal(tpar (1,jb-1,kb-1,is),nx,ny,nz)
+    call xreal(tperp(1,jb-1,kb-1,is),nx,ny,nz)
+    call xreal(dpedx(1,jb-1,kb-1   ),nx,ny,nz)
 
-    call XREAL(p_xx (1,jb-1,kb-1,is),NX,NY,NZ)
-    call XREAL(p_xy (1,jb-1,kb-1,is),NX,NY,NZ)
-    call XREAL(p_xz (1,jb-1,kb-1,is),NX,NY,NZ)
-    call XREAL(p_yy (1,jb-1,kb-1,is),NX,NY,NZ)
-    call XREAL(p_yz (1,jb-1,kb-1,is),NX,NY,NZ)
-    call XREAL(p_zz (1,jb-1,kb-1,is),NX,NY,NZ)
+    call xreal(p_xx (1,jb-1,kb-1,is),nx,ny,nz)
+    call xreal(p_xy (1,jb-1,kb-1,is),nx,ny,nz)
+    call xreal(p_xz (1,jb-1,kb-1,is),nx,ny,nz)
+    call xreal(p_yy (1,jb-1,kb-1,is),nx,ny,nz)
+    call xreal(p_yz (1,jb-1,kb-1,is),nx,ny,nz)
+    call xreal(p_zz (1,jb-1,kb-1,is),nx,ny,nz)
 
     do IZ = KB-1,KE
       do IY = JB-1,JE
@@ -1869,9 +1760,9 @@ subroutine caltemp2_global
       enddo
     enddo
 
-    do IIZ=KB-1,KE+1
-      do IIY=JB-1,JE+1
-        do IIX=1,NX2
+    do iiz = kb-1, ke+1
+      do iiy = jb-1, je+1
+        do iix = 1, nx2
           p_xx(iix,iiy,iiz,is) = p_xx(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
           p_xy(iix,iiy,iiz,is) = p_xy(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
           p_xz(iix,iiy,iiz,is) = p_xz(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
@@ -1898,16 +1789,16 @@ subroutine caltemp2_global
 
 !  do is=1,nspec
 !    call date_and_time(values=time_begin_array(:,24))
-!    call XREAL(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
-!    call XREAL(tperp(1,jb-1,kb-1,is),NX,NY,NZ)
+!    call xreal(tpar (1,jb-1,kb-1,is),nx,ny,nz)
+!    call xreal(tperp(1,jb-1,kb-1,is),nx,ny,nz)
 !    call date_and_time(values=time_end_array(:,24))
 !    call accumulate_time(time_begin_array(1,24) &
 ! &                                 ,time_end_array(1,24) &
 ! &                                 ,time_elapsed(24))
 
 !    call date_and_time(values=time_begin_array(:,25))
-!    call XREALBCC(tpar (1,jb-1,kb-1,is),1,NX,NY,NZ)
-!    call XREALBCC(tperp(1,jb-1,kb-1,is),1,NX,NY,NZ)
+!    call xrealbcc(tpar (1,jb-1,kb-1,is),1,nx,ny,nz)
+!    call xrealbcc(tperp(1,jb-1,kb-1,is),1,nx,ny,nz)
 !    call date_and_time(values=time_end_array(:,25))
 !    call accumulate_time(time_begin_array(1,25) &
 ! &                                 ,time_end_array(1,25) &
@@ -2002,10 +1893,10 @@ subroutine energy
           !  fy=ry-iy
           !  fz=rz-iz
 
-          ! Nonuniform mesh - using MESH_UNMAP
-            rx=dtxi*MESH_UNMAP(meshX,x(l))+1.50000000000d+00
-            ry=dtyi*MESH_UNMAP(meshY,y(l))+1.50000000000d+00
-            rz=dtzi*MESH_UNMAP(meshZ,z(l))+1.50000000000d+00
+          ! Nonuniform mesh - using mesh_unmap
+            rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
+            ry=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
+            rz=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
             ix=rx
             iy=ry
             iz=rz
@@ -2108,13 +1999,13 @@ subroutine energy
     enddo
 
 
-    call XREAL(p_xx (1,jb-1,kb-1,is),NX,NY,NZ)
-    call XREAL(p_yy (1,jb-1,kb-1,is),NX,NY,NZ)
-    call XREAL(p_zz (1,jb-1,kb-1,is),NX,NY,NZ)
+    call xreal(p_xx (1,jb-1,kb-1,is),nx,ny,nz)
+    call xreal(p_yy (1,jb-1,kb-1,is),nx,ny,nz)
+    call xreal(p_zz (1,jb-1,kb-1,is),nx,ny,nz)
 
-    do IIZ=KB-1,KE+1
-      do IIY=JB-1,JE+1
-        do IIX=1,NX2
+    do iiz = kb-1, ke+1
+      do iiy = jb-1, je+1
+        do iix = 1, nx2
           p_xx(iix,iiy,iiz,is) = p_xx(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
           p_yy(iix,iiy,iiz,is) = p_yy(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
           p_zz(iix,iiy,iiz,is) = p_zz(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))

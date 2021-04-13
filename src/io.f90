@@ -445,7 +445,7 @@ subroutine restart_read_write(rw)
 
     write(f_unit) btspec, qspec, wspec, frac,                    &
     anisot, denmin, resis, wpiwci, bete, fxsho,ave1,             &
-    ave2,phib, xmax,ymax,zmax,gama,                              &
+    ave2,phib, xmax,ymax,zmax,gamma,                              &
     npx, npy, npz,                                               &
     iterb,norbskip,nxcel,netax,netay,netaz,nspec,   &
     nx,ny,nz,nskipx,nskipy,                                      &
@@ -600,7 +600,7 @@ subroutine restart_read_write(rw)
 
     read(f_unit) btspec, qspec, wspec, frac,       &
     anisot, denmin, resis, wpiwci, bete, fxsho,ave1,      &
-    ave2,phib, xmax,ymax,zmax,gama,                  &
+    ave2,phib, xmax,ymax,zmax,gamma,                  &
     npx, npy, npz,                                               &
     iterb,norbskip,nxcel,netax,netay,netaz,nspec,   &
     nx,ny,nz,nskipx,nskipy,                                      &

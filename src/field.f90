@@ -53,9 +53,9 @@ subroutine pressgrad(iflag)
   real*8 :: dena,dxa,dya,dza,a
   
   if (iflag==0) then 
-    pe = te0*denh**gama
+    pe = te0*denh**gamma
   else
-    pe = te0*den**gama
+    pe = te0*den**gamma
   endif
 
   do k=kb,ke

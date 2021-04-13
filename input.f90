@@ -51,7 +51,7 @@ eta_par=0, ! parallel resisitivity? sth used in 'field.f90'
 
 ! anisotropy in velocity
 anisot=1.0, ! anisotropy of velocity for each species, used in 'init waves'
-gama=1.66667, ! gamma factor in EoS
+gamma=1.66667, ! gamma factor in EoS
 
 ave1=100.0, ave2=50.,
 phib=180.0,
