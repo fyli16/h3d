@@ -275,7 +275,7 @@ module parameter_mod
 
 
   !---------------------------------------------------------------------
-  subroutine domain_decomposition
+  subroutine domain_decomp
     integer :: i
 
     ! set MPI Cartesian geometry, define stride vector types, obtain new
@@ -322,12 +322,12 @@ module parameter_mod
       write(6,*) "  Local array size in z-direction = ", nzlmax
     endif
 
-  end subroutine domain_decomposition
+  end subroutine domain_decomp
 
 
   !---------------------------------------------------------------------
   ! Set global parameters
-  subroutine allocate_global_arrays
+  subroutine allocate_arrays
     integer :: i, j, k
 
     ! what's doing here?
@@ -606,6 +606,6 @@ module parameter_mod
     allocate (buf_particle(tracking_width,nspec*maxtags,nbufsteps))
     allocate (buf_p1(tracking_width,nspec*maxtags))
 
-  end subroutine allocate_global_arrays 
+  end subroutine allocate_arrays 
 
 end module parameter_mod

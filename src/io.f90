@@ -692,7 +692,7 @@ end subroutine restart_read_write
 
 !---------------------------------------------------------------------
 ! open history diagnostic files
-subroutine open_hist_diag_files()
+subroutine open_hist_files
   use parameter_mod
   implicit none 
 
@@ -746,7 +746,7 @@ subroutine open_hist_diag_files()
   endif
 
   return
-end subroutine open_hist_diag_files
+end subroutine open_hist_files
 
 
 !---------------------------------------------------------------------

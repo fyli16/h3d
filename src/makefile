@@ -19,7 +19,6 @@ OBJS =  parameter.of90 \
 		c_int_to_char.ogcc \
 		mesh.of90 \
 		functions.of90 \
-		init_wave.of90 \
 		io.of90\
 	 	boundary.of90 \
 		field.of90\
@@ -29,6 +28,7 @@ OBJS =  parameter.of90 \
 		field_2d.of90 \
 		eta_cal.of90 \
 		eta_cal_2d.of90 \
+		init_wave.of90 \
 		h3d.of90
 
 $(EFILE): $(OBJS)

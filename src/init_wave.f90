@@ -7,9 +7,9 @@
       implicit none
 
       integer*8 :: ibp1, ibp2, nptot_max, i, remake, field_subcycle
-      real*8 :: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi     &
-                        ,x_p,y_p,z_p,x_p_logical,y_p_logical        &
-                        ,z_p_logical,r_c,q_p,dtsav
+      real*8 :: rxe, rye, rze, fxe, fye, fze, dtxi, dtyi, dtzi, &
+                x_p, y_p, z_p, x_p_logical, y_p_logical, z_p_logical, &
+                r_c, q_p, dtsav
       integer*8 :: ip,ipb1,ipb2,is,ixe,iye,ize,j,k
       real*8 :: vxa,vya,vza,vmag,th,ranval(4)
       integer :: seed_size

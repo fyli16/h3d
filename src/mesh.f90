@@ -35,7 +35,7 @@ module mesh_mod
     integer*8 :: type
   end type meshtype
 
-  type(mesh) :: meshX, meshY, meshZ 
+  type (mesh) :: meshX, meshY, meshZ 
   type (meshtype), parameter :: cell = meshtype(0)
   type (meshtype), parameter :: NODE = meshtype(1)
 
