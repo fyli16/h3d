@@ -39,33 +39,13 @@ program h3d
     call init_restart()
   else  ! fresh start
     call init_wave
-  endif
-
-  ! time stamp just before entering the simulation loop
-  call date_and_time(values=curr_time)
-  clock_time_init = curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001
-  clock_time_old = clock_time_init
-
-  ! determine start, finish number of steps
-  itstart = itfin
-  it = itstart
-  itfinish = (tmax-t_stopped)/dtwci + itstart
-  if (myid==0) then 
-    print*, " "
-    print*, 't_stopped = ', t_stopped
-    print*, 'itstart = ', itstart
-    print*, 'itfinish = ', itfinish
-    print*, " "
   endif 
-  
-  ! main simulation loop
-  time_elapsed=0.; time_begin_array=0; time_end_array=0
-  do while(it <= itfinish)
-    call one_simulation_loop
-  enddo  
+
+  ! main simulation loops
+  call sim_loops
 
   ! shutdown the program
-  call shutdown()
+  call shutdown
 
 end program h3d
 
@@ -257,7 +237,6 @@ end subroutine init_restart
 !---------------------------------------------------------------------
 ! diagnostic data output
 !---------------------------------------------------------------------
-! subroutine data_output(uniform_mesh)
 subroutine data_output
   use parameter_mod
   implicit none 
@@ -325,116 +304,137 @@ end subroutine data_output
 !---------------------------------------------------------------------
 ! simulation loop
 !---------------------------------------------------------------------
-subroutine one_simulation_loop
+subroutine sim_loops
   use parameter_mod
   implicit none 
 
   integer :: iwrite
-  ! real*8 :: uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1)
 
-  call date_and_time(values=time_begin_array(:,1)) ! time one-whole-loop
-
-  ! print time-step info
+  ! time stamp just before entering the simulation loop
   call date_and_time(values=curr_time)
-  clock_time = curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001
-  if (myid == 0.and.mod(it,10_8) == 0) then
-    write(6,*) 'it=', it, ', time=', time, ', delta_t=', real(clock_time-clock_time_old), &
-                ', tot_t=', real(clock_time-clock_time_init)
-    clock_time_old = clock_time
-  endif
+  clock_time_init = curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001
+  clock_time_old = clock_time_init
 
-  ! compute resistivity (which could depend on local parameters such as current)
-  call date_and_time(values=time_begin_array(:,2))
-  if (ndim /= 1) then
-    call eta_calc       ! Dietmar's resistivity
-  else
-    call eta_calc_2d    ! Dietmar's resistivity
-  endif
-  ntot = 0 ! for particle tracking
-  call trans ! trans computes density and v's; it also calls parmov, i.e., it does particle push
-  call date_and_time(values=time_end_array(:,2))
-  call accumulate_time(time_begin_array(1,2),time_end_array(1,2),time_elapsed(2))
+  ! determine start, finish number of steps
+  itstart = itfin
+  it = itstart
+  itfinish = (tmax-t_stopped)/dtwci + itstart
+  if (myid==0) then 
+    print*, " "
+    print*, 't_stopped = ', t_stopped
+    print*, 'itstart = ', itstart
+    print*, 'itfinish = ', itfinish
+    print*, " "
+  endif 
+  
+  ! main simulation loop
+  time_elapsed=0.; time_begin_array=0; time_end_array=0
+  do while(it <= itfinish)
+    call date_and_time(values=time_begin_array(:,1)) ! time one-whole-loop
 
-  ! write output to energy.dat
-  if (myid==0) then
-    write(11,*) it, efld, bfld, efluidt, ethermt, eptclt ! energy.dat
-    write(14,*) it, time_elapsed(1:40)  ! time.dat
-  endif
-
-  ! sort particles
-  call date_and_time(values=time_begin_array(:,4))
-  if (mod(it,10_8) == 0) call sortit    !  sort the particles
-  call date_and_time(values=time_end_array(:,4))
-  call accumulate_time(time_begin_array(1,4),time_end_array(1,4),time_elapsed(4))
-
-  ! call field solver
-  call date_and_time(values=time_begin_array(:,5))
-  if (.not.testorbt) then
-    if (ndim /=1) then 
-      call field
-    else
-      call field_2d
+    ! print time-step info
+    call date_and_time(values=curr_time)
+    clock_time = curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001
+    if (myid == 0.and.mod(it,10_8) == 0) then
+      write(6,*) 'it=', it, ', time=', time, ', delta_t=', real(clock_time-clock_time_old), &
+                  ', tot_t=', real(clock_time-clock_time_init)
+      clock_time_old = clock_time
     endif
-  endif        
-  call date_and_time(values=time_end_array(:,5))
-  call accumulate_time(time_begin_array(1,5),time_end_array(1,5),time_elapsed(5))
 
-  ! inject_wave ?
-  ! if (it == 21000) call inject_wave
-  ! if (mod(it,100) == 0) call kick
+    ! compute resistivity (which could depend on local parameters such as current)
+    call date_and_time(values=time_begin_array(:,2))
+    if (ndim /= 1) then
+      call eta_calc       ! Dietmar's resistivity
+    else
+      call eta_calc_2d    ! Dietmar's resistivity
+    endif
+    ntot = 0 ! for particle tracking
+    call trans ! trans computes density and v's; it also calls parmov, i.e., it does particle push
+    call date_and_time(values=time_end_array(:,2))
+    call accumulate_time(time_begin_array(1,2),time_end_array(1,2),time_elapsed(2))
 
-  ! VR: call user diagnostics
-  call date_and_time(values=time_begin_array(:,30))
-  call user_diagnostics
-  call date_and_time(values=time_end_array(:,30))
-  call accumulate_time(time_begin_array(1,30),time_end_array(1,30),time_elapsed(30))
-    
-  ! write data
-  if (.not.testorbt.and.mod(it,n_write_data)==0) then        
-    call data_output
-  endif
+    ! write output to energy.dat
+    if (myid==0) then
+      write(11,*) it, efld, bfld, efluidt, ethermt, eptclt ! energy.dat
+      write(14,*) it, time_elapsed(1:40)  ! time.dat
+    endif
 
-  ! write restart files
-  if (mod(int(it,8),n_write_restart)==0 .and. (it>itstart)) then
-    if (myid == 0) write(6,*) 'Writing restart files ...'
-    itfin = it
-    do iwrite = 0, npes_over_60  
-      if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
-        call restart_read_write(1.0)
+    ! sort particles
+    call date_and_time(values=time_begin_array(:,4))
+    if (mod(it,10_8) == 0) call sortit    !  sort the particles
+    call date_and_time(values=time_end_array(:,4))
+    call accumulate_time(time_begin_array(1,4),time_end_array(1,4),time_elapsed(4))
+
+    ! call field solver
+    call date_and_time(values=time_begin_array(:,5))
+    if (.not.testorbt) then
+      if (ndim /=1) then 
+        call field
+      else
+        call field_2d
       endif
-      call MPI_BARRIER(MPI_COMM_WORLD,IERR)
-    enddo
+    endif        
+    call date_and_time(values=time_end_array(:,5))
+    call accumulate_time(time_begin_array(1,5),time_end_array(1,5),time_elapsed(5))
 
-    ! write the latest restart dump info into file
-    if (myid == 0) then
-      open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='unknown')
-      write(222,*) restart_index, itfin
-      close(222)
+    ! inject_wave ?
+    ! if (it == 21000) call inject_wave
+    ! if (mod(it,100) == 0) call kick
+
+    ! VR: call user diagnostics
+    call date_and_time(values=time_begin_array(:,30))
+    call user_diagnostics
+    call date_and_time(values=time_end_array(:,30))
+    call accumulate_time(time_begin_array(1,30),time_end_array(1,30),time_elapsed(30))
+      
+    ! write data
+    if (.not.testorbt.and.mod(it,n_write_data)==0) then        
+      call data_output
     endif
 
-    ! keep only two sets of restart files, 
-    ! so overwrite the previous dump by swapping file index 
-    if (restart_index == 1) then
-      restart_index=2
-    else
-      restart_index=1
+    ! write restart files
+    if (mod(int(it,8),n_write_restart)==0 .and. (it>itstart)) then
+      if (myid == 0) write(6,*) 'Writing restart files ...'
+      itfin = it
+      do iwrite = 0, npes_over_60  
+        if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
+          call restart_read_write(1.0)
+        endif
+        call MPI_BARRIER(MPI_COMM_WORLD,IERR)
+      enddo
+
+      ! write the latest restart dump info into file
+      if (myid == 0) then
+        open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='unknown')
+        write(222,*) restart_index, itfin
+        close(222)
+      endif
+
+      ! keep only two sets of restart files, 
+      ! so overwrite the previous dump by swapping file index 
+      if (restart_index == 1) then
+        restart_index=2
+      else
+        restart_index=1
+      endif
+
     endif
 
-  endif
+    time = time + dtwci
+    it = it + 1
 
-  time = time + dtwci
-  it = it + 1
+    call date_and_time(values=time_end_array(:,1))
+    call accumulate_time(time_begin_array(1,1),time_end_array(1,1),time_elapsed(1))
 
-  call date_and_time(values=time_end_array(:,1))
-  call accumulate_time(time_begin_array(1,1),time_end_array(1,1),time_elapsed(1))
+  enddo 
 
-end subroutine one_simulation_loop
+end subroutine sim_loops
 
 
 !---------------------------------------------------------------------
 ! shutdown the simulation and exit
 !---------------------------------------------------------------------
-subroutine shutdown()
+subroutine shutdown
   use parameter_mod
   implicit none 
 
@@ -520,7 +520,6 @@ subroutine shutdown()
   endif
 
   call MPI_FINALIZE(IERR)
-
   stop
 
 end subroutine shutdown
