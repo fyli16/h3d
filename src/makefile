@@ -25,9 +25,9 @@ OBJS =  parameter.of90 \
 		eta_cal.of90 \
 		eta_cal_2d.of90 \
 		boundary.of90 \
-		io.of90\
 	 	diagnostics.of90\
 		write_file.of90 \
+		io.of90\
 		init_wave.of90 \
 		h3d.of90
 

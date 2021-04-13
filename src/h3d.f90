@@ -130,7 +130,6 @@ subroutine init_restart
   implicit none 
 
   integer*8 :: ixe, iye, ize, i, j, k
-  integer :: is, iwrite
 
   if (myid == 0) then
     open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='old')
@@ -145,8 +144,8 @@ subroutine init_restart
   call MPI_BCAST(restart_index,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
   call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
 
-  do iwrite = 0, npes_over_60 
-    if (mod(int(myid,8), npes_over_60+1) .eq. iwrite) then 
+  do i = 0, npes_over_60 
+    if (mod(int(myid,8), npes_over_60+1) .eq. i) then 
         call restart_read_write(-1.0)  ! read restart data
         call MPI_BCAST(itfin,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
     endif
@@ -202,13 +201,13 @@ subroutine init_restart
   zb_logical = MESH_UNMAP(meshZ,zb)
   ze_logical = MESH_UNMAP(meshZ,ze)
             
-  do is = 1, nspec
-    npm = npx(is)*npy(is)*npz(is)*npes
-    dfac(is) = real(ny*nz*nx)/real(npm)
+  do i = 1, nspec
+    npm = npx(i)*npy(i)*npz(i)*npes
+    dfac(i) = real(ny*nz*nx)/real(npm)
     do ixe=1,nx2
         do iye=jb-1,je+1
           do ize=kb-1,ke+1
-              qp_cell(ixe,iye,ize,is) = meshX%dxc(ixe)*meshY%dxc(iye+1)*meshZ%dxc(ize+1)*dfac(is)*frac(is)
+              qp_cell(ixe,iye,ize,i) = meshX%dxc(ixe)*meshY%dxc(iye+1)*meshZ%dxc(ize+1)*dfac(i)*frac(i)
           enddo
         enddo
     enddo
@@ -252,16 +251,15 @@ subroutine data_output
   use parameter_mod
   implicit none 
 
-  integer :: j
+  integer :: i
   integer*8 :: numvars, irecnum
 
   ! ??
   if (myid==0) then
     my_short_int = it
     call integer_to_character(cycle_ascii, len(cycle_ascii), my_short_int)
-    if (cycle_ascii=='') cycle_ascii='0'
     cycle_ascii_new=trim(adjustl(cycle_ascii))
-    print*, " cycle = ", cycle_ascii_new
+    print*, "writing output at cycle = ", cycle_ascii_new
   endif
   call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
   call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
@@ -294,11 +292,12 @@ subroutine data_output
   
   ! this block is not executed when MPI_IO_format=.true.
   if (myid==0 .and. .not.MPI_IO_format) then
-    do j = 1, 25
-      close(file_unit(j))
+    do i = 1, 25
+      close(file_unit(i))
     enddo
   endif
 
+  ! write particles with a given volume
   if (mod(it,n_write_particle)==0) then
     if (myid == 0) then
       my_short_int = it
@@ -320,11 +319,11 @@ subroutine sim_loops
   use parameter_mod
   implicit none 
 
-  integer :: iwrite
+  integer :: i
 
   ! time stamp just before entering the simulation loop
-  call date_and_time(values=curr_time)
-  clock_time_init = curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001
+  call date_and_time(values=now)
+  clock_time_init = now(5)*3600.+now(6)*60.+now(7)+now(8)*0.001
   clock_time_old = clock_time_init
   
   ! main simulation loop
@@ -335,8 +334,8 @@ subroutine sim_loops
     call date_and_time(values=time_begin_array(:,1)) ! time one-whole-loop
 
     ! print time-step info
-    call date_and_time(values=curr_time)
-    clock_time = curr_time(5)*3600.+curr_time(6)*60.+curr_time(7)+curr_time(8)*0.001
+    call date_and_time(values=now)
+    clock_time = now(5)*3600.+now(6)*60.+now(7)+now(8)*0.001
     if (myid == 0.and.mod(it,10_8) == 0) then
       print*, 'it=', it, ', time=', time, ', delta_t=', real(clock_time-clock_time_old), &
                   ', tot_t=', real(clock_time-clock_time_init)
@@ -398,8 +397,8 @@ subroutine sim_loops
     if (mod(int(it,8),n_write_restart)==0 .and. (it>itstart)) then
       if (myid == 0) print*, 'Writing restart files ...'
       itfin = it
-      do iwrite = 0, npes_over_60  
-        if (mod( int(myid,8) ,npes_over_60 + 1).eq.iwrite) then
+      do i = 0, npes_over_60  
+        if (mod( int(myid,8) ,npes_over_60 + 1).eq.i) then
           call restart_read_write(1.0)
         endif
         call MPI_BARRIER(MPI_COMM_WORLD,IERR)

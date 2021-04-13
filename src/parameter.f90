@@ -8,7 +8,7 @@ module parameter_mod
 
   integer, dimension(8,128) :: time_begin_array, time_end_array
   real*8, dimension(128) :: time_elapsed
-  integer, dimension(8) :: curr_time
+  integer, dimension(8) :: now
   integer*8 :: itstart, itfinish
 
   integer*8 :: nxmax, nymax, nzmax, nspecm, npes, nvar, nylmax, nzlmax, npm, npes_over_60
