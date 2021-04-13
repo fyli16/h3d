@@ -497,7 +497,7 @@ module mesh_mod
 
     ! write mesh properties into a file
     if (myid == 0) then
-      open(unit=10, file='mesh_vertices.dat', status='unknown', form='formatted')
+      open(unit=10, file=trim(data_directory)//'mesh_vertices.dat', status='unknown', form='formatted')
       write(10,*) meshX%nl+1, meshY%nl+1, meshZ%nl+1
 
       do i = 2, meshX%nl+2 
