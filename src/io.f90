@@ -6,7 +6,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
                     eta, eta_times_b_dot_j, eta_par,            &
                     data_directory, cycle_ascii, MPI_IO_format)
                     ! uniform_mesh, data_directory, cycle_ascii, MPI_IO_format)
-  use parameter_mod, only : frac,tx0,one,nspec
+  use parameter_mod, only : frac, tx0, one, nspec, uniform_mesh
   implicit none  
 
   integer :: myid, numprocs, is
@@ -35,7 +35,7 @@ subroutine dataout( bx, by, bz, den, ex, ey, ez, vix, viy, viz, tpar, tperp,    
   irec_start = irecnum
   rnorm = wpiwci
   ! call MESH_INTERPOLATED_3D(bx,uniform_mesh,nonuniform_mesh_global)
-  uniform_mesh=bx 
+  uniform_mesh = bx 
 
   if (MPI_IO_format) then
     fileName= trim(trim(data_directory)//'bx/bx_'//trim(adjustl(cycle_ascii)))//'.gda'
