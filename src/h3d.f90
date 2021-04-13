@@ -279,7 +279,7 @@ subroutine sim_loops
     ! print time-step info
     call date_and_time(values=now)
     clock_time = now(5)*3600.+now(6)*60.+now(7)+now(8)*0.001
-    if (myid == 0.and.mod(it,10_8) == 0) then
+    if (myid == 0.and.mod(it,n_print) == 0) then
       print*, 'it=', it, ', time=', time, ', delta_t=', real(clock_time-clock_time_old), &
                   ', tot_t=', real(clock_time-clock_time_init)
       clock_time_old = clock_time

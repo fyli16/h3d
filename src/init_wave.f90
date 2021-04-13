@@ -143,13 +143,14 @@
       bx = zero; by = zero; bz = zero
       ex = zero; ey = zero; ez = zero
      
+      !---------------------------------------------------------------------
       ! initialie perturbation on the mesh 
+      !---------------------------------------------------------------------
       if (myid==0) then
         print*, " "
         print*, "Initializing wave on the mesh ..."
-        print*, " "
       endif 
-      
+
       do k = kb-1, ke+1
         z_pos = meshZ%xc(k+1)
         do j = jb-1, je+1  
@@ -204,7 +205,9 @@
         enddo
       enddo
      
+      !--------------------------------------------------------------------- 
       ! load particles
+      !---------------------------------------------------------------------
       if (myid==0) then
         print*, " "
         print*, "Initializing particles ..." 
@@ -249,29 +252,27 @@
           write(6,*) " "
         endif
 
+        ! actual loading
         print_percentage = zero
         do ip = ipb1, ipb2
-          if (ipb2 == ipb1) write(6,*) "myid = , # particles = ", myid,ipb1,ipb2
           call random_number(harvest=ranval)
           if (uniform_loading_in_logical_grid) then
-            X_P_LOGICAL  = XB_LOGICAL+(XE_LOGICAL-XB_LOGICAL)*ranval(1)
-            Y_P_LOGICAL  = YB_LOGICAL+(YE_LOGICAL-YB_LOGICAL)*ranval(2)
-            Z_P_LOGICAL  = ZB_LOGICAL+(ZE_LOGICAL-ZB_LOGICAL)*ranval(3)
-            X_P          = MESH_MAP(meshX,X_P_LOGICAL)
-            Y_P          = MESH_MAP(meshY,Y_P_LOGICAL)
-            Z_P          = MESH_MAP(meshZ,Z_P_LOGICAL)
-            IXE          = dtxi*X_P_LOGICAL+1.50000000000d+00
-            IYE          = dtyi*Y_P_LOGICAL+1.50000000000d+00
-            IZE          = dtzi*Z_P_LOGICAL+1.50000000000d+00
+            x_p_logical  = xb_logical+(XE_LOGICAL-xb_logical)*ranval(1)
+            y_p_logical  = yb_logical+(YE_LOGICAL-yb_logical)*ranval(2)
+            z_p_logical  = zb_logical+(ZE_LOGICAL-zb_logical)*ranval(3)
+            x_p          = mesh_map(meshX,x_p_logical)
+            y_p          = mesh_map(meshY,y_p_logical)
+            z_p          = mesh_map(meshZ,z_p_logical)
+            ixe          = dtxi*x_p_logical+1.50000000000d+00
+            iye          = dtyi*y_p_logical+1.50000000000d+00
+            ize          = dtzi*z_p_logical+1.50000000000d+00
             q_p          = meshX%dxc(ixe) * meshY%dxc(iye) * meshZ%dxc(ize) * dfac(is)*frac(is)
           else
-            X_P  = X0(IS)+(X1(IS)-X0(IS))*ranval(1)
-            Y_P  = YB+(YE-YB)*ranval(2)
-            Z_P  = ZB+(ZE-ZB)*ranval(3)
+            x_p  = X0(IS)+(X1(IS)-X0(IS))*ranval(1)
+            y_p  = YB+(YE-YB)*ranval(2)
+            z_p  = ZB+(ZE-ZB)*ranval(3)
             q_p  = hx*hy*hz*dfac(is)*frac(is)
           endif
-
-          if (q_p==0) write(6,*) "q_p = ",q_p,ixe,iye,ize
   
           np     = ipstore
           x(np)  = x_p
@@ -344,7 +345,6 @@
                +w5e*viz5+w6e*viz6+w7e*viz7+w8e*viz8  
                     
           !interpolate V at the particle position from pre-computed values at the grid
-
           ! dvx_ = -dB_B0*VA*sin(kz*z_p)
             
           call random_number(harvest=ranval)
@@ -365,11 +365,9 @@
           link(np)=iphead(ixe,iye,ize,is)
           iphead(ixe,iye,ize,is)=np
  
- 10       continue
- 
-          loaded_percentage =  100.0*real(ip-ipb1)/(ipb2-ipb1)
+          loaded_percentage = 100.0*real(ip-ipb1)/(ipb2-ipb1)
           
-          if ((myid==0).and.(loaded_percentage>=print_percentage)) then
+          if (myid==0.and.(loaded_percentage>=print_percentage)) then
              write(6,"(A,F5.1,A)") "  loaded ", loaded_percentage," % of particles"
              print_percentage = print_percentage + 5.0d0
           endif
@@ -377,6 +375,7 @@
         enddo
       enddo
     
+      ! what's doing here?
       if (ndim /= 1) then
         call xrealbcc(ex,1_8,nx,ny,nz)
         call xrealbcc(ey,1_8,nx,ny,nz)
@@ -385,11 +384,15 @@
         call xrealbcc_pack_e_2d(ex,ey,ez,1_8,nx,ny,nz)
       endif
      
-      !   set the friction force and resitivity
-      !   friction force can be zero at t=0
-      do k=kb-1,ke+1
-        do j=jb-1,je+1
-          do i=1,nx2
+      ! set the friction force and resitivity (friction force can be zero at t=0)
+      if(myid==0) then
+        print*, " "
+        print*, '  setting friction force and resistivity'
+      endif
+
+      do k = kb-1,ke+1
+        do j = jb-1,je+1
+          do i = 1,nx2
             fox(i,j,k)=zero
             foy(i,j,k)=zero
             foz(i,j,k)=zero
@@ -399,11 +402,17 @@
       enddo
 
       ! why do we need to set dt=0, and push particles once?
+      if(myid==0) then
+        print*, " "
+        print*, '  setting dt=0 temporarily and push particle once'
+      endif
       dtsav=dt
       dt=zero
       call trans
       dt=dtsav
 
+      ! advance field if n_subcyles>=1
+      ! since currently n_subcycles==0, this block is skipped
       if (.not.testorbt) then
         do field_subcycle = 1, n_subcycles 
           if (ndim /= 1) then
@@ -414,13 +423,16 @@
         enddo
       endif
 
+      ! calculate resistivity
+      if(myid==0) then
+        print*, " "
+        print*, '  calculating resistivity'
+      endif
       if (ndim /= 1) then
          call eta_calc      ! Dietmar's resistivity
       else
          call eta_calc_2d   ! Dietmar's resistivity
       endif
-      
-999   continue
       
       deallocate(seed) 
   

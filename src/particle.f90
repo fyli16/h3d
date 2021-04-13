@@ -26,7 +26,7 @@ subroutine parmov   ! particle move?
     data fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8/0,0,0,0,0,0,0,0/
     data foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8/0,0,0,0,0,0,0,0/
     data foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8/0,0,0,0,0,0,0,0/
-    integer*8:: nsendactual,nsendactualp,nrecvactualp,nrecvactual, &
+    integer*8:: nsendactual, nsendactualp, nrecvactual, nrecvactualp, &
                 jj,kk,ix,iy,iz,ixe,iye,ize, &
                 ixep1,iyep1,izep1,ixp1,iyp1,izp1
     real*8 :: pdata(7),rx,ry,rz,fx,fy,fz,w1,w2,w3,w4,w5,w6,w7,w8,xpart,ypart,zpart
@@ -34,12 +34,12 @@ subroutine parmov   ! particle move?
     real*8 :: x_disp,y_disp,z_disp 
     real*8 :: dth ! dt half, i.e., dt/2
     real*8 :: eps2,myranf,fluxran,vxa,vyz,vza
-    INTEGER*8:: L, EXIT_CODE_P, EXIT_CODE
-    integer*8:: n_fast_removed,n_fast_removed_local,Field_Diverge,Field_Diverge_p
+    integer*8:: L, EXIT_CODE_P, EXIT_CODE
+    integer*8:: n_fast_removed, n_fast_removed_local,Field_Diverge,Field_Diverge_p
     real*8 :: tx,ty,tz,v_x,v_y,v_z  
-    INTEGER*4 :: nescapearr(8),nescapearr_global(8)
-    INTEGER*4 :: ppacket(3),ppacketg(3),dpacket(4),dpacketg(4)
-    INTEGER*8 :: epacket(2),epacketg(2),loop
+    integer*4 :: nescapearr(8),nescapearr_global(8)
+    integer*4 :: ppacket(3), ppacketg(3), dpacket(4), dpacketg(4)
+    integer*8 :: epacket(2),epacketg(2),loop
     real*8, dimension(3,nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax) :: bxyz_av
     real*8 :: TEX1,TEX2,TEX3,TEX4,TEX5,TEX6,TEX7,TEX8  
     real*8 :: TEY1,TEY2,TEY3,TEY4,TEY5,TEY6,TEY7,TEY8  
@@ -102,16 +102,18 @@ subroutine parmov   ! particle move?
       enddo
     enddo
     
-    CALL XREALBCC_PACK_B(BX_AV,BY_AV,BZ_AV,1_8,NX,NY,NZ)
+    call mxrealbcc_pack_b(BX_AV,BY_AV,BZ_AV,1_8,NX,NY,NZ)
 
-    if ((myid == 0).and.mod(it,n_print)==0) write(6,*) " Calling parmov, nspec = ", nspec
+    ! if ((myid==0) .and. mod(it,n_print)==0) then
+    !   print*, " "
+    !   print*, "  Calling parmov ..."
+    ! endif 
 
     ! initalize diagnostic variables that keep track of
     ! particle number, injection, and escape
 
     deltime1 = 0.0
     deltime2 = 0.0
-    ! nptotp=0
     npleavingp=0
  
     if (dt .ne. 0) then
@@ -265,7 +267,6 @@ subroutine parmov   ! particle move?
 
     endif ! dt<>0
 
-
     ! check particles
     call date_and_time(values=time_begin_array(:,14))
     call particle_boundary
@@ -274,7 +275,7 @@ subroutine parmov   ! particle move?
 
     ! collect density
     call date_and_time(values=time_begin_array(:,15))
-    do IS=1,nspec
+    do is = 1, nspec
       if (testorbt) goto 10
       nptotp = 0
       npart(is) = 0
@@ -338,14 +339,14 @@ subroutine parmov   ! particle move?
               ! if (     fx < 0. .or. fx > 1.                &
               !     .or. fy < 0. .or. fy > 1.                &
               !     .or. fz < 0. .or. fz > 1.) then 
-              !     write(6,*) " GATHER LOOP "
-              !     write(6,*) fx,fy,fz
-              !     write(6,*) " x;",x(l),meshX%xn(ix),meshX%xc(ix)
-              !     write(6,*) " y;",y(l),meshY%xn(iy),meshY%xc(iy)
-              !     write(6,*) " z;",z(l),meshZ%xn(iz),meshZ%xc(iz)
-              !     write(6,*) " r; ",rx,ry,rz
-              !     write(6,*) " i; ",ixe,iye,ize
-              !     write(6,*) " ixc_map; ",ix,iy,iz
+              !     print*, " GATHER LOOP "
+              !     print*, fx,fy,fz
+              !     print*, " x;",x(l),meshX%xn(ix),meshX%xc(ix)
+              !     print*, " y;",y(l),meshY%xn(iy),meshY%xc(iy)
+              !     print*, " z;",z(l),meshZ%xn(iz),meshZ%xc(iz)
+              !     print*, " r; ",rx,ry,rz
+              !     print*, " i; ",ixe,iye,ize
+              !     print*, " ixc_map; ",ix,iy,iz
               ! endif
  
               w1=q_p*(1.-fx)*(1.-fy)*(1.-fz)
@@ -372,7 +373,7 @@ subroutine parmov   ! particle move?
         enddo
       enddo
 
- 10   CONTINUE
+ 10   continue 
 
       nescapearr(1) = nescape(is)
       nescapearr(2) = nescape_yz(is)
@@ -418,42 +419,29 @@ subroutine parmov   ! particle move?
     nptot      = epacketg(1)
     npleaving  = epacketg(2)
 
-    if (myid == 0.and.mod(it,n_print)==0) then
-      do is=1,nspec
+    ! if (myid == 0.and.mod(it,n_print)==0) then
+    !   do is=1,nspec
+    !     if (is == 1) then
+    !       print*,
+    !       print*, "it = ", it
+    !       print*, "species #    ninj     nescape     ntot  "
+    !     endif
+    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_global(is), npart_global(is)
+    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_yz_global(is), npart_global(is)
+    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_zy_global(is), npart_global(is)
+    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_xy_global(is), npart_global(is)
+    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_yx_global(is), npart_global(is)
+    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_xz_global(is), npart_global(is)
+    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_zx_global(is), npart_global(is)
+    !   enddo
 
-        if (is == 1) then
-          write(6,*)
-          write(6,*) " it = ",it
-          write(6,*) "  species #    ninj     nescape     ntot  "
-        endif
-
-        write(6,1000) is,ninj_global(is),nescape_global(is)&
-                      ,npart_global(is)
-        write(6,1000) is,ninj_global(is),nescape_yz_global(is)&
-                      ,npart_global(is)
-        write(6,1000) is,ninj_global(is),nescape_zy_global(is)&
-                      ,npart_global(is)
-        write(6,1000) is,ninj_global(is),nescape_xy_global(is)&
-                      ,npart_global(is)
-        write(6,1000) is,ninj_global(is),nescape_yx_global(is)&
-                      ,npart_global(is)
-        write(6,1000) is,ninj_global(is),nescape_xz_global(is)&
-                      ,npart_global(is)
-        write(6,1000) is,ninj_global(is),nescape_zx_global(is)&
-                      ,npart_global(is)
-1002    format(3i6,5x,i8,2x,i8,2x,i10)
-1000    format(5x,i2,5x,i8,2x,i8,2x,i10)
-      enddo
-
-      if (nspec >= 2) then
-        write(6,1005) ninj_global(1)+ninj_global(2),nescape_global(1)+nescape_global(2),npart_global(1)+npart_global(2)
-      else
-        write(6,1005) ninj_global(1),nescape_global(1),npart_global(1)
-      endif
-
-1005  format(5x,'sum',4x,i8,2x,i8,2x,i10)
-1006  format(2i6,4x,'sum',4x,i8,2x,i8,2x,i10)
-    endif
+    !   if (nspec >= 2) then
+    !     write(6,"(5x,'sum',4x,i8,2x,i8,2x,i10)") ninj_global(1)+ninj_global(2), &
+    !               nescape_global(1)+nescape_global(2), npart_global(1)+npart_global(2)
+    !   else
+    !     write(6,"(5x,'sum',4x,i8,2x,i8,2x,i10)") ninj_global(1), nescape_global(1), npart_global(1)
+    !   endif
+    ! endif
 
     ninj        = 0
     ninj_global = 0
@@ -466,11 +454,13 @@ end subroutine parmov
 
 
 !---------------------------------------------------------------------
+! This subourtine pushes particles for half a step
+!---------------------------------------------------------------------
 subroutine push
-  ! This subourtine pushes particles for half a step
   use parameter_mod
   use mesh_mod
   implicit none
+
   integer*8 :: is,iixe,iiye,iize,l
   integer*8:: ix,iy,iz,ixe,iye,ize,ixep1,iyep1,izep1,ixp1,iyp1,izp1
   real*8 :: wmult, h, hh, dth
@@ -498,16 +488,16 @@ subroutine push
   dtyi = 1./meshY%dt
   dtzi = 1./meshZ%dt
 
-  do IS = 1, NSPEC
+  do is = 1, nspec
     Courant_Violation_p = 0
     x_disp_max_p        = 0
     y_disp_max_p        = 0
     z_disp_max_p        = 0
 
-    wmult=wspec(is)
-    h=dt*qspec(is)/wmult
-    hh=.5*h
-    dth=dt/2
+    wmult = wspec(is)
+    h = dt*qspec(is)/wmult
+    hh = .5*h
+    dth = dt/2
  
     do IIZE = KB-1,KE
       do IIYE = JB-1,JE
@@ -568,14 +558,14 @@ subroutine push
             ! if (     fxe < 0. .or. fxe > 1.                &
             !     .or. fye < 0. .or. fye > 1.                &
             !     .or. fze < 0. .or. fze > 1.) then 
-            !     write(6,*) " SCATTER LOOP"
-            !     write(6,*) fxe,fye,fze
-            !     write(6,*) " x;",x(l),meshX%xn(ixe),meshX%xc(ixe)
-            !     write(6,*) " y;",y(l),meshY%xn(iye),meshY%xc(iye)
-            !     write(6,*) " z;",z(l),meshZ%xn(ize),meshZ%xc(ize)
-            !     write(6,*) " r; ",rxe,rye,rze
-            !     write(6,*) " ixc_map; ",ixe,iye,ize
-            !     write(6,*) " xc     ; ",meshX%xc(ixe),meshY%xc(iye),meshZ%xc(ize)
+            !     print*, " SCATTER LOOP"
+            !     print*, fxe,fye,fze
+            !     print*, " x;",x(l),meshX%xn(ixe),meshX%xc(ixe)
+            !     print*, " y;",y(l),meshY%xn(iye),meshY%xc(iye)
+            !     print*, " z;",z(l),meshZ%xn(ize),meshZ%xc(ize)
+            !     print*, " r; ",rxe,rye,rze
+            !     print*, " ixc_map; ",ixe,iye,ize
+            !     print*, " xc     ; ",meshX%xc(ixe),meshY%xc(iye),meshZ%xc(ize)
             ! endif
 
             w1e=(1.-fxe)*(1.-fye)*(1.-fze)
@@ -744,16 +734,16 @@ subroutine push
     y_disp_max = disp_max(2)
     z_disp_max = disp_max(3)
 
-    if ((myid == 0).and.mod(it,n_print)==0) then
-      write(6,*) " maximum x-displacement/dx = ",x_disp_max
-      write(6,*) " maximum y-displacement/dy = ",y_disp_max
-      write(6,*) " maximum z-displacement/dz = ",z_disp_max
-    endif
+    ! if ((myid == 0).and.mod(it,n_print)==0) then
+    !   print*, " maximum x-displacement/dx = ",x_disp_max
+    !   print*, " maximum y-displacement/dy = ",y_disp_max
+    !   print*, " maximum z-displacement/dz = ",z_disp_max
+    ! endif
 
     call MPI_ALLREDUCE(Courant_Violation_p,Courant_Violation,1,MPI_INTEGER8,MPI_SUM,MPI_COMM_WORLD,IERR)
 
     if (Courant_Violation /= 0) then
-        if (myid == 0) write(6,*) "Particle displacements exceed cell size ",Courant_Violation," times"
+        if (myid == 0) print*, "Particle displacements exceed cell size ",Courant_Violation," times"
         call MPI_FINALIZE(IERR)
         STOP
     endif
@@ -767,8 +757,8 @@ subroutine particle_boundary
     use parameter_mod
     use mesh_mod
     implicit none
-    INTEGER*4 :: ppacket(3),ppacketg(3),dpacket(4),dpacketg(4)
-    INTEGER*8 :: epacket(2),epacketg(2),loop
+    integer*4 :: ppacket(3),ppacketg(3),dpacket(4),dpacketg(4)
+    integer*8 :: epacket(2),epacketg(2),loop
     real*8 :: xpart,ypart,zpart
     real*8 :: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
     integer*8 :: nsendactual,nsendactualp,nrecvactualp,nrecvactual,jj,kk,ix,iy,iz,ixe,iye,ize           &
@@ -1033,190 +1023,21 @@ subroutine particle_boundary
         nrecvtot       = ppacketg(2)
         n_fast_removed = ppacketg(3)
 
-        if ((myid == 0).and.mod(it,n_print)==0) then
-          write(6,*) " FINISHED COMPILING LISTS "
-          write(6,*) " # OF PARTICLES TO BE SENT     = ",NSENDTOT
-          write(6,*) " # OF PARTICLES TO BE RECEIVED = ",NRECVTOT
-          write(6,*) " # OF PARTICLES REMOVED BECAUSE V > VLIMIT = ",n_fast_removed
+        ! if ((myid == 0).and.mod(it,n_print)==0) then
+        !   print*,  " Finished compiling lists "
+        !   print*, " # of particles to be sent     = ",nsendtot
+        !   print*, " # of particles to be received = ",nrecvtot
+        !   print*, " # of particles removed because V > Vlimit = ", n_fast_removed
+        ! endif
+
+        if (nsendtot.ne.nrecvtot) THEN
+          call MPI_FINALIZE(IERR)
+          print*, "Error: nsendtot /= nrecvtot. Terminating"
+          stop
         endif
-        if (NSENDTOT.ne.NRECVTOT) THEN
-          CALL MPI_FINALIZE(IERR)
-          WRITE(*,*)"Error: NSENDTOT != NRECVTOT. Terminating"
-          STOP
-        ENDIF
 
-        ! Check to see if each processor has enough particle storage
-        ! to handle incoming particles
-        ! IF (NPTOTP+NRECVTOTP < NPLMAX) THEN
-        !   EXIT_CODE_P = 0
-        ! ELSE
-        !   EXIT_CODE_P = 1
-        !   write(6,*) " PROCESSOR # ",myid," RAN OUT OF PARTICLE STORAGE"
-        ! ENDIF
-        ! call MPI_ALLREDUCE(EXIT_CODE_P,EXIT_CODE,1,MPI_INTEGER8,MPI_SUM,&
-        !                    MPI_COMM_WORLD,IERR)
-        ! IF (EXIT_CODE /= 0) THEN
-        !   CALL MPI_FINALIZE(IERR)
-        !   STOP
-        ! ENDIF
-
-        ! exchange particles with other processors 
-        ! VR : old version. Here each particle is sent individually
-        ! nsendactualp=0
-        ! nrecvactualp=0
-        ! do irepeat=1,4
-        !    if (isendid(irepeat) == 1) then
-        !       NP=IPSEND(IS)
-        !       do while (NP.ne.0)
-        !          nsendactualp=nsendactualp+1
-
-        !          !             Uniform mesh - Same as in version 5.0
-        !          !              ixe=hxi*x(np)   +1.5000000000000001d+00
-        !          !              iye=hyi*y(np)   +0.5000000000000001d+00
-        !          !              ize=hzi*z(np)   +0.5000000000000001d+00
-
-        !          !             Nonuniform mesh - using MESH_UNMAP
-        !          rxe=dtxi*MESH_UNMAP(meshX,x(np))+1.50000000000d+00
-        !          rye=dtyi*MESH_UNMAP(meshY,y(np))+1.50000000000d+00
-        !          rze=dtzi*MESH_UNMAP(meshZ,z(np))+1.50000000000d+00
-        !          ixe=rxe
-        !          iye=rye
-        !          ize=rze
-        !          iye=iye-1             ! integer index in y direction starts at 0
-        !          ize=ize-1             ! integer index in z direction starts at 0
-
-        !          ypart=y(np)
-        !          zpart=z(np)
-        !          if (ypart <= ye.and.ypart >= yb) then
-        !             iye_cc=jb 
-        !          else
-        !             if (ypart > ye) then
-        !                iye_cc=je+1 
-        !             else
-        !                iye_cc=jb-1 
-        !             endif
-        !          endif
-        !          if (zpart <= ze.and.zpart >= zb) then
-        !             ize_cc=kb 
-        !          else
-        !             if (zpart > ze) then
-        !                ize_cc=ke+1 
-        !             else
-        !                ize_cc=kb-1 
-        !             endif
-        !          endif
-        !          pdata(1)=x(np)
-        !          pdata(2)=y(np)
-        !          pdata(3)=z(np)
-        !          pdata(4)=vx(np)
-        !          pdata(5)=vy(np)
-        !          pdata(6)=vz(np)
-        !          pdata(7)=qp(np)
-        !          i_source = idmap_yz(iye_cc,ize_cc)
-        !          i_tag    = it
-        !          call MPI_SEND(pdata,7,MPI_DOUBLE_PRECISION,&
-        !               i_source,i_tag,MPI_COMM_WORLD,IERR)
-        !          ipsend(is)=link(np)
-        !          link(np)=ipstore
-        !          ipstore=np
-        !          np=ipsend(is)
-        !       enddo
-        !    else
-        !       nprecvtmp=0
-        !       do itmp=1,4
-        !          ipe=irecvid(itmp,irepeat)
-        !          if (ipe.ne.-1) then
-        !             nprecvtmp=nprecvtmp+nrecvp(irecvid(itmp,irepeat))
-        !             nrecvp(irecvid(itmp,irepeat))=0
-        !          endif
-        !       enddo
-        !       do ii=1,nprecvtmp
-        !          nrecvactualp=nrecvactualp+1
-        !          nprecv=ipstore
-
-        !          i_tag=it
-        !          call MPI_RECV(pdata,7,MPI_DOUBLE_PRECISION,&
-        !               MPI_ANY_SOURCE,I_TAG,        &
-        !               MPI_COMM_WORLD,STATUS2,IERR)
-
-
-        !          if (ipstore == 0) then
-        !             Storage_Error_p = 1
-        !          else
-
-        !             x (nprecv)=pdata(1)
-        !             y (nprecv)=pdata(2)
-        !             z (nprecv)=pdata(3)
-        !             vx(nprecv)=pdata(4)
-        !             vy(nprecv)=pdata(5)
-        !             vz(nprecv)=pdata(6)
-        !             qp(nprecv)=pdata(7)
-
-        !             !VR: check y & z global domain boundaries and loop particles in case of periodicity
-        !             if ( y(nprecv) < zero) then
-        !                y(nprecv) = y(nprecv) + ymax
-        !             endif
-        !             if ( y(nprecv) > ymax) then
-        !                y(nprecv) = y(nprecv) - ymax
-        !             endif
-        !             !VR: the same for z boundary
-        !             if ( z(nprecv) < zero) then
-        !                z(nprecv) = z(nprecv) + zmax
-        !             endif
-        !             if ( z(nprecv) > zmax) then
-        !                z(nprecv) = z(nprecv) - zmax
-        !             endif
-        !             !VR: end of boundary check ----------------------------------
-
-
-
-
-        !             !             Uniform mesh - Same as in version 5.0
-        !             !              ixe=hxi*x(nprecv)+1.5000000000000001d+00
-        !             !              iye=hyi*y(nprecv)+0.5000000000000001d+00
-        !             !              ize=hzi*z(nprecv)+0.5000000000000001d+00
-
-        !             !             Nonuniform mesh - using MESH_UNMAP
-        !             rxe=dtxi*MESH_UNMAP(meshX,x(nprecv))+1.50000000000d+00
-        !             rye=dtyi*MESH_UNMAP(meshY,y(nprecv))+1.50000000000d+00
-        !             rze=dtzi*MESH_UNMAP(meshZ,z(nprecv))+1.50000000000d+00
-        !             ixe=rxe
-        !             iye=rye
-        !             ize=rze
-        !             iye=iye-1             ! integer index in y direction starts at 0
-        !             ize=ize-1             ! integer index in z direction starts at 0
-
-        !             ipstore=link(nprecv)
-
-        !             if ((ixe > nx+1  .or. ixe < 1 ) .or. (iye > je+1    .or. iye < jb-1) .or. (ize > ke+1    .or. ize < kb-1)) then
-        !                Field_Diverge_p = 1
-        !                ixe = min(max(iye,1   ),nx+1)
-        !                iye = min(max(iye,jb-1),je+1)
-        !                ize = min(max(ize,kb-1),ke+1)
-        !             endif
-
-        !             link(nprecv)=iphead(ixe,iye,ize,is)
-        !             iphead(ixe,iye,ize,is)=nprecv
-
-        !          endif
-
-        !       enddo
-        !    endif
-        ! enddo
-
-
-        ! exchange particles with other processors
-        ! VR: re-written on 04/19/2016 to use 
-        ! VR: packed exchage that reduces number of MPI requests
-        ! VR: thus increasing performance (a factor of 5 on my tests on 512 procs.) 
-        ! VR: stability
-
-        ! time diagnostic
-        ! call MPI_BARRIER(MPI_COMM_WORLD, ierr)
-        ! mp_elapsed = MPI_WTIME()
-
-        !VR it's convenient to have neighboring processes in an array
-        !Eventually, we should change all of the code to use this
+        ! VR it's convenient to have neighboring processes in an array
+        ! Eventually, we should change all of the code to use this
         nbrs(1) = NBRTOP
         nbrs(2) = NBRLEFTTOP
         nbrs(3) = NBRLEFT
@@ -1226,23 +1047,21 @@ subroutine particle_boundary
         nbrs(7) = NBRRITE
         nbrs(8) = NBRRITETOP
 
-        !VR maximum numbers of particles to be sent/received to/from a process
+        ! VR: maximum numbers of particles to be sent/received to/from a process
         max_nsend = maxval(nsendp)
         max_nrecv = maxval(nrecvp)
 
-        !VR allocate tmp arrays for sending/recieving data
+        ! VR: allocate tmp arrays for sending/recieving data
         allocate(packed_pdata_send(8,max_nsend,8))
         allocate(packed_pdata_recv(8,max_nrecv))
 
-        !VR counters for particles sent/recieved
+        ! VR: counters for particles sent/recieved
         nsendactualp = 0
         nrecvactualp = 0
 
-        !VR 4 stages of data exhcnage in a simple even->odd, odd->even 2D pattern
+        ! VR: 4 stages of data exhcnage in a simple even->odd, odd->even 2D pattern
         do irepeat=1,4
-
           if (isendid(irepeat) == 1) then
-            !
             nsend_to_nbr = 0
             NP=IPSEND(IS)
             
@@ -1416,25 +1235,13 @@ subroutine particle_boundary
             enddo
           endif
         enddo  ! end of irepeat loop
-
-        
-        ! VR: for diagnostic purposes: timings
-        ! call MPI_BARRIER(MPI_COMM_WORLD, ierr)
-        ! mp_elapsed = MPI_WTIME() - mp_elapsed
-
-        ! exchange_time_total = exchange_time_total+mp_elapsed
-
-        ! if (it ==100) then
-        !    if (myid==0) print *, "Exchange time average over 100 it:", exchange_time_total/100.0
-        ! endif
         
         ! VR: deallocate packed arrays
         deallocate(packed_pdata_send)
         deallocate(packed_pdata_recv)
         nullify(pp)
         
-        ! ------- end of packed exchange        
-
+        ! end of packed exchange        
         dpacket(1) = Storage_Error_p
         dpacket(2) = Field_Diverge_p
         dpacket(3) = nsendactualp
@@ -1447,57 +1254,31 @@ subroutine particle_boundary
 
         if (Storage_Error /= 0) then
            if (myid == 0) then
-             write(6,*)" "
-             write(6,*)" "
-             write(6,*) "Particle storage allocation is exceeded."
-             write(6,*) "3DHybrid is stopped"
-             write(6,*)" "
-             write(6,*)" "
+             print*, " "
+             print*, "Particle storage allocation is exceeded."
+             print*,  "H3D is stopped"
+             print*, " "
            endif
            call MPI_FINALIZE(IERR)
-           STOP
+           stop
         endif
 
         if (Field_Diverge /= 0) then
            if (myid == 0) then
-             write(6,*)" "
-             write(6,*)" "
-             write(6,*) "Field Solver Diverges"
-             write(6,*) "3DHybrid is stopped"
-             write(6,*)" "
-             write(6,*)" "
+             print*, " "
+             print*, "Field Solver Diverges"
+             print*, "3DHybrid is stopped"
+             print*," "
            endif
            call MPI_FINALIZE(IERR)
            STOP
         endif
 
-
-        if ((myid == 0).and.mod(it,n_print)==0) then
-          write(6,*) " FINISHED EXCHANGING PARTICLES "
-          write(6,*) " # OF PARTICLES       SENT     = ",NSENDACTUAL
-          write(6,*) " # OF PARTICLES       RECEIVED = ",NRECVACTUAL
-        endif
-
-        ! NPTOTP=0
-        ! do ize=kb-1,ke
-        !   do iye=jb-1,je
-        !     do ixe=1,nx1
-        !           NP=IPHEAD(ixe,iye,ize,is)
-        !           do while (NP.ne.0)
-        !             NPTOTP=NPTOTP+1
-        !             NP=LINK(NP)
-        !           enddo
-        !     enddo
-        !   enddo
-        ! enddo
-        
-        ! call MPI_ALLREDUCE(nptotp,nptot,1,MPI_INTEGER8,MPI_SUM,&
-        !                    MPI_COMM_WORLD,IERR)
-        ! IF ((MYID.EQ.0).and.mod(it,n_print)==0) THEN
-        !   WRITE(6,*) " IS = ",IS
-        !   WRITE(6,*) " TOTAL # OF PARTICLES AFTER  PARMOV = ",NPTOT
-        ! ENDIF
- 999    CONTINUE
+        ! if ((myid == 0).and.mod(it,n_print)==0) then
+        !   print*, " Finished exchanging particles"
+        !   print*, " # of particles sent     = ", nsendactual
+        !   print*, " # of particles received = ", nrecvactual
+        ! endif
 
       enddo ! for IS
  
@@ -1709,6 +1490,7 @@ subroutine trans
     enddo
   enddo
 
+  ! push particles
   call date_and_time(values=time_begin_array(:,7))
   if (ndim /= 1) then
     call parmov
@@ -1718,8 +1500,10 @@ subroutine trans
   call date_and_time(values=time_end_array(:,7))
   call accumulate_time(time_begin_array(1,7),time_end_array(1,7),time_elapsed(7))
 
+  ! if test orbits, just return by here?
   if (testorbt) return
 
+  ! this block is skipped
   if (.false.) then
     do is=1,nspec
       do k=kb-1,ke+1
@@ -1752,18 +1536,18 @@ subroutine trans
     enddo
   endif
 
-  do is=1,nspec
-    do k=kb-1,ke+1
-      do j=jb-1,je+1
-        do i=1,nx2 
-        den(i,j,k)=den(i,j,k)+dns(i,j,k,is)*qspec(is) 
-        denh(i,j,k)=denh(i,j,k)+dnsh(i,j,k,is)*qspec(is) 
-        ! vix(i,j,k)=vix(i,j,k)+qspec(is)*dnsh(i,j,k,is)*vxs(i,j,k,is) 
-        ! viy(i,j,k)=viy(i,j,k)+qspec(is)*dnsh(i,j,k,is)*vys(i,j,k,is) 
-        ! viz(i,j,k)=viz(i,j,k)+qspec(is)*dnsh(i,j,k,is)*vzs(i,j,k,is)
-        vix(i,j,k)=vix(i,j,k)+qspec(is)*vxs(i,j,k,is) 
-        viy(i,j,k)=viy(i,j,k)+qspec(is)*vys(i,j,k,is) 
-        viz(i,j,k)=viz(i,j,k)+qspec(is)*vzs(i,j,k,is)
+  do is = 1, nspec
+    do k = kb-1, ke+1
+      do j = jb-1, je+1
+        do i = 1, nx2 
+          den(i,j,k)=den(i,j,k)+dns(i,j,k,is)*qspec(is) 
+          denh(i,j,k)=denh(i,j,k)+dnsh(i,j,k,is)*qspec(is) 
+          ! vix(i,j,k)=vix(i,j,k)+qspec(is)*dnsh(i,j,k,is)*vxs(i,j,k,is) 
+          ! viy(i,j,k)=viy(i,j,k)+qspec(is)*dnsh(i,j,k,is)*vys(i,j,k,is) 
+          ! viz(i,j,k)=viz(i,j,k)+qspec(is)*dnsh(i,j,k,is)*vzs(i,j,k,is)
+          vix(i,j,k)=vix(i,j,k)+qspec(is)*vxs(i,j,k,is) 
+          viy(i,j,k)=viy(i,j,k)+qspec(is)*vys(i,j,k,is) 
+          viz(i,j,k)=viz(i,j,k)+qspec(is)*vzs(i,j,k,is)
         enddo
       enddo
     enddo

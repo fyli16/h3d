@@ -65,7 +65,7 @@ dB_B0=0.1,
 num_cycles=5,
 
 ! ------------------ diagnostic control ----------------!
-n_print=100,  ! frequency at which to print simulation information
+n_print=10,  ! frequency at which to print simulation information
 n_write_data=1000, ! frequency at which to write data into files
 n_write_particle=4000,  ! frequency at which to write particles within a box range
 n_write_restart=20000, ! frequency at which to write restart files

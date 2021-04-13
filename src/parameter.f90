@@ -20,8 +20,8 @@ module parameter_mod
               status_array(mpi_status_size,8)
 
   real*8 :: zb, ze, yb, ye, teti, volume_fraction, cell_volume_ratio, &
-            zb_logical,ze_logical,yb_logical,ye_logical, &
-            xb_logical,xe_logical,xb,xe,smooth_coef
+            zb_logical, ze_logical, yb_logical, ye_logical, &
+            xb_logical, xe_logical, xb, xe, smooth_coef
 
   real*8, dimension(:), allocatable :: zbglobal, zeglobal, ybglobal, yeglobal, &
       xc_uniform, yc_uniform, zc_uniform, xv_uniform,yv_uniform,zv_uniform
