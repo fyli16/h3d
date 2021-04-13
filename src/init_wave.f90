@@ -208,41 +208,6 @@
       ! load particles
       if (myid==0) write(6,*) "  Initializing particles ..." 
 
-      ! what's doing here?
-      nptotp=0
-      ! currently uniform_loading_in_logical_grid=.false.
-      if (uniform_loading_in_logical_grid) then
-        do is = 1, nspec
-          nptotp = nptotp + npx(is)*npy(is)*npz(is)
-        enddo
-      else
-        do is = 1, nspec
-          nptotp = nptotp + npx(is)*npy(is)*npz(is)*npes*volume_fraction
-        enddo
-      endif
-
-      print*, 'myid = ', myid, 'nptotp = ', nptotp
-
-      call MPI_ALLREDUCE(nptotp,nptot_max,1,MPI_INTEGER8,MPI_MAX,MPI_COMM_WORLD,IERR)
-      if(myid==0) print*, 'nptot_max, nplmax = ', nptot_max, nplmax
-
-      remake = 0  ! re-allocate particle arrays
-      if (nptot_max > nplmax) then
-        remake = 1
-        nplmax = 2*nptot_max
-        deallocate(x); allocate(x(nplmax))
-        deallocate(y); allocate(y(nplmax))
-        deallocate(z); allocate(z(nplmax))
-        deallocate(vx); allocate(vx(nplmax))
-        deallocate(vy); allocate(vy(nplmax))
-        deallocate(vz); allocate(vz(nplmax))
-        deallocate(qp); allocate(qp(nplmax))
-        deallocate(ptag); allocate(ptag(nplmax))
-        deallocate(link); allocate(link(nplmax))
-        deallocate(porder); allocate(porder(nplmax))
-      endif
-      if (remake/=0) call makelist  ! re-make list
-
       do is = 1, nspec
         ninj(is)=0
         ninj_global(is)=0
