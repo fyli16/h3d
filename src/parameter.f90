@@ -78,8 +78,8 @@ module parameter_mod
   logical :: testorbt, restart, uniform_loading_in_logical_grid, MPI_IO_format, smoothing  
 
   real*8 ::  hx, hy, hz, hxi, hyi, hzi, efld, bfld, efluidt, ethermt, eptclt, time, te0
-  integer*8 :: nsteps0, itfin=0, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(25), &
-              file_unit_read(20),nptot,npleaving,npentering,iclock_speed, nptotp
+  integer*8 :: nsteps0, itfin, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(25), &
+              file_unit_read(20), nptot, npleaving, npentering, iclock_speed, nptotp
   real*8 :: clock_time_init, clock_time_old, clock_time, clock_time1
   real*8, dimension(:), allocatable :: dfac
   integer*8, dimension(:), allocatable :: nskip, ipleft, iprite, ipsendleft, ipsendrite, iprecv, &

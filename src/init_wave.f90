@@ -48,31 +48,36 @@
       call MPI_BCAST(seed, seed_size, MPI_INTEGER, 0, MPI_COMM_WORLD, IERR)  
       call random_seed(put=myid*seed) ! set current seed
 
+      ! init step of iterations
       it = 0; itfin = 0; 
       itstart = it; itfinish = tmax/dtwci
+
+      ! some constants of mesh
       nx1 = nx+1; nx2 = nx+2
       ny1 = ny+1; ny2 = ny+2
       nz1 = nz+1; nz2 = nz+2
       hx = xmax/nx; hy = ymax/ny; hz = zmax/nz
       hxi = one/hx; hyi = one/hy; hzi = one/hz
 
-      ! Nonuniform mesh
-      zb=meshZ%xn(kb+1)
-      ze=meshZ%xn(ke+2)
-      do ipe=0,npes-1
-        zbglobal(ipe)=meshZ%xn(kbglobal(ipe)+1)
-        zeglobal(ipe)=meshZ%xn(keglobal(ipe)+2)
-      enddo
-      yb=meshY%xn(jb+1)
-      ye=meshY%xn(je+2)
-      do ipe=0,npes-1
+      xb        = zero
+      xe        = xmax
+
+      yb = meshY%xn(jb+1)
+      ye = meshY%xn(je+2)
+      do ipe = 0, npes-1
         ybglobal(ipe)=meshY%xn(jbglobal(ipe)+1)
         yeglobal(ipe)=meshY%xn(jeglobal(ipe)+2)
       enddo
+
+      zb = meshZ%xn(kb+1)
+      ze = meshZ%xn(ke+2)
+      do ipe = 0, npes-1
+        zbglobal(ipe)=meshZ%xn(kbglobal(ipe)+1)
+        zeglobal(ipe)=meshZ%xn(keglobal(ipe)+2)
+      enddo
+
       volume_fraction = (ye-yb)*(ze-zb)/(ymax*zmax)
 
-      xb        = zero
-      xe        = xmax
       xb_logical = MESH_UNMAP(meshX,xb)
       xe_logical = MESH_UNMAP(meshX,xe)
       yb_logical = MESH_UNMAP(meshY,yb)
@@ -83,17 +88,16 @@
       do is = 1, nspec
         npm = npx(is)*npy(is)*npz(is)*npes
         dfac(is)=real(ny*nz*nx)/real(npm)
-        do ixe=1,nx2 
-          do iye=jb-1,je+1
-            do ize=kb-1,ke+1
-              qp_cell(ixe,iye,ize,is) = meshX%dxc(ixe)*meshY%dxc(iye+1)*meshZ%dxc(ize+1)*dfac(is)*frac(is)
+        do ixe = 1, nx2 
+          do iye = jb-1, je+1
+            do ize = kb-1, ke+1
+              qp_cell(ixe,iye,ize,is) = meshX%dxc(ixe) * meshY%dxc(iye+1) * meshZ%dxc(ize+1) * dfac(is)*frac(is)
             enddo
           enddo
         enddo
       enddo
 
 ! allocate the necessary vectors
-
 ! Alfvenic perturbation with deltaB in the x direction
 ! i,j,k are wave numbers in x,y,z
 #define DBX_1(k,j,phi) (dB_B0*B0*cos((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
@@ -102,6 +106,7 @@
 #define DUX_1(k,j,phi) (-dB_B0*(k/abs(k))*VA*cos((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
 #define DJY_1(k,j,phi) (-dB_B0*B0*(k)*kzmin*sin((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
 #define DJZ_1(k,j,phi) (dB_B0*B0*(j)*kymin*sin((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
+
 #define BX_PERT_1 DBX_1(1,1,0) + DBX_1(1,2,1.5) + DBX_1(-2,3,3.9)   
 #define EY_PERT_1 DEY_1(1,1,0) + DEY_1(1,2,1.5) + DEY_1(-2,3,3.9)  
 #define UX_PERT_1 DUX_1(1,1,0) + DUX_1(1,2,1.5) + DUX_1(-2,3,3.9)
@@ -116,6 +121,7 @@
 #define DUY_2(k,i,phi) (-dB_B0*(k/abs(k))*VA*cos((k)*kzmin*z_pos + (i)*kxmin*x_pos + (phi)))
 #define DJX_2(k,i,phi) (dB_B0*B0*(k)*kzmin*sin((k)*kzmin*z_pos + (i)*kxmin*x_pos + (phi)))
 #define DJZ_2(k,i,phi) (-dB_B0*B0*(i)*kxmin*sin((k)*kzmin*z_pos + (i)*kxmin*x_pos + (phi)))
+
 #define BY_PERT_2 DBY_2(-1,1,0.4) + DBY_2(-1,-2,2.56) + DBY_2(2,-3,4.19)   
 #define EX_PERT_2 DEX_2(-1,1,0.4) + DEX_2(-1,-2,2.56) + DEX_2(2,-3,4.19) 
 #define UY_PERT_2 DUY_2(-1,1,0.4) + DUY_2(-1,-2,2.56) + DUY_2(2,-3,4.19)
@@ -143,14 +149,14 @@
       ex = zero; ey = zero; ez = zero
      
       ! initialie perturbation on the mesh 
-      if (myid==0) write(6,*) "  Initializing waves on the mesh ..." 
+      if (myid==0) print*, "  Initializing waves on the mesh ..." 
 
-      do k=kb-1,ke+1
+      do k = kb-1, ke+1
         z_pos = meshZ%xc(k+1)
-        do j=jb-1,je+1  
+        do j = jb-1, je+1  
           y_pos = meshY%xc(j+1)
-          do i=1,nx2
-            x_pos = meshX%xc(i)   !VR this is not a typo. For some reason, x has different indexing compared to y and z (!!!)               
+          do i = 1, nx2
+            x_pos = meshX%xc(i) !VR this is not a typo. For some reason, x has different indexing compared to y and z (!!!)               
             ! no wave
             ! bx_ = zero
             ! by_ = zero
@@ -166,7 +172,7 @@
             bx_ =  dB_B0*B0*sin(kz*z_pos)
             by_ = -dB_B0*B0*cos(kz*z_pos)
             bz_ = B0
-            ex_ = zero
+            ex_ = zero  ! why e component is zero?
             ey_ = zero
             ez_ = zero
             dvx_ = -VA*bx_/B0 
@@ -201,7 +207,10 @@
      
       ! load particles
       if (myid==0) write(6,*) "  Initializing particles ..." 
+
+      ! what's doing here?
       nptotp=0
+      ! currently uniform_loading_in_logical_grid=.false.
       if (uniform_loading_in_logical_grid) then
         do is = 1, nspec
           nptotp = nptotp + npx(is)*npy(is)*npz(is)
@@ -213,6 +222,7 @@
       endif
 
       call MPI_ALLREDUCE(nptotp,nptot_max,1,MPI_INTEGER8,MPI_MAX,MPI_COMM_WORLD,IERR)
+      if(myid==0) print*, 'nptotp_max, nplmax = ', nptotp_max, nplmax
 
       remake = 0  ! re-allocate particle arrays
       if (nptot_max > nplmax) then
