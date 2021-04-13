@@ -131,7 +131,7 @@ subroutine parmov   ! particle move?
       do is = 1, nspec
         nptotp = 0
         npart(is) = 0
-        do iiz = kb-1, je
+        do iiz = kb-1, ke
           do iiy = jb-1, je
             do iix = 1, nx1
               np=iphead(iix,iiy,iiz,is)
