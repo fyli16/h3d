@@ -180,7 +180,6 @@ subroutine data_output
   implicit none 
 
   integer :: i
-  integer*8 :: numvars, irecnum
 
   ! convert 'it' to char and broadcast to all ranks
   if (myid==0) then
@@ -196,6 +195,7 @@ subroutine data_output
     call open_files
   endif 
   
+  ! calculate par & perp temperatures (needed only for diagnostics)
   call date_and_time(values=time_begin_array(:,6))
   if (ndim /= 1) then
     call caltemp2_global
@@ -204,9 +204,6 @@ subroutine data_output
   endif
   call date_and_time(values=time_end_array(:,6))
   call accumulate_time(time_begin_array(1,6),time_end_array(1,6),time_elapsed(6))
-
-  numvars = 18
-  irecnum = 1
 
   ! write data
   call dataout
@@ -246,8 +243,7 @@ subroutine data_output
       close(222)
     endif
 
-    ! keep only two sets of restart files, 
-    ! so overwrite the previous dump by swapping file index 
+    ! keep only two sets of restart files (overwrite previous dump by swapping index)
     if (restart_index == 1) then
       restart_index=2
     else
@@ -301,7 +297,7 @@ subroutine sim_loops
     call date_and_time(values=time_end_array(:,2))
     call accumulate_time(time_begin_array(1,2),time_end_array(1,2),time_elapsed(2))
 
-    ! write output to energy.dat
+    ! write history data: energy.dat, time.dat
     if (myid==0) then
       write(11,*) it, efld, bfld, efluidt, ethermt, eptclt ! energy.dat
       write(14,*) it, time_elapsed(1:40)  ! time.dat

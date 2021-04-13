@@ -23,6 +23,7 @@ subroutine user_diagnostics
   endif
   call date_and_time(values=time_end_array(:,32))
   call accumulate_time(time_begin_array(1,32),time_end_array(1,32),time_elapsed(32))
+
 end subroutine user_diagnostics
 
 
@@ -77,11 +78,15 @@ end subroutine virtual_probes
 subroutine virtual_probes2
   use parameter_mod
   implicit none
-  integer :: i,j,k,m,bufsize
+
+  integer :: i, j, k, m, bufsize
   double precision, dimension(nprobes) :: factor
-  factor=(/wpiwci**2,wpiwci**2,wpiwci**2,wpiwci,wpiwci,wpiwci/)
-  write(12,'(I6,1x,6E14.6,1x)')it, ex(2,jb,kb)*factor(1),ey(2,jb,kb)*factor(2),ez(2,jb,kb)*factor(3),&
-    bx(2,jb,kb)*factor(4),by(2,jb,kb)*factor(5),bz(2,jb,kb)*factor(6)
+
+  factor = (/wpiwci**2, wpiwci**2, wpiwci**2, wpiwci, wpiwci, wpiwci/)
+  write(12,'(I6,1x,6E14.6,1x)') it, &
+        ex(2,jb,kb)*factor(1), ey(2,jb,kb)*factor(2), ez(2,jb,kb)*factor(3), &
+        bx(2,jb,kb)*factor(4), by(2,jb,kb)*factor(5), bz(2,jb,kb)*factor(6)
+
 end subroutine
 
 
@@ -145,9 +150,9 @@ end subroutine track_particles
 
 !---------------------------------------------------------------------
 subroutine track_particles2
-  ! using MPI_IO, one file only
   use parameter_mod
   implicit none
+
   integer :: n, k, offset
   !offset=(it-1)*tracking_width*maxtags_pe*npes*nspec
   !write(*,*)myid, it, ntot,offset
@@ -156,8 +161,8 @@ subroutine track_particles2
   !  offset=offset+(k-1)*tracking_width
   !  call MPI_File_write_at(tracking_fh, offset, buf_p1(1,n), tracking_width, MPI_DOUBLE, status, ierr)
   !enddo
-  write(13)it, ntot
-  write(13)buf_p1(:,1:ntot)
+  write(13) it, ntot
+  write(13) buf_p1(:,1:ntot)
 
 end subroutine track_particles2
 

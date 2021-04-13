@@ -47,6 +47,7 @@ module mesh_mod
 
   !---------------------------------------------------------------------
   ! initialize mesh attributes 
+  !---------------------------------------------------------------------
   subroutine mesh_init(m, xa, xb, xl, na, nb, nl)
     use findexp_mod
 
@@ -62,14 +63,14 @@ module mesh_mod
 
     m%na=na ; m%nb=nb ; m%nl=nl
     m%xa=xa ; m%xb=xb ; m%xl=xl
-    nbb = nl - nb
+    nbb = nl - nb  ! -na?
 
     allocate(m%xn(nl+3))  ! -1:nl+1
     allocate(m%xc(nl+2))  ! -1:nl
     allocate(m%dxn(nl+3)) ! -1:nl+1
     allocate(m%dxc(nl+2)) ! -1:nl
 
-    m%dt = 1./real(nl)
+    m%dt = 1./real(nl)  ! nb - na = nl
     m%dx = (xb-xa)/(nb-na) 
     m%dtdx = m%dt/m%dx
     m%ta = m%dt*na
@@ -114,8 +115,6 @@ module mesh_mod
     m%xc(1)    = 2.*m%xn(2)-m%xc(2)
     m%xn(nl+3) = 2.*m%xn(nl+2)-m%xn(nl+1)
     m%xc(nl+2) = 2.*m%xn(nl+2)-m%xc(nl+1)
-    ! m%xc(1)    = 0.5*(m%xn(1)+m%xn(2))
-    ! m%xc(nl+2) = 0.5*(m%xn(nl+2)+m%xn(nl+3))
 
     ! compute cell-based mesh sizes
     do i = 1,nl+2
@@ -160,6 +159,7 @@ module mesh_mod
   !---------------------------------------------------------------------
   ! transform physical coordinate to logical space 
   ! MESH_INIT() must be called prior to this call
+  !---------------------------------------------------------------------
   double precision function mesh_unmap(m,x) 
 
     type(mesh), intent(in) :: m
@@ -185,6 +185,7 @@ module mesh_mod
   !---------------------------------------------------------------------
   ! transform physical coordinate to logical space 
   ! MESH_INIT() must be called prior to this call
+  !---------------------------------------------------------------------
   double precision function mesh_map(m,t)
 
     type(mesh), intent(in) :: m
@@ -296,6 +297,7 @@ module mesh_mod
   !---------------------------------------------------------------------
   ! interpolate (1:nx2,1:ny2) arrays from a nonuniform cell-centered grid 
   ! to a uniform node-centered grid (1:nnx,1:nny) 
+  !---------------------------------------------------------------------
   subroutine mesh_interpolated2d(inode,mx,my,a,ncx,ncy,ap,nnx,nny,lfirst)
 
     type(meshtype), intent(in) :: inode

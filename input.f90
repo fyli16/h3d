@@ -4,7 +4,7 @@
 tmax=1000.0, ! max sim. time, in units of 1/wci
 dtwci=0.01,  ! value of dt*wci
 restart=.false.,  ! whether to restart from 'restart' directory
-MPI_IO_format =.true. ! use MPI IO instead of traditional binary output
+MPI_IO_format =.true. ! use MPI IO (one file only) instead of traditional binary output
 
 ! ------------------ simulation domain ----------------!
 nx=1, ny=4, nz=224,  ! number of cells along each dim
