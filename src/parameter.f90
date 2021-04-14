@@ -350,7 +350,7 @@ module parameter_mod
     do i = 1, nspec
       nptotp = nptotp + npx(i)*npy(i)*npz(i)
     enddo
-    nplmax = 2* nptotp  ! pad storage requirement by a factor of 2
+    nplmax = 10* nptotp  ! pad storage requirement by a factor of 2
     if (myid==0) then
       write(6,*) "  total particle # per rank = ", nptotp
       write(6,*) "  total particle # per rank (padded) = ", nplmax
