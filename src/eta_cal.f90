@@ -21,7 +21,7 @@ subroutine eta_calc
             dbxdy, dbydx, dbzdx, dbzdy, &
             ba1, ba2, ba3, ba4, b2
   integer*8 :: i, j, k, l, ietb, ietn, ietj, ietg, itresis
-  integer*8: zd ! scale length of resistive layer along z (in unit of cell size)
+  integer*8 :: zd ! scale length of resistive layer along z (in unit of cell size)
 
   data eps /1.e-25/
   
