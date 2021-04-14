@@ -3,11 +3,11 @@
 ! remember, eta and fo{x,y,z} are cell-centered quantities
 ! ghost cells are only used in diagnostic output
 ! Here five choices, based on argument ieta:
-! (1): constant eta
-! (2): 4th power of B-grad, 2nd power of density
-! (3): Arbitrary power of curent (here: 4)
-! (4): Homas method: 2nd derivative of current
-! (5): (2) and (4) combined, with (4) reduced by a factor (1/5)
+! (1) constant
+! (2) 4th power of B-grad, 2nd power of density
+! (3) Arbitrary power of curent (here: 4)
+! (4) Homas method: 2nd derivative of current
+! (5) (2) and (4) combined, with (4) reduced by a factor (1/5)
 !---------------------------------------------------------------------
 subroutine eta_calc
   use parameter_mod
@@ -15,45 +15,46 @@ subroutine eta_calc
   implicit none
 
   real*8 :: ajl(nxmax, jb-1:jb+nylmax, kb-1:kb+nzlmax) 
-  real*8 :: ainv4b,ajg,ajmx,ajmy,ajpx,gb2,gb4,expo,eps,dxa,dya,dza, &
-            wpiwcigb,cfront,dbxdy,dbydx,dbzdx,dbzdy,ba1,ba2,ba3,ba4,b2,anetax,anetay,ajpy
-  integer*8 :: i,j,k,l,ietb,ietn,ietj,ietg,itresis
+  real*8 :: ainv4b, ajg, ajmx, ajmy, ajpx, gb2, gb4, expo, eps, &
+            dxa, dya, dza, &
+            wpiwcigb, cfront, &
+            dbxdy, dbydx, dbzdx, dbzdy, &
+            ba1, ba2, ba3, ba4, b2, &
+            anetax, anetay, ajpy
+  integer*8 :: i, j, k, l, ietb, ietn, ietj, ietg, itresis
 
   data eps /1.e-25/
-  itresis=1000
-
+  
   eta = 0. 
-  if (ieta == 0) then
+  if (ieta == 0) then  ! choice 1
     eta = resis
 
-  else if (ieta == 1) then
-    anetax=real(netax)
-    anetay=real(netay)
-    do k=kb,ke
-      do j=jb,je
-        do i=1,nx2
-          eta(i,j,k) = resis / ( cosh((real(i)-0.5*real(nx2+1))/anetax)         &
-                                *cosh((real(j)-0.5*real(ny2+1))/anetay))
+  else if (ieta == 1) then ! choice 2
+    itresis=1000
+    anetax = real(netax); anetay = real(netay)
+    do k = kb, ke
+      do j = jb, je
+        do i = 1, nx2
+          eta(i,j,k) = resis/( cosh((real(i)-0.5*real(nx2+1))/anetax)  &
+                              *cosh((real(j)-0.5*real(ny2+1))/anetay) )
         enddo
       enddo
     enddo
-    eta=eta*exp (-float(it)/float(itresis))
+    eta=eta*exp(-float(it)/float(itresis))
 
-  else if ((ieta == 2).or.(ieta == 5) ) then
+  else if ((ieta == 2).or.(ieta == 5) ) then ! choice 3
     ! use gradient of |B|, B, and n
     ! good combination is (grad |B|)**4 / (n**4 * B**2)
     ! set powers, here; and adjust cfront factor accordingly
     ! e.g., cfront = 1e-3 for ietg=4, ietn=4, and ietb=2
     ! this also uses an upper limit on eta, set desired value at top
     cfront = 8.0e-3
-    ietg = 4
-    ietn = 4
-    ietb = 2
+    ietg = 4; ietn = 4; ietb = 2
     ainv4b = 1.0/ ( float(4**ietb) )
     wpiwcigb = wpiwci**(ietg -ietb)
-    do k=kb,ke
-      do j=jb,je
-        do i=2,nx1
+    do k = kb, ke
+      do j = jb, je
+        do i = 2, nx1
           if (den(i,j,k) .le. denmin) then
             eta(i,j,k) = 0.0
           else
@@ -91,7 +92,7 @@ subroutine eta_calc
                           +((sqrt(ba3) -sqrt(ba4))/ meshY%dxc(j+1))**2  )
 
             gb4 = gb2**(ietg/2)
-            b2 = ainv4b   *(sqrt(ba1) +sqrt(ba2))**ietb
+            b2 = ainv4b * (sqrt(ba1) +sqrt(ba2))**ietb
             eta(i,j,k) = cfront *wpiwcigb *resis *gb4/         &
                           (b2 *den(i,j,k)**ietn)
             eta(i,j,k) = min(eta(i,j,k), etamax)
@@ -114,13 +115,13 @@ subroutine eta_calc
     ! Uniform mesh - Same as is in version 5.0
     ! dxa=1.0/(2.*hx)
     ! dya=1.0/(2.*hy)
-    do k=kb,ke
-      do j=jb,je
+    do k = kb, ke
+      do j = jb, je
         ! Nonuniform mesh
-        dya=1.0/(2.0*meshY%dxc(j+1))
-        do i=2,nx1
+        dya = 1.0/(2.0*meshY%dxc(j+1))
+        do i = 2, nx1
           ! Nonuniform mesh
-          dxa=1.0/(2.0*meshX%dxc(i  ))
+          dxa = 1.0/(2.0*meshX%dxc(i  ))
 
           dbzdy= bz(i+1,j+1,k)+bz(i  ,j+1,k) &
                 -bz(i+1,j  ,k)-bz(i  ,j  ,k)
@@ -139,8 +140,8 @@ subroutine eta_calc
       ! use 1/2 power, because of square root of squared components
       ! i.e., starting from |j| = sqrt(jx**2 +jy**2 +jz**2)
       expo = 0.5 *float(ietj)
-      do j=jb,je
-        do i=2,nx1
+      do j = jb, je
+        do i = 2, nx1
           eta(i,j,k) = cfront *resis *ajl(i,j,k)**expo
           eta(i,j,k) = min(etamax, eta(i,j,k))
           if (eta(i,j,k) .lt. etamin) eta(i,j,k) = 0.0
@@ -155,7 +156,7 @@ subroutine eta_calc
   endif
 
 
-  if ( (ieta == 4) .or. (ieta == 5) ) then
+  if (ieta==4 .or. ieta==5) then
     ! use 2nd gradient of j
     ! this routine calculates something related to the
     ! logarithmic derivative of grad j...
@@ -179,9 +180,9 @@ subroutine eta_calc
     ! dxa=1.0/(2.*hx)
     ! dya=1.0/(2.*hy)
 
-    do l = 1,3
-      do k=kb,ke
-        do j=jb,je
+    do l = 1, 3
+      do k = kb, ke
+        do j = jb, je
           ! Nonuniform mesh
           dya=1.0/(2.0*meshY%dxc(j+1))
           do i=2,nx1
@@ -251,9 +252,9 @@ subroutine eta_calc
 
     enddo
 
-    do k=kb,ke
-      do j=jb,je
-        do i=2,nx1
+    do k = kb, ke
+      do j = jb, je
+        do i = 2, nx1
           eta(i,j,k) = min(etamax, eta(i,j,k))
           if (eta(i,j,k) .lt. etamin) eta(i,j,k) = 0.0
         enddo
@@ -262,6 +263,5 @@ subroutine eta_calc
 
   endif
 
-  return
 end subroutine eta_calc
 

@@ -43,9 +43,9 @@ btspec=0.01, ! beta of each ion species
 bete=0.01,  ! beta of electrons
 
 ! resistivity 
-ieta=0,  ! other models include ieta=1,2,3,4,5; see 'etacal.f90'
+ieta=1,  ! other models include ieta=1,2,3,4,5; see 'etacal.f90'
 resis=1.e-6,  ! ieta=0 model; constant resisitivity, i.e., eta=resis
-netax=10, netay=2, netaz=5, ! used in ieta=1 model; tho netaz seems not used
+netax=10, netay=2 ! used in ieta=1 model
 etamin=1.0e-6, etamax=5.0e-5,  ! used in ieta>1 models
 eta_par=0, ! parallel resisitivity? sth used in 'field.f90'
 
@@ -65,10 +65,10 @@ dB_B0=0.1,
 num_cycles=5,
 
 ! ------------------ diagnostic control ----------------!
-n_print=10,  ! frequency at which to print simulation information
+n_print=100,  ! frequency at which to print simulation information
 n_write_data=1000, ! frequency at which to write data into files
-n_write_particle=4000,  ! frequency at which to write particles within a box range
-n_write_restart=20000, ! frequency at which to write restart files
+n_write_particle=400000,  ! frequency at which to write particles within a box range
+n_write_restart=2000000, ! frequency at which to write restart files
 
 tracking_binary=.true. ! write tracking data in binary (unformatted) or formatted form
 tracking_mpi=.true. ! write tracking files by mpi rank

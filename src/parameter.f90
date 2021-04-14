@@ -70,7 +70,7 @@ module parameter_mod
   integer*8, dimension(8) :: wall_clock_begin,wall_clock_end
   integer*8 :: eta_par, nparbuf
   integer*8, dimension(5) :: npx, npy, npz
-  integer*8 :: iterb, norbskip, nxcel, netax, netay, netaz, nspec, nx, ny, nz, n_print, &
+  integer*8 :: iterb, norbskip, nxcel, netax, netay, nspec, nx, ny, nz, n_print, &
             n_write_data, n_write_particle, n_write_restart, nskipx,nskipy,nskipz
   real*8 :: etamin, etamax
    
@@ -131,7 +131,7 @@ module parameter_mod
     uniform_loading_in_logical_grid, &
     n_subcycles, nskipx, nskipy, nskipz, iterb, testorbt, norbskip, &  ! field solver
     nspec, qspec, wspec, frac, denmin, wpiwci, btspec, bete, &  ! plasma setup
-    ieta, resis, netax, netay, netaz, etamin, etamax, eta_par, &
+    ieta, resis, netax, netay, etamin, etamax, eta_par, &
     anisot, gamma, ave1, ave2, phib, smoothing, smooth_coef, &
     dB_B0, num_cycles, &  ! init waves
     n_print, n_write_data, n_write_restart, n_write_particle, &  ! diagnostics
@@ -204,7 +204,6 @@ module parameter_mod
     call MPI_BCAST(resis                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(netax                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(netay                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(netaz                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(etamin                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(etamax                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(eta_par                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)

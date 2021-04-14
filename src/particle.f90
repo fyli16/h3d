@@ -1531,10 +1531,9 @@ subroutine caltemp2_global
   dtyi = 1./meshY%dt
   dtzi = 1./meshZ%dt
 
-  tpar=0.
-  tperp=0.
-
-  p_xx=0.;p_xy=0.;p_xz=0.;p_yy=0.;p_yz=0.;p_zz=0.
+  tpar=0.; tperp=0.
+  p_xx=0.; p_xy=0.; p_xz=0.
+  p_yy=0.; p_yz=0.; p_zz=0.
 
   if (nspec >= 2) then
      rfrac = frac(2)/frac(1)
@@ -1552,25 +1551,22 @@ subroutine caltemp2_global
       do IIYE = JB-1,JE
         do IIXE = 1, NX1
           NP=IPHEAD(IIXE,IIYE,IIZE,IS)
-
-!  begin advance of particle position and velocity
-!  If dt=0, skip
-!
+          !  begin advance of particle position and velocity
+          !  If dt=0, skip
           do while (NP.ne.0)
             L=NP
+            ! Uniform mesh - Same as is in version 5.0
+            ! rx=hxi*x(l)+1.5000000000000001
+            ! ry=hyi*y(l)+0.5000000000000001d+00
+            ! rz=hzi*z(l)+0.5000000000000001d+00
+            ! ix=rx
+            ! iy=ry
+            ! iz=rz
+            ! fx=rx-ix
+            ! fy=ry-iy
+            ! fz=rz-iz
 
-          ! Uniform mesh - Same as is in version 5.0
-          !  rx=hxi*x(l)+1.5000000000000001
-          !  ry=hyi*y(l)+0.5000000000000001d+00
-          !  rz=hzi*z(l)+0.5000000000000001d+00
-          !  ix=rx
-          !  iy=ry
-          !  iz=rz
-          !  fx=rx-ix
-          !  fy=ry-iy
-          !  fz=rz-iz
-
-          ! Nonuniform mesh - using mesh_unmap
+            ! Nonuniform mesh - using mesh_unmap
             rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
             ry=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
             rz=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
@@ -1737,7 +1733,6 @@ subroutine caltemp2_global
       enddo
     enddo
 
-
     call xreal(tpar (1,jb-1,kb-1,is),nx,ny,nz)
     call xreal(tperp(1,jb-1,kb-1,is),nx,ny,nz)
     call xreal(dpedx(1,jb-1,kb-1   ),nx,ny,nz)
@@ -1773,19 +1768,16 @@ subroutine caltemp2_global
       enddo
     enddo
 
-  !  p_xx(:,:,:,is)=p_xx(:,:,:,is)/(tx0(is)*frac(is))
-  !  p_xy(:,:,:,is)=p_xy(:,:,:,is)/(tx0(is)*frac(is))
-  !  p_xz(:,:,:,is)=p_xz(:,:,:,is)/(tx0(is)*frac(is))
-  !  p_yy(:,:,:,is)=p_yy(:,:,:,is)/(tx0(is)*frac(is))
-  !  p_yz(:,:,:,is)=p_yz(:,:,:,is)/(tx0(is)*frac(is))
-  !  p_zz(:,:,:,is)=p_zz(:,:,:,is)/(tx0(is)*frac(is))
+    ! p_xx(:,:,:,is)=p_xx(:,:,:,is)/(tx0(is)*frac(is))
+    ! p_xy(:,:,:,is)=p_xy(:,:,:,is)/(tx0(is)*frac(is))
+    ! p_xz(:,:,:,is)=p_xz(:,:,:,is)/(tx0(is)*frac(is))
+    ! p_yy(:,:,:,is)=p_yy(:,:,:,is)/(tx0(is)*frac(is))
+    ! p_yz(:,:,:,is)=p_yz(:,:,:,is)/(tx0(is)*frac(is))
+    ! p_zz(:,:,:,is)=p_zz(:,:,:,is)/(tx0(is)*frac(is))
 
   enddo
   call date_and_time(values=time_end_array(:,26))
-  call accumulate_time(time_begin_array(1,26) &
- &                               ,time_end_array(1,26) &
- &                                ,time_elapsed(26))
-
+  call accumulate_time(time_begin_array(1,26),time_end_array(1,26),time_elapsed(26))
 
 !  do is=1,nspec
 !    call date_and_time(values=time_begin_array(:,24))
@@ -1837,17 +1829,15 @@ subroutine caltemp2_global
 ! &                               ,time_elapsed(26))
 
    call date_and_time(values=time_end_array(:,23))
-   call accumulate_time(time_begin_array(1,23) &
- &                                ,time_end_array(1,23) &
- &                                ,time_elapsed(23))
+   call accumulate_time(time_begin_array(1,23),time_end_array(1,23),time_elapsed(23))
 
   return
 end subroutine caltemp2_global
 
 
 !********************************************************
-!>    computes field energy ex^2+ey^2+ez^2 and bx^2+by^2+bz^2
-!!    and particle energies
+! computes field energy ex^2+ey^2+ez^2 and bx^2+by^2+bz^2
+! and particle energies
 !********************************************************
 subroutine energy
   use parameter_mod
@@ -1873,27 +1863,25 @@ subroutine energy
   dtzi = 1./meshZ%dt
   p_xx=0.; p_yy=0.; p_zz=0.
 
-  do IS=1,1
+  do is = 1, 1 ! ??
     do IIZE = KB-1,KE
       do IIYE = JB-1,JE
         do IIXE = 1, NX1
           NP=IPHEAD(IIXE,IIYE,IIZE,IS)
-
           do while (NP.ne.0)
             L=NP
+            ! Uniform mesh - Same as is in version 5.0
+            ! rx=hxi*x(l)+1.5000000000000001
+            ! ry=hyi*y(l)+0.5000000000000001d+00
+            ! rz=hzi*z(l)+0.5000000000000001d+00
+            ! ix=rx
+            ! iy=ry
+            ! iz=rz
+            ! fx=rx-ix
+            ! fy=ry-iy
+            ! fz=rz-iz
 
-          ! Uniform mesh - Same as is in version 5.0
-          !  rx=hxi*x(l)+1.5000000000000001
-          !  ry=hyi*y(l)+0.5000000000000001d+00
-          !  rz=hzi*z(l)+0.5000000000000001d+00
-          !  ix=rx
-          !  iy=ry
-          !  iz=rz
-          !  fx=rx-ix
-          !  fy=ry-iy
-          !  fz=rz-iz
-
-          ! Nonuniform mesh - using mesh_unmap
+            ! Nonuniform mesh - using mesh_unmap
             rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
             ry=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
             rz=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
