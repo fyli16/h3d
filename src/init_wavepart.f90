@@ -380,4 +380,4 @@ subroutine init_wavepart
   
   deallocate(seed) 
 
-end subroutine init_wave
+end subroutine init_wavepart
