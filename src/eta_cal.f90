@@ -21,7 +21,6 @@ subroutine eta_calc
             dbxdy, dbydx, dbzdx, dbzdy, &
             ba1, ba2, ba3, ba4, b2
   integer*8 :: i, j, k, l, ietb, ietn, ietj, ietg, itresis
-  integer*8 :: zd ! scale length of resistive layer along z (in unit of cell size)
 
   data eps /1.e-25/
   
@@ -151,7 +150,6 @@ subroutine eta_calc
     enddo
 
   else if (ieta==6) then ! exponential increase at edge of z
-    zd = 28
     do k = kb, ke
       do j = jb, je
         do i = 1, nx2
@@ -160,17 +158,17 @@ subroutine eta_calc
           ! else
           !   eta(i,j,k) = resis*(exp((real(k)-196.)/14.)-1.)
           ! endif 
-          ! if (k.le.zd) then
-          !   eta(i,j,k) = resis*cos(pi*real(k)/(2.*real(zd)))
-          ! else if (k.ge.(nz-zd)) then
-          !   eta(i,j,k) = resis*cos(pi*(real(k)-nz)/(2.*real(zd)))
+          ! if (k.le.eta_zs) then
+          !   eta(i,j,k) = resis*cos(pi*real(k)/(2.*real(eta_zs)))
+          ! else if (k.ge.(nz-eta_zs)) then
+          !   eta(i,j,k) = resis*cos(pi*(real(k)-nz)/(2.*real(eta_zs)))
           ! else
           !   eta(i,j,k) = 0.
           ! endif 
-          if (k.le.zd) then
-            eta(i,j,k) = (resis/2)*(1+cos(pi*real(k)/real(zd)))
-          else if (k.ge.(nz-zd)) then
-            eta(i,j,k) = (resis/2)*(1-cos(pi*(real(k)-nz+zd)/real(zd)))
+          if (k.le.eta_zs) then
+            eta(i,j,k) = (resis/2)*(1+cos(pi*real(k)/real(eta_zs)))
+          else if (k.ge.(nz-eta_zs)) then
+            eta(i,j,k) = (resis/2)*(1-cos(pi*(real(k)-nz+eta_zs)/real(eta_zs)))
           else
             eta(i,j,k) = 0.
           endif 

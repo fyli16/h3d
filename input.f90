@@ -1,7 +1,7 @@
 &datum
 
 ! ------------------ global simulation info -----------!
-tmax=1000.0, ! max sim. time, in units of 1/wci
+tmax=100.0, ! max sim. time, in units of 1/wci
 dtwci=0.01,  ! value of dt*wci
 restart=.false.,  ! whether to restart from 'restart' directory
 MPI_IO_format =.true. ! use MPI IO (one file only) instead of traditional binary output
@@ -21,7 +21,7 @@ xaa=0., xbb=1., nax=0, nbx=1
 yaa=0., ybb=4., nay=0, nby=4
 zaa=0., zbb=224., naz=0, nbz=224
 
-uniform_loading_in_logical_grid = .false., ! used in loading particles? see 'init waves'
+uniform_loading_in_logical_grid =.false., ! used in loading particles? see 'init waves'
 
 ! ------------------ field solver ----------------!
 n_subcycles=0
@@ -37,17 +37,18 @@ qspec=1., ! charge of each ion species (use array if nspec>1 and the same for re
 wspec=1., ! mass of each ion species
 
 frac=1.0 ! means normalized to n0 (associated with wpi)
-denmin=0.05,  ! density floor. When density is smaller than this value, force it to this value to avoid divergence in calculating E field
+denmin=0.05,  ! when density is smaller than this value, force it to this value to avoid divergence in calculating E field
 wpiwci=400., ! ratio of ion plasma frequency to ion cyclotron frequency
 btspec=0.01, ! beta of each ion species 
 bete=0.01,  ! beta of electrons
 
 ! resistivity 
-ieta=6,  ! other models include ieta=1,2,3,4,5; see 'etacal.f90'
+ieta=6,  ! other models ieta=1,2,3,4,5,6; see 'etacal.f90'
 resis=1.e-1,  ! ieta=0 model; constant resisitivity, i.e., eta=resis
 netax=10, netay=2 ! used in ieta=1 model
 etamin=1.0e-6, etamax=5.0e-5,  ! used in ieta>1 models
 eta_par=0, ! parallel resisitivity? sth used in 'field.f90'
+eta_zs=28, ! scale length of resistive layer along z (in unit of cell size)
 
 ! anisotropy in velocity
 anisot=1.0, ! anisotropy of velocity for each species, used in 'init waves'
