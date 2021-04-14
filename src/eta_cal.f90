@@ -15,12 +15,11 @@ subroutine eta_calc
   implicit none
 
   real*8 :: ajl(nxmax, jb-1:jb+nylmax, kb-1:kb+nzlmax) 
-  real*8 :: ainv4b, ajg, ajmx, ajmy, ajpx, gb2, gb4, expo, eps, &
+  real*8 :: ainv4b, ajg, ajmx, ajmy, ajpx, ajpy, gb2, gb4, expo, eps, &
             dxa, dya, dza, &
             wpiwcigb, cfront, &
             dbxdy, dbydx, dbzdx, dbzdy, &
-            ba1, ba2, ba3, ba4, b2, &
-            anetax, anetay, ajpy
+            ba1, ba2, ba3, ba4, b2
   integer*8 :: i, j, k, l, ietb, ietn, ietj, ietg, itresis
 
   data eps /1.e-25/
@@ -31,16 +30,16 @@ subroutine eta_calc
 
   else if (ieta == 1) then ! choice 2
     itresis=1000
-    anetax = real(netax); anetay = real(netay)
     do k = kb, ke
       do j = jb, je
         do i = 1, nx2
-          eta(i,j,k) = resis/( cosh((real(i)-0.5*real(nx2+1))/anetax)  &
-                              *cosh((real(j)-0.5*real(ny2+1))/anetay) )
+          ! no z-dependence
+          eta(i,j,k) = resis/( cosh((real(i)-0.5*real(nx2+1))/real(netax))  &
+                              *cosh((real(j)-0.5*real(ny2+1))/real(netay)) )
         enddo
       enddo
     enddo
-    eta=eta*exp(-float(it)/float(itresis))
+    eta = eta*exp(-float(it)/float(itresis)) ! decays with time
 
   else if ((ieta == 2).or.(ieta == 5) ) then ! choice 3
     ! use gradient of |B|, B, and n
@@ -150,11 +149,22 @@ subroutine eta_calc
 
     enddo
 
-  else if ( (ieta .gt. 5).or.(ieta .lt. 0) ) then
-    call ERROR_ABORT('Currently eta_calc only accepts ieta = 0 ~ 5')
+  else if (ieta==6) then ! exponential increase at edge of z
+    do k = kb, ke
+      do j = jb, je
+        do i = 1, nx2
+          if (k<196) then
+            eta(i,j,k) = 0.
+          else
+            eta(i,j,k) = 0.1*(exp((real(k)-196.)/14.)-1.)
+        enddo 
+      enddo 
+    enddo 
+
+  else if ( (ieta .gt. 6).or.(ieta .lt. 0) ) then
+    call ERROR_ABORT('Currently eta_calc only accepts ieta = 0 ~ 6')
 
   endif
-
 
   if (ieta==4 .or. ieta==5) then
     ! use 2nd gradient of j
