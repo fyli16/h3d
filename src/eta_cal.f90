@@ -151,7 +151,7 @@ subroutine eta_calc
     enddo
 
   else if (ieta==6) then ! exponential increase at edge of z
-    zd = 56
+    zd = 28
     do k = kb, ke
       do j = jb, je
         do i = 1, nx2
@@ -160,10 +160,17 @@ subroutine eta_calc
           ! else
           !   eta(i,j,k) = resis*(exp((real(k)-196.)/14.)-1.)
           ! endif 
+          ! if (k.le.zd) then
+          !   eta(i,j,k) = resis*cos(pi*real(k)/(2.*real(zd)))
+          ! else if (k.ge.(nz-zd)) then
+          !   eta(i,j,k) = resis*cos(pi*(real(k)-nz)/(2.*real(zd)))
+          ! else
+          !   eta(i,j,k) = 0.
+          ! endif 
           if (k.le.zd) then
-            eta(i,j,k) = resis*cos(pi*real(k)/(2.*real(zd)))
+            eta(i,j,k) = (resis/2)*(1+cos(pi*real(k)/real(zd)))
           else if (k.ge.(nz-zd)) then
-            eta(i,j,k) = resis*cos(pi*(real(k)-nz)/(2.*real(zd)))
+            eta(i,j,k) = (resis/2)*(1-cos(pi*(real(k)-nz+zd)/real(zd)))
           else
             eta(i,j,k) = 0.
           endif 
