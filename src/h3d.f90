@@ -34,10 +34,10 @@ program h3d
 
   ! restart or a fresh start
   call makelist  ! make list of particles (see utils.f90)
-  if (restart) then
-    call init_restart
-  else  ! fresh start
-    call init_wave
+  if (restart) then ! restart from previous run, read wave-particle parameters
+    call init_restart 
+  else ! fresh start, initialize wave-particle parameters
+    call init_wavepart 
   endif 
 
   ! main simulation loops

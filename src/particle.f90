@@ -682,7 +682,7 @@ subroutine push
     disp_max_p(1) = x_disp_max_p
     disp_max_p(2) = y_disp_max_p
     disp_max_p(3) = z_disp_max_p
-    call MPI_ALLREDUCE(disp_max_p,disp_max,3,MPI_DOUBLE_PRECISION,MPI_MAX,MPI_COMM_WORLD,IERR)   !LAURA
+    call MPI_ALLREDUCE(disp_max_p,disp_max,3,MPI_DOUBLE_PRECISION,MPI_MAX,MPI_COMM_WORLD,IERR) !LAURA
     x_disp_max = disp_max(1)
     y_disp_max = disp_max(2)
     z_disp_max = disp_max(3)

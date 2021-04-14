@@ -28,7 +28,7 @@ OBJS =  parameter.of90 \
 	 	diagnostics.of90\
 		write_file.of90 \
 		io.of90\
-		init_wave.of90 \
+		init_wavepart.of90 \
 		h3d.of90
 
 $(EFILE): $(OBJS)

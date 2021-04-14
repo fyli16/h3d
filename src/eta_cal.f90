@@ -158,6 +158,7 @@ subroutine eta_calc
           ! else
           !   eta(i,j,k) = resis*(exp((real(k)-196.)/14.)-1.)
           ! endif 
+
           ! if (k.le.eta_zs) then
           !   eta(i,j,k) = resis*cos(pi*real(k)/(2.*real(eta_zs)))
           ! else if (k.ge.(nz-eta_zs)) then
@@ -165,6 +166,7 @@ subroutine eta_calc
           ! else
           !   eta(i,j,k) = 0.
           ! endif 
+          
           if (k.le.eta_zs) then
             eta(i,j,k) = (resis/2)*(1+cos(pi*real(k)/real(eta_zs)))
           else if (k.ge.(nz-eta_zs)) then

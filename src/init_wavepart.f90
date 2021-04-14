@@ -1,7 +1,7 @@
 !---------------------------------------------------------------------
 ! init waves
 !---------------------------------------------------------------------
-subroutine init_wave
+subroutine init_wavepart
   use parameter_mod
   use mesh_mod
   implicit none
@@ -200,7 +200,7 @@ subroutine init_wave
       write(6,*) " "
     endif
 
-    ! actual loading
+    ! actual particle loading
     print_percentage = zero
     do ip = ipb1, ipb2
       call random_number(harvest=ranval)
@@ -348,7 +348,7 @@ subroutine init_wave
   ! what's done here
   if(myid==0) then
     print*, " "
-    print*, '  setting dt=0 temporarily and push particle once'
+    print*, "  setting dt=0 temporarily and call 'trans'"
   endif
   dtsav = dt
   dt    = zero
@@ -373,9 +373,9 @@ subroutine init_wave
     print*, '  calculating resistivity'
   endif
   if (ndim /= 1) then
-      call eta_calc      ! Dietmar's resistivity
+      call eta_calc  ! Dietmar's resistivity
   else
-      call eta_calc_2d   ! Dietmar's resistivity
+      call eta_calc_2d  ! Dietmar's resistivity
   endif
   
   deallocate(seed) 
