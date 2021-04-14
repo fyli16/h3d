@@ -151,7 +151,7 @@ subroutine eta_calc
     enddo
 
   else if (ieta==6) then ! exponential increase at edge of z
-    zd = 28
+    zd = 56
     do k = kb, ke
       do j = jb, je
         do i = 1, nx2
