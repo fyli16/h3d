@@ -156,7 +156,7 @@ subroutine eta_calc
           if (k<196) then
             eta(i,j,k) = 0.
           else
-            eta(i,j,k) = 0.1*(exp((real(k)-196.)/14.)-1.)
+            eta(i,j,k) = resis*(exp((real(k)-196.)/14.)-1.)
         enddo 
       enddo 
     enddo 

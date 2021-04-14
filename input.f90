@@ -43,8 +43,8 @@ btspec=0.01, ! beta of each ion species
 bete=0.01,  ! beta of electrons
 
 ! resistivity 
-ieta=1,  ! other models include ieta=1,2,3,4,5; see 'etacal.f90'
-resis=1.e-6,  ! ieta=0 model; constant resisitivity, i.e., eta=resis
+ieta=6,  ! other models include ieta=1,2,3,4,5; see 'etacal.f90'
+resis=1.e-1,  ! ieta=0 model; constant resisitivity, i.e., eta=resis
 netax=10, netay=2 ! used in ieta=1 model
 etamin=1.0e-6, etamax=5.0e-5,  ! used in ieta>1 models
 eta_par=0, ! parallel resisitivity? sth used in 'field.f90'
