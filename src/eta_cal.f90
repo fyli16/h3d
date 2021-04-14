@@ -157,6 +157,7 @@ subroutine eta_calc
             eta(i,j,k) = 0.
           else
             eta(i,j,k) = resis*(exp((real(k)-196.)/14.)-1.)
+          endif 
         enddo 
       enddo 
     enddo 
