@@ -104,6 +104,10 @@ module parameter_mod
   character(len=2) :: restart_index_suffix(2)
   character(len=160) :: data_directory, restart_directory, cycle_ascii, cycle_ascii_new, &
                         myid_char, cleanup_status
+  
+  integer*8:: recl_for_real, recl_for_double
+  real :: single_prec
+  double precision :: double_prec
 
   real*8 :: dB_B0, num_cycles ! for initializing waves
 
@@ -329,6 +333,17 @@ module parameter_mod
       write(6,*) " "
       write(6,*) "Setting up global arrays ..."
     endif
+
+    ! INQUIRE (IOLENGTH=iolength) output-items
+    ! iolength is a scalar default INTEGER variable having
+    ! a value that would result from the use of output-items
+    ! in an unformatted output statement.  The value is used
+    ! as a RECL= specifier in an OPEN statement that connects
+    ! a file for unformatted direct access when there are
+    ! input/output statements with the same list of output-items.
+    single_prec=0.; double_prec=0.
+    inquire(IOLENGTH=recl_for_real) single_prec
+    inquire(IOLENGTH=recl_for_double) double_prec
 
     ! nparbuf = nxmax*(nylmax+2)*(nzlmax+2)
     nspecm = nspec  ! nspecm is just a mirror copy of nspec
