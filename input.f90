@@ -9,7 +9,7 @@ MPI_IO_format =.true. ! use MPI IO (one file only) instead of traditional binary
 ! ------------------ simulation domain ----------------!
 nx=1, ny=4, nz=224,  ! number of cells along each dim
 xmax=1., ymax=4., zmax=224.,  ! max lengths of each dim
-npx=10,10, npy=40,40, npz=2240,2240,  ! number of particles along each dim over full length (not cell)
+npx=10, npy=40, npz=2240,  ! number of particles along each dim over full length (not cell)
 
 ! number of nodes (cores) along y, z; (no decompostion along x)
 ! make sure npy, npz can be divided by nodey, nodez, respectively
