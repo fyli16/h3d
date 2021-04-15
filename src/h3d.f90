@@ -16,7 +16,7 @@ program h3d
 
   ! Initialize MPI
   call MPI_INIT(IERR)
-  call MPI_COMM_SIZE(MPI_COMM_WORLD,NUMPROCS,IERR)
+  call MPI_COMM_SIZE(MPI_COMM_WORLD,NPROCS,IERR)
   call MPI_COMM_RANK(MPI_COMM_WORLD,MYID,IERR)
 
   ! Read input file
@@ -72,8 +72,8 @@ subroutine init_restart
   call MPI_BCAST(restart_index,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
   call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
 
-  do i = 0, npes_over_60 
-    if (mod(int(myid,8), npes_over_60+1) .eq. i) then 
+  do i = 0, nprocs_over_60 
+    if (mod(int(myid,8), nprocs_over_60+1) .eq. i) then 
         call restart_read_write(-1.0)  ! read restart data
         call MPI_BCAST(itfin,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
     endif
@@ -99,14 +99,14 @@ subroutine init_restart
   ! Nonuniform mesh
   zb = meshZ%xn(kb+1)
   ze = meshZ%xn(ke+2)
-  do ipe = 0,npes-1
+  do ipe = 0,nprocs-1
     zbglobal(ipe) = meshZ%xn(kbglobal(ipe)+1)
     zeglobal(ipe) = meshZ%xn(keglobal(ipe)+2)
   enddo
 
   yb = meshY%xn(jb+1)
   ye = meshY%xn(je+2)
-  do ipe = 0,npes-1
+  do ipe = 0,nprocs-1
     ybglobal(ipe) = meshY%xn(jbglobal(ipe)+1)
     yeglobal(ipe) = meshY%xn(jeglobal(ipe)+2)
   enddo
@@ -123,7 +123,7 @@ subroutine init_restart
   ze_logical = MESH_UNMAP(meshZ,ze)
             
   do i = 1, nspec
-    npm = npx(i)*npy(i)*npz(i)*npes
+    npm = npx(i)*npy(i)*npz(i)*nprocs
     dfac(i) = real(ny*nz*nx)/real(npm)
     do ixe=1,nx2
         do iye=jb-1,je+1
@@ -222,8 +222,8 @@ subroutine data_output
   if (mod(int(it,8),n_write_restart)==0 .and. (it>itstart)) then
     if (myid == 0) print*, 'Writing restart files ...'
     itfin = it
-    do i = 0, npes_over_60  
-      if (mod( int(myid,8) ,npes_over_60 + 1).eq.i) then
+    do i = 0, nprocs_over_60  
+      if ( mod(int(myid,8),nprocs_over_60+1).eq.i) then
         call restart_read_write(1.0)
       endif
       call MPI_BARRIER(MPI_COMM_WORLD,IERR)

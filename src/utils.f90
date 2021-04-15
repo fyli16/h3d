@@ -98,25 +98,25 @@ end subroutine makelist
 
 
 !-----------------------------------------------------------------
-! domain decompostion util: splits n elements between numprocs processors
+! domain decompostion util: splits n elements between nprocs processors
 ! @param n: number of elements
-! @param numprocs: number of processors
+! @param nprocs: number of processors
 ! @param b, e : begin/end indices
 !-----------------------------------------------------------------
-subroutine mpe_decomp1d(n, numprocs, myid, b, e)
+subroutine mpe_decomp1d(n, nprocs, myid, b, e)
   implicit none  
-  integer ::   numprocs, myid
+  integer ::   nprocs, myid
   integer*8 :: n, b, e, nlocal, deficit
 
-  nlocal  = n / numprocs
+  nlocal  = n / nprocs
   b       = myid * nlocal + 1
-  deficit = mod(n, int(numprocs,8) )
+  deficit = mod(n, int(nprocs,8) )
   b       = b + min( int(myid,8) ,deficit)
   if (myid  <  deficit) then
       nlocal = nlocal + 1
   endif
   e = b + nlocal - 1
-  if (e > n .or. myid == numprocs-1) e = n
+  if (e > n .or. myid == nprocs-1) e = n
 
   return
 end subroutine mpe_decomp1d

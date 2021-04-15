@@ -4,6 +4,7 @@ module parameter_mod
   implicit none
   save
 
+  ! global simulation/MPI
   integer :: it, itstart, itfinish, now(8), my_short_int, i_source, i_tag, i_length, i_i, &
              time_begin_array(8,128), time_end_array(8,128), ierr, n_subcycles
   double precision :: time_elapsed(128)
@@ -11,9 +12,9 @@ module parameter_mod
   logical :: periods(2), reorder
   integer :: status(mpi_status_size), status1(mpi_status_size), status2(mpi_status_size), status_array(mpi_status_size,8)
 
-  integer*8 :: nxmax, nymax, nzmax, nspecm, npes, nvar, nylmax, nzlmax, npm, npes_over_60
+  integer*8 :: nxmax, nymax, nzmax, nvar, nylmax, nzlmax, npm, nprocs_over_60
   
-  integer :: numprocs, ndim, dims(2), nodey, nodez, comm2d, myid, req(8), & 
+  integer :: nprocs, ndim, dims(2), nodey, nodez, comm2d, myid, req(8), & 
             nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot, &      
             nbrleft, nbrrite, ipe, stridery, striderz, iseed(1), coords(2)
 
@@ -72,13 +73,14 @@ module parameter_mod
 
   integer*8 :: nax, nbx, nay, nby, naz, nbz
   integer*8, dimension(8) :: wall_clock_begin,wall_clock_end
-  integer*8 :: eta_par, nparbuf
   integer*8, dimension(5) :: npx, npy, npz
-  integer*8 :: iterb, norbskip, nxcel, netax, netay, nspec, nx, ny, nz, n_print, &
+  integer*8 :: iterb, norbskip, nxcel, nspec, nx, ny, nz, n_print, &
             n_write_data, n_write_particle, n_write_restart, nskipx,nskipy,nskipz
+
+  ! resistivity
+  integer*8 :: ieta, netax, netay, eta_par, eta_zs
   real*8 :: etamin, etamax
-   
-  integer*8 :: ieta, eta_zs
+
   logical :: testorbt, restart, uniform_loading_in_logical_grid, MPI_IO_format, smoothing  
 
   real*8 ::  hx, hy, hz, hxi, hyi, hzi, efld, bfld, efluidt, ethermt, eptclt, time, te0
@@ -278,20 +280,29 @@ module parameter_mod
   subroutine domain_decomp
     integer :: i
 
-    ! set MPI Cartesian geometry, define stride vector types, obtain new
-    ! ID for the processors, perform 2D decomposition of the
+    ! set MPI Cartesian geometry, define stride vector types, 
+    ! obtain new ID for the processors, perform 2D decomposition of the
     ! computational mesh, and find nearest neighbors (in y and z directions).
     ! specify decomposition (along y, z only; no decomposition along x) 
-    ndim=2; dims(1)=nodey; dims(2)=nodez
+    if (nz==1 .and. ny==1) then ! only nx>1 and 1 rank will be used  
+      ndim=1; dims(1)=1; dims(2)=1
+    else if (nz == 1) then ! ny>1 and decomposition only occurs in y
+      ndim=1; dims(1)=nodey; dims(2)=1
+    else ! ny>1, nz>1, and decomposition in both y and z
+      ndim=2; dims(1)=nodey; dims(2)=nodez
+    endif
+    ! this is not needed because both components of dims have been explicitly specified
+    ! call MPI_DIMS_CREATE(nprocs,NDIM,DIMS,IERR)
 
     ! npy now means number of particles in each rank along y
     ! npz now means number of particles in each rank along z
     npy=npy/dims(1); npz=npz/dims(2)
 
+    ! print MPI decomposition information
     if (myid == 0) then
       write(6,*)
       write(6,*) "MPI decompsition ..."
-      write(6,*) "  Total number of processors = ", numprocs
+      write(6,*) "  Total number of processors = ", nprocs
       do i = 1, ndim
         write(6,*) "  Dimension = ", i, " Dims = ", dims(i)
       enddo
@@ -305,17 +316,17 @@ module parameter_mod
     call MPI_COMM_RANK(COMM2D, MYID, IERR)
     ! Retrieves Cartesian topology information (especially 'COORDS') associated with the new communicator
     call MPI_CART_GET(COMM2D, NDIM, DIMS, PERIODS, COORDS, IERR)
-    ! splits N elements between numprocs processors
+    ! splits N elements between nprocs processors
     call MPE_DECOMP1D(NY, DIMS(1), COORDS(1), JB, JE)
     call MPE_DECOMP1D(NZ, DIMS(2), COORDS(2), KB, KE)
     ! print domain decomposition info
     ! write(6,*) 'myid=', myid, 'jb, je =', jb, je, 'kb, ke = ',kb, ke, 'coords =', coords
 
-    nxmax  = nx + 2  ! why adding 2?
-    nymax  = ny + 2
-    nzmax  = nz + 2
-    nylmax = je - jb + 1 
-    nzlmax = ke - kb + 1  
+    ! max number of cells. why adding 2?
+    nxmax  = nx + 2; nymax  = ny + 2; nzmax  = nz + 2
+
+    ! local max number of cells
+    nylmax = je - jb + 1 ; nzlmax = ke - kb + 1  
     if (myid == 0) then
       write(6,*) "  Local array size in x-direction = ", nx
       write(6,*) "  Local array size in y-direction = ", nylmax
@@ -346,63 +357,62 @@ module parameter_mod
     inquire(IOLENGTH=recl_for_real) single_prec
     inquire(IOLENGTH=recl_for_double) double_prec
 
-    ! nparbuf = nxmax*(nylmax+2)*(nzlmax+2)
-    nspecm = nspec  ! nspecm is just a mirror copy of nspec
-    npes = numprocs  ! npes is just a mirror copy of numprocs
-    npes_over_60 = npes/512  ! if numprocs > 512? shouldn't it be npes_over_512?
+    ! if nprocs > 512? shouldn't it be nprocs_over_512?
+    nprocs_over_60 = nprocs/512  
 
     ! estimate on particle storage requirement
-    nptotp = 0  ! total number of particles per rank
+    nptotp = 0  ! total local number of particles
     do i = 1, nspec
       nptotp = nptotp + npx(i)*npy(i)*npz(i)
     enddo
-    nplmax = 10* nptotp  ! pad storage requirement by a factor of 2
+    nplmax = 10* nptotp  ! pad storage requirement by a factor
     if (myid==0) then
       write(6,*) "  total particle # per rank = ", nptotp
-      write(6,*) "  total particle # per rank (padded) = ", nplmax
+      write(6,*) "  total particle # per rank (exaggerated) = ", nplmax
     endif
 
     ! number of tags used to track particles per species per rank
     ! maxtags was initialized as 100
+    ! so for nspec=1, using >100 ranks would result in 'nprocs' particles to be tracked
     ! (this is a poor design)
-    maxtags_pe = maxtags/npes/nspec
+    maxtags_pe = maxtags/nprocs/nspec
     if (maxtags_pe==0) then
         maxtags_pe = 1  ! at least tracking one particle per species per rank
-        maxtags = maxtags_pe * npes
+        maxtags = maxtags_pe * nprocs
     endif
 
     ! gathered enough info, now allocate arrays
-    allocate( zbglobal(0:npes-1), zeglobal(0:npes-1), ybglobal(0:npes-1), yeglobal(0:npes-1), &
-              kbglobal(0:npes-1), keglobal(0:npes-1), jbglobal(0:npes-1), jeglobal(0:npes-1), &
-              nsendp(0:npes-1), nrecvp(0:npes-1) )
+    allocate( zbglobal(0:nprocs-1), zeglobal(0:nprocs-1), ybglobal(0:nprocs-1), yeglobal(0:nprocs-1), &
+              kbglobal(0:nprocs-1), keglobal(0:nprocs-1), jbglobal(0:nprocs-1), jeglobal(0:nprocs-1), &
+              nsendp(0:nprocs-1), nrecvp(0:nprocs-1) )
 
     allocate( x(nplmax), y(nplmax), z(nplmax), vx(nplmax), vy(nplmax), vz(nplmax), &
               link(nplmax), porder(nplmax), qp(nplmax), ptag(nplmax) )
 
-    allocate( ninj(nspecm), ninj_global(nspecm), nescape(nspecm), nescape_global(nspecm), &
-              npart(nspecm), npart_global(nspecm), qleft(nspecm), qrite(nspecm) )
+    allocate( ninj(nspec), ninj_global(nspec), nescape(nspec), nescape_global(nspec), &
+              npart(nspec), npart_global(nspec), qleft(nspec), qrite(nspec) )
             
-    allocate( nescape_xy(nspecm),nescape_yx(nspecm), &
-              nescape_xz(nspecm),nescape_zx(nspecm), &
-              nescape_yz(nspecm),nescape_zy(nspecm), &
-              nescape_xy_global(nspecm), nescape_yx_global(nspecm), nescape_xz_global(nspecm), &
-              nescape_zx_global(nspecm), nescape_yz_global(nspecm), nescape_zy_global(nspecm) )
+    allocate( nescape_xy(nspec), nescape_yx(nspec), &
+              nescape_xz(nspec), nescape_zx(nspec), &
+              nescape_yz(nspec), nescape_zy(nspec), &
+              nescape_xy_global(nspec), nescape_yx_global(nspec), nescape_xz_global(nspec), &
+              nescape_zx_global(nspec), nescape_yz_global(nspec), nescape_zy_global(nspec) )
 
-    allocate( x0(nspecm),x1(nspecm),tx0(nspecm),vpar(nspecm),vper(nspecm),vbal(nxmax,nspecm),bbal(nxmax) )
+    allocate( x0(nspec), x1(nspec), tx0(nspec), vpar(nspec), vper(nspec), vbal(nxmax,nspec), bbal(nxmax) )
 
-    allocate( dfac(nspecm),nskip(nspecm),ipleft(nspecm),iprite(nspecm),ipsendleft(nspecm),ipsendrite(nspecm), &
-              iprecv(nspecm),ipsendtop(nspecm),ipsendbot(nspecm),ipsendlefttop(nspecm),ipsendleftbot(nspecm), &
-              ipsendritetop(nspecm),ipsendritebot(nspecm),ipsend(nspecm) )     
+    allocate( dfac(nspec),nskip(nspec),ipleft(nspec),iprite(nspec),ipsendleft(nspec),ipsendrite(nspec), &
+              iprecv(nspec),ipsendtop(nspec),ipsendbot(nspec),ipsendlefttop(nspec),ipsendleftbot(nspec), &
+              ipsendritetop(nspec),ipsendritebot(nspec),ipsend(nspec) )     
 
     allocate( idmap_yz(0:ny+1,0:nz+1), idmap(0:nzmax), idfft(nzmax), kvec(nzlmax), jvec(nylmax) )
 
-    do i = 1, nspecm
+    do i = 1, nspec
       qleft(i) = 0
       qrite(i) = 0
     enddo 
 
     !  Use CART_SHIFT to determine processor to immediate left (NBRLEFT) and right (NBRRITE) of processor MYID
-    !  Since code is aperiodic in z, need to manually set the left boundary for processor 0 and right boundary for npes-1
+    !  Since code is aperiodic in z, need to manually set the left boundary for processor 0 and right boundary for nprocs-1
     call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
     call MPI_CART_SHIFT(COMM2D,1,1,NBRBOT ,NBRTOP ,IERR)
     ! if (ndim == 2) then
@@ -532,7 +542,7 @@ module parameter_mod
     call MPI_ALLGATHER(ke,1,MPI_INTEGER8,keglobal,1,MPI_INTEGER8,MPI_COMM_WORLD,IERR)
 
     ! VR: again, this is much simpler than the commented block
-    do i = 0, numprocs-1
+    do i = 0, nprocs-1
       do k = kbglobal(i), keglobal(i)
         do j = jbglobal(i), jeglobal(i)
           idmap_yz(j, k) = i
@@ -574,21 +584,21 @@ module parameter_mod
       curlbx(nxmax,jb-1:je+1,kb-1:ke+1), curlby (nxmax,jb-1:je+1,kb-1:ke+1), curlbz (nxmax,jb-1:je+1,kb-1:ke+1), & 
       pe    (nxmax,jb-1:je+1,kb-1:ke+1), eta    (nxmax,jb-1:je+1,kb-1:ke+1), eta_times_b_dot_j(nxmax,jb-1:je+1,kb-1:ke+1) )
 
-    allocate ( dns(nxmax,jb-1:je+1,kb-1:ke+1,nspecm), &
-               dnsh(nxmax,jb-1:je+1,kb-1:ke+1,nspecm), &
-               vxs(nxmax,jb-1:je+1,kb-1:ke+1,nspecm), &
-               vys(nxmax,jb-1:je+1,kb-1:ke+1,nspecm), &
-               vzs(nxmax,jb-1:je+1,kb-1:ke+1,nspecm), &
-               tpar(nxmax,jb-1:je+1,kb-1:ke+1,nspecm), &
-               tperp(nxmax,jb-1:je+1,kb-1:ke+1,nspecm), &
-               qp_cell(nxmax,jb-1:je+1,kb-1:ke+1,nspecm) ) 
+    allocate ( dns(nxmax,jb-1:je+1,kb-1:ke+1,nspec), &
+               dnsh(nxmax,jb-1:je+1,kb-1:ke+1,nspec), &
+               vxs(nxmax,jb-1:je+1,kb-1:ke+1,nspec), &
+               vys(nxmax,jb-1:je+1,kb-1:ke+1,nspec), &
+               vzs(nxmax,jb-1:je+1,kb-1:ke+1,nspec), &
+               tpar(nxmax,jb-1:je+1,kb-1:ke+1,nspec), &
+               tperp(nxmax,jb-1:je+1,kb-1:ke+1,nspec), &
+               qp_cell(nxmax,jb-1:je+1,kb-1:ke+1,nspec) ) 
 
-    allocate ( p_xx(nxmax,jb-1:je+1,kb-1:ke+1,nspecm), &
-               p_xy(nxmax,jb-1:je+1,kb-1:ke+1,nspecm), &
-               p_xz(nxmax,jb-1:je+1,kb-1:ke+1,nspecm), &
-               p_yy(nxmax,jb-1:je+1,kb-1:ke+1,nspecm), &
-               p_yz(nxmax,jb-1:je+1,kb-1:ke+1,nspecm), &
-               p_zz(nxmax,jb-1:je+1,kb-1:ke+1,nspecm) )
+    allocate ( p_xx(nxmax,jb-1:je+1,kb-1:ke+1,nspec), &
+               p_xy(nxmax,jb-1:je+1,kb-1:ke+1,nspec), &
+               p_xz(nxmax,jb-1:je+1,kb-1:ke+1,nspec), &
+               p_yy(nxmax,jb-1:je+1,kb-1:ke+1,nspec), &
+               p_yz(nxmax,jb-1:je+1,kb-1:ke+1,nspec), &
+               p_zz(nxmax,jb-1:je+1,kb-1:ke+1,nspec) )
 
     allocate ( ainjxz(nxmax,kb-1:ke+1), ainjzx(nxmax,kb-1:ke+1), &
                deavxz(nxmax,kb-1:ke+1), deavzx(nxmax,kb-1:ke+1), &
@@ -613,8 +623,8 @@ module parameter_mod
                vzcaxy(nxmax,jb-1:je+1),vxcayx(nxmax,jb-1:je+1),vycayx(nxmax,jb-1:je+1), &
                vzcayx(nxmax,jb-1:je+1) )
 
-    allocate ( iphead(nxmax,jb-1:je+1,kb-1:ke+1,nspecm), &
-               iptemp(nxmax,jb-1:je+1,kb-1:ke+1,nspecm) )
+    allocate ( iphead(nxmax,jb-1:je+1,kb-1:ke+1,nspec), &
+               iptemp(nxmax,jb-1:je+1,kb-1:ke+1,nspec) )
 
     allocate ( xc_uniform(nxmax), yc_uniform(nymax), zc_uniform(nzmax), &
                xv_uniform(nxmax), yv_uniform(nymax), zv_uniform(nzmax) ) 
@@ -627,7 +637,7 @@ module parameter_mod
 
     allocate ( ixv_2_v_map(nx+1), iyv_2_v_map(ny+1), izv_2_v_map(nz+1) )
 
-    allocate ( buf(nprobes,nbufsteps), buf2(nprobes*npes,nbufsteps), buftime(nbufsteps) )
+    allocate ( buf(nprobes,nbufsteps), buf2(nprobes*nprocs,nbufsteps), buftime(nbufsteps) )
 
     allocate ( buf_particle(tracking_width,nspec*maxtags,nbufsteps) )
 

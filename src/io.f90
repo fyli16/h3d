@@ -806,7 +806,7 @@ subroutine write_datum(ndatum,datum,f_unit)
   real*8 :: datum(ndatum), datum_tmp(ndatum)
 
   ndatum_4=ndatum
-  do ipe = 0, numprocs-1
+  do ipe = 0, nprocs-1
     if (myid == 0) then
       if (ipe == 0) then
         write(f_unit) datum
@@ -839,7 +839,7 @@ subroutine read_datum(ndatum,datum,f_unit)
   real*8 :: datum(ndatum),datum_tmp(ndatum)
 
   ndatum_4=ndatum
-  do ipe=0,numprocs-1
+  do ipe=0,nprocs-1
     if (myid == 0) then
       if (ipe == 0) then
         read(f_unit) datum
@@ -1063,19 +1063,19 @@ subroutine particle_in_volume_write
   endif
 
   if (myid == 0) then
-    do ipe=1,numprocs-1
+    do ipe=1,nprocs-1
         call MPI_RECV(N_IN_VOLUME,1,MPI_INTEGER,ipe,ipe,MPI_COMM_WORLD,status,ierror)
         if (N_IN_VOLUME /= 0) then
-          call MPI_RECV(XW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
-          call MPI_RECV(YW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
-          call MPI_RECV(ZW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
-          call MPI_RECV(VXW    ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
-          call MPI_RECV(VYW    ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
-          call MPI_RECV(VZW    ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
-          call MPI_RECV(QW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
-          call MPI_RECV(VWPAR  ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
-          call MPI_RECV(VWPERP1,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
-          call MPI_RECV(VWPERP2,N_IN_VOLUME,MPI_REAL4,ipe,ipe+numprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(XW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(YW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(ZW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(VXW    ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(VYW    ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(VZW    ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(QW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(VWPAR  ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(VWPERP1,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+          call MPI_RECV(VWPERP2,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
           write(filenum,rec=recnum) N_IN_VOLUME
           recnum = recnum + 1
           do IP=1,N_IN_VOLUME
@@ -1089,16 +1089,16 @@ subroutine particle_in_volume_write
   else
       call MPI_SEND(N_IN_VOLUME,1,MPI_INTEGER,0,MYID,MPI_COMM_WORLD,ierror)
       if (N_IN_VOLUME /= 0) then
-        call MPI_SEND(XW     ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-        call MPI_SEND(YW     ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-        call MPI_SEND(ZW     ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-        call MPI_SEND(VXW    ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-        call MPI_SEND(VYW    ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-        call MPI_SEND(VZW    ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-        call MPI_SEND(QW     ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-        call MPI_SEND(VWPAR  ,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-        call MPI_SEND(VWPERP1,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
-        call MPI_SEND(VWPERP2,N_IN_VOLUME,MPI_REAL4,0,myid+numprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(XW     ,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(YW     ,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(ZW     ,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(VXW    ,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(VYW    ,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(VZW    ,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(QW     ,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(VWPAR  ,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(VWPERP1,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(VWPERP2,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
       endif
   endif
 

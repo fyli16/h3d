@@ -59,14 +59,14 @@ subroutine init_wavepart
 
   yb = meshY%xn(jb+1)
   ye = meshY%xn(je+2)
-  do ipe = 0, npes-1
+  do ipe = 0, nprocs-1
     ybglobal(ipe)=meshY%xn(jbglobal(ipe)+1)
     yeglobal(ipe)=meshY%xn(jeglobal(ipe)+2)
   enddo
 
   zb = meshZ%xn(kb+1)
   ze = meshZ%xn(ke+2)
-  do ipe = 0, npes-1
+  do ipe = 0, nprocs-1
     zbglobal(ipe)=meshZ%xn(kbglobal(ipe)+1)
     zeglobal(ipe)=meshZ%xn(keglobal(ipe)+2)
   enddo
@@ -81,7 +81,7 @@ subroutine init_wavepart
   ze_logical = MESH_UNMAP(meshZ,ze)
 
   do is = 1, nspec
-    npm = npx(is)*npy(is)*npz(is)*npes
+    npm = npx(is)*npy(is)*npz(is)*nprocs
     dfac(is)=real(ny*nz*nx)/real(npm)
     do ixe = 1, nx2 
       do iye = jb-1, je+1
@@ -182,10 +182,10 @@ subroutine init_wavepart
     if (uniform_loading_in_logical_grid) then
       ipb2 = npx(is)*npy(is)*npz(is)
     else
-      ipb2 = npx(is)*npy(is)*npz(is)*npes*volume_fraction
+      ipb2 = npx(is)*npy(is)*npz(is)*nprocs*volume_fraction
     endif
 
-    npm = npx(is)*npy(is)*npz(is)*npes
+    npm = npx(is)*npy(is)*npz(is)*nprocs
     dfac(is) = real(ny*nz)*(x1(is)-x0(is))/(hx*real(npm))
     vpar(is) = sqrt(btspec(is)/(wspec(is)*wpiwci*wpiwci))
     vper(is) = vpar(is)*sqrt(anisot(is))

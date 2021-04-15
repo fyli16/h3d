@@ -68,11 +68,11 @@ subroutine wrtfile(dat,rnorm,fileName, irec_start,ny1m,nz1m)
   ailo = 1
   aihi = nxmax-2
   djlo = jbglobal(0)
-  djhi = jeglobal(npes-1)
+  djhi = jeglobal(nprocs-1)
   ajlo = jbglobal(myid)
   ajhi = jeglobal(myid)
   dklo = kbglobal(0)
-  dkhi = keglobal(npes-1)
+  dkhi = keglobal(nprocs-1)
   aklo = kbglobal(myid)
   akhi = keglobal(myid)
   call BoundsToDimensions(&
@@ -160,7 +160,7 @@ subroutine wrtfile_non_mpio(dat,rnorm,filenum, irec_start,ny1m,nz1m)
          0   ,1,MPI_COMM_WORLD,req(1),IERR)
     call MPI_WAITALL(1,req,status_array,IERR)
   else
-    do ip = 0, npes-1
+    do ip = 0, nprocs-1
       keg = keglobal(ip)
       kbg = kbglobal(ip)
       jeg = jeglobal(ip)

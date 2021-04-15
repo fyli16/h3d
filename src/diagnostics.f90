@@ -51,7 +51,7 @@ subroutine virtual_probes
         enddo
       enddo
       ! receive data from other processes
-      do m=1, npes-1
+      do m=1, nprocs-1
         call MPI_Recv(buf, bufsize, MPI_DOUBLE, m, 1, MPI_COMM_WORLD, status, ierr)
         do j=1,nbufsteps
           do k=1,nprobes
@@ -61,7 +61,7 @@ subroutine virtual_probes
       enddo
       do j=1,nbufsteps
         write(12,'(I6,1x)',advance='no')buftime(j)
-        do k=1,nprobes*npes
+        do k=1,nprobes*nprocs
           write(12,'(E14.6,1x)',advance='no')buf2(k,j)
         enddo
         write(12,*)
@@ -105,8 +105,8 @@ subroutine track_particles
         buf_particle(l,k,i)=buf_p1(l,n)
       enddo
     enddo
-    ! receive particles from rank 1 to npes-1
-    do m=1, npes-1
+    ! receive particles from rank 1 to nprocs-1
+    do m=1, nprocs-1
       call MPI_Recv(isize, 1, MPI_INTEGER, m, 999, MPI_COMM_WORLD, status, ierr)
       !write(*,*)'receiving',m,isize
       call MPI_Recv(buf_p2, isize*tracking_width, MPI_DOUBLE, m, m, MPI_COMM_WORLD, status, ierr)
@@ -154,7 +154,7 @@ subroutine track_particles2
   implicit none
 
   integer :: n, k, offset
-  
+
   write(13) it, ntot
   write(13) buf_p1(:,1:ntot)
 
