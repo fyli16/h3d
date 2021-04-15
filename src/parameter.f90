@@ -8,7 +8,7 @@ module parameter_mod
              time_begin_array(8,128), time_end_array(8,128), time_elapsed(128), ierr, n_subcycles
 
   logical :: periods(2), reorder
-  integer :: status(mpi_status_size), status_array(mpi_status_size,8)
+  integer :: status(mpi_status_size), status1(mpi_status_size), status2(mpi_status_size), status_array(mpi_status_size,8)
 
   integer*8 :: nxmax, nymax, nzmax, nspecm, npes, nvar, nylmax, nzlmax, npm, npes_over_60
   
