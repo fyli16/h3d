@@ -11,7 +11,7 @@ module parameter_mod
   integer :: status(mpi_status_size), status_array(mpi_status_size,8)
 
   integer*8 :: nxmax, nymax, nzmax, nspecm, npes, nvar, nylmax, nzlmax, npm, npes_over_60, &
-              numprocs, ndim, dims(2), nodey, nodez, , comm2d, myid, req(8), & 
+              numprocs, ndim, dims(2), nodey, nodez, comm2d, myid, req(8), & 
               nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot, &      
               nbrleft, nbrrite, ipe, stridery, striderz, iseed(1), coords(2)
 
