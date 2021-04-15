@@ -14,7 +14,7 @@ npx=10, npy=40, npz=2240,  ! number of particles along each dim over full length
 ! MPI nodes(ranks) configuration along y, z (no decompostion along x)
 ! and whether the ranks are treated periodic in both directions
 node_conf(:) = 2, 16
-periodic(:) = .true. ,.true.,
+periods(:) = .true. ,.true.,
 
 ! boundaries of the uniform region
 ! setting xbb/ybb/zbb to xmax/ymax/zmax would leave only the uniform region to be simulated
