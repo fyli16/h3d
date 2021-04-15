@@ -30,5 +30,5 @@ mkdir -p data/vxs; mkdir -p data/vys; mkdir -p data/vzs
 # setenv MPI_TYPE_MAX 65536
 # setenv MPI_REQUEST_MAX 65536
 
-srun -n 32 ./h3d
+srun -n 32 ./src/h3d
 exit

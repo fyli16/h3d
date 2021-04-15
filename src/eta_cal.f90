@@ -25,10 +25,10 @@ subroutine eta_calc
   data eps /1.e-25/
   
   eta = 0. 
-  if (ieta == 0) then  ! choice 1
+  if (ieta == 0) then
     eta = resis
 
-  else if (ieta == 1) then ! choice 2
+  else if (ieta == 1) then 
     itresis=1000
     do k = kb, ke
       do j = jb, je
@@ -41,7 +41,7 @@ subroutine eta_calc
     enddo
     eta = eta*exp(-float(it)/float(itresis)) ! decays with time
 
-  else if ((ieta == 2).or.(ieta == 5) ) then ! choice 3
+  else if ((ieta == 2).or.(ieta == 5) ) then 
     ! use gradient of |B|, B, and n
     ! good combination is (grad |B|)**4 / (n**4 * B**2)
     ! set powers, here; and adjust cfront factor accordingly
@@ -149,7 +149,7 @@ subroutine eta_calc
 
     enddo
 
-  else if (ieta==6) then ! exponential increase at edge of z
+  else if (ieta==6) then ! experimenting with resistive boundary layers for wave absorption
     do k = kb, ke
       do j = jb, je
         do i = 1, nx2
@@ -166,7 +166,7 @@ subroutine eta_calc
           ! else
           !   eta(i,j,k) = 0.
           ! endif 
-          
+
           if (k.le.eta_zs) then
             eta(i,j,k) = (resis/2)*(1+cos(pi*real(k)/real(eta_zs)))
           else if (k.ge.(nz-eta_zs)) then

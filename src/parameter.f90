@@ -411,23 +411,21 @@ module parameter_mod
       qrite(i) = 0
     enddo 
 
-    !  Use CART_SHIFT to determine processor to immediate left (NBRLEFT) and right (NBRRITE) of processor MYID
-    !  Since code is aperiodic in z, need to manually set the left boundary for processor 0 and right boundary for nprocs-1
-    call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
-    call MPI_CART_SHIFT(COMM2D,1,1,NBRBOT ,NBRTOP ,IERR)
-    ! if (ndim == 2) then
-    !   call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
-    !   call MPI_CART_SHIFT(COMM2D,1,1,NBRBOT ,NBRTOP ,IERR)
-    ! else if (ndim == 1) then
-    !   call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
-    !   NBRTOP = MYID
-    !   NBRBOT = MYID
-    ! else if (ndim == 0) then
-    !   NBRLEFT = MYID
-    !   NBRRITE = MYID
-    !   NBRTOP = MYID
-    !   NBRBOT = MYID
-    ! endif
+    ! Use CART_SHIFT to determine processor to immediate left (NBRLEFT) and right (NBRRITE) of processor MYID
+    ! Since code is aperiodic in z, need to manually set the left boundary for processor 0 and right boundary for nprocs-1
+    if (ndim == 2) then
+      call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
+      call MPI_CART_SHIFT(COMM2D,1,1,NBRBOT ,NBRTOP ,IERR)
+    else if (ndim == 1) then
+      call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
+      NBRTOP = MYID
+      NBRBOT = MYID
+    else if (ndim == 0) then
+      NBRLEFT = MYID
+      NBRRITE = MYID
+      NBRTOP = MYID
+      NBRBOT = MYID
+    endif
 
     call MPI_SENDRECV(NBRTOP    ,1,MPI_INTEGER ,NBRRITE,0,&
                       NBRLEFTTOP,1,MPI_INTEGER ,NBRLEFT,0,&

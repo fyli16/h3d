@@ -280,8 +280,9 @@ subroutine sim_loops
     call date_and_time(values=now)
     clock_time = now(5)*3600.+now(6)*60.+now(7)+now(8)*0.001
     if (myid == 0.and.mod(it,n_print) == 0) then
-      print*, 'it=', it, ', time=', time, ', delta_t=', real(clock_time-clock_time_old), &
-                  ', tot_t=', real(clock_time-clock_time_init)
+      write(6,"(A5,I6,A2,I6,A9,F6.2,A10,F6.2,A8,F6.2)") 'it = ', it, '/', itfinish, ', time = ', time, &
+                    ', delta_t = ', real(clock_time-clock_time_old), &
+                    ', tot_t = ', real(clock_time-clock_time_init)
       clock_time_old = clock_time
     endif
 
@@ -366,7 +367,7 @@ subroutine shutdown
   if (myid==0) then
     print*, " "
     print*, " "
-    print*, " *** RUN COMPLETED *** "
+    print*, " *** Run completed *** "
     print*, " "
     print*, " "
     print*, " subroutine trans             (s)          =",time_elapsed(2)

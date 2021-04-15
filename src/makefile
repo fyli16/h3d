@@ -1,6 +1,3 @@
-# Specify where the code will be run
-
-
 # Choose compilers and options 
 F90         = mpif90
 CC          = mpicc
@@ -44,6 +41,4 @@ $(EFILE): $(OBJS)
 	$(F90) $(OPTFLAGS) -o $@ -c $< 
 
 clean:
-	-rm  *.mod *.of90 *.ogcc h3d
-cleanall: clean
-	-rm  restart_data.*
+	-rm  *.mod *.of90 *.ogcc
