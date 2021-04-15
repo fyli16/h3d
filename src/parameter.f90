@@ -5,7 +5,8 @@ module parameter_mod
   save
 
   integer :: it, itstart, itfinish, now(8), my_short_int, i_source, i_tag, i_length, i_i, &
-             time_begin_array(8,128), time_end_array(8,128), time_elapsed(128), ierr, n_subcycles
+             time_begin_array(8,128), time_end_array(8,128), ierr, n_subcycles
+  double precision :: time_elapsed(128)
 
   logical :: periods(2), reorder
   integer :: status(mpi_status_size), status1(mpi_status_size), status2(mpi_status_size), status_array(mpi_status_size,8)
