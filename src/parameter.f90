@@ -127,7 +127,7 @@ module parameter_mod
     namelist /datum/ &
     tmax, dtwci, restart, &   ! global info
     MPI_IO_format, &
-    nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, node_conf, &  ! simulation domain
+    nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, node_conf, periods, &  ! simulation domain
     xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
     uniform_loading_in_logical_grid, &
     n_subcycles, nskipx, nskipy, nskipz, iterb, testorbt, norbskip, &  ! field solver
@@ -170,6 +170,7 @@ module parameter_mod
     call MPI_BCAST(npy                    ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(npz                    ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(node_conf              ,2     ,MPI_INTEGER         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(periods                ,2     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(xaa                    ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(xbb                    ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(nax                    ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
@@ -306,7 +307,7 @@ module parameter_mod
       enddo
     endif
 
-    PERIODS = .TRUE. ! logical array of size ndims specifying whether the grid is periodic or not
+    ! PERIODS = .TRUE. ! logical array of size ndims specifying whether the grid is periodic or not
     REORDER = .TRUE. ! ranking may be reordered (true) or not (false) (logical)
     ! Makes a new communicator to which topology information has been attached
     call MPI_CART_CREATE(MPI_COMM_WORLD, NDIM, DIMS, PERIODS, REORDER, COMM2D, IERR) 
