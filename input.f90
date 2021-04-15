@@ -6,17 +6,17 @@ dtwci = 0.01,  ! value of dt*wci
 restart = .false.,  ! whether to restart from 'restart' directory
 MPI_IO_format = .true. ! use MPI IO (one file only) instead of traditional binary output
 
+! MPI nodes(ranks) configuration along y, z (no decompostion along x)
+! and whether the ranks are treated periodic in both directions
+node_conf(:) = 2, 16
+periods(:) = .true., .true.,
+
 ! ------------------ simulation domain ----------------!
 nx = 1, ny = 4, nz = 224,  ! number of cells along each dim
 xmax = 1., ymax = 4., zmax = 224.,  ! max lengths of each dim
 npx(1:5) = 10, ! number of particles along x over full length (not one cell) for maximum 5 ion species
 npy(1:5) = 40, 
 npz(1:5) = 2240,  
-
-! MPI nodes(ranks) configuration along y, z (no decompostion along x)
-! and whether the ranks are treated periodic in both directions
-node_conf(:) = 2, 16
-periods(:) = .true. ,.true.,
 
 ! boundaries of the uniform region
 ! setting xbb/ybb/zbb to xmax/ymax/zmax would leave only the uniform region to be simulated
@@ -40,7 +40,7 @@ norbskip = 1,
 nspec = 1,  ! number of ion species, maximum 5
 qspec(1:5) = 1., ! charge of each ion species (use array if nspec>1 and the same for rest)
 wspec(1:5) = 1., ! mass of each ion species
-frac(1:5) = 1.0 ! means normalized to n0 (associated with wpi)
+frac(1:5) = 1., ! density normalized to n0 (associated with wpi)
 
 denmin = 0.05,  ! when density is smaller than this value, force it to this value to avoid divergence in calculating E field
 wpiwci = 400., ! ratio of ion plasma frequency to ion cyclotron frequency
