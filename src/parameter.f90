@@ -14,7 +14,7 @@ module parameter_mod
 
   integer*8 :: nxmax, nymax, nzmax, nvar, nylmax, nzlmax, npm, nprocs_over_60
   
-  integer :: nprocs, ndim, dims(2), nodey, nodez, comm2d, myid, req(8), & 
+  integer :: nprocs, ndim, dims(2), node_conf(2), comm2d, myid, req(8), & 
             nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot, &      
             nbrleft, nbrrite, ipe, stridery, striderz, iseed(1), coords(2)
 
@@ -127,8 +127,7 @@ module parameter_mod
     namelist /datum/ &
     tmax, dtwci, restart, &   ! global info
     MPI_IO_format, &
-    nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, &  ! simulation domain
-    nodey, nodez, &
+    nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, node_conf, &  ! simulation domain
     xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
     uniform_loading_in_logical_grid, &
     n_subcycles, nskipx, nskipy, nskipz, iterb, testorbt, norbskip, &  ! field solver
@@ -170,8 +169,7 @@ module parameter_mod
     call MPI_BCAST(npx                    ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(npy                    ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(npz                    ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(nodey                  ,1     ,MPI_INTEGER         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(nodez                  ,1     ,MPI_INTEGER         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(node_conf              ,2     ,MPI_INTEGER         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(xaa                    ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(xbb                    ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(nax                    ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
@@ -264,7 +262,7 @@ module parameter_mod
       write(6,*) "  npx = ", npx
       write(6,*) "  npy = ", npy
       write(6,*) "  npz = ", npz
-      write(6,*) "  nodey, nodez = ", nodey, nodez
+      write(6,*) "  node_conf = ", node_conf
       write(6,*) "  xaa, xbb = ", xaa, xbb
       write(6,*) "  nax, nbx = ", nax, nbx 
       write(6,*) "  yaa, ybb = ", yaa, ybb
@@ -287,9 +285,9 @@ module parameter_mod
     if (nz==1 .and. ny==1) then ! only nx>1 and 1 rank will be used  
       ndim=1; dims(1)=1; dims(2)=1
     else if (nz == 1) then ! ny>1 and decomposition only occurs in y
-      ndim=1; dims(1)=nodey; dims(2)=1
+      ndim=1; dims(1)=node_conf(1); dims(2)=1
     else ! ny>1, nz>1, and decomposition in both y and z
-      ndim=2; dims(1)=nodey; dims(2)=nodez
+      ndim=2; dims=node_conf
     endif
     ! this is not needed because both components of dims have been explicitly specified
     ! call MPI_DIMS_CREATE(nprocs,NDIM,DIMS,IERR)
