@@ -10,10 +10,11 @@ module parameter_mod
   logical :: periods(2), reorder
   integer :: status(mpi_status_size), status_array(mpi_status_size,8)
 
-  integer*8 :: nxmax, nymax, nzmax, nspecm, npes, nvar, nylmax, nzlmax, npm, npes_over_60, &
-              numprocs, ndim, dims(2), nodey, nodez, comm2d, myid, req(8), & 
-              nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot, &      
-              nbrleft, nbrrite, ipe, stridery, striderz, iseed(1), coords(2)
+  integer*8 :: nxmax, nymax, nzmax, nspecm, npes, nvar, nylmax, nzlmax, npm, npes_over_60
+  
+  integer :: numprocs, ndim, dims(2), nodey, nodez, comm2d, myid, req(8), & 
+            nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot, &      
+            nbrleft, nbrrite, ipe, stridery, striderz, iseed(1), coords(2)
 
   real*8 :: zb, ze, yb, ye, teti, volume_fraction, cell_volume_ratio, &
             zb_logical, ze_logical, yb_logical, ye_logical, &
@@ -63,6 +64,7 @@ module parameter_mod
   integer*8, dimension(5) :: ishape
 
   real*8, dimension(5) :: btspec, qspec, wspec, frac, anisot
+
   real*8 :: denmin, resis, wpiwci, bete, fxsho,ave1,ave2,phib,demin2, &
             xmax, ymax, zmax, dt, gamma, dtwci, wall_clock_elapsed, tmax,  &
             xaa, xbb, yaa, ybb, zaa, zbb, t_stopped=0.
