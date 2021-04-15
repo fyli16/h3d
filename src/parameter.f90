@@ -4,49 +4,50 @@ module parameter_mod
   implicit none
   save
 
-  integer :: it, my_short_int, i_source, i_destination, i_tag, i_length, i_i
+  integer :: it, itstart, itfinish, now(8), my_short_int, i_source, i_tag, i_length, i_i, &
+             time_begin_array(8,128), time_end_array(8,128), time_elapsed(128), ierr, n_subcycles
 
-  integer, dimension(8,128) :: time_begin_array, time_end_array
-  real*8, dimension(128) :: time_elapsed
-  integer, dimension(8) :: now
-  integer*8 :: itstart, itfinish
+  logical :: periods(2), reorder
+  integer :: status(mpi_status_size), status_array(mpi_status_size,8)
 
-  integer*8 :: nxmax, nymax, nzmax, nspecm, npes, nvar, nylmax, nzlmax, npm, npes_over_60
-  integer :: numprocs, ndim, dims(2), nodey, nodez, ierr, comm2d, myid, req(8), & 
-             nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot, &      
-             nbrleft, nbrrite, ipe, stridery, striderz, iseed(1), coords(2)
-
-  integer :: status(mpi_status_size), status1(mpi_status_size), status2(mpi_status_size), &
-              status_array(mpi_status_size,8)
+  integer*8 :: nxmax, nymax, nzmax, nspecm, npes, nvar, nylmax, nzlmax, npm, npes_over_60, &
+              numprocs, ndim, dims(2), nodey, nodez, , comm2d, myid, req(8), & 
+              nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot, &      
+              nbrleft, nbrrite, ipe, stridery, striderz, iseed(1), coords(2)
 
   real*8 :: zb, ze, yb, ye, teti, volume_fraction, cell_volume_ratio, &
             zb_logical, ze_logical, yb_logical, ye_logical, &
             xb_logical, xe_logical, xb, xe, smooth_coef
 
   real*8, dimension(:), allocatable :: zbglobal, zeglobal, ybglobal, yeglobal, &
-      xc_uniform, yc_uniform, zc_uniform, xv_uniform,yv_uniform,zv_uniform
+                                      xc_uniform, yc_uniform, zc_uniform, &
+                                      xv_uniform, yv_uniform, zv_uniform
 
   integer*8, dimension(:), allocatable :: kbglobal, keglobal, jbglobal, jeglobal, &
       nsendp, nrecvp, ixc_2_c_map, iyc_2_c_map, izc_2_c_map, ixc_2_v_map, iyc_2_v_map, izc_2_v_map, &
       ixv_2_c_map, iyv_2_c_map, izv_2_c_map, ixv_2_v_map, iyv_2_v_map, izv_2_v_map  
 
-  real*8, dimension(:,:,:), allocatable :: ex, ey, ez, bx, by, bz, fox, foy, foz, &
+  real*8, dimension(:,:,:), allocatable :: uniform_mesh, ex, ey, ez, bx, by, bz, fox, foy, foz, &
       eta, curlex, curley, curlez, bx_av, by_av, bz_av, bxs, bys, bzs, den, deno, denh, &
       dpedx, dpedy, dpedz, vix, viy, viz, vixo, viyo, vizo, pe, curlbx, curlby, curlbz, eta_times_b_dot_j
 
   real*8, dimension(:,:,:,:), allocatable :: dns, dnsh, vxs, vys, vzs, tpar, tperp, qp_cell
-  real*8, dimension(:,:,:,:), allocatable :: p_xx,p_xy,p_xz,p_yy,p_yz,p_zz
+
+  real*8, dimension(:,:,:,:), allocatable :: p_xx, p_xy, p_xz, p_yy, p_yz, p_zz
+
   real*8, dimension(:,:), allocatable :: ainjxz,ainjzx,deavxz,deavzx,vxavxz,vyavxz,vzavxz,vxavzx,      &
-                                        vyavzx,vzavzx,vxcaxz,vycaxz,vzcaxz,vxcazx,vycazx,vzcazx,      &
-                                        ainjyz,ainjzy,deavyz,deavzy,vxavyz,vyavyz,vzavyz,vxavzy,      &
-                                        vyavzy,vzavzy,vxcayz,vycayz,vzcayz,vxcazy,vycazy,vzcazy,      &
-                                        ainjxy,ainjyx,deavxy,deavyx,vxavxy,vyavxy,vzavxy,vxavyx,      &
-                                        vyavyx,vzavyx,vxcaxy,vycaxy,vzcaxy,vxcayx,vycayx,vzcayx
+                                         vyavzx,vzavzx,vxcaxz,vycaxz,vzcaxz,vxcazx,vycazx,vzcazx,      &
+                                         ainjyz,ainjzy,deavyz,deavzy,vxavyz,vyavyz,vzavyz,vxavzy,      &
+                                         vyavzy,vzavzy,vxcayz,vycayz,vzcayz,vxcazy,vycazy,vzcazy,      &
+                                         ainjxy,ainjyx,deavxy,deavyx,vxavxy,vyavxy,vzavxy,vxavyx,      &
+                                         vyavyx,vzavyx,vxcaxy,vycaxy,vzcaxy,vxcayx,vycayx,vzcayx
 
   real*8, dimension(:), allocatable :: x, y, z, vx, vy, vz, qp
-  integer, dimension(:), allocatable :: ptag ! tag used to trace particles
-  integer*8, dimension(:), allocatable :: link, porder
-  integer*8 :: nplmax, ipstore, np, n_subcycles
+
+  integer*8, dimension(:), allocatable :: ptag, link, porder
+
+  integer*8 :: nplmax, ipstore, np 
+
   integer*8, dimension(:,:,:,:), allocatable:: iphead, iptemp
   integer*8, dimension(:), allocatable ::  ninj, ninj_global, nescape,nescape_global, npart, npart_global
   integer*8, dimension(:),allocatable :: nescape_yz,nescape_zy,nescape_xy                 &
@@ -55,7 +56,7 @@ module parameter_mod
                                         ,nescape_xy_global,nescape_yx_global              &
                                         ,nescape_xz_global,nescape_zx_global
 
-  real*8, dimension(:), allocatable :: qleft,qrite
+  real*8, dimension(:), allocatable :: qleft, qrite
   real*8, dimension(:), allocatable:: x0,x1,tx0,vpar,vper,bbal
   real*8, dimension(:,:), allocatable :: vbal
   real*8, dimension(5) :: rcorr
@@ -90,27 +91,19 @@ module parameter_mod
   integer*8 :: kb, ke, jb, je, nsendtotp, nrecvtotp, nsendtot, nrecvtot
   integer*8, dimension(:), allocatable :: idfft, kvec, jvec
   integer*8 :: ihstb, ihste, isendid(4), irecvid(4,4)
-  real*4 :: single_prec
-  real*8 :: double_prec, xtmp1m, xtmp2m, xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r
+  real*8 :: xtmp1m, xtmp2m, xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r
   real*8, dimension(:,:), allocatable :: buf, buf2, buf_p1
   real*8, dimension(:,:,:), allocatable :: buf_particle
   integer, dimension(:), allocatable :: buftime
   integer, parameter :: nprobes=6, nbufsteps=100, tracking_width=14
   integer :: maxtags=100, maxtags_pe, ntot 
   logical :: tracking_binary, tracking_mpi
-  integer :: tracking_fh
-  integer*8 :: recl_for_real, recl_for_double_precision
-  logical :: periods(2), reorder
   integer*8 :: restart_index=1
   character(len=2) :: restart_index_suffix(2)
   character(len=160) :: data_directory, restart_directory, cycle_ascii, cycle_ascii_new, &
-              myid_char, cleanup_status
-  
-  real*8, dimension(:,:,:), allocatable :: uniform_mesh     
-  ! VR : allocating a global mesh can not work on large runs with small amount of memory per rank 
-  ! real*8, dimension(:,:,:), allocatable:: nonuniform_mesh_global
+                        myid_char, cleanup_status
 
-  real*8 :: dB_B0, num_cycles ! for init_wave
+  real*8 :: dB_B0, num_cycles ! for initializing waves
 
   real*8, parameter :: zero=0.0d0, one=1.0d0, two=2.0d0, one_half=0.5d0, pi=acos(-1.)
 
@@ -284,8 +277,8 @@ module parameter_mod
     ! specify decomposition (along y, z only; no decomposition along x) 
     ndim=2; dims(1)=nodey; dims(2)=nodez
 
-    ! npy means number of particles in each rank along y
-    ! npz means number of particles in each rank along z
+    ! npy now means number of particles in each rank along y
+    ! npz now means number of particles in each rank along z
     npy=npy/dims(1); npz=npz/dims(2)
 
     if (myid == 0) then
@@ -329,12 +322,6 @@ module parameter_mod
   ! Set global parameters
   subroutine allocate_arrays
     integer :: i, j, k
-
-    ! what's doing here?
-    double_prec = 0.
-    single_prec = 0.
-    inquire (IOLENGTH=recl_for_double_precision) double_prec
-    inquire (IOLENGTH=recl_for_real) single_prec
 
     if (myid==0) then
       write(6,*) " "

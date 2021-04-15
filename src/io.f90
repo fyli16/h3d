@@ -656,7 +656,7 @@ subroutine open_hist_files
   use parameter_mod
   implicit none 
 
-  character (len=240) :: filename, filename2
+  character (len=240) :: filename1, filename2
 
   if (myid == 0) then
     if (restart) then
@@ -685,24 +685,16 @@ subroutine open_hist_files
   endif
 
   if (tracking_mpi) then
-    write(filename,"(a,i4.4,a)") 'tracking/tracking_', myid, '.dat'
-    write(filename2,"(a,i4.4,a)") 'probes/probes_', myid, '.dat'
+    write(filename1,"(a,i4.4,a)") 'probes/probes_', myid, '.dat'
+    write(filename2,"(a,i4.4,a)") 'tracking/tracking_', myid, '.dat'
     if (restart) then
-      open(unit=12,file=trim(data_directory)//filename2,status='old',position='append')
-      open(unit=13,file=trim(data_directory)//filename,form='unformatted',status='old',access='append')
+      open(unit=12,file=trim(data_directory)//filename1,status='old',position='append')
+      open(unit=13,file=trim(data_directory)//filename2,form='unformatted',status='old',access='append')
     else
-      open(unit=12,file=trim(data_directory)//filename2,status='unknown')
-      open(unit=13,file=trim(data_directory)//filename,form='unformatted',status='unknown')
+      open(unit=12,file=trim(data_directory)//filename1,status='unknown')
+      open(unit=13,file=trim(data_directory)//filename2,form='unformatted',status='unknown')
     endif
 
-    ! call MPI_File_open(MPI_COMM_WORLD, trim(data_directory)//filename, MPI_MODE_WRONLY+MPI_MODE_CREATE, MPI_INFO_NULL, tracking_fh, ierr)
-    ! if (ierr.ne.MPI_SUCCESS) then
-    !   call MPI_Error_string(iErr,eStr,eStrLen,iErr2)
-    !   write(0,*)'Error: Could not open file: ',filename
-    !   write(0,*) eStr
-    !   write(0,*)'Aborted.'
-    !   return
-    ! endif
   endif
 
   return

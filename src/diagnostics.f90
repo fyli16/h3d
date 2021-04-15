@@ -154,13 +154,7 @@ subroutine track_particles2
   implicit none
 
   integer :: n, k, offset
-  !offset=(it-1)*tracking_width*maxtags_pe*npes*nspec
-  !write(*,*)myid, it, ntot,offset
-  !do n=1, ntot
-  !  k=INT(buf_p1(8,n)) ! this is particle tag
-  !  offset=offset+(k-1)*tracking_width
-  !  call MPI_File_write_at(tracking_fh, offset, buf_p1(1,n), tracking_width, MPI_DOUBLE, status, ierr)
-  !enddo
+  
   write(13) it, ntot
   write(13) buf_p1(:,1:ntot)
 
