@@ -257,6 +257,8 @@ subroutine sim_loops
 
   integer :: i
 
+  if (myid==0) print*, "Executing main simulation loops:"
+
   ! time stamp just before entering the simulation loop
   call date_and_time(values=now)
   clock_time_init = now(5)*3600.+now(6)*60.+now(7)+now(8)*0.001
@@ -273,7 +275,7 @@ subroutine sim_loops
     call date_and_time(values=now)
     clock_time = now(5)*3600.+now(6)*60.+now(7)+now(8)*0.001
     if (myid == 0.and.mod(it,n_print) == 0) then
-      write(6,"(A5,I6,A3,I8,A11,F8.3,A14,F8.3,A12,F8.3)") 'it = ', it, '/', itfinish, ',   time = ', time, &
+      write(6,"(A5,I7,A1,I7,A11,F8.3,A14,F8.3,A12,F8.3)") 'it = ', it, '/', itfinish, ',   time = ', time, &
                     ',   delta_t = ', real(clock_time-clock_time_old), &
                     ',   tot_t = ', real(clock_time-clock_time_init)
       clock_time_old = clock_time

@@ -370,7 +370,8 @@ subroutine init_wavepart
   ! calculate resistivity
   if(myid==0) then
     print*, " "
-    print*, '  calculating resistivity'
+    print*, "  calculating resistivity"
+    print*, " "
   endif
   if (ndim /= 1) then
       call eta_calc  ! Dietmar's resistivity
