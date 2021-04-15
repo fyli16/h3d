@@ -1,15 +1,17 @@
 &datum
 
 ! ------------------ global simulation info -----------!
-tmax=100.0, ! max sim. time, in units of 1/wci
-dtwci=0.01,  ! value of dt*wci
-restart=.false.,  ! whether to restart from 'restart' directory
-MPI_IO_format =.true. ! use MPI IO (one file only) instead of traditional binary output
+tmax = 100.0, ! max sim. time, in units of 1/wci
+dtwci = 0.01,  ! value of dt*wci
+restart = .false.,  ! whether to restart from 'restart' directory
+MPI_IO_format = .true. ! use MPI IO (one file only) instead of traditional binary output
 
 ! ------------------ simulation domain ----------------!
-nx=1, ny=4, nz=224,  ! number of cells along each dim
-xmax=1., ymax=4., zmax=224.,  ! max lengths of each dim
-npx=10, npy=40, npz=2240,  ! number of particles along each dim over full length (not cell)
+nx = 1, ny = 4, nz = 224,  ! number of cells along each dim
+xmax = 1., ymax = 4., zmax = 224.,  ! max lengths of each dim
+npx(1:5) = 10, ! number of particles along x over full length (not one cell) for maximum 5 ion species
+npy(1:5) = 40, 
+npz(1:5) = 2240,  
 
 ! MPI nodes(ranks) configuration along y, z (no decompostion along x)
 ! and whether the ranks are treated periodic in both directions
