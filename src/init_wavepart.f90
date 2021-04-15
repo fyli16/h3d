@@ -179,7 +179,7 @@ subroutine init_wavepart
     ipb1 = 1
 
     ! Nonuniform mesh
-    if (uniform_loading_in_logical_grid) then
+    if (uniform_load_logical) then
       ipb2 = npx(is)*npy(is)*npz(is)
     else
       ipb2 = npx(is)*npy(is)*npz(is)*nprocs*volume_fraction
@@ -204,7 +204,7 @@ subroutine init_wavepart
     print_percentage = zero
     do ip = ipb1, ipb2
       call random_number(harvest=ranval)
-      if (uniform_loading_in_logical_grid) then
+      if (uniform_load_logical) then
         x_p_logical  = xb_logical+(XE_LOGICAL-xb_logical)*ranval(1)
         y_p_logical  = yb_logical+(YE_LOGICAL-yb_logical)*ranval(2)
         z_p_logical  = zb_logical+(ZE_LOGICAL-zb_logical)*ranval(3)

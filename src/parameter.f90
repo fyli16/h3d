@@ -81,7 +81,7 @@ module parameter_mod
   integer*8 :: ieta, netax, netay, eta_par, eta_zs
   real*8 :: etamin, etamax
 
-  logical :: testorbt, restart, uniform_loading_in_logical_grid, MPI_IO_format, smoothing  
+  logical :: testorbt, restart, uniform_load_logical, MPI_IO_format, smoothing  
 
   real*8 ::  hx, hy, hz, hxi, hyi, hzi, efld, bfld, efluidt, ethermt, eptclt, time, te0
   integer*8 :: nsteps0, itfin, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(25), &
@@ -129,7 +129,7 @@ module parameter_mod
     MPI_IO_format, &
     nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, node_conf, periods, &  ! simulation domain
     xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
-    uniform_loading_in_logical_grid, &
+    uniform_load_logical, &
     n_subcycles, nskipx, nskipy, nskipz, iterb, testorbt, norbskip, &  ! field solver
     nspec, qspec, wspec, frac, denmin, wpiwci, btspec, bete, &  ! plasma setup
     ieta, resis, netax, netay, etamin, etamax, eta_par, eta_zs, &
@@ -183,7 +183,7 @@ module parameter_mod
     call MPI_BCAST(zbb                    ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(naz                    ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(nbz                    ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(uniform_loading_in_logical_grid,1     ,MPI_LOGICAL,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(uniform_load_logical,1     ,MPI_LOGICAL,0,MPI_COMM_WORLD,IERR)
     ! field solver
     call MPI_BCAST(n_subcycles            ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(nskipx                 ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
