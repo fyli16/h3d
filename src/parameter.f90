@@ -323,7 +323,7 @@ module parameter_mod
     ! write(6,*) 'myid=', myid, 'jb, je =', jb, je, 'kb, ke = ',kb, ke, 'coords =', coords
 
     ! max number of cells. why adding 2?
-    nxmax  = nx + 2; nymax  = ny + 2; nzmax  = nz + 2
+    nxmax = nx + 2; nymax = ny + 2; nzmax = nz + 2
 
     ! local max number of cells
     nylmax = je - jb + 1 ; nzlmax = ke - kb + 1  

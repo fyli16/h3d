@@ -6,18 +6,20 @@
 subroutine user_diagnostics
   use parameter_mod, only: time_begin_array, time_end_array, time_elapsed, tracking_mpi
   
+  ! write probe data
   call date_and_time(values=time_begin_array(:,31))
   if (tracking_mpi) then
-    call virtual_probes2
+    call virtual_probes_mpi
   else
     call virtual_probes
   endif
   call date_and_time(values=time_end_array(:,31))
   call accumulate_time(time_begin_array(1,31),time_end_array(1,31),time_elapsed(31))
 
+  ! write particle tracking data
   call date_and_time(values=time_begin_array(:,32))
   if (tracking_mpi) then
-    call track_particles2
+    call track_particles_mpi
   else
     call track_particles
   endif
@@ -75,7 +77,9 @@ end subroutine virtual_probes
 
 
 !---------------------------------------------------------------------
-subroutine virtual_probes2
+! write field probe data by MPI rank
+!---------------------------------------------------------------------
+subroutine virtual_probes_mpi
   use parameter_mod
   implicit none
 
@@ -87,7 +91,7 @@ subroutine virtual_probes2
         ex(2,jb,kb)*factor(1), ey(2,jb,kb)*factor(2), ez(2,jb,kb)*factor(3), &
         bx(2,jb,kb)*factor(4), by(2,jb,kb)*factor(5), bz(2,jb,kb)*factor(6)
 
-end subroutine
+end subroutine virtual_probes_mpi
 
 
 !---------------------------------------------------------------------
@@ -149,7 +153,9 @@ end subroutine track_particles
 
 
 !---------------------------------------------------------------------
-subroutine track_particles2
+! write tracking particles by MPI rank
+!---------------------------------------------------------------------
+subroutine track_particles_mpi
   use parameter_mod
   implicit none
 
@@ -158,12 +164,13 @@ subroutine track_particles2
   write(13) it, ntot
   write(13) buf_p1(:,1:ntot)
 
-end subroutine track_particles2
+end subroutine track_particles_mpi
 
 
 !---------------------------------------------------------------------
 ! wrapper for user disganostic restart framework
 ! passes the unit to write to
+!---------------------------------------------------------------------
 subroutine user_data_write_restart(wunit)
   implicit none
   integer, intent (in) :: wunit
@@ -173,6 +180,7 @@ end subroutine user_data_write_restart
 !---------------------------------------------------------------------
 ! wrapper for user disganostic restart framework
 ! passes the unit to read from
+!---------------------------------------------------------------------
 subroutine user_diagnostics_restart(wunit)
   implicit none
   integer, intent (in) :: wunit
