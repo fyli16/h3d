@@ -295,14 +295,14 @@ subroutine sim_loops
     call accumulate_time(time_begin_array(1,2),time_end_array(1,2),time_elapsed(2))
 
     ! write history data: energy.dat, time.dat
-    if (myid==0) then
+    if (myid==0 .and. mod(it,n_write_energy)==0) then
       write(11,*) it, efld, bfld, efluid, ethermal, eptcl ! energy.dat
-      write(14,*) it, time_elapsed(1:40)  ! time.dat
     endif
+    ! write(14,*) it, time_elapsed(1:40)  ! time.dat   
 
     ! sort particles
     call date_and_time(values=time_begin_array(:,4))
-    if (mod(it,10_8) == 0) call sortit    !  sort the particles
+    if (mod(it,10) == 0) call sortit    !  sort the particles at every 10 steps
     call date_and_time(values=time_end_array(:,4))
     call accumulate_time(time_begin_array(1,4),time_end_array(1,4),time_elapsed(4))
 
@@ -355,7 +355,7 @@ subroutine shutdown
     close(unit=11) ! energy.dat
     close(unit=12) ! probe.dat
     close(unit=13) ! tracking.dat
-    close(unit=14) ! time.dat
+    ! close(unit=14) ! time.dat
   endif
 
   if (tracking_mpi) close(unit=13)

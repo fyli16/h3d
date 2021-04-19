@@ -74,6 +74,8 @@ num_cycles = 5,
 n_print = 100,  ! frequency at which to print simulation information
 n_write_data = 1000, ! frequency at which to write data into files
 
+n_write_energy = 100,
+
 tracking_binary = .true. ! write tracking data in binary (unformatted) or formatted form
 tracking_mpi = .true. ! write tracking files by mpi rank
 

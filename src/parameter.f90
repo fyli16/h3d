@@ -135,7 +135,7 @@ module parameter_mod
     ieta, resis, netax, netay, etamin, etamax, eta_par, eta_zs, &
     anisot, gamma, ave1, ave2, phib, smoothing, smooth_coef, &
     dB_B0, num_cycles, &  ! init waves
-    n_print, n_write_data, n_write_restart, n_write_particle, &  ! diagnostics
+    n_print, n_write_data, n_write_energy, n_write_restart, n_write_particle, &  ! diagnostics
     tracking_binary, tracking_mpi, xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
     fxsho, nxcel, rcorr, ishape, teti  ! others
 
@@ -222,6 +222,7 @@ module parameter_mod
     ! diagnostic control
     call MPI_BCAST(n_print                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_write_data           ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_write_energy         ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_write_restart        ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_write_particle       ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(tracking_binary        ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)

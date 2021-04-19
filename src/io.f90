@@ -661,7 +661,7 @@ subroutine open_hist_files
   if (myid == 0) then
     if (restart) then
       open(unit=11,file=trim(data_directory)//'energy.dat' ,status='old',position='append')
-      open(unit=14,file=trim(data_directory)//'time.dat' ,status='old',position='append')
+      ! open(unit=14,file=trim(data_directory)//'time.dat' ,status='old',position='append')
       if (.not. tracking_mpi)then
         open(unit=12,file=trim(data_directory)//'probes.dat' ,status='old',position='append')
         if (tracking_binary) then
@@ -672,7 +672,7 @@ subroutine open_hist_files
       endif
     else
       open(unit=11,file=trim(data_directory)//'energy.dat' ,status='unknown')
-      open(unit=14,file=trim(data_directory)//'time.dat' ,status='unknown')
+      ! open(unit=14,file=trim(data_directory)//'time.dat' ,status='unknown')
       if (.not. tracking_mpi)then
         open(unit=12,file=trim(data_directory)//'probes.dat' ,status='unknown')
         if (tracking_binary) then

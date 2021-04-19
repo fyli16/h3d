@@ -1495,9 +1495,9 @@ subroutine trans
      deno=den; vixo=vix; viyo=viy; vizo=viz
   endif
 
-  ! what does 'energy' do?
+  ! calculate field, fluid, and particle energy
   call date_and_time(values=time_begin_array(:,8))
-  if (mod(it,10)==0) call energy
+  if (mod(it,n_write_energy)==0) call energy
   call date_and_time(values=time_end_array(:,8))
   call accumulate_time(time_begin_array(1,8),time_end_array(1,8),time_elapsed(8))
 
