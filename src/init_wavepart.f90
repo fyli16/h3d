@@ -162,20 +162,20 @@ subroutine init_wavepart
   endif
 
   do is = 1, nspec
-    ninj(is)=0
-    ninj_global(is)=0
-    npart(is)=0
-    tx0(is)=btspec(is)/(two*wpiwci**2)/wspec(is)
-    x0(is)=zero
-    x1(is)=xmax
+    ninj(is) = 0
+    ninj_global(is) = 0
+    npart(is) = 0
+    tx0(is) = btspec(is)/(two*wpiwci**2)/wspec(is)
+    x0(is) = zero
+    x1(is) = xmax
     call MPI_ALLREDUCE(npart(is),npart_global(is),1,MPI_INTEGER8,MPI_SUM,MPI_COMM_WORLD,IERR)
   enddo
-  te0=bete/(two*wpiwci**2)
-  vbal=one
+  te0 = bete/(two*wpiwci**2)
+  vbal = one
 
   do is = 1, nspec
     tag0 = maxtags_pe*nspec*myid + (is-1)*maxtags_pe
-    tag=1 
+    tag = 1 
     ipb1 = 1
 
     ! Nonuniform mesh

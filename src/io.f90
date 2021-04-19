@@ -452,7 +452,7 @@ subroutine restart_read_write(rw)
     nskipz, testorbt, restart, etamin, etamax, ieta, eta_par
 
     write(f_unit) hx,hy,hz,hxi,hyi,hzi                           &
-    ,pi,efld,bfld,efluidt,ethermt,eptclt,time,te0                &
+    ,pi,efld,bfld,efluid,ethermal,eptcl,time,te0                &
     ,itfin,iwt                                   &
     ,nx1,nx2,ny1,ny2,nz1,nz2,it                                  &
     ! ,ipstore,nptot,npleaving,npentering                &
@@ -607,7 +607,7 @@ subroutine restart_read_write(rw)
     nskipz, testorbt, restart,etamin,etamax,ieta,eta_par
 
     read(f_unit) hx,hy,hz,hxi,hyi,hzi                            &
-    ,efld,bfld,efluidt,ethermt,eptclt,time,te0                                        &
+    ,efld,bfld,efluid,ethermal,eptcl,time,te0                                        &
     ,itfin,iwt                     &
     ,nx1,nx2,ny1,ny2,nz1,nz2,it                                   &
     ! ,ipstore,nptot,npleaving,npentering                 &

@@ -296,7 +296,7 @@ subroutine sim_loops
 
     ! write history data: energy.dat, time.dat
     if (myid==0) then
-      write(11,*) it, efld, bfld, efluidt, ethermt, eptclt ! energy.dat
+      write(11,*) it, efld, bfld, efluid, ethermal, eptcl ! energy.dat
       write(14,*) it, time_elapsed(1:40)  ! time.dat
     endif
 

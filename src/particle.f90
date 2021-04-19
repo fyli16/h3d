@@ -20,7 +20,7 @@ subroutine parmov   ! particle move?
     real*8 :: p2xs,p2ys,p2zs,q_p,th
     real*8 :: wmult
 
-    integer*8 i,ii,iix,iixe,iiy,iiye,iiz,iize,irepeat,irepeatp,is,itmp
+    integer*8 i,ii,iix,iixe, iiy,iiye,iiz,iize,irepeat,irepeatp,is,itmp
     integer*8 iv,iye_cc,ize_cc,j,jv,k,npleavingp,nprecv,nprecvtmp
     integer*8 Storage_Error_p,Storage_Error
     integer*8:: nsendactual, nsendactualp, nrecvactual, nrecvactualp, &
@@ -138,7 +138,7 @@ subroutine parmov   ! particle move?
               do while (np.ne.0)
                 nptotp = nptotp+1           !count particles
                 npart(is) = npart(is) + 1 !count particles in each species
-                L=NP
+                L=np
 
                 q_p = qp(l)
 
@@ -242,7 +242,7 @@ subroutine parmov   ! particle move?
             do iixe = 1, nx1
               np = iphead(iixe,iiye,iize,is)
               do while (np.ne.0)
-                L=NP
+                L=np
                 x_disp = dth*vx(l)
                 y_disp = dth*vy(l)
                 z_disp = dth*vz(l)
@@ -251,7 +251,7 @@ subroutine parmov   ! particle move?
                 y(l)=y(l)+ y_disp
                 z(l)=z(l)+ z_disp
 
-                NP=LINK(NP)
+                np=link(np)
               enddo ! while
             enddo ! for iixe
           enddo ! for iiye
@@ -274,14 +274,14 @@ subroutine parmov   ! particle move?
       if (testorbt) goto 10
       nptotp = 0
       npart(is) = 0
-      do IIZ=KB-1,KE
-        do IIY=JB-1,JE
-          do IIX=1,NX1
+      do iiz=kb-1,ke
+        do iiy=jb-1,je
+          do iix=1,NX1
             np=iphead(iix,iiy,iiz,is)
             do while (np.ne.0)
               nptotp=nptotp+1           !count particles
               npart(is) = npart(is) + 1 !count particles in each species
-              L = NP
+              L = np
 
               q_p = qp(l)
 
@@ -452,12 +452,12 @@ subroutine push
     hh = .5*h
     dth = dt/2
  
-    do IIZE = KB-1,KE
-      do IIYE = JB-1,JE
-        do IIXE = 1, NX1
-          NP=IPHEAD(IIXE,IIYE,IIZE,IS)
-          do while (NP.ne.0)
-            L=NP
+    do iize = kb-1,ke
+      do iiye = jb-1,je
+        do iixe = 1, NX1
+          np=iphead(iixe,iiye,iize,is)
+          do while (np.ne.0)
+            L=np
 
             ! Uniform mesh - Same as in version 5.0
             ! rxe=hxi*x(l)+1.5000000000000001d+00
@@ -672,7 +672,7 @@ subroutine push
               buf_p1(14,ntot)=bza
             endif
 
-            NP=LINK(NP)
+            np=link(np)
 
           enddo ! while
         enddo
@@ -771,7 +771,7 @@ subroutine particle_boundary
     cell_size_min = min(hxmin,hymin,hzmin)
     v_limit=(cell_size_min/dtwci)/wpiwci
 
-    do IS=1, nspec    
+    do is=1, nspec    
       irepeatp=0                !  are no fast particles, it will be called 
       nsendp=0
       nrecvp=0
@@ -798,14 +798,14 @@ subroutine particle_boundary
 
       n_fast_removed_local = 0 
 
-      do IZE = KB-1,KE
-        do IYE = JB-1,JE
-          do IXE = 1,NX1
+      do ize = kb-1,ke
+        do iye = jb-1,je
+          do ixe = 1,NX1
             iptemp(ixe,iye,ize,is)=0
 
             ! mark particles that need to be sent to other processors
-            NP=IPHEAD(IXE,IYE,IZE,IS)  !VR: the first particle in the cell
-            do while (NP.ne.0)         !VR: loop over particles in the cell
+            np=iphead(ixe,iye,ize,is)  !VR: the first particle in the cell
+            do while (np.ne.0)         !VR: loop over particles in the cell
               xpart=x(np)
               ypart=y(np)
               zpart=z(np)
@@ -987,10 +987,10 @@ subroutine particle_boundary
         do irepeat=1,4
           if (isendid(irepeat) == 1) then
             nsend_to_nbr = 0
-            NP=IPSEND(IS)
+            np=IPSEND(is)
             
             ! loop over particles in the ipsend list
-            do while (NP.ne.0)           
+            do while (np.ne.0)           
               nsendactualp = nsendactualp + 1
 
               ! map this particle to the logical mesh
@@ -1206,7 +1206,7 @@ subroutine particle_boundary
         !   print*, " # of particles received = ", nrecvactual
         ! endif
 
-      enddo ! for IS
+      enddo ! for is
  
 end subroutine particle_boundary
 
@@ -1270,7 +1270,7 @@ subroutine sortit
         do ix = 1, nx1
           np = iptemp(ix,iy,iz,is)
           nplist = 0
-          do while (NP.ne.0)
+          do while (np.ne.0)
             nplist = nplist+1
             l = l+1
             link(l) = np
@@ -1542,19 +1542,19 @@ subroutine caltemp2_global
   endif
 
   call date_and_time(values=time_begin_array(:,26))
-  do IS=1,NSPEC
+  do is=1,nspec
     wmult=wspec(is)
     h=dt*qspec(is)/wmult
     hh=.5*h
     dpedx = 0.
-    do IIZE = KB-1,KE
-      do IIYE = JB-1,JE
-        do IIXE = 1, NX1
-          NP=IPHEAD(IIXE,IIYE,IIZE,IS)
+    do iize = kb-1,ke
+      do iiye = jb-1,je
+        do iixe = 1, NX1
+          np=iphead(iixe,iiye,iize,is)
           !  begin advance of particle position and velocity
           !  If dt=0, skip
-          do while (NP.ne.0)
-            L=NP
+          do while (np.ne.0)
+            L=np
             ! Uniform mesh - Same as is in version 5.0
             ! rx=hxi*x(l)+1.5000000000000001
             ! ry=hyi*y(l)+0.5000000000000001d+00
@@ -1744,8 +1744,8 @@ subroutine caltemp2_global
     call xreal(p_yz (1,jb-1,kb-1,is),nx,ny,nz)
     call xreal(p_zz (1,jb-1,kb-1,is),nx,ny,nz)
 
-    do IZ = KB-1,KE
-      do IY = JB-1,JE
+    do IZ = kb-1,ke
+      do IY = jb-1,je
         do IX = 1, NX1
           if (dpedx(ix,iy,iz) /= 0.) then
             tpar (ix,iy,iz,is) = tpar (ix,iy,iz,is)/(   tx0(is)*dpedx(ix,iy,iz))
@@ -1835,10 +1835,10 @@ subroutine caltemp2_global
 end subroutine caltemp2_global
 
 
-!********************************************************
+!-----------------------------------------------------------------
 ! computes field energy ex^2+ey^2+ez^2 and bx^2+by^2+bz^2
 ! and particle energies
-!********************************************************
+!-----------------------------------------------------------------
 subroutine energy
   use parameter_mod
   use mesh_mod
@@ -1848,14 +1848,10 @@ subroutine energy
   real*8 :: vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
         ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar,wmult
   real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,h,hh,dns1,dns2,bxa,bya,bza,btota,dnst
-  real*8 :: bfldp,efldp,e_fluid,e_thermal,v2
-  integer*8 :: i,j,k
+  real*8 :: bfld_p, efld_p, efluid_p, ethermal_p, v2
+  integer*8 :: i, j, k
   
-  efldp=0.
-  bfldp=0.
-  e_fluid=0.
-  e_thermal=0.
-  v2=0.
+  efld_p=0.; bfld_p=0.; efluid_p=0.; ethermal_p=0.; v2=0.
 
   ! particle energy calculation -- works for 3D only !!!
   dtxi = 1./meshX%dt
@@ -1864,12 +1860,12 @@ subroutine energy
   p_xx=0.; p_yy=0.; p_zz=0.
 
   do is = 1, 1 ! ??
-    do IIZE = KB-1,KE
-      do IIYE = JB-1,JE
-        do IIXE = 1, NX1
-          NP=IPHEAD(IIXE,IIYE,IIZE,IS)
-          do while (NP.ne.0)
-            L=NP
+    do iize = kb-1,ke
+      do iiye = jb-1,je
+        do iixe = 1, NX1
+          np = iphead(iixe,iiye,iize,is)
+          do while (np.ne.0)
+            L=np
             ! Uniform mesh - Same as is in version 5.0
             ! rx=hxi*x(l)+1.5000000000000001
             ! ry=hyi*y(l)+0.5000000000000001d+00
@@ -1978,7 +1974,7 @@ subroutine energy
             p_zz (ix  ,iyp1,izp1,is)=p_zz (ix  ,iyp1,izp1,is)+qp(np)*w7*zz 
             p_zz (ixp1,iyp1,izp1,is)=p_zz (ixp1,iyp1,izp1,is)+qp(np)*w8*zz 
 
-            v2=v2+qp(l)*(vx(l)**2+vy(l)**2+vz(l)**2)
+            v2 = v2 + qp(l)*( vx(l)**2 + vy(l)**2 + vz(l)**2 )
 
             np=link(np)
           enddo
@@ -2007,30 +2003,25 @@ subroutine energy
   do k=kb,ke
       do j=jb,je
         do i=2,nx1
-            efldp=efldp+ex(i,j,k)**2+ey(i,j,k)**2+ez(i,j,k)**2
-            bfldp=bfldp+bx(i,j,k)**2+by(i,j,k)**2+bz(i,j,k)**2
+            efld_p = efld_p + ex(i,j,k)**2+ey(i,j,k)**2+ez(i,j,k)**2
+            bfld_p = bfld_p + bx(i,j,k)**2+by(i,j,k)**2+bz(i,j,k)**2
             ! particle energy for species 1 only
-            e_fluid=e_fluid+dns(i,j,k,1)*(vxs(i,j,k,1)**2+vys(i,j,k,1)**2+vzs(i,j,k,1)**2)
-            e_thermal=e_thermal+p_xx(i,j,k,1)+p_yy(i,j,k,1)+p_yy(i,j,k,1)
+            efluid_p = efluid_p + dns(i,j,k,1)*( vxs(i,j,k,1)**2 + vys(i,j,k,1)**2 + vzs(i,j,k,1)**2 )
+            ethermal_p = ethermal_p + p_xx(i,j,k,1) + p_yy(i,j,k,1) + p_yy(i,j,k,1)
         enddo
       enddo
   enddo
-  efldp=efldp*hx*hy*hz*0.5 ! assuming uniform grids
-  bfldp=bfldp*hx*hy*hz*0.5
-  e_fluid=e_fluid*hx*hy*hz*0.5
-  e_thermal=e_thermal*hx*hy*hz*0.5
-  v2=v2*0.5
+  efld_p = efld_p*hx*hy*hz*0.5 ! assuming uniform grids
+  bfld_p = bfld_p*hx*hy*hz*0.5
+  efluid_p = efluid_p*hx*hy*hz*0.5
+  ethermal_p = ethermal_p*hx*hy*hz*0.5
+  v2 = v2*0.5
 
   ! collect energies
-  call MPI_ALLREDUCE(efldp,efld,1,MPI_DOUBLE_PRECISION,&
-        MPI_SUM,MPI_COMM_WORLD,IERR)
-  call MPI_ALLREDUCE(bfldp,bfld,1,MPI_DOUBLE_PRECISION,&
-        MPI_SUM,MPI_COMM_WORLD,IERR)
-  call MPI_ALLREDUCE(e_fluid,efluidt,1,MPI_DOUBLE_PRECISION,&
-        MPI_SUM,MPI_COMM_WORLD,IERR)
-  call MPI_ALLREDUCE(e_thermal,ethermt,1,MPI_DOUBLE_PRECISION,&
-        MPI_SUM,MPI_COMM_WORLD,IERR)
-  call MPI_ALLREDUCE(v2,eptclt,1,MPI_DOUBLE_PRECISION,&
-        MPI_SUM,MPI_COMM_WORLD,IERR)
-  return
+  call MPI_ALLREDUCE(efld_p,efld,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+  call MPI_ALLREDUCE(bfld_p,bfld,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+  call MPI_ALLREDUCE(efluid_p,efluid,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+  call MPI_ALLREDUCE(ethermal_p,ethermal,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+  call MPI_ALLREDUCE(v2,eptcl,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+  
 end subroutine energy
