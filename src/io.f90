@@ -665,9 +665,9 @@ subroutine open_hist_files
       if (.not. tracking_mpi)then
         open(unit=12,file=trim(data_directory)//'probes.dat' ,status='old',position='append')
         if (tracking_binary) then
-          open(unit=13,file=trim(data_directory)//'tracking_b.dat' ,form='unformatted',status='old',position='append')
+          open(unit=13,file=trim(data_directory)//'tracking_b.dat',form='unformatted',status='old',position='append')
         else
-          open(unit=13,file=trim(data_directory)//'tracking.dat' ,status='old',position='append')
+          open(unit=13,file=trim(data_directory)//'tracking.dat',status='old',position='append')
         endif
       endif
     else
@@ -694,10 +694,8 @@ subroutine open_hist_files
       open(unit=12,file=trim(data_directory)//filename1,status='unknown')
       open(unit=13,file=trim(data_directory)//filename2,form='unformatted',status='unknown')
     endif
-
   endif
 
-  return
 end subroutine open_hist_files
 
 

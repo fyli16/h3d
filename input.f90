@@ -1,7 +1,7 @@
 &datum
 
 ! ------------------ global simulation info -----------!
-tmax = 100.0, ! max sim. time, in units of 1/wci
+tmax = 1000.0, ! max sim. time, in units of 1/wci
 dtwci = 0.01,  ! value of dt*wci
 restart = .false.,  ! whether to restart from 'restart' directory
 MPI_IO_format = .true. ! use MPI IO (one file only) instead of traditional binary output
@@ -48,8 +48,8 @@ btspec(1:5) = 0.01, ! beta of each ion species
 bete = 0.01,  ! beta of electrons
 
 ! resistivity 
-ieta = 6,  ! other models ieta=1,2,3,4,5,6; see 'etacal.f90'
-resis = 1.e-1,  ! ieta=0 model; constant resisitivity, i.e., eta=resis
+ieta = 0,  ! other models ieta=1,2,3,4,5,6; see 'etacal.f90'
+resis = 1.e-6,  ! ieta=0 model; constant resisitivity, i.e., eta=resis
 netax = 10, netay = 2 ! used in ieta=1 model
 etamin = 1.0e-6, etamax = 5.0e-5,  ! used in ieta>1 models
 eta_par=0, ! parallel resisitivity? sth used in 'field.f90'
@@ -73,16 +73,18 @@ num_cycles = 5,
 ! ------------------ diagnostic control ----------------!
 n_print = 100,  ! frequency at which to print simulation information
 n_write_data = 1000, ! frequency at which to write data into files
-n_write_particle = 400000,  ! frequency at which to write particles within a box range
-n_write_restart = 2000000, ! frequency at which to write restart files
 
 tracking_binary = .true. ! write tracking data in binary (unformatted) or formatted form
 tracking_mpi = .true. ! write tracking files by mpi rank
 
-! box range within which particles will be dumped
-xbox_l = 0., xbox_r = 1.0, 
+! dump particles 
+n_write_particle = 400000, ! frequency at which to write particles within a box range
+xbox_l = 0., xbox_r = 1.0, ! box range within which particles will be dumped
 ybox_l = 0., ybox_r = 1.0, 
 zbox_l = 0., zbox_r = 2.24,
+
+! frequency at which to write restart files
+n_write_restart = 2000000, 
 
 ! ------------------------- others ---------------------!
 ! sth used in 'io.f90'
