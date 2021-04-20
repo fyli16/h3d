@@ -185,8 +185,8 @@ subroutine sim_loops
     call date_and_time(values=time_begin(:,1)) ! time one-whole-loop
 
     ! print time & step info
-    call get_time(clock_time)
     if (myid==0 .and. mod(it,n_print)==0) then
+      call get_time(clock_time)
       write(6,"(A5,I7,A2,I7,A11,F8.3,A14,F8.3,A12,F8.3)") 'it = ', it, '/', itfinish, &
                     ',   time = ', time, &
                     ',   delta_t = ', real(clock_time-clock_old), &
