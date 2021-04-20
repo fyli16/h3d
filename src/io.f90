@@ -1051,7 +1051,7 @@ subroutine write_file(dat,rnorm,fileName,irec_start,ny1m,nz1m)
   real*4, dimension(1:nxmax-2,jb:je,kb:ke) :: stemp
   integer :: ip, iry, irz, i, j, k, recnum, ii
   integer*8 :: keg, kbg, jeg, jbg, icount,ny1m,nz1m
-  double precision :: rnorm
+  real*8 :: rnorm
   integer :: WriteSubArray     ! return 0 upon failure, 1 upon success
   character :: fileName*(*)    ! file to write paricles to
   integer :: dilo,dihi,&       ! bounds of the entire array
@@ -1147,11 +1147,11 @@ end subroutine write_file
 
 
 !---------------------------------------------------------------------
-subroutine write_file_non_mpio(dat,rnorm,filenum, irec_start,ny1m,nz1m) 
+subroutine write_file_non_mpio(dat,rnorm,filenum,irec_start,ny1m,nz1m) 
   use parameter_mod
   implicit none
 
-  integer:: num_sdat,filenum
+  integer*8 :: num_sdat, filenum
 
   integer*8 :: irec_start,iry1,iry2,irz1,irz2
   double precision, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: dat
