@@ -1776,6 +1776,7 @@ subroutine caltemp2_global
     ! p_zz(:,:,:,is)=p_zz(:,:,:,is)/(tx0(is)*frac(is))
 
   enddo
+  
   call date_and_time(values=time_end_array(:,26))
   call accumulate_time(time_begin_array(1,26),time_end_array(1,26),time_elapsed(26))
 

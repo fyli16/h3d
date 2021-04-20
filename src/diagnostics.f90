@@ -159,8 +159,6 @@ subroutine track_particles_mpi
   use parameter_mod
   implicit none
 
-  integer :: n, k, offset
-
   write(13) it, ntot
   write(13) buf_p1(:,1:ntot)
 

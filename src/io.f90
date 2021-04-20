@@ -21,90 +21,90 @@ subroutine dataout
   uniform_mesh = bx 
   if (MPI_IO_format) then
     filename= trim(trim(data_directory)//'bx/bx_'//trim(adjustl(cycle_ascii)))//'.gda'
-    call wrtfile(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
   else
-    call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(1),irec_start,ny,nz)
+    call write_file_non_mpio(uniform_mesh,rnorm,file_unit(1),irec_start,ny,nz)
   endif
 
   rnorm = wpiwci
   uniform_mesh = by 
   if (MPI_IO_format) then
     filename = trim(trim(data_directory)//'by/by_'//trim(adjustl(cycle_ascii)))//'.gda'
-    call wrtfile(uniform_mesh, rnorm, trim(adjustl(filename)), irec_start, ny, nz)
+    call write_file(uniform_mesh, rnorm, trim(adjustl(filename)), irec_start, ny, nz)
   else
-    call wrtfile_non_mpio(uniform_mesh, rnorm, file_unit(2), irec_start, ny, nz)
+    call write_file_non_mpio(uniform_mesh, rnorm, file_unit(2), irec_start, ny, nz)
   endif
 
   rnorm = wpiwci
   uniform_mesh=bz
   if (MPI_IO_format) then
     filename= trim(trim(data_directory)//'bz/bz_'//trim(adjustl(cycle_ascii)))//'.gda'
-    call wrtfile(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
   else
-    call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(3),irec_start,ny,nz)
+    call write_file_non_mpio(uniform_mesh,rnorm,file_unit(3),irec_start,ny,nz)
   endif
 
   rnorm = 1.
   uniform_mesh=den
   if (MPI_IO_format) then
     filename= trim(trim(data_directory)//'den/den_'//trim(adjustl(cycle_ascii)))//'.gda'
-    call wrtfile(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
   else
-    call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(4),irec_start,ny,nz)
+    call write_file_non_mpio(uniform_mesh,rnorm,file_unit(4),irec_start,ny,nz)
   endif
 
   rnorm = wpiwci**2
   uniform_mesh=ex 
   if (MPI_IO_format) then
     filename= trim(trim(data_directory)//'ex/ex_'//trim(adjustl(cycle_ascii)))//'.gda'
-    call wrtfile(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
   else
-    call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(5),irec_start,ny,nz)
+    call write_file_non_mpio(uniform_mesh,rnorm,file_unit(5),irec_start,ny,nz)
   endif
 
   rnorm = wpiwci**2
   uniform_mesh=ey 
   if (MPI_IO_format) then
     filename= trim(trim(data_directory)//'ey/ey_'//trim(adjustl(cycle_ascii)))//'.gda'
-    call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
   else
-    call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(6),irec_start,ny,nz)
+    call write_file_non_mpio(uniform_mesh,rnorm,file_unit(6),irec_start,ny,nz)
   endif
 
   rnorm = wpiwci**2
   uniform_mesh=ez 
   if (MPI_IO_format) then
     filename= trim(trim(data_directory)//'ez/ez_'//trim(adjustl(cycle_ascii)))//'.gda'
-    call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
   else
-    call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(7),irec_start,ny,nz)
+    call write_file_non_mpio(uniform_mesh,rnorm,file_unit(7),irec_start,ny,nz)
   endif
 
   rnorm = wpiwci
   uniform_mesh=vix
   if (MPI_IO_format) then
     filename= trim(trim(data_directory)//'vix/vix_'//trim(adjustl(cycle_ascii)))//'.gda'
-    call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
   else
-    call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(8),irec_start,ny,nz)
+    call write_file_non_mpio(uniform_mesh,rnorm,file_unit(8),irec_start,ny,nz)
   endif
 
   rnorm = wpiwci
   uniform_mesh=viy
   if (MPI_IO_format) then
     filename= trim(trim(data_directory)//'viy/viy_'//trim(adjustl(cycle_ascii)))//'.gda'
-    call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
   else
-    call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(9),irec_start,ny,nz)
+    call write_file_non_mpio(uniform_mesh,rnorm,file_unit(9),irec_start,ny,nz)
   endif
 
   rnorm = wpiwci 
   uniform_mesh=viz
   if (MPI_IO_format) then
     filename= trim(trim(data_directory)//'viz/viz_'//trim(adjustl(cycle_ascii)))//'.gda'
-    call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
   else
-    call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(10),irec_start,ny,nz)
+    call write_file_non_mpio(uniform_mesh,rnorm,file_unit(10),irec_start,ny,nz)
   endif
 
   do is=1,nspec
@@ -113,99 +113,99 @@ subroutine dataout
     uniform_mesh=tpar(:,:,:,is)
     if (MPI_IO_format) then
       filename= trim(trim(data_directory)//'tpar/tpar_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
-      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(11),irec_start,ny,nz)
+      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(11),irec_start,ny,nz)
     endif
 
     rnorm = 1.
     uniform_mesh=tperp(:,:,:,is)
     if (MPI_IO_format) then
       filename= trim(trim(data_directory)//'tperp/tperp_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
-      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(12),irec_start,ny,nz)
+      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(12),irec_start,ny,nz)
     endif
 
     rnorm = wpiwci
     uniform_mesh=vxs(:,:,:,is)
     if (MPI_IO_format) then
       filename= trim(trim(data_directory)//'vxs/vxs_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
-      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(23),irec_start,ny,nz)
+      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(23),irec_start,ny,nz)
     endif
 
     rnorm = wpiwci
     uniform_mesh=vys(:,:,:,is)
     if (MPI_IO_format) then
       filename= trim(trim(data_directory)//'vys/vys_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
-      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(24),irec_start,ny,nz)
+      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(24),irec_start,ny,nz)
     endif
 
     rnorm = wpiwci
     uniform_mesh=vzs(:,:,:,is)
     if (MPI_IO_format) then
       filename= trim(trim(data_directory)//'vzs/vzs_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
-      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(25),irec_start,ny,nz)
+      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(25),irec_start,ny,nz)
     endif
 
     rnorm = one/(tx0(is)*frac(is))
     uniform_mesh=p_xx(:,:,:,is)
     if (MPI_IO_format) then
       filename= trim(trim(data_directory)//'p-xx/p-xx_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
-      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(14),irec_start,ny,nz)
+      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(14),irec_start,ny,nz)
     endif
 
     rnorm = one/(tx0(is)*frac(is))
     uniform_mesh=p_xy(:,:,:,is)
     if (MPI_IO_format) then
       filename= trim(trim(data_directory)//'p-xy/p-xy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
-      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(15),irec_start,ny,nz)
+      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(15),irec_start,ny,nz)
     endif
 
     rnorm = one/(tx0(is)*frac(is))
     uniform_mesh=p_xz(:,:,:,is)
     if (MPI_IO_format) then
       filename= trim(trim(data_directory)//'p-xz/p-xz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
-      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(16),irec_start,ny,nz)
+      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(16),irec_start,ny,nz)
     endif
 
     rnorm = one/(tx0(is)*frac(is))
     uniform_mesh=p_yy(:,:,:,is)
     if (MPI_IO_format) then
       filename= trim(trim(data_directory)//'p-yy/p-yy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
-      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(17),irec_start,ny,nz)
+      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(17),irec_start,ny,nz)
     endif
 
     rnorm = one/(tx0(is)*frac(is))
     uniform_mesh=p_yz(:,:,:,is)
     if (MPI_IO_format) then
       filename= trim(trim(data_directory)//'p-yz/p-yz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
-      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(18),irec_start,ny,nz)
+      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(18),irec_start,ny,nz)
     endif
 
     rnorm = one/(tx0(is)*frac(is))
     uniform_mesh=p_zz(:,:,:,is)
     if (MPI_IO_format) then
       filename= trim(trim(data_directory)//'p-zz/p-zz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
-      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(19),irec_start,ny,nz)
+      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(19),irec_start,ny,nz)
     endif
   enddo
 
@@ -213,27 +213,27 @@ subroutine dataout
   uniform_mesh=fox
   if (MPI_IO_format) then
     filename= trim(trim(data_directory)//'fox/fox_'//trim(adjustl(cycle_ascii)))//'.gda'
-    call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
   else
-    call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(20),irec_start,ny,nz)
+    call write_file_non_mpio(uniform_mesh,rnorm,file_unit(20),irec_start,ny,nz)
   endif
 
   rnorm=1.
   uniform_mesh=foy
   if (MPI_IO_format) then
     filename= trim(trim(data_directory)//'foy/foy_'//trim(adjustl(cycle_ascii)))//'.gda'
-    call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
   else
-    call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(21),irec_start,ny,nz)
+    call write_file_non_mpio(uniform_mesh,rnorm,file_unit(21),irec_start,ny,nz)
   endif
 
   rnorm=1.
   uniform_mesh=foz
   if (MPI_IO_format) then
     filename= trim(trim(data_directory)//'foz/foz_'//trim(adjustl(cycle_ascii)))//'.gda'
-    call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
   else
-    call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(22),irec_start,ny,nz)
+    call write_file_non_mpio(uniform_mesh,rnorm,file_unit(22),irec_start,ny,nz)
   endif
 
   if (eta_par == 0) then
@@ -241,18 +241,18 @@ subroutine dataout
     uniform_mesh=eta
     if (MPI_IO_format) then
       filename= trim(trim(data_directory)//'eta/eta_'//trim(adjustl(cycle_ascii)))//'.gda'
-      call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
-      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(13),irec_start,ny,nz)
+      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(13),irec_start,ny,nz)
     endif
   else
     rnorm = 1.
     uniform_mesh=eta_times_b_dot_j
     if (MPI_IO_format) then
       filename= trim(trim(data_directory)//'eta_par/eta_par_'//trim(adjustl(cycle_ascii)))//'.gda'
-      call wrtfile         (uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
-      call wrtfile_non_mpio(uniform_mesh,rnorm,file_unit(13),irec_start,ny,nz)
+      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(13),irec_start,ny,nz)
     endif
   endif
 
@@ -795,73 +795,7 @@ end subroutine open_files
 
 
 !---------------------------------------------------------------------
-subroutine write_datum(ndatum,datum,f_unit)
-  use parameter_mod
-  implicit none
-
-  integer*8 :: ndatum, f_unit
-  integer :: ndatum_4
-  real*8 :: datum(ndatum), datum_tmp(ndatum)
-
-  ndatum_4=ndatum
-  do ipe = 0, nprocs-1
-    if (myid == 0) then
-      if (ipe == 0) then
-        write(f_unit) datum
-      else
-          call MPI_IRECV(datum_tmp,ndatum_4,MPI_DOUBLE_PRECISION&
-                        ,ipe,0,MPI_COMM_WORLD,req(1),IERR)
-          call MPI_WAIT(REQ(1),STATUS1,IERR)
-          write(f_unit) datum_tmp
-      endif
-    else
-      if (myid == ipe) then
-        call MPI_ISEND(datum,ndatum_4,MPI_DOUBLE_PRECISION&
-                      ,0,0,MPI_COMM_WORLD,req(2),IERR)
-        call MPI_WAIT(REQ(2),STATUS2,IERR)
-      endif
-    endif
-  enddo
-
-return
-end subroutine write_datum
-
-
-!---------------------------------------------------------------------
-subroutine read_datum(ndatum,datum,f_unit)
-  use parameter_mod
-  implicit none
-
-  integer*8:: ndatum,f_unit
-  integer:: ndatum_4
-  real*8 :: datum(ndatum),datum_tmp(ndatum)
-
-  ndatum_4=ndatum
-  do ipe=0,nprocs-1
-    if (myid == 0) then
-      if (ipe == 0) then
-        read(f_unit) datum
-      else
-          read(f_unit) datum_tmp
-          call MPI_ISEND(datum_tmp,ndatum_4,MPI_DOUBLE_PRECISION&
-                        ,ipe,0,MPI_COMM_WORLD,req(1),IERR)
-          call MPI_WAIT(REQ(1),STATUS1,IERR)
-      endif
-    else
-      if (myid == ipe) then
-        call MPI_IRECV(datum,ndatum_4,MPI_DOUBLE_PRECISION&
-                      ,0,0,MPI_COMM_WORLD,req(2),IERR)
-        call MPI_WAIT(REQ(2),STATUS2,IERR)
-      endif
-    endif
-  enddo
-
-return
-end subroutine read_datum
-
-
-!---------------------------------------------------------------------
-subroutine particle_in_volume_write
+subroutine write_particle_in_volume
   use parameter_mod
   use mesh_mod
   implicit none
@@ -1103,4 +1037,219 @@ subroutine particle_in_volume_write
   deallocate (XW,YW,ZW,VXW,VYW,VZW,QW,VWPAR,VWPERP1,VWPERP2)
 
 return
-end subroutine particle_in_volume_write
+end subroutine write_particle_in_volume
+
+
+!---------------------------------------------------------------------
+subroutine write_file(dat,rnorm,fileName,irec_start,ny1m,nz1m)
+  use parameter_mod
+  implicit none
+
+  integer :: num_sdat
+  integer*8 :: filenum,irec_start,iry1,iry2,irz1,irz2
+  real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: dat
+  real*4, dimension(1:nxmax-2,jb:je,kb:ke) :: stemp
+  integer :: ip, iry, irz, i, j, k, recnum, ii
+  integer*8 :: keg, kbg, jeg, jbg, icount,ny1m,nz1m
+  double precision :: rnorm
+  integer :: WriteSubArray     ! return 0 upon failure, 1 upon success
+  character :: fileName*(*)    ! file to write paricles to
+  integer :: dilo,dihi,&       ! bounds of the entire array
+          djlo,djhi,&
+          dklo,dkhi
+  integer :: ailo,aihi,&       ! bounds of our portion of the array
+          ajlo,ajhi,&
+          aklo,akhi
+  integer*8 :: domainCells,subDomainCells8       ! number of cells in the entire array
+  integer :: domainDims(3)     ! dimensions of the entire array
+  integer :: subDomainCells    ! number of cells in our portion of the array
+  integer :: subDomainDims(3)  ! dimensions of our portion of the array
+  integer :: subDomainStart(3) ! lo corner of the bounds of our portion
+  integer :: iErr1,iErr2,file,eStrLen,subArray,stat(MPI_STATUS_SIZE),mode
+  integer(kind=MPI_OFFSET_KIND) DISP1
+  character :: eStr*(1024)
+
+  eStrLen=1024
+  WriteSubArray=0
+  icount=0
+  DISP1=0
+
+  ! Open the file, bail out if this fails.
+  mode = MPI_MODE_WRONLY + MPI_MODE_CREATE
+  call MPI_File_open(MPI_COMM_WORLD,fileName,mode,MPI_INFO_NULL,file,iErr1)
+  if (iErr1.ne.MPI_SUCCESS) then
+    call MPI_Error_string(iErr1,eStr,eStrLen,iErr2)
+    write(0,*)'Error: Could not open file ',fileName
+    write(0,*)eStr
+    write(0,*)'Write aborted.'
+    return
+  endif
+
+  !  begin by converting data to REAL*4
+  !
+  !  do k = kb-1, ke+1
+  !    do j = jb-1,je+1
+  !      do i = 1, nxmax
+  !        sdat(i,j,k) = rnorm*dat(i,j,k)
+  !      enddo
+  !    enddo
+  !  enddo
+
+  ! print *,kb,ke,jb,je
+  do k = kb, ke
+    do j = jb,je
+      do i = 2, nxmax-1
+        stemp(i-1,j,k) = rnorm*dat(i,j,k)
+      enddo
+    enddo
+  enddo
+
+  dilo = 1
+  dihi = nxmax-2
+  ailo = 1
+  aihi = nxmax-2
+  djlo = jbglobal(0)
+  djhi = jeglobal(nprocs-1)
+  ajlo = jbglobal(myid)
+  ajhi = jeglobal(myid)
+  dklo = kbglobal(0)
+  dkhi = keglobal(nprocs-1)
+  aklo = kbglobal(myid)
+  akhi = keglobal(myid)
+  call BoundsToDimensions(dilo,dihi,djlo,djhi,dklo,dkhi,domainDims,domainCells)
+  call BoundsToDimensions(ailo,aihi,ajlo,ajhi,aklo,akhi,subDomainDims,subDomainCells8)
+  subDomainCells=subDomainCells8
+  subDomainStart(1)=ailo-dilo !  convert to c-index!
+  subDomainStart(2)=ajlo-djlo
+  subDomainStart(3)=aklo-dklo
+  call MPI_Type_create_subarray(3,domainDims,subDomainDims,subDomainStart, &
+      MPI_ORDER_FORTRAN,MPI_REAL,subArray,iErr1)
+  call MPI_Type_commit(subArray,iErr1)
+
+  ! Set the file view
+  call MPI_File_set_view(file,DISP1,MPI_REAL,subArray,"native",MPI_INFO_NULL,iErr1)
+
+  ! Write
+  call MPI_File_write_all(file,stemp,subDomainCells,MPI_REAL,stat,iErr1)
+  call MPI_File_close(file,iErr2)
+  call MPI_Type_free(subArray,iErr2)
+
+  if (iErr1.ne.MPI_SUCCESS) then
+    call MPI_Error_string(iErr1,eStr,eStrLen,iErr2)
+    write(0,*)'Error: Could not write to file ',fileName
+    write(0,*) eStr(1:eStrLen)
+    write(0,*) 'Write aborted by rank',myid
+    write(0,*)'Write aborted.'
+  endif
+
+  return
+end subroutine write_file
+
+
+!---------------------------------------------------------------------
+subroutine write_file_non_mpio(dat,rnorm,filenum, irec_start,ny1m,nz1m) 
+  use parameter_mod
+  implicit none
+
+  integer:: num_sdat,filenum
+
+  integer*8 :: irec_start,iry1,iry2,irz1,irz2
+  double precision, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: dat
+  real*4, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: sdat
+  integer :: ip, iry, irz, i, j, k, recnum, ii
+  integer*8 :: keg, kbg, jeg, jbg, icount,ny1m,nz1m
+  double precision :: rnorm
+
+  icount=0
+
+  ! begin by converting data to REAL*4
+  do k = kb-1, ke+1
+    do j = jb-1,je+1
+      do i = 1, nxmax
+        sdat(i,j,k) = rnorm*dat(i,j,k)
+      enddo
+    enddo
+  enddo
+
+  ! send data to myid = 0
+  num_sdat = nxmax*(nylmax+2)*(nzlmax + 2)
+  if(myid.ne.0) then
+    call MPI_ISEND(sdat(1,jb-1,kb-1),num_sdat,MPI_REAL4,&
+         0   ,1,MPI_COMM_WORLD,req(1),IERR)
+    call MPI_WAITALL(1,req,status_array,IERR)
+  else
+    do ip = 0, nprocs-1
+      keg = keglobal(ip)
+      kbg = kbglobal(ip)
+      jeg = jeglobal(ip)
+      jbg = jbglobal(ip)
+
+      if (jbg.eq.1.and.jeg.eq.ny1m) then
+        iry1 = 0        +1
+        iry2 = ny1m+1    -1
+        goto 10
+      endif
+
+      if(jbg.eq.1) then
+        iry1 = 0        +1
+        iry2 = jeg
+        j    = jb - 2
+      else if(jeg.eq.ny1m) then
+	      iry1 = jbg
+	      iry2 = jeg+1    -1
+	      j = jb - 1
+      else
+        iry1 = jbg
+        iry2 = jeg
+        j = jb - 1
+      endif
+
+10    continue
+
+      if (kbg.eq.1.and.keg.eq.nz1m) then
+        irz1=0          +1
+        irz2=nz1m+1     -1
+        goto 20
+      endif
+
+      if(kbg.eq.1) then
+        irz1 = 0        +1
+        irz2 = keg
+        k = kb - 2
+      else if(keg.eq.nz1m) then
+        irz1 = kbg
+        irz2 = keg+1    -1
+        k = kb - 1
+      else
+        irz1 = kbg
+        irz2 = keg
+        k = kb - 1
+      endif
+
+20    continue
+
+      if(ip.ne.0) then
+        call MPI_IRECV(sdat(1,jb-1,kb-1),num_sdat,MPI_REAL4,&
+             IP,1,MPI_COMM_WORLD,req(1),IERR)
+        call MPI_WAITALL(1,req,status_array,IERR)
+      endif
+      
+      do irz = irz1, irz2
+	      k = k+1
+	      do iry = iry1, iry2
+          j = j+1 
+          icount=icount+1
+          recnum = irec_start + iry -1 + (irz-1)*(nymax - 2)
+          write(filenum, rec=recnum) (sdat(i,iry-jbg+1,irz-kbg+1),i=1   +1,nxmax    -1)
+        enddo
+      enddo
+    enddo
+
+    write(6,*) " number of records written = ", icount
+
+  endif
+
+  return
+end subroutine write_file_non_mpio
+
+

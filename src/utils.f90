@@ -65,6 +65,25 @@ end subroutine nsmth
 
 
 !---------------------------------------------------------------------
+subroutine BoundsToDimensions(ilo, ihi, jlo, jhi, klo, khi, dims, nCells)
+  implicit none
+
+  integer:: ilo,ihi,&    ! bounds of a 3d array
+            jlo,jhi,&
+            klo,khi
+  integer :: dims(3)      ! dimensions of the array (out)
+  integer*8 :: nCells       ! total number of cells (out)
+
+  dims(1) = ihi-ilo+1
+  dims(2) = jhi-jlo+1
+  dims(3) = khi-klo+1
+  nCells = dims(1)*dims(2)*dims(3)
+  
+  return
+end subroutine BoundsToDimensions
+
+
+!---------------------------------------------------------------------
 subroutine clock_write(iunit,message,i2,i1,is,it)
   implicit none
   integer*8 iunit,i2,i1,is,it

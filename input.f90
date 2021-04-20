@@ -74,19 +74,19 @@ num_cycles = 5,
 n_print = 100,  ! frequency at which to print simulation information
 n_write_data = 1000, ! frequency at which to write data into files
 
-n_write_energy = 100,
+n_write_energy = 100, ! frequency at which to write time history of energy (field & particles)
 
 tracking_binary = .true. ! write tracking data in binary (unformatted) or formatted form
 tracking_mpi = .true. ! write tracking files by mpi rank
 
 ! dump particles 
-n_write_particle = 400000, ! frequency at which to write particles within a box range
+n_write_particle = 0, ! frequency at which to write particles within a box range
 xbox_l = 0., xbox_r = 1.0, ! box range within which particles will be dumped
 ybox_l = 0., ybox_r = 1.0, 
 zbox_l = 0., zbox_r = 2.24,
 
 ! frequency at which to write restart files
-n_write_restart = 2000000, 
+n_write_restart = 0, 
 
 ! ------------------------- others ---------------------!
 ! sth used in 'io.f90'

@@ -209,17 +209,12 @@ subroutine data_output
   endif
 
   ! write particles (within a given volume)
-  if (mod(it,n_write_particle)==0) then
-    if (myid == 0) then
-      my_short_int = it
-      call integer_to_character(cycle_ascii, len(cycle_ascii), my_short_int)
-    endif
-    call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
-    call particle_in_volume_write
+  if (n_write_particle>0 .and. mod(it,n_write_particle)==0) then
+    call write_particle_in_volume
   endif
 
   ! write restart files
-  if (mod(int(it,8),n_write_restart)==0 .and. (it>itstart)) then
+  if ( n_write_restart>0 .and. it>itstart .and. mod(int(it,8),n_write_restart)==0 ) then
     if (myid == 0) print*, 'Writing restart files ...'
     itfin = it
     do i = 0, nprocs_over_60  

@@ -1,10 +1,10 @@
 !---------------------------------------------------------------------
-subroutine wrtfile(dat,rnorm,fileName, irec_start,ny1m,nz1m)
+subroutine write_file(dat,rnorm,fileName,irec_start,ny1m,nz1m)
   use parameter_mod
   implicit none
 
-  integer:: num_sdat
-  integer*8 filenum,irec_start,iry1,iry2,irz1,irz2
+  integer :: num_sdat
+  integer*8 :: filenum,irec_start,iry1,iry2,irz1,irz2
   real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: dat
   real*4, dimension(1:nxmax-2,jb:je,kb:ke) :: stemp
   integer :: ip, iry, irz, i, j, k, recnum, ii
@@ -12,30 +12,29 @@ subroutine wrtfile(dat,rnorm,fileName, irec_start,ny1m,nz1m)
   double precision :: rnorm
   integer :: WriteSubArray     ! return 0 upon failure, 1 upon success
   character :: fileName*(*)    ! file to write paricles to
-  integer dilo,dihi,&       ! bounds of the entire array
+  integer :: dilo,dihi,&       ! bounds of the entire array
           djlo,djhi,&
           dklo,dkhi
-  integer ailo,aihi,&       ! bounds of our portion of the array
+  integer :: ailo,aihi,&       ! bounds of our portion of the array
           ajlo,ajhi,&
           aklo,akhi
-  integer*8 domainCells,subDomainCells8       ! number of cells in the entire array
-  integer domainDims(3)     ! dimensions of the entire array
-  integer subDomainCells    ! number of cells in our portion of the array
-  integer subDomainDims(3)  ! dimensions of our portion of the array
-  integer subDomainStart(3) ! lo corner of the bounds of our portion
-  integer iErr1,iErr2,file,eStrLen,subArray,stat(MPI_STATUS_SIZE),mode
-  INTEGER(KIND=MPI_OFFSET_KIND) DISP1
-
+  integer*8 :: domainCells,subDomainCells8       ! number of cells in the entire array
+  integer :: domainDims(3)     ! dimensions of the entire array
+  integer :: subDomainCells    ! number of cells in our portion of the array
+  integer :: subDomainDims(3)  ! dimensions of our portion of the array
+  integer :: subDomainStart(3) ! lo corner of the bounds of our portion
+  integer :: iErr1,iErr2,file,eStrLen,subArray,stat(MPI_STATUS_SIZE),mode
+  integer(kind=MPI_OFFSET_KIND) DISP1
   character :: eStr*(1024)
+
   eStrLen=1024
   WriteSubArray=0
   icount=0
   DISP1=0
 
   ! Open the file, bail out if this fails.
-  mode=MPI_MODE_WRONLY+MPI_MODE_CREATE
-  call MPI_File_open(&
-      MPI_COMM_WORLD,fileName,mode,MPI_INFO_NULL,file,iErr1)
+  mode = MPI_MODE_WRONLY + MPI_MODE_CREATE
+  call MPI_File_open(MPI_COMM_WORLD,fileName,mode,MPI_INFO_NULL,file,iErr1)
   if (iErr1.ne.MPI_SUCCESS) then
     call MPI_Error_string(iErr1,eStr,eStrLen,iErr2)
     write(0,*)'Error: Could not open file ',fileName
@@ -75,22 +74,18 @@ subroutine wrtfile(dat,rnorm,fileName, irec_start,ny1m,nz1m)
   dkhi = keglobal(nprocs-1)
   aklo = kbglobal(myid)
   akhi = keglobal(myid)
-  call BoundsToDimensions(&
-      dilo,dihi,djlo,djhi,dklo,dkhi,domainDims,domainCells)
-  call BoundsToDimensions(&
-      ailo,aihi,ajlo,ajhi,aklo,akhi,subDomainDims,subDomainCells8)
+  call BoundsToDimensions(dilo,dihi,djlo,djhi,dklo,dkhi,domainDims,domainCells)
+  call BoundsToDimensions(ailo,aihi,ajlo,ajhi,aklo,akhi,subDomainDims,subDomainCells8)
   subDomainCells=subDomainCells8
   subDomainStart(1)=ailo-dilo !  convert to c-index!
   subDomainStart(2)=ajlo-djlo
   subDomainStart(3)=aklo-dklo
-  call MPI_Type_create_subarray(&
-      3,domainDims,subDomainDims,subDomainStart,&
+  call MPI_Type_create_subarray(3,domainDims,subDomainDims,subDomainStart, &
       MPI_ORDER_FORTRAN,MPI_REAL,subArray,iErr1)
   call MPI_Type_commit(subArray,iErr1)
 
   ! Set the file view
-  call MPI_File_set_view(&
-      file,DISP1,MPI_REAL,subArray,"native",MPI_INFO_NULL,iErr1)
+  call MPI_File_set_view(file,DISP1,MPI_REAL,subArray,"native",MPI_INFO_NULL,iErr1)
 
   ! Write
   call MPI_File_write_all(file,stemp,subDomainCells,MPI_REAL,stat,iErr1)
@@ -106,7 +101,7 @@ subroutine wrtfile(dat,rnorm,fileName, irec_start,ny1m,nz1m)
   endif
 
   return
-end subroutine wrtfile
+end subroutine write_file
 
 
 !---------------------------------------------------------------------
@@ -129,7 +124,7 @@ end subroutine BoundsToDimensions
 
 
 !---------------------------------------------------------------------
-subroutine wrtfile_non_mpio(dat,rnorm,filenum, irec_start,ny1m,nz1m) 
+subroutine write_file_non_mpio(dat,rnorm,filenum, irec_start,ny1m,nz1m) 
   use parameter_mod
   implicit none
 
@@ -232,6 +227,6 @@ subroutine wrtfile_non_mpio(dat,rnorm,filenum, irec_start,ny1m,nz1m)
   endif
 
   return
-end subroutine wrtfile_non_mpio
+end subroutine write_file_non_mpio
 
 
