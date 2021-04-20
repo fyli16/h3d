@@ -75,7 +75,7 @@ module parameter_mod
   integer*8, dimension(8) :: wall_clock_begin,wall_clock_end
   integer*8, dimension(5) :: npx, npy, npz
   integer*8 :: iterb, norbskip, nxcel, nspec, nx, ny, nz, n_print, &
-            n_write_data, n_write_particle, n_write_restart, nskipx,nskipy,nskipz
+            n_write_data, n_write_energy, n_write_particle, n_write_restart, nskipx,nskipy,nskipz
 
   ! resistivity
   integer*8 :: ieta, netax, netay, eta_par, eta_zs
