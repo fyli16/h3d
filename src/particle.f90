@@ -1381,7 +1381,6 @@ subroutine trans
   implicit none
 
   integer*8 :: is, i, j, k, jbmin, jbmax, kbmin, kbmax
-  integer*4 :: time_begin(8), time_end(8)
   real*8 :: dns_tmp
 
   ! initialize sth
