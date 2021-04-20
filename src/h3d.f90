@@ -161,86 +161,7 @@ subroutine init_restart
   call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
 
   return 
-
 end subroutine init_restart
-
-
-!---------------------------------------------------------------------
-! diagnostic data output
-!---------------------------------------------------------------------
-subroutine data_output
-  use parameter_mod
-  implicit none 
-
-  integer :: i
-
-  ! convert 'it' to char and broadcast to all ranks
-  if (myid==0) then
-    my_short_int = it
-    call integer_to_character(cycle_ascii, len(cycle_ascii), my_short_int)
-    cycle_ascii_new=trim(adjustl(cycle_ascii))
-  endif
-  call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
-  call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
-  
-  ! this block is not executed when MPI_IO_format=.true.
-  if (myid==0 .and. .not.MPI_IO_format) then
-    call open_files
-  endif 
-  
-  ! calculate par & perp temperatures (needed only for diagnostics)
-  call date_and_time(values=time_begin_array(:,6))
-  if (ndim /= 1) then
-    call caltemp2_global
-  else
-    call caltemp2_global_2d
-  endif
-  call date_and_time(values=time_end_array(:,6))
-  call accumulate_time(time_begin_array(1,6),time_end_array(1,6),time_elapsed(6))
-
-  ! write data
-  call dataout
-  
-  ! this block is not executed when MPI_IO_format=.true.
-  if (myid==0 .and. .not.MPI_IO_format) then
-    do i = 1, 25
-      close(file_unit(i))
-    enddo
-  endif
-
-  ! write particles (within a given volume)
-  if (n_write_particle>0 .and. mod(it,n_write_particle)==0) then
-    call write_particle_in_volume
-  endif
-
-  ! write restart files
-  if ( n_write_restart>0 .and. it>itstart .and. mod(int(it,8),n_write_restart)==0 ) then
-    if (myid == 0) print*, 'Writing restart files ...'
-    itfin = it
-    do i = 0, nprocs_over_60  
-      if ( mod(int(myid,8),nprocs_over_60+1).eq.i) then
-        call restart_read_write(1.0)
-      endif
-      call MPI_BARRIER(MPI_COMM_WORLD,IERR)
-    enddo
-
-    ! write the latest restart dump info into file
-    if (myid == 0) then
-      open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='unknown')
-      write(222,*) restart_index, itfin
-      close(222)
-    endif
-
-    ! keep only two sets of restart files (overwrite previous dump by swapping index)
-    if (restart_index == 1) then
-      restart_index=2
-    else
-      restart_index=1
-    endif
-
-  endif 
-
-end subroutine data_output
 
 
 !---------------------------------------------------------------------
@@ -277,7 +198,8 @@ subroutine sim_loops
       clock_time_old = clock_time
     endif
 
-    ! compute resistivity (which could depend on local parameters such as current)
+    ! compute resistivity 
+    ! (which could depend on local parameters such as current)
     call date_and_time(values=time_begin_array(:,2))
     if (ndim /= 1) then
       call eta_calc       ! Dietmar's resistivity
@@ -285,31 +207,23 @@ subroutine sim_loops
       call eta_calc_2d    ! Dietmar's resistivity
     endif
     ntot = 0 ! for particle tracking
-    call trans ! trans computes density and v's; it also calls parmov (particle push)
+    call trans ! 'trans' computes density and v's; it also calls parmov (particle push)
     call date_and_time(values=time_end_array(:,2))
     call accumulate_time(time_begin_array(1,2),time_end_array(1,2),time_elapsed(2))
 
-    ! write history data: energy.dat, time.dat
-    if (myid==0 .and. mod(it,n_write_energy)==0) then
-      write(11,*) it, efld, bfld, efluid, ethermal, eptcl ! energy.dat
-    endif
-    ! write(14,*) it, time_elapsed(1:40)  ! time.dat   
-
     ! sort particles
     call date_and_time(values=time_begin_array(:,4))
-    if (mod(it,10) == 0) call sortit    !  sort the particles at every 10 steps
+    if (mod(it,n_sort) == 0) call sortit  
     call date_and_time(values=time_end_array(:,4))
     call accumulate_time(time_begin_array(1,4),time_end_array(1,4),time_elapsed(4))
 
     ! call field solver
     call date_and_time(values=time_begin_array(:,5))
-    if (.not.testorbt) then
-      if (ndim /=1) then 
-        call field
-      else
-        call field_2d
-      endif
-    endif        
+    if (ndim /=1) then 
+      call field
+    else
+      call field_2d
+    endif     
     call date_and_time(values=time_end_array(:,5))
     call accumulate_time(time_begin_array(1,5),time_end_array(1,5),time_elapsed(5))
 
@@ -317,17 +231,13 @@ subroutine sim_loops
     ! if (it == 21000) call inject_wave
     ! if (mod(it,100) == 0) call kick
 
-    ! VR: call user diagnostics
+    ! call user diagnostics: write 'probes' & 'track_particles'
     call date_and_time(values=time_begin_array(:,30))
     call user_diagnostics
     call date_and_time(values=time_end_array(:,30))
     call accumulate_time(time_begin_array(1,30),time_end_array(1,30),time_elapsed(30))
-      
-    ! data output (mesh data, particles, restart files, etc.)
-    if (.not.testorbt.and.mod(it,n_write_data)==0) then        
-      call data_output
-    endif
 
+    ! time/step increment
     time = time + dtwci
     it = it + 1
 

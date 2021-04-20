@@ -2,29 +2,116 @@
 ! VR: eventually, it will be transitioned to 
 ! VR: modular layout similar to other modern codes,
 ! VR: where the "engine" is separate from output, etc
+
+!---------------------------------------------------------------------
+! user diagnostics
 !---------------------------------------------------------------------
 subroutine user_diagnostics
-  use parameter_mod, only: time_begin_array, time_end_array, time_elapsed, tracking_mpi
+  use parameter_mod
+  implicit none 
+
+  integer :: i
+
+  ! convert 'it' to char and broadcast to all ranks,
+  ! which will be used in file dumps by rank.
+  if (myid==0) then
+    my_short_int = it
+    call integer_to_character(cycle_ascii, len(cycle_ascii), my_short_int)
+    cycle_ascii_new=trim(adjustl(cycle_ascii))
+  endif
+  call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
+  call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
   
+  ! write mesh data
+  if ( n_write_mesh>0 .and. mod(it,n_write_mesh)==0 ) then
+    ! this block is not executed when MPI_IO_format=.true.
+    if (myid==0 .and. .not.MPI_IO_format) then
+      call open_files
+    endif 
+    
+    ! calculate par & perp temperatures (needed only for diagnostics)
+    call date_and_time(values=time_begin_array(:,6))
+    if (ndim /= 1) then
+      call caltemp2_global
+    else
+      call caltemp2_global_2d
+    endif
+    call date_and_time(values=time_end_array(:,6))
+    call accumulate_time(time_begin_array(1,6),time_end_array(1,6),time_elapsed(6))
+
+    ! write data
+    call write_mesh_data
+    
+    ! this block is not executed when MPI_IO_format=.true.
+    if (myid==0 .and. .not.MPI_IO_format) then
+      do i = 1, 25
+        close(file_unit(i))
+      enddo
+    endif
+
+  endif 
+
+  ! write history data: energy.dat, time.dat
+  if (myid==0 .and. mod(it,n_write_energy)==0) then
+    write(11,*) it, efld, bfld, efluid, ethermal, eptcl ! energy.dat
+  endif
+  ! write(14,*) it, time_elapsed(1:40)  ! time.dat   
+
+  ! write particles (within a given volume)
+  if (n_write_particle>0 .and. mod(it,n_write_particle)==0) then
+    call write_particle_in_volume
+  endif
+
   ! write probe data
   call date_and_time(values=time_begin_array(:,31))
-  if (tracking_mpi) then
-    call virtual_probes_mpi
-  else
-    call virtual_probes
-  endif
+  if ( n_write_probes>0 .and. mod(it,n_write_probes)==0 ) then
+    if (tracking_mpi) then
+      call virtual_probes_mpi
+    else
+      call virtual_probes
+    endif
+  endif 
   call date_and_time(values=time_end_array(:,31))
   call accumulate_time(time_begin_array(1,31),time_end_array(1,31),time_elapsed(31))
 
   ! write particle tracking data
   call date_and_time(values=time_begin_array(:,32))
-  if (tracking_mpi) then
-    call track_particles_mpi
-  else
-    call track_particles
-  endif
+  if ( n_write_tracking>0 .and. mod(it,n_write_tracking)>0 ) then
+    if (tracking_mpi) then
+      call track_particles_mpi
+    else
+      call track_particles
+    endif
+  endif 
   call date_and_time(values=time_end_array(:,32))
   call accumulate_time(time_begin_array(1,32),time_end_array(1,32),time_elapsed(32))
+
+  ! write restart files
+  if ( n_write_restart>0 .and. it>itstart .and. mod(int(it,8),n_write_restart)==0 ) then
+    if (myid == 0) print*, 'Writing restart files ...'
+    itfin = it
+    do i = 0, nprocs_over_60  
+      if ( mod(int(myid,8),nprocs_over_60+1).eq.i) then
+        call restart_read_write(1.0)
+      endif
+      call MPI_BARRIER(MPI_COMM_WORLD,IERR)
+    enddo
+
+    ! write the latest restart dump info into file
+    if (myid == 0) then
+      open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='unknown')
+      write(222,*) restart_index, itfin
+      close(222)
+    endif
+
+    ! keep only two sets of restart files (overwrite previous dump by swapping index)
+    if (restart_index == 1) then
+      restart_index=2
+    else
+      restart_index=1
+    endif
+
+  endif 
 
 end subroutine user_diagnostics
 

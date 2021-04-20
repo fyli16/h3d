@@ -1257,7 +1257,6 @@ subroutine parmov_2d
       call accumulate_time(time_begin_array(1,14),time_end_array(1,14),time_elapsed(14))
 
       call date_and_time(values=time_begin_array(:,15))
-      if (testorbt) goto 10
       NPTOTP = 0
       do IIZ=KB-1,KE
         do IIY=JB-1,JE
@@ -1362,7 +1361,7 @@ subroutine parmov_2d
         enddo
       enddo
 
- 10   kspc=is
+      kspc=is
 
       call MPI_ALLREDUCE(npart(is),npart_global(is),1,MPI_INTEGER8,&
                         MPI_SUM,COMM2D,IERR)

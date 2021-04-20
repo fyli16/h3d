@@ -271,7 +271,6 @@ subroutine parmov   ! particle move?
     ! collect density
     call date_and_time(values=time_begin_array(:,15))
     do is = 1, nspec
-      if (testorbt) goto 10
       nptotp = 0
       npart(is) = 0
       do iiz=kb-1,ke
@@ -325,8 +324,6 @@ subroutine parmov   ! particle move?
           enddo
         enddo
       enddo
-
- 10   continue 
 
       nescapearr(1) = nescape(is)
       nescapearr(2) = nescape_yz(is)
@@ -1428,9 +1425,6 @@ subroutine trans
   call date_and_time(values=time_end_array(:,7))
   call accumulate_time(time_begin_array(1,7),time_end_array(1,7),time_elapsed(7))
 
-  ! if test orbits, just return by here?
-  if (testorbt) return
-
   ! what
   do is = 1, nspec
     do k = kb-1, ke+1
@@ -1776,7 +1770,7 @@ subroutine caltemp2_global
     ! p_zz(:,:,:,is)=p_zz(:,:,:,is)/(tx0(is)*frac(is))
 
   enddo
-  
+
   call date_and_time(values=time_end_array(:,26))
   call accumulate_time(time_begin_array(1,26),time_end_array(1,26),time_elapsed(26))
 

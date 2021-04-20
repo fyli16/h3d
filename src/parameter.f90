@@ -74,14 +74,15 @@ module parameter_mod
   integer*8 :: nax, nbx, nay, nby, naz, nbz
   integer*8, dimension(8) :: wall_clock_begin,wall_clock_end
   integer*8, dimension(5) :: npx, npy, npz
-  integer*8 :: iterb, norbskip, nxcel, nspec, nx, ny, nz, n_print, &
-            n_write_data, n_write_energy, n_write_particle, n_write_restart, nskipx,nskipy,nskipz
+  integer*8 :: iterb, nxcel, nspec, n_sort, nx, ny, nz, n_print, &
+            n_write_mesh, n_write_energy, n_write_probes, n_write_tracking, &
+            n_write_particle, n_write_restart, nskipx,nskipy,nskipz
 
   ! resistivity
   integer*8 :: ieta, netax, netay, eta_par, eta_zs
   real*8 :: etamin, etamax
 
-  logical :: testorbt, restart, uniform_load_logical, MPI_IO_format, smoothing  
+  logical :: restart, uniform_load_logical, MPI_IO_format, smoothing  
 
   real*8 ::  hx, hy, hz, hxi, hyi, hzi, efld, bfld, efluid, ethermal, eptcl, time, te0
   integer*8 :: nsteps0, itfin, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(25), &
@@ -130,12 +131,13 @@ module parameter_mod
     nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, node_conf, periods, &  ! simulation domain
     xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
     uniform_load_logical, &
-    n_subcycles, nskipx, nskipy, nskipz, iterb, testorbt, norbskip, &  ! field solver
-    nspec, qspec, wspec, frac, denmin, wpiwci, btspec, bete, &  ! plasma setup
+    n_subcycles, nskipx, nskipy, nskipz, iterb, &  ! field solver
+    nspec, n_sort, qspec, wspec, frac, denmin, wpiwci, btspec, bete, &  ! plasma setup
     ieta, resis, netax, netay, etamin, etamax, eta_par, eta_zs, &
     anisot, gamma, ave1, ave2, phib, smoothing, smooth_coef, &
     dB_B0, num_cycles, &  ! init waves
-    n_print, n_write_data, n_write_energy, n_write_restart, n_write_particle, &  ! diagnostics
+    n_print, n_write_mesh, n_write_energy, n_write_probes, & ! diagnostics
+    n_write_tracking, n_write_restart, n_write_particle, &  
     tracking_binary, tracking_mpi, xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
     fxsho, nxcel, rcorr, ishape, teti  ! others
 
@@ -190,10 +192,9 @@ module parameter_mod
     call MPI_BCAST(nskipy                 ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(nskipz                 ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(iterb                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(testorbt               ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(norbskip               ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     ! plasma setup
     call MPI_BCAST(nspec                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(nsort                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(qspec                  ,5     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(wspec                  ,5     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(frac                   ,5     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
@@ -221,8 +222,10 @@ module parameter_mod
     call MPI_BCAST(num_cycles             ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     ! diagnostic control
     call MPI_BCAST(n_print                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(n_write_data           ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_write_mesh           ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_write_energy         ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_write_probes         ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_write_tracking       ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_write_restart        ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_write_particle       ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(tracking_binary        ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
@@ -564,9 +567,6 @@ module parameter_mod
     call MPI_TYPE_COMMIT(stridery, IERR)
     call MPI_TYPE_VECTOR(int(nylmax+2,4), int(nx+2,4), int(nx+2,4), MPI_DOUBLE_PRECISION, STRIDERZ, IERR)
     call MPI_TYPE_COMMIT(STRIDERZ, IERR)
-    
-    ! what does this mean?
-    if (.not.testorbt) norbskip=1
 
     allocate ( uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1), &
       ex    (nxmax,jb-1:je+1,kb-1:ke+1), ey     (nxmax,jb-1:je+1,kb-1:ke+1), ez     (nxmax,jb-1:je+1,kb-1:ke+1), &

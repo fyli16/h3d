@@ -357,15 +357,13 @@ subroutine init_wavepart
 
   ! advance field if n_subcyles>=1
   ! since currently n_subcycles==0, this block is skipped
-  if (.not.testorbt) then
-    do field_subcycle = 1, n_subcycles 
-      if (ndim /= 1) then
-        call field
-      else
-        call field_2d
-      endif
-    enddo
-  endif
+  do field_subcycle = 1, n_subcycles 
+    if (ndim /= 1) then
+      call field
+    else
+      call field_2d
+    endif
+  enddo
 
   ! calculate resistivity
   if(myid==0) then

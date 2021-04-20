@@ -33,8 +33,6 @@ n_subcycles = 0
 nskipx = 1,  nskipy = 1,  nskipz = 1, ! not implemented?
 
 iterb = 5,  ! ion push can use a larger step than field advance
-testorbt = .false.,  ! test orbit?
-norbskip = 1,
 
 ! ------------------ plasma setup ----------------!
 nspec = 1,  ! number of ion species, maximum 5
@@ -45,7 +43,8 @@ frac(1:5) = 1., ! density normalized to n0 (associated with wpi)
 denmin = 0.05,  ! when density is smaller than this value, force it to this value to avoid divergence in calculating E field
 wpiwci = 400., ! ratio of ion plasma frequency to ion cyclotron frequency
 btspec(1:5) = 0.01, ! beta of each ion species 
-bete = 0.01,  ! beta of electrons
+bete = 0.01, ! beta of electrons
+n_sort = 10, ! frequency at which to sort particles
 
 ! resistivity 
 ieta = 0,  ! other models ieta=1,2,3,4,5,6; see 'etacal.f90'
@@ -71,17 +70,19 @@ dB_B0 = 0.1,
 num_cycles = 5,
 
 ! ------------------ diagnostic control ----------------!
-n_print = 100,  ! frequency at which to print simulation information
-n_write_data = 1000, ! frequency at which to write data into files
+n_print = 100,  ! frequency at which to print simulation progression
 
+n_write_mesh = 1000, ! frequency at which to write mesh data 
 n_write_energy = 100, ! frequency at which to write time history of energy (field & particles)
+n_write_probes = 0, ! frequency at which to write probe data
+n_write_tracking = 0, ! frequency at which to write tracking particle data
+n_write_particle = 0, ! frequency at which to write particles within a volume
 
 tracking_binary = .true. ! write tracking data in binary (unformatted) or formatted form
 tracking_mpi = .true. ! write tracking files by mpi rank
 
-! dump particles 
-n_write_particle = 0, ! frequency at which to write particles within a box range
-xbox_l = 0., xbox_r = 1.0, ! box range within which particles will be dumped
+! volume within which particles will be dumped
+xbox_l = 0., xbox_r = 1.0,
 ybox_l = 0., ybox_r = 1.0, 
 zbox_l = 0., zbox_r = 2.24,
 
