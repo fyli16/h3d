@@ -249,3 +249,24 @@ subroutine track_particles_mpi
   write(13) buf_p1(:,1:ntot)
 
 end subroutine track_particles_mpi
+
+
+!---------------------------------------------------------------------
+! wrapper for user disganostic restart framework
+! passes the unit to write to
+!---------------------------------------------------------------------
+subroutine user_data_write_restart(wunit)
+  implicit none
+  integer, intent (in) :: wunit
+  
+end subroutine user_data_write_restart
+  
+!---------------------------------------------------------------------
+! wrapper for user disganostic restart framework
+! passes the unit to read from
+!---------------------------------------------------------------------
+subroutine user_diagnostics_restart(wunit)
+  implicit none
+  integer, intent (in) :: wunit
+
+end subroutine user_diagnostics_restart

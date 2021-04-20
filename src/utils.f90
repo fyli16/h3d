@@ -3,8 +3,8 @@
 !---------------------------------------------------------------------
 subroutine get_time(tlabel)
   implicit none
-  
-  real*8, intent(inout) :: tlabel
+
+  real*8, intent(out) :: tlabel
   integer :: now(8)
 
   call date_and_time(values=now)
