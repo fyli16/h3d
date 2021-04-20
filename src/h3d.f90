@@ -176,7 +176,7 @@ subroutine sim_loops
   if (myid==0) print*, "Executing main simulation loops:"
 
   ! time stamp just before entering the simulation loop
-  clock_time_init = get_time(now)
+  call get_time(clock_time_init)
   clock_time_old = clock_time_init
   
   ! main simulation loop
@@ -187,8 +187,7 @@ subroutine sim_loops
     call date_and_time(values=time_begin_array(:,1)) ! time one-whole-loop
 
     ! print time-step info
-    call date_and_time(values=now)
-    clock_time = now(5)*3600.+now(6)*60.+now(7)+now(8)*0.001
+    call get_time(clock_time)
     if (myid==0 .and. mod(it,n_print)==0) then
       write(6,"(A5,I7,A2,I7,A11,F8.3,A14,F8.3,A12,F8.3)") 'it = ', it, '/', itfinish, &
                     ',   time = ', time, &

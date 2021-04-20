@@ -5,7 +5,7 @@ module parameter_mod
   save
 
   ! global simulation/MPI
-  integer :: it, itstart, itfinish, itrestart, now(8), my_short_int, i_source, i_tag, i_length, i_i, &
+  integer :: it, itstart, itfinish, itrestart, my_short_int, i_source, i_tag, i_length, i_i, &
              time_begin_array(8,128), time_end_array(8,128), ierr, n_subcycles
   real*8 :: time_elapsed(128)
 

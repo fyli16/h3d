@@ -1,13 +1,16 @@
 !---------------------------------------------------------------------
 ! get current time
 !---------------------------------------------------------------------
-double precision function get_time(tlabel)
+subroutine get_time(tlabel)
   implicit none
-  integer :: tlabel(8)
+  
+  real*8, intent(inout) :: tlabel
+  integer :: now(8)
 
-  call date_and_time(values=tlabel)
-  get_time = tlabel(5)*3600. + tlabel(6)*60. + tlabel(7) + tlabel(8)*0.001
-end function get_time
+  call date_and_time(values=now)
+  tlabel = now(5)*3600. + now(6)*60. + now(7) + now(8)*0.001
+
+end subroutine get_time
 
 
 !---------------------------------------------------------------------
