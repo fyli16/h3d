@@ -6,7 +6,7 @@ module parameter_mod
 
   ! global simulation/MPI
   integer :: it, itstart, itfinish, itrestart, my_short_int, i_source, i_tag, i_length, i_i, &
-             time_begin_array(8,128), time_end_array(8,128), ierr, n_subcycles
+             time_begin(8,128), time_end(8,128), ierr, n_subcycles
   real*8 :: time_elapsed(128)
 
   logical :: periods(2), reorder
@@ -87,7 +87,7 @@ module parameter_mod
   real*8 ::  hx, hy, hz, hxi, hyi, hzi, efld, bfld, efluid, ethermal, eptcl, time, te0
   integer*8 :: nsteps0, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(25), &
               file_unit_read(20), nptot, npleaving, npentering, iclock_speed, nptotp
-  real*8 :: clock_time_init, clock_time_old, clock_time, clock_time1
+  real*8 :: clock_init, clock_old, clock_time, clock_time1
   real*8, dimension(:), allocatable :: dfac
   integer*8, dimension(:), allocatable :: nskip, ipleft, iprite, ipsendleft, ipsendrite, iprecv, &
             ipsendtop, ipsendbot, ipsendlefttop,ipsendleftbot,ipsendritetop,ipsendritebot,ipsend

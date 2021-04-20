@@ -6,7 +6,7 @@
 !---------------------------------------------------------------------
 ! user diagnostics
 !---------------------------------------------------------------------
-subroutine user_diagnostics
+subroutine diagnostics
   use parameter_mod
   implicit none 
 
@@ -30,14 +30,14 @@ subroutine user_diagnostics
     endif 
     
     ! calculate par & perp temperatures (needed only for diagnostics)
-    call date_and_time(values=time_begin_array(:,6))
+    call date_and_time(values=time_begin(:,6))
     if (ndim /= 1) then
       call caltemp2_global
     else
       call caltemp2_global_2d
     endif
-    call date_and_time(values=time_end_array(:,6))
-    call accumulate_time(time_begin_array(1,6),time_end_array(1,6),time_elapsed(6))
+    call date_and_time(values=time_end(:,6))
+    call accumulate_time(time_begin(1,6),time_end(1,6),time_elapsed(6))
 
     ! write data
     call write_mesh_data
@@ -63,7 +63,7 @@ subroutine user_diagnostics
   endif
 
   ! write probe data
-  call date_and_time(values=time_begin_array(:,31))
+  call date_and_time(values=time_begin(:,31))
   if ( n_write_probes>0 .and. mod(it,n_write_probes)==0 ) then
     if (tracking_mpi) then
       call virtual_probes_mpi
@@ -71,11 +71,11 @@ subroutine user_diagnostics
       call virtual_probes
     endif
   endif 
-  call date_and_time(values=time_end_array(:,31))
-  call accumulate_time(time_begin_array(1,31),time_end_array(1,31),time_elapsed(31))
+  call date_and_time(values=time_end(:,31))
+  call accumulate_time(time_begin(1,31),time_end(1,31),time_elapsed(31))
 
   ! write particle tracking data
-  call date_and_time(values=time_begin_array(:,32))
+  call date_and_time(values=time_begin(:,32))
   if ( n_write_tracking>0 .and. mod(it,n_write_tracking)>0 ) then
     if (tracking_mpi) then
       call track_particles_mpi
@@ -83,8 +83,8 @@ subroutine user_diagnostics
       call track_particles
     endif
   endif 
-  call date_and_time(values=time_end_array(:,32))
-  call accumulate_time(time_begin_array(1,32),time_end_array(1,32),time_elapsed(32))
+  call date_and_time(values=time_end(:,32))
+  call accumulate_time(time_begin(1,32),time_end(1,32),time_elapsed(32))
 
   ! write restart files
   if ( n_write_restart>0 .and. it>itstart .and. mod(it,n_write_restart)==0 ) then
@@ -112,7 +112,7 @@ subroutine user_diagnostics
 
   endif 
 
-end subroutine user_diagnostics
+end subroutine diagnostics
 
 
 !---------------------------------------------------------------------

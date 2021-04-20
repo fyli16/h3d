@@ -173,74 +173,77 @@ subroutine sim_loops
 
   integer :: i
 
-  if (myid==0) print*, "Executing main simulation loops:"
-
-  ! time stamp just before entering the simulation loop
-  call get_time(clock_time_init)
-  clock_time_old = clock_time_init
+  ! initialize time arrays, and get a time stamp
+  ! just before entering the simulation loop
+  time_elapsed=0.; time_begin=0; time_end=0
+  call get_time(clock_init)
+  clock_old = clock_init
   
   ! main simulation loop
-  time_elapsed=0.; time_begin_array=0; time_end_array=0
-
+  if (myid==0) print*, "Executing main simulation loops:"
   do while(it <= itfinish)
-  
-    call date_and_time(values=time_begin_array(:,1)) ! time one-whole-loop
+    call date_and_time(values=time_begin(:,1)) ! time one-whole-loop
 
-    ! print time-step info
+    ! print time & step info
     call get_time(clock_time)
     if (myid==0 .and. mod(it,n_print)==0) then
       write(6,"(A5,I7,A2,I7,A11,F8.3,A14,F8.3,A12,F8.3)") 'it = ', it, '/', itfinish, &
                     ',   time = ', time, &
-                    ',   delta_t = ', real(clock_time-clock_time_old), &
-                    ',   tot_t = ', real(clock_time-clock_time_init)
-      clock_time_old = clock_time
+                    ',   delta_t = ', real(clock_time-clock_old), &
+                    ',   tot_t = ', real(clock_time-clock_init)
+      clock_old = clock_time
     endif
 
     ! compute resistivity 
     ! (which could depend on local parameters such as current)
-    call date_and_time(values=time_begin_array(:,2))
+    call date_and_time(values=time_begin(:,2))
     if (ndim /= 1) then
       call eta_calc       ! Dietmar's resistivity
     else
       call eta_calc_2d    ! Dietmar's resistivity
     endif
+    call date_and_time(values=time_end(:,2))
+    call accumulate_time(time_begin(1,2),time_end(1,2),time_elapsed(2))
+
+    ! compute density and v's, and push particles
+    call date_and_time(values=time_begin(:,3))
     ntot = 0 ! for particle tracking
-    call trans ! 'trans' computes density and v's; it also calls parmov (particle push)
-    call date_and_time(values=time_end_array(:,2))
-    call accumulate_time(time_begin_array(1,2),time_end_array(1,2),time_elapsed(2))
+    call trans
+    call date_and_time(values=time_end(:,3))
+    call accumulate_time(time_begin(1,3),time_end(1,3),time_elapsed(3))
 
     ! sort particles
-    call date_and_time(values=time_begin_array(:,4))
+    call date_and_time(values=time_begin(:,4))
     if (mod(it,n_sort) == 0) call sortit  
-    call date_and_time(values=time_end_array(:,4))
-    call accumulate_time(time_begin_array(1,4),time_end_array(1,4),time_elapsed(4))
+    call date_and_time(values=time_end(:,4))
+    call accumulate_time(time_begin(1,4),time_end(1,4),time_elapsed(4))
 
     ! call field solver
-    call date_and_time(values=time_begin_array(:,5))
+    call date_and_time(values=time_begin(:,5))
     if (ndim /=1) then 
       call field
     else
       call field_2d
     endif     
-    call date_and_time(values=time_end_array(:,5))
-    call accumulate_time(time_begin_array(1,5),time_end_array(1,5),time_elapsed(5))
+    call date_and_time(values=time_end(:,5))
+    call accumulate_time(time_begin(1,5),time_end(1,5),time_elapsed(5))
 
     ! inject_wave ?
     ! if (it == 21000) call inject_wave
     ! if (mod(it,100) == 0) call kick
 
     ! call user diagnostics
-    call date_and_time(values=time_begin_array(:,30))
-    call user_diagnostics
-    call date_and_time(values=time_end_array(:,30))
-    call accumulate_time(time_begin_array(1,30),time_end_array(1,30),time_elapsed(30))
+    call date_and_time(values=time_begin(:,30))
+    call diagnostics
+    call date_and_time(values=time_end(:,30))
+    call accumulate_time(time_begin(1,30),time_end(1,30),time_elapsed(30))
 
     ! time/step increment
     time = time + dtwci
     it = it + 1
 
-    call date_and_time(values=time_end_array(:,1))
-    call accumulate_time(time_begin_array(1,1),time_end_array(1,1),time_elapsed(1))
+    call date_and_time(values=time_end(:,1))
+    call accumulate_time(time_begin(1,1),time_end(1,1),time_elapsed(1))
 
   enddo 
 
@@ -269,12 +272,13 @@ subroutine shutdown
     print*, " *** Run completed *** "
     print*, " "
     print*, " "
-    print*, " subroutine trans             (s)          =",time_elapsed(2)
-    print*, " subroutine sort              (s)          =",time_elapsed(4)
-    print*, " subroutine field             (s)          =",time_elapsed(5)
-    print*, " subroutine caltemp2          (s)          =",time_elapsed(6)
-    print*, " subroutine user_diagnostics  (s)          =",time_elapsed(30)
     print*, " total time                   (s)          =",time_elapsed(1)
+    print*, "   subroutine eta_cal         (s)          =",time_elapsed(2)
+    print*, "   subroutine trans           (s)          =",time_elapsed(3)
+    print*, "   subroutine sort            (s)          =",time_elapsed(4)
+    print*, "   subroutine field           (s)          =",time_elapsed(5)
+    print*, "   subroutine caltemp2        (s)          =",time_elapsed(6)
+    print*, "   subroutine diagnostics     (s)          =",time_elapsed(30)
     print*, " "
     print*, " "
     print*, " In subroutine caltemp2,"
@@ -287,7 +291,7 @@ subroutine shutdown
     print*, " In subroutine trans," 
     print*, "   subroutine parmov          (s)          =",time_elapsed(7)
     print*, "   subroutine energy          (s)          =",time_elapsed(8)
-    print*, "   total trans                (s)          =",time_elapsed(20)
+    print*, "   total trans                (s)          =",time_elapsed(3)
     print*, " "
     print*, " "
     print*, " In subroutine field,"
@@ -295,7 +299,7 @@ subroutine shutdown
     print*, "   subroutine bcalc           (s)          =",time_elapsed(10)
     print*, "   subroutine ecalc           (s)          =",time_elapsed(11)
     print*, "   subroutine focalc          (s)          =",time_elapsed(12)
-    print*, "   total field                (s)          =",time_elapsed(21)
+    print*, "   total field                (s)          =",time_elapsed(5)
     print*, " "
     print*, " "
     print*, " In subroutine parmov,"
@@ -311,7 +315,7 @@ subroutine shutdown
     print*, "   total bcalc                (s)          =",time_elapsed(22)
     print*, " "
     print*, " "
-    print*, " In subroutine user_diagnostics,"
+    print*, " In subroutine diagnostics,"
     print*, "   sub virtual_probes         (s)          =",time_elapsed(31)
     print*, "   sub track_particle         (s)          =",time_elapsed(32)
     print*, "   total user_diagnose        (s)          =",time_elapsed(30)
@@ -321,18 +325,18 @@ subroutine shutdown
     print*, "   subroutine xrealbcc        (s)          =",time_elapsed(18)
     print*, " "
     print*, " "
-    print*, "communication time/total time (%)          =" &
-                ,100.*(time_elapsed(24)+time_elapsed(25)+time_elapsed(14) &
+    print*, "communication time / total time (%)          =", &
+                100.*(time_elapsed(24)+time_elapsed(25)+time_elapsed(14) &
                 +time_elapsed(17)+time_elapsed(18))/time_elapsed(1)
     print*, " "
     print*, " "
     print*, "Further breakdown of communication time "
-    print*, "  particle exchage in subroutine parmov (%) =" &
-                ,100.*time_elapsed(14)/time_elapsed(1)
-    print*, "  subroutine xrealbcc                   (%) =" &
-                ,100.*(time_elapsed(25)+time_elapsed(17)+time_elapsed(18))/time_elapsed(1)
-    print*, "  subroutine xreal                      (%) =" &
-                ,100.*time_elapsed(24)/time_elapsed(1)
+    print*, "  particle exchage in subroutine parmov (%) =", &
+                100.*time_elapsed(14)/time_elapsed(1)
+    print*, "  subroutine xrealbcc                   (%) =", &
+                100.*(time_elapsed(25)+time_elapsed(17)+time_elapsed(18))/time_elapsed(1)
+    print*, "  subroutine xreal                      (%) =", &
+                100.*time_elapsed(24)/time_elapsed(1)
   endif
 
   call MPI_FINALIZE(IERR)

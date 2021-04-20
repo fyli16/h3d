@@ -5,35 +5,30 @@ subroutine field
   use parameter_mod
   implicit none
 
-  call date_and_time(values=time_begin_array(:,21))
-
-  call date_and_time(values=time_begin_array(:,9))
+  call date_and_time(values=time_begin(:,9))
   call pressgrad(1)
-  call date_and_time(values=time_end_array(:,9))
-  call accumulate_time(time_begin_array(1,9), time_end_array(1,9), time_elapsed(9))
+  call date_and_time(values=time_end(:,9))
+  call accumulate_time(time_begin(1,9), time_end(1,9), time_elapsed(9))
 
-  call date_and_time(values=time_begin_array(:,10))
+  call date_and_time(values=time_begin(:,10))
   call bcalc
-  call date_and_time(values=time_end_array(:,10))
-  call accumulate_time(time_begin_array(1,10), time_end_array(1,10), time_elapsed(10))
+  call date_and_time(values=time_end(:,10))
+  call accumulate_time(time_begin(1,10), time_end(1,10), time_elapsed(10))
 
-  call date_and_time(values=time_begin_array(:,9))
+  call date_and_time(values=time_begin(:,9))
   call pressgrad(0)
-  call date_and_time(values=time_end_array(:,9))
-  call accumulate_time(time_begin_array(1,9), time_end_array(1,9), time_elapsed(9))
+  call date_and_time(values=time_end(:,9))
+  call accumulate_time(time_begin(1,9), time_end(1,9), time_elapsed(9))
 
-  call date_and_time(values=time_begin_array(:,11))
+  call date_and_time(values=time_begin(:,11))
   call ecalc( 0 )
-  call date_and_time(values=time_end_array(:,11))
-  call accumulate_time(time_begin_array(1,11), time_end_array(1,11), time_elapsed(11))
+  call date_and_time(values=time_end(:,11))
+  call accumulate_time(time_begin(1,11), time_end(1,11), time_elapsed(11))
 
-  call date_and_time(values=time_begin_array(:,12))
+  call date_and_time(values=time_begin(:,12))
   call focalc
-  call date_and_time(values=time_end_array(:,12))
-  call accumulate_time(time_begin_array(1,12), time_end_array(1,12), time_elapsed(12))
-
-  call date_and_time(values=time_end_array(:,21))
-  call accumulate_time(time_begin_array(1,21), time_end_array(1,21), time_elapsed(21))
+  call date_and_time(values=time_end(:,12))
+  call accumulate_time(time_begin(1,12), time_end(1,12), time_elapsed(12))
 
   return
 end subroutine field
@@ -446,10 +441,10 @@ subroutine ecalc( iflag )
   endif
 
   ! boundary conditions
-  call date_and_time(values=time_begin_array(:,18))
+  call date_and_time(values=time_begin(:,18))
   call xrealbcc_pack_e(EX,EY,EZ,1_8,NX,NY,NZ)
-  call date_and_time(values=time_end_array(:,18))
-  call accumulate_time(time_begin_array(1,18),time_end_array(1,18),time_elapsed(18))
+  call date_and_time(values=time_end(:,18))
+  call accumulate_time(time_begin(1,18),time_end(1,18),time_elapsed(18))
 
   ! VR: impose periodic B.C. on E (in x)
   ! this should be part of xrealbcc*
@@ -534,7 +529,7 @@ subroutine bcalc
           ,tempy1(nxmax,jb-1:je+1,kb-1:ke+1) &
           ,tempz1(nxmax,jb-1:je+1,kb-1:ke+1)
 
-  call date_and_time(values=time_begin_array(:,22))
+  call date_and_time(values=time_begin(:,22))
   
   dts=dt/real(iterb)
   dts2=dts/2.
@@ -551,11 +546,11 @@ subroutine bcalc
     bzs=bz
 
     ! R-K first part
-    call date_and_time(values=time_begin_array(:,16))
+    call date_and_time(values=time_begin(:,16))
     call ecalc( 1 )
-    call date_and_time(values=time_end_array(:,16))
-    call accumulate_time(time_begin_array(1,16) &
-                                  ,time_end_array(1,16) &
+    call date_and_time(values=time_end(:,16))
+    call accumulate_time(time_begin(1,16) &
+                                  ,time_end(1,16) &
                                   ,time_elapsed(16))
       
     ! B = B(n)+dt*K1/2
@@ -581,11 +576,11 @@ subroutine bcalc
     enddo
       
     ! R-K part 2
-    call date_and_time(values=time_begin_array(:,16))
+    call date_and_time(values=time_begin(:,16))
     call ecalc( 1 )
-    call date_and_time(values=time_end_array(:,16))
-    call accumulate_time(time_begin_array(1,16) &
-                                  ,time_end_array(1,16) &
+    call date_and_time(values=time_end(:,16))
+    call accumulate_time(time_begin(1,16) &
+                                  ,time_end(1,16) &
                                   ,time_elapsed(16))
       
     ! B = B(n)+dt*K2/2
@@ -611,11 +606,11 @@ subroutine bcalc
     enddo
       
     ! R-K part 3
-    call date_and_time(values=time_begin_array(:,16))
+    call date_and_time(values=time_begin(:,16))
     call ecalc( 1 )
-    call date_and_time(values=time_end_array(:,16))
-    call accumulate_time(time_begin_array(1,16) &
-                                  ,time_end_array(1,16) &
+    call date_and_time(values=time_end(:,16))
+    call accumulate_time(time_begin(1,16) &
+                                  ,time_end(1,16) &
                                   ,time_elapsed(16))
       
     ! B = B(n)+dt*K3
@@ -641,11 +636,11 @@ subroutine bcalc
     enddo
       
     ! R-K  part 4
-    call date_and_time(values=time_begin_array(:,16))
+    call date_and_time(values=time_begin(:,16))
     call ecalc( 1 )
-    call date_and_time(values=time_end_array(:,16))
-    call accumulate_time(time_begin_array(1,16) &
-                                  ,time_end_array(1,16) &
+    call date_and_time(values=time_end(:,16))
+    call accumulate_time(time_begin(1,16) &
+                                  ,time_end(1,16) &
                                   ,time_elapsed(16))
 
     ! B = B(n) + dt*(K1+2K2+2K3+K4)/6
@@ -681,9 +676,9 @@ subroutine bcalc
   ! enddo
   
   
-  call date_and_time(values=time_end_array(:,22))
-  call accumulate_time(time_begin_array(1,22) &
-                                ,time_end_array(1,22) &
+  call date_and_time(values=time_end(:,22))
+  call accumulate_time(time_begin(1,22) &
+                                ,time_end(1,22) &
                                 ,time_elapsed(22))
 
   return

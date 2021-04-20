@@ -20,7 +20,6 @@ OBJS =  parameter.of90 \
 		field_2d.of90 \
 		particle.of90 \
 		eta_cal.of90 \
-		eta_cal_2d.of90 \
 		boundary.of90 \
 	 	diagnostics.of90\
 		io.of90\
