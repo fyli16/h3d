@@ -229,7 +229,6 @@ subroutine parmov   ! particle move?
             enddo
           enddo
         enddo
-
       enddo ! for is
       call date_and_time(values=time_end_array(:,15))
       call accumulate_time(time_begin_array(1,15),time_end_array(1,15),time_elapsed(15))
@@ -259,7 +258,6 @@ subroutine parmov   ! particle move?
       enddo ! for is
       call date_and_time(values=time_end_array(:,13))
       call accumulate_time(time_begin_array(1,13),time_end_array(1,13),time_elapsed(13))
-
     endif ! dt>0
 
     ! check particles

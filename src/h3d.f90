@@ -231,7 +231,7 @@ subroutine sim_loops
     ! if (it == 21000) call inject_wave
     ! if (mod(it,100) == 0) call kick
 
-    ! call user diagnostics: write 'probes' & 'track_particles'
+    ! call user diagnostics
     call date_and_time(values=time_begin_array(:,30))
     call user_diagnostics
     call date_and_time(values=time_end_array(:,30))

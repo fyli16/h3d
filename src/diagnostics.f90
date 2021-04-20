@@ -52,12 +52,12 @@ subroutine user_diagnostics
   endif 
 
   ! write history data: energy.dat, time.dat
-  if (myid==0 .and. mod(it,n_write_energy)==0) then
+  if ( myid==0 .and. n_write_energy>0 .and. mod(it,n_write_energy)==0 ) then
     write(11,*) it, efld, bfld, efluid, ethermal, eptcl ! energy.dat
+    ! write(14,*) it, time_elapsed(1:40)  ! time.dat 
   endif
-  ! write(14,*) it, time_elapsed(1:40)  ! time.dat   
-
-  ! write particles (within a given volume)
+    
+  ! write particles (within a volume)
   if (n_write_particle>0 .and. mod(it,n_write_particle)==0) then
     call write_particle_in_volume
   endif
@@ -87,8 +87,7 @@ subroutine user_diagnostics
   call accumulate_time(time_begin_array(1,32),time_end_array(1,32),time_elapsed(32))
 
   ! write restart files
-  if ( n_write_restart>0 .and. it>itstart .and. mod(int(it,8),n_write_restart)==0 ) then
-    if (myid == 0) print*, 'Writing restart files ...'
+  if ( n_write_restart>0 .and. it>itstart .and. mod(it,n_write_restart)==0 ) then
     itfin = it
     do i = 0, nprocs_over_60  
       if ( mod(int(myid,8),nprocs_over_60+1).eq.i) then
@@ -250,23 +249,3 @@ subroutine track_particles_mpi
   write(13) buf_p1(:,1:ntot)
 
 end subroutine track_particles_mpi
-
-
-!---------------------------------------------------------------------
-! wrapper for user disganostic restart framework
-! passes the unit to write to
-!---------------------------------------------------------------------
-subroutine user_data_write_restart(wunit)
-  implicit none
-  integer, intent (in) :: wunit
-end subroutine user_data_write_restart
-
-
-!---------------------------------------------------------------------
-! wrapper for user disganostic restart framework
-! passes the unit to read from
-!---------------------------------------------------------------------
-subroutine user_diagnostics_restart(wunit)
-  implicit none
-  integer, intent (in) :: wunit
-end subroutine user_diagnostics_restart

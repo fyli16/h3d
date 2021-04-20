@@ -73,21 +73,19 @@ num_cycles = 5,
 n_print = 100,  ! frequency at which to print simulation progression
 
 n_write_mesh = 1000, ! frequency at which to write mesh data 
-n_write_energy = 100, ! frequency at which to write time history of energy (field & particles)
-n_write_probes = 0, ! frequency at which to write probe data
+n_write_energy = 100, ! frequency at which to write integrated energy data
+n_write_probes = 0, ! frequency at which to write field probe data
 n_write_tracking = 0, ! frequency at which to write tracking particle data
 n_write_particle = 0, ! frequency at which to write particles within a volume
+n_write_restart = 0, ! frequency at which to write restart files
 
 tracking_binary = .true. ! write tracking data in binary (unformatted) or formatted form
-tracking_mpi = .true. ! write tracking files by mpi rank
+tracking_mpi = .true. ! write tracking data by mpi rank
 
 ! volume within which particles will be dumped
 xbox_l = 0., xbox_r = 1.0,
 ybox_l = 0., ybox_r = 1.0, 
 zbox_l = 0., zbox_r = 2.24,
-
-! frequency at which to write restart files
-n_write_restart = 0, 
 
 ! ------------------------- others ---------------------!
 ! sth used in 'io.f90'
