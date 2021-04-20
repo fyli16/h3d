@@ -803,7 +803,7 @@ subroutine write_particle_in_volume
   real*8 :: par_x,par_y,par_z
   integer :: ierror
 
-  integer*8 :: count_kbq,time_begin(8),time_end(8)
+  integer*8 :: count_kbq
   integer*8 :: nptotp_kbq,npart_kbq(2),np_ijk,Storage_Error_p,Storage_Error
   data fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8/0,0,0,0,0,0,0,0/
   data foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8/0,0,0,0,0,0,0,0/
