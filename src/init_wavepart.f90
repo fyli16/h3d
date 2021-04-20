@@ -44,7 +44,7 @@ subroutine init_wavepart
   call random_seed(put=myid*seed) ! set current seed
 
   ! init step of iterations
-  it = 0; itfin = 0; 
+  it = 0; itrestart = 0; 
   itstart = it; itfinish = tmax/dtwci
 
   ! some constants of mesh
