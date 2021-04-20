@@ -6,9 +6,12 @@ double precision function get_time(tlabel)
   integer :: tlabel(8)
 
   call date_and_time(values=tlabel)
-  get_time = tlabel(5)*3600. + tlabel(6)*60. + tlabel(7) + now(8)*0.001
+  get_time = tlabel(5)*3600. + tlabel(6)*60. + tlabel(7) + tlabel(8)*0.001
 end function get_time
 
+
+!---------------------------------------------------------------------
+! accumulate time between two stamps
 !---------------------------------------------------------------------
 subroutine accumulate_time(tbegin, tend, telapsed)
   implicit none
