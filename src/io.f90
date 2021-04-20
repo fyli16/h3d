@@ -1151,7 +1151,8 @@ subroutine write_file_non_mpio(dat,rnorm,filenum,irec_start,ny1m,nz1m)
   use parameter_mod
   implicit none
 
-  integer*8 :: num_sdat, filenum
+  integer :: num_sdat
+  integer*8 :: filenum
 
   integer*8 :: irec_start,iry1,iry2,irz1,irz2
   double precision, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: dat
