@@ -5,7 +5,7 @@ module parameter_mod
   save
 
   ! global simulation/MPI
-  integer :: it, itstart, itfinish, now(8), my_short_int, i_source, i_tag, i_length, i_i, &
+  integer :: it, itstart, itfinish, itrestart, now(8), my_short_int, i_source, i_tag, i_length, i_i, &
              time_begin_array(8,128), time_end_array(8,128), ierr, n_subcycles
   real*8 :: time_elapsed(128)
 
@@ -85,7 +85,7 @@ module parameter_mod
   logical :: restart, uniform_load_logical, MPI_IO_format, smoothing  
 
   real*8 ::  hx, hy, hz, hxi, hyi, hzi, efld, bfld, efluid, ethermal, eptcl, time, te0
-  integer*8 :: nsteps0, itfin, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(25), &
+  integer*8 :: nsteps0, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(25), &
               file_unit_read(20), nptot, npleaving, npentering, iclock_speed, nptotp
   real*8 :: clock_time_init, clock_time_old, clock_time, clock_time1
   real*8, dimension(:), allocatable :: dfac
@@ -109,7 +109,7 @@ module parameter_mod
   character(len=160) :: data_directory, restart_directory, cycle_ascii, cycle_ascii_new, &
                         myid_char, cleanup_status
   
-  integer*8:: recl_for_real, recl_for_double
+  integer*8:: recl_for_single, recl_for_double
   real :: single_prec
   real*8 :: double_prec
 
@@ -357,7 +357,7 @@ module parameter_mod
     ! a file for unformatted direct access when there are
     ! input/output statements with the same list of output-items.
     single_prec=0.; double_prec=0.
-    inquire(IOLENGTH=recl_for_real) single_prec
+    inquire(IOLENGTH=recl_for_single) single_prec
     inquire(IOLENGTH=recl_for_double) double_prec
 
     ! if nprocs > 512? shouldn't it be nprocs_over_512?

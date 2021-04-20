@@ -1,16 +1,27 @@
 !---------------------------------------------------------------------
-subroutine accumulate_time(time_begin, time_end, time_elapsed)
+! get current time
+!---------------------------------------------------------------------
+double precision function get_time(tlabel)
+  implicit none
+  integer :: tlabel(8)
+
+  call date_and_time(values=tlabel)
+  get_time = tlabel(5)*3600. + tlabel(6)*60. + tlabel(7) + now(8)*0.001
+end function get_time
+
+!---------------------------------------------------------------------
+subroutine accumulate_time(tbegin, tend, telapsed)
   implicit none
 
-  integer, dimension(8) :: time_begin, time_end
-  real*8 :: time_elapsed
+  integer, dimension(8) :: tbegin, tend
+  real*8 :: telapsed
   
-  time_elapsed = time_elapsed &
-       + (time_end(3)-time_begin(3))*3600.*24. &
-       + (time_end(5)-time_begin(5))*3600. &
-       + (time_end(6)-time_begin(6))*60. &
-       + (time_end(7)-time_begin(7)) &
-       + (time_end(8)-time_begin(8))*0.001
+  telapsed = telapsed &
+       + (tend(3)-tbegin(3))*3600.*24. &
+       + (tend(5)-tbegin(5))*3600. &
+       + (tend(6)-tbegin(6))*60. &
+       + (tend(7)-tbegin(7)) &
+       + (tend(8)-tbegin(8))*0.001
 
   return
 end subroutine accumulate_time

@@ -88,10 +88,10 @@ subroutine user_diagnostics
 
   ! write restart files
   if ( n_write_restart>0 .and. it>itstart .and. mod(it,n_write_restart)==0 ) then
-    itfin = it
+    itrestart = it
     do i = 0, nprocs_over_60  
       if ( mod(int(myid,8),nprocs_over_60+1).eq.i) then
-        call restart_read_write(1.0)
+        call write_read_restart_files(1.0)
       endif
       call MPI_BARRIER(MPI_COMM_WORLD,IERR)
     enddo
@@ -99,7 +99,7 @@ subroutine user_diagnostics
     ! write the latest restart dump info into file
     if (myid == 0) then
       open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='unknown')
-      write(222,*) restart_index, itfin
+      write(222,*) restart_index, itrestart
       close(222)
     endif
 
@@ -131,7 +131,7 @@ subroutine virtual_probes
   buf(5,i)=by(2,jb,kb)
   buf(6,i)=bz(2,jb,kb)
   buftime(i)=it  ! TBF: in fact, only run 0 needs this
-  if (i==nbufsteps .or. it==itfin) then
+  if (i==nbufsteps .or. it==itrestart) then
     if (myid==0) then
       do j=1,nbufsteps
         do k=1,nprobes

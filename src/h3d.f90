@@ -61,26 +61,26 @@ subroutine init_restart
 
   if (myid == 0) then
     open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='old')
-    read(222,*) restart_index, itfin ! itfin is the final restart dump of previous run
+    read(222,*) restart_index, itrestart 
     print*, " "
     print*, " Restart from set # ", restart_index
-    print*, " Restart from iteration # ", itfin
+    print*, " Restart from iteration # ", itrestart
     print*, " "
     close(222)
   endif
 
   call MPI_BCAST(restart_index,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-  call MPI_BCAST(itfin        ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
+  call MPI_BCAST(itrestart    ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
 
   do i = 0, nprocs_over_60 
     if (mod(int(myid,8), nprocs_over_60+1) .eq. i) then 
-        call restart_read_write(-1.0)  ! read restart data
-        call MPI_BCAST(itfin,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
+        call write_read_restart_files(-1.0)  ! read restart data
+        call MPI_BCAST(itrestart,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
     endif
   enddo
 
   ! determine start, finish number of steps
-  itstart = itfin
+  itstart = itrestart
   it = itstart
   itfinish = (tmax-t_stopped)/dtwci + itstart
     
@@ -176,8 +176,7 @@ subroutine sim_loops
   if (myid==0) print*, "Executing main simulation loops:"
 
   ! time stamp just before entering the simulation loop
-  call date_and_time(values=now)
-  clock_time_init = now(5)*3600.+now(6)*60.+now(7)+now(8)*0.001
+  clock_time_init = get_time(now)
   clock_time_old = clock_time_init
   
   ! main simulation loop

@@ -1,4 +1,144 @@
 !---------------------------------------------------------------------
+! open history diagnostic files
+subroutine open_hist_files
+  use parameter_mod
+  implicit none 
+
+  character (len=240) :: filename1, filename2
+
+  if (myid == 0) then
+    if (restart) then
+      open(unit=11,file=trim(data_directory)//'energy.dat' ,status='old',position='append')
+      ! open(unit=14,file=trim(data_directory)//'time.dat' ,status='old',position='append')
+      if (.not. tracking_mpi)then
+        open(unit=12,file=trim(data_directory)//'probes.dat' ,status='old',position='append')
+        if (tracking_binary) then
+          open(unit=13,file=trim(data_directory)//'tracking_b.dat',form='unformatted',status='old',position='append')
+        else
+          open(unit=13,file=trim(data_directory)//'tracking.dat',status='old',position='append')
+        endif
+      endif
+    else
+      open(unit=11,file=trim(data_directory)//'energy.dat' ,status='unknown')
+      ! open(unit=14,file=trim(data_directory)//'time.dat' ,status='unknown')
+      if (.not. tracking_mpi)then
+        open(unit=12,file=trim(data_directory)//'probes.dat' ,status='unknown')
+        if (tracking_binary) then
+          open(unit=13,file=trim(data_directory)//'tracking_b.dat' ,form='unformatted',status='unknown')
+        else
+          open(unit=13,file=trim(data_directory)//'tracking.dat' ,status='unknown')
+        endif
+      endif
+    endif
+  endif
+
+  if (tracking_mpi) then
+    write(filename1,"(a,i4.4,a)") 'probes/probes_', myid, '.dat'
+    write(filename2,"(a,i4.4,a)") 'tracking/tracking_', myid, '.dat'
+    if (restart) then
+      open(unit=12,file=trim(data_directory)//filename1,status='old',position='append')
+      open(unit=13,file=trim(data_directory)//filename2,form='unformatted',status='old',access='append')
+    else
+      open(unit=12,file=trim(data_directory)//filename1,status='unknown')
+      open(unit=13,file=trim(data_directory)//filename2,form='unformatted',status='unknown')
+    endif
+  endif
+
+end subroutine open_hist_files
+
+
+!---------------------------------------------------------------------
+subroutine open_files
+  use parameter_mod
+  implicit none
+  
+  integer*8 :: i, lenrec
+ 
+  lenrec = (nxmax-2)*recl_for_single
+  do i = 1, 25
+    file_unit(i) = 250 + i
+  enddo
+
+  open (file_unit(1),                                                                         &
+        file= trim(trim(data_directory)//'bx/bx_'//trim(adjustl(cycle_ascii)))//'.gda', &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(2),                                                                         &
+        file= trim(trim(data_directory)//'by/by_'//trim(adjustl(cycle_ascii)))//'.gda', &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(3),                                                                         &
+        file= trim(trim(data_directory)//'bz/bz_'//trim(adjustl(cycle_ascii)))//'.gda', &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(4),                                                                         &
+        file= trim(trim(data_directory)//'den/den_'//trim(adjustl(cycle_ascii)))//'.gda', &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(5),                                                                         &
+        file= trim(trim(data_directory)//'ex/ex_'//trim(adjustl(cycle_ascii)))//'.gda', &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(6),                                                                         &
+        file= trim(trim(data_directory)//'ey/ey_'//trim(adjustl(cycle_ascii)))//'.gda', &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(7),                                                                         &
+        file= trim(trim(data_directory)//'ez/ez_'//trim(adjustl(cycle_ascii)))//'.gda', &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(8),                                                                         &
+        file= trim(trim(data_directory)//'vix/vix_'//trim(adjustl(cycle_ascii)))//'.gda', &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(9),                                                                          &
+        file= trim(trim(data_directory)//'viy/viy_'//trim(adjustl(cycle_ascii)))//'.gda', &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(10),                                                                         &
+        file= trim(trim(data_directory)//'viz/viz_'//trim(adjustl(cycle_ascii)))//'.gda', &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(11),                                                                          &
+        file= trim(trim(data_directory)//'tpar/tpar_'//trim(adjustl(cycle_ascii)))//'.gda', &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(12),                                                                           &
+        file= trim(trim(data_directory)//'tperp/tperp_'//trim(adjustl(cycle_ascii)))//'.gda', &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+
+  if (eta_par == 0) then
+    open (file_unit(13),                                                                         &
+          file= trim(trim(data_directory)//'eta/eta_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  else
+    open (file_unit(13),                                                                             &
+          file= trim(trim(data_directory)//'eta_par/eta_par_'//trim(adjustl(cycle_ascii)))//'.gda', &
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  endif
+
+  open (file_unit(14),                                                                      &
+        file= trim(trim(data_directory)//'p-xx/p-xx_'//trim(adjustl(cycle_ascii)))//'.gda', &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(15),                                                                      &
+        file= trim(trim(data_directory)//'p-xy/p-xy_'//trim(adjustl(cycle_ascii)))//'.gda', &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(16),                                                                      &
+        file= trim(trim(data_directory)//'p-xz/p-xz_'//trim(adjustl(cycle_ascii)))//'.gda', &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(17),                                                                      &
+        file= trim(trim(data_directory)//'p-yy/p-yy_'//trim(adjustl(cycle_ascii)))//'.gda', &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(18),                                                                      &
+        file= trim(trim(data_directory)//'p-yz/p-yz_'//trim(adjustl(cycle_ascii)))//'.gda', &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(19),                                                                      &
+        file= trim(trim(data_directory)//'p-zz/p-zz_'//trim(adjustl(cycle_ascii)))//'.gda', &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(20),                                                                      &
+        file= trim(trim(data_directory)//'fox/fox_'//trim(adjustl(cycle_ascii)))//'.gda',   &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(21),                                                                      &
+        file= trim(trim(data_directory)//'foy/foy_'//trim(adjustl(cycle_ascii)))//'.gda',   &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  open (file_unit(22),                                                                      &
+        file= trim(trim(data_directory)//'foz/foz_'//trim(adjustl(cycle_ascii)))//'.gda',   &
+        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+  
+  return
+end subroutine open_files
+
+
+!---------------------------------------------------------------------
 ! write data
 !---------------------------------------------------------------------
 subroutine write_mesh_data
@@ -266,7 +406,7 @@ end subroutine write_mesh_data
 ! rw = +1.0: write 
 ! rw = -1.0: read
 !---------------------------------------------------------------------
-subroutine restart_read_write(rw)
+subroutine write_read_restart_files(rw)
   use parameter_mod
   implicit none
 
@@ -453,7 +593,7 @@ subroutine restart_read_write(rw)
 
     write(f_unit) hx,hy,hz,hxi,hyi,hzi                           &
     ,pi,efld,bfld,efluid,ethermal,eptcl,time,te0                &
-    ,itfin,iwt                                   &
+    ,itrestart,iwt                                   &
     ,nx1,nx2,ny1,ny2,nz1,nz2,it                                  &
     ! ,ipstore,nptot,npleaving,npentering                &
     ,nptot,npleaving,npentering                        &
@@ -608,7 +748,7 @@ subroutine restart_read_write(rw)
 
     read(f_unit) hx,hy,hz,hxi,hyi,hzi                            &
     ,efld,bfld,efluid,ethermal,eptcl,time,te0                                        &
-    ,itfin,iwt                     &
+    ,itrestart,iwt                     &
     ,nx1,nx2,ny1,ny2,nz1,nz2,it                                   &
     ! ,ipstore,nptot,npleaving,npentering                 &
     ,nptot,npleaving,npentering                 &
@@ -646,150 +786,7 @@ subroutine restart_read_write(rw)
   call sortit  ! see 'utils.f90'
 
   return
-
-end subroutine restart_read_write
-
-
-!---------------------------------------------------------------------
-! open history diagnostic files
-subroutine open_hist_files
-  use parameter_mod
-  implicit none 
-
-  character (len=240) :: filename1, filename2
-
-  if (myid == 0) then
-    if (restart) then
-      open(unit=11,file=trim(data_directory)//'energy.dat' ,status='old',position='append')
-      ! open(unit=14,file=trim(data_directory)//'time.dat' ,status='old',position='append')
-      if (.not. tracking_mpi)then
-        open(unit=12,file=trim(data_directory)//'probes.dat' ,status='old',position='append')
-        if (tracking_binary) then
-          open(unit=13,file=trim(data_directory)//'tracking_b.dat',form='unformatted',status='old',position='append')
-        else
-          open(unit=13,file=trim(data_directory)//'tracking.dat',status='old',position='append')
-        endif
-      endif
-    else
-      open(unit=11,file=trim(data_directory)//'energy.dat' ,status='unknown')
-      ! open(unit=14,file=trim(data_directory)//'time.dat' ,status='unknown')
-      if (.not. tracking_mpi)then
-        open(unit=12,file=trim(data_directory)//'probes.dat' ,status='unknown')
-        if (tracking_binary) then
-          open(unit=13,file=trim(data_directory)//'tracking_b.dat' ,form='unformatted',status='unknown')
-        else
-          open(unit=13,file=trim(data_directory)//'tracking.dat' ,status='unknown')
-        endif
-      endif
-    endif
-  endif
-
-  if (tracking_mpi) then
-    write(filename1,"(a,i4.4,a)") 'probes/probes_', myid, '.dat'
-    write(filename2,"(a,i4.4,a)") 'tracking/tracking_', myid, '.dat'
-    if (restart) then
-      open(unit=12,file=trim(data_directory)//filename1,status='old',position='append')
-      open(unit=13,file=trim(data_directory)//filename2,form='unformatted',status='old',access='append')
-    else
-      open(unit=12,file=trim(data_directory)//filename1,status='unknown')
-      open(unit=13,file=trim(data_directory)//filename2,form='unformatted',status='unknown')
-    endif
-  endif
-
-end subroutine open_hist_files
-
-
-!---------------------------------------------------------------------
-subroutine open_files
-  use parameter_mod
-  implicit none
-  
-  integer*8 :: file_unit_ref, j, lenrec
- 
-  lenrec = (nxmax-2)*recl_for_real
-  file_unit_ref = 250
-  do j = 1, 25
-    file_unit(j) = file_unit_ref + j
-  enddo
-
-  open (file_unit(1),                                                                         &
-        file= trim(trim(data_directory)//'bx/bx_'//trim(adjustl(cycle_ascii)))//'.gda', &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(2),                                                                         &
-        file= trim(trim(data_directory)//'by/by_'//trim(adjustl(cycle_ascii)))//'.gda', &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(3),                                                                         &
-        file= trim(trim(data_directory)//'bz/bz_'//trim(adjustl(cycle_ascii)))//'.gda', &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(4),                                                                         &
-        file= trim(trim(data_directory)//'den/den_'//trim(adjustl(cycle_ascii)))//'.gda', &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(5),                                                                         &
-        file= trim(trim(data_directory)//'ex/ex_'//trim(adjustl(cycle_ascii)))//'.gda', &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(6),                                                                         &
-        file= trim(trim(data_directory)//'ey/ey_'//trim(adjustl(cycle_ascii)))//'.gda', &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(7),                                                                         &
-        file= trim(trim(data_directory)//'ez/ez_'//trim(adjustl(cycle_ascii)))//'.gda', &
-        form='unformatted',   &
-        action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(8),                                                                         &
-        file= trim(trim(data_directory)//'vix/vix_'//trim(adjustl(cycle_ascii)))//'.gda', &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(9),                                                                          &
-        file= trim(trim(data_directory)//'viy/viy_'//trim(adjustl(cycle_ascii)))//'.gda', &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(10),                                                                         &
-        file= trim(trim(data_directory)//'viz/viz_'//trim(adjustl(cycle_ascii)))//'.gda', &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(11),                                                                          &
-        file= trim(trim(data_directory)//'tpar/tpar_'//trim(adjustl(cycle_ascii)))//'.gda', &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(12),                                                                           &
-        file= trim(trim(data_directory)//'tperp/tperp_'//trim(adjustl(cycle_ascii)))//'.gda', &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-
-  if (eta_par == 0) then
-    open (file_unit(13),                                                                         &
-          file= trim(trim(data_directory)//'eta/eta_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  else
-    open (file_unit(13),                                                                             &
-          file= trim(trim(data_directory)//'eta_par/eta_par_'//trim(adjustl(cycle_ascii)))//'.gda', &
-          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  endif
-
-  open (file_unit(14),                                                                      &
-        file= trim(trim(data_directory)//'p-xx/p-xx_'//trim(adjustl(cycle_ascii)))//'.gda', &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(15),                                                                      &
-        file= trim(trim(data_directory)//'p-xy/p-xy_'//trim(adjustl(cycle_ascii)))//'.gda', &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(16),                                                                      &
-        file= trim(trim(data_directory)//'p-xz/p-xz_'//trim(adjustl(cycle_ascii)))//'.gda', &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(17),                                                                      &
-        file= trim(trim(data_directory)//'p-yy/p-yy_'//trim(adjustl(cycle_ascii)))//'.gda', &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(18),                                                                      &
-        file= trim(trim(data_directory)//'p-yz/p-yz_'//trim(adjustl(cycle_ascii)))//'.gda', &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(19),                                                                      &
-        file= trim(trim(data_directory)//'p-zz/p-zz_'//trim(adjustl(cycle_ascii)))//'.gda', &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(20),                                                                      &
-        file= trim(trim(data_directory)//'fox/fox_'//trim(adjustl(cycle_ascii)))//'.gda',   &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(21),                                                                      &
-        file= trim(trim(data_directory)//'foy/foy_'//trim(adjustl(cycle_ascii)))//'.gda',   &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  open (file_unit(22),                                                                      &
-        file= trim(trim(data_directory)//'foz/foz_'//trim(adjustl(cycle_ascii)))//'.gda',   &
-        form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-  
-  return
-end subroutine open_files
+end subroutine write_read_restart_files
 
 
 !---------------------------------------------------------------------
@@ -972,7 +969,7 @@ subroutine write_particle_in_volume
     enddo
   enddo
       
-  lenrec=10*recl_for_real
+  lenrec=10*recl_for_single
   if (myid == 0) then
       filenum = 101
       open (filenum,                                                       &

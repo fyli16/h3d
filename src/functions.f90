@@ -385,8 +385,7 @@ module flux_mod
     sqrtpi=sqrt(acos(-1.d+00))
     rat=argum/vtherm
     x1=(x-argum)/vtherm
-    flux=ss*(1.d+00-xran) &
-    +argum*sqrtpi*(erf(x1)-1.d+00)-vtherm*exp(-x1*x1)
+    flux = ss*(1.d+00-xran) + argum*sqrtpi*(erf(x1)-1.d+00) - vtherm*exp(-x1*x1)
   end function flux
 end module flux_mod
 

@@ -51,8 +51,8 @@ ieta = 0,  ! other models ieta=1,2,3,4,5,6; see 'etacal.f90'
 resis = 1.e-6,  ! ieta=0 model; constant resisitivity, i.e., eta=resis
 netax = 10, netay = 2 ! used in ieta=1 model
 etamin = 1.0e-6, etamax = 5.0e-5,  ! used in ieta>1 models
-eta_par=0, ! parallel resisitivity? sth used in 'field.f90'
-eta_zs=28, ! scale length of resistive layer along z (in unit of cell size)
+eta_par = 0, ! parallel resisitivity? sth used in 'field.f90'
+eta_zs = 28, ! scale length of resistive layer along z (in unit of cell size)
 
 ! anisotropy in velocity
 anisot(1:5) = 1.0, ! anisotropy of velocity for each species, used in 'init waves'
