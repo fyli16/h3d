@@ -181,6 +181,7 @@ subroutine sim_loops
   
   ! main simulation loop
   if (myid==0) print*, "Executing main simulation loops:"
+
   do while(it <= itfinish)
     call date_and_time(values=time_begin(:,1)) ! time one-whole-loop
 
@@ -198,9 +199,9 @@ subroutine sim_loops
     ! (which could depend on local parameters such as current)
     call date_and_time(values=time_begin(:,2))
     if (ndim /= 1) then
-      call eta_calc       ! Dietmar's resistivity
+      call eta_calc       
     else
-      call eta_calc_2d    ! Dietmar's resistivity
+      call eta_calc_2d    
     endif
     call date_and_time(values=time_end(:,2))
     call accumulate_time(time_begin(1,2),time_end(1,2),time_elapsed(2))
@@ -306,7 +307,7 @@ subroutine shutdown
     print*, "   particle pushing           (s)          =",time_elapsed(13)
     print*, "   particle exchange          (s)          =",time_elapsed(14)
     print*, "   moment calculation         (s)          =",time_elapsed(15)
-    print*, "   total parmov               (s)          =",time_elapsed(19)
+    print*, "   total parmov               (s)          =",time_elapsed(7)
     print*, " "
     print*, " "
     print*, " In subroutine bcalc,"

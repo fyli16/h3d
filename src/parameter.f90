@@ -20,7 +20,7 @@ module parameter_mod
 
   real*8 :: zb, ze, yb, ye, teti, volume_fraction, cell_volume_ratio, &
             zb_logical, ze_logical, yb_logical, ye_logical, &
-            xb_logical, xe_logical, xb, xe, smooth_coef
+            xb_logical, xe_logical, xb, xe
 
   real*8, dimension(:), allocatable :: zbglobal, zeglobal, ybglobal, yeglobal, &
                                       xc_uniform, yc_uniform, zc_uniform, &
@@ -134,7 +134,7 @@ module parameter_mod
     n_subcycles, nskipx, nskipy, nskipz, iterb, &  ! field solver
     nspec, n_sort, qspec, wspec, frac, denmin, wpiwci, btspec, bete, &  ! plasma setup
     ieta, resis, netax, netay, etamin, etamax, eta_par, eta_zs, &
-    anisot, gamma, ave1, ave2, phib, smoothing, smooth_coef, &
+    anisot, gamma, ave1, ave2, phib, smoothing, &
     dB_B0, num_cycles, &  ! init waves
     n_print, n_write_mesh, n_write_energy, n_write_probes, & ! diagnostics
     n_write_tracking, n_write_restart, n_write_particle, &  
@@ -216,7 +216,6 @@ module parameter_mod
     call MPI_BCAST(ave2                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(phib                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(smoothing              ,1     ,MPI_LOGICAL,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(smooth_coef            ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     ! init waves
     call MPI_BCAST(dB_B0                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(num_cycles             ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)

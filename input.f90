@@ -63,7 +63,6 @@ phib = 180.0,
 
 ! performing density/velocity smoothing
 smoothing = .true., 
-smooth_coef = 0. ! seems not implemented
 
 ! ---------------------- init waves --------------------!
 dB_B0 = 0.1,

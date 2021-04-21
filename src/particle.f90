@@ -27,7 +27,7 @@ subroutine push
   real*8:: x_disp,y_disp,z_disp,disp_max_p(3),disp_max(3), &
           y_disp_max_p, x_disp_max_p, z_disp_max_p, &
           y_disp_max, x_disp_max, z_disp_max
-  integer*8 :: Courant_Violation,Courant_Violation_p 
+  integer*8 :: Courant_Violation, Courant_Violation_p 
 
   dtxi = 1./meshX%dt
   dtyi = 1./meshY%dt
@@ -292,6 +292,7 @@ subroutine push
         call MPI_FINALIZE(IERR)
         STOP
     endif
+
   enddo !is
 
 end subroutine push
@@ -302,6 +303,7 @@ subroutine particle_boundary
     use parameter_mod
     use mesh_mod
     implicit none
+
     integer*4 :: ppacket(3),ppacketg(3),dpacket(4),dpacketg(4)
     integer*8 :: epacket(2),epacketg(2),loop
     real*8 :: xpart,ypart,zpart
@@ -364,7 +366,7 @@ subroutine particle_boundary
     v_limit=(cell_size_min/dtwci)/wpiwci
 
     do is=1, nspec    
-      irepeatp=0                !  are no fast particles, it will be called 
+      irepeatp=0  ! are no fast particles, it will be called 
       nsendp=0
       nrecvp=0
       ipleft (is)=0
@@ -862,9 +864,6 @@ subroutine parmov   ! particle move?
   data foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8/0,0,0,0,0,0,0,0/
   data foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8/0,0,0,0,0,0,0,0/
 
-  ! timing 'parmov'
-  call date_and_time(values=time_begin(:,19))
-
   dtxi = one/meshX%dt
   dtyi = one/meshY%dt
   dtzi = one/meshZ%dt
@@ -908,17 +907,11 @@ subroutine parmov   ! particle move?
   
   call xrealbcc_pack_b(bx_av,by_av,bz_av,1_8,nx,ny,nz)
 
-  ! if ((myid==0) .and. mod(it,n_print)==0) then
-  !   print*, " "
-  !   print*, "  Calling parmov ..."
-  ! endif 
-
   ! initalize diagnostic variables that keep track of particle number, injection, and escape
-  deltime1 = 0.0
-  deltime2 = 0.0
-  npleavingp = 0
+  deltime1 = 0.; deltime2 = 0.; npleavingp = 0
 
-  if (dt .ne. 0) then ! if dt==0, no actual particle push is done
+  ! if dt==0, no actual particle push is done
+  if (dt .ne. 0) then 
     ! advance particles for a first half step
     call date_and_time(values=time_begin(:,13))
     call push
@@ -1038,7 +1031,7 @@ subroutine parmov   ! particle move?
     call date_and_time(values=time_end(:,15))
     call accumulate_time(time_begin(1,15),time_end(1,15),time_elapsed(15))
 
-    ! advance particles for a seconnd half step
+    ! advance particles for second half step
     call date_and_time(values=time_begin(:,13))
     do is = 1, nspec
       do iize = kb-1, ke
@@ -1063,6 +1056,7 @@ subroutine parmov   ! particle move?
     enddo ! for is
     call date_and_time(values=time_end(:,13))
     call accumulate_time(time_begin(1,13),time_end(1,13),time_elapsed(13))
+
   endif ! dt>0
 
   ! check particles
@@ -1159,9 +1153,7 @@ subroutine parmov   ! particle move?
         enddo
       enddo
     enddo
-
   enddo ! for is
-
   call date_and_time(values=time_end(:,15))
   call accumulate_time(time_begin(1,15),time_end(1,15),time_elapsed(15))
 
@@ -1198,9 +1190,6 @@ subroutine parmov   ! particle move?
 
   ninj        = 0
   ninj_global = 0
-
-  call date_and_time(values=time_end(:,19))
-  call accumulate_time(time_begin(1,19),time_end(1,19),time_elapsed(19))
 
   return
 end subroutine parmov
@@ -1421,11 +1410,11 @@ subroutine trans
     do k = kb-1, ke+1
       do j = jb-1, je+1
         do i = 1, nx2 
-          den(i,j,k)=den(i,j,k)+dns(i,j,k,is)*qspec(is) 
-          denh(i,j,k)=denh(i,j,k)+dnsh(i,j,k,is)*qspec(is) 
-          vix(i,j,k)=vix(i,j,k)+qspec(is)*vxs(i,j,k,is) 
-          viy(i,j,k)=viy(i,j,k)+qspec(is)*vys(i,j,k,is) 
-          viz(i,j,k)=viz(i,j,k)+qspec(is)*vzs(i,j,k,is)
+          den(i,j,k) = den(i,j,k) + dns(i,j,k,is)*qspec(is) 
+          denh(i,j,k) = denh(i,j,k) + dnsh(i,j,k,is)*qspec(is) 
+          vix(i,j,k) = vix(i,j,k) + qspec(is)*vxs(i,j,k,is) 
+          viy(i,j,k) = viy(i,j,k) + qspec(is)*vys(i,j,k,is) 
+          viz(i,j,k) = viz(i,j,k) + qspec(is)*vzs(i,j,k,is)
         enddo
       enddo
     enddo
