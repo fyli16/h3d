@@ -598,7 +598,7 @@ subroutine write_read_restart_files(rw)
     ! ,ipstore,nptot,npleaving,npentering                &
     ,nptot,npleaving,npentering                        &
     ,iclock_speed,iopen,iseed, file_unit,file_unit_read          &
-    ,clock_init,clock_old,clock_time                   &
+    ,clock_init,clock_old,clock_now                   &
     ,clock_time1
 
     write(f_unit) dfac,nskip,ipleft,iprite,ipsendleft,ipsendrite &
@@ -753,7 +753,7 @@ subroutine write_read_restart_files(rw)
     ! ,ipstore,nptot,npleaving,npentering                 &
     ,nptot,npleaving,npentering                 &
     ,iclock_speed,iopen,iseed, file_unit,file_unit_read           &
-    ,clock_init,clock_old,clock_time                    &
+    ,clock_init,clock_old,clock_now                    &
     ,clock_time1
 
     read(f_unit) dfac,nskip,ipleft,iprite,ipsendleft,ipsendrite  &

@@ -1147,7 +1147,7 @@ subroutine parmov   ! particle move?
     nescape_xz_global(is) = nescapearr_global(7)
     npart_global(is)      = nescapearr_global(8)
 
-    deltime2 = deltime2 + real(clock_time1-clock_time)
+    deltime2 = deltime2 + real(clock_time1-clock_now)
 
     call xreal(dns(1,jb-1,kb-1,is),nx,ny,nz)
     call xrealbcc(dns(1,jb-1,kb-1,is),1_8,nx,ny,nz)
@@ -2861,7 +2861,7 @@ subroutine parmov_2d
     call MPI_ALLREDUCE(nescape_xz(is),nescape_xz_global(is),1,MPI_INTEGER8,&
                       MPI_SUM,COMM2D,IERR)
 
-    deltime2 = deltime2 + real(clock_time1-clock_time)
+    deltime2 = deltime2 + real(clock_time1-clock_now)
 
     call xreal_2d(DNS(1,jb-1,kb-1,is),NX,NY,NZ)
     call xreal_2d(VXS(1,jb-1,kb-1,is),NX,NY,NZ)
@@ -2892,7 +2892,7 @@ subroutine parmov_2d
   call MPI_ALLREDUCE(nptotp,nptot,1,MPI_INTEGER8,MPI_SUM,MPI_COMM_WORLD,IERR)
   call MPI_ALLREDUCE(npleavingp,npleaving,1,MPI_INTEGER8,MPI_SUM,MPI_COMM_WORLD,IERR)
 
-  if (mod(it,n_print)==0) call get_time(clock_time)
+  if (mod(it,n_print)==0) call get_time(clock_now)
 
   if (myid == 0.and.mod(it,n_print)==0) then
     do is=1,nspec
