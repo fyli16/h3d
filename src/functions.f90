@@ -431,8 +431,6 @@ module m_functions
 
   !---------------------------------------------------------------------
   function gammp(a,x)
-    use gser_mod
-    use gcf_mod
     double precision a,gammp,x
     double precision gammcf,gamser,gln
     if(x.lt.0..or.a.le.0.) stop 'bad arguments in gammp'
