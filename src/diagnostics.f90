@@ -26,7 +26,7 @@ module m_diagnostics
     endif
     call MPI_BCAST(cycle_ascii,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
-    
+
     ! write mesh data
     if ( n_write_mesh>0 .and. mod(it,n_write_mesh)==0 ) then
       ! this block is not executed when MPI_IO_format=.true.
@@ -57,6 +57,7 @@ module m_diagnostics
     endif 
 
     ! write history data: energy.dat
+    if (it==itstart) call open_hist_files  ! open files at the first step
     call diag_energy_hist
       
     ! write particles (within a volume)

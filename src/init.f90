@@ -13,18 +13,12 @@ module m_init
   subroutine init_sim
     ! read input deck
     call init_input
-    
     ! MPI domain decomposition 
     call init_mpi_decomp
-    
     ! allocate global arrays
     call init_arrays
-    
     ! initialize mesh 
     call init_mesh
-
-    ! open history diagnostic files
-    call open_hist_files
 
     ! restart or a fresh start
     call makelist  ! see utils.f90

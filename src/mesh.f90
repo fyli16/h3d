@@ -46,9 +46,9 @@ module m_mesh
   contains
 
   !---------------------------------------------------------------------
-  ! initialize mesh attributes 
+  ! initialize mesh attributes along one dimension
   !---------------------------------------------------------------------
-  subroutine mesh_init1d(m, xa, xb, xl, na, nb, nl)
+  subroutine mesh_init_1d(m, xa, xb, xl, na, nb, nl)
     use m_functions
     use m_utils
     use m_parameter, only : myid
@@ -59,7 +59,7 @@ module m_mesh
     integer*8 :: i, nbb
      
     if( (xa.ge.xb).or.(na.ge.nb) ) then 
-      call error_abort('mesh_init1d(): bad parameters --- stop!')
+      call error_abort('mesh_init_1d(): bad parameters --- stop!')
     endif
 
     m%na=na ; m%nb=nb ; m%nl=nl
@@ -96,8 +96,6 @@ module m_mesh
         m%cb1 = 0.
         m%cb2 = 0.
     endif
-    ! if (myid==0) print*, '  m%ca1, m%ca2, m%cb1, m%cb2 = ', m%ca1, m%ca2, m%cb1, m%cb2
-    ! if (myid==0) print*, '  m%epsa, m%epsb = ', m%epsa, m%epsb
 
     ! for na=0, this block is not executed
     do i = 0,na-1
@@ -137,82 +135,7 @@ module m_mesh
     m%dxn(nl+3) = m%dxn(nl+2) 
       
     return
-  end subroutine mesh_init1d
-
-
-  !---------------------------------------------------------------------
-  ! destroy mesh
-  !---------------------------------------------------------------------
-  subroutine mesh_destruct(m)
-
-    type(mesh), intent(inout) :: m
-
-    if(associated(m%xn)) then
-      deallocate(m%xn)  
-      deallocate(m%xc)  
-      deallocate(m%dxc)  
-      deallocate(m%dxn)  
-      nullify(m%xn)
-      nullify(m%xc)
-      nullify(m%dxc)
-      nullify(m%dxn)
-    endif
-
-    m%na = 0 ; m%nb = 0 ; m%nl = 0
-
-    return
-  end subroutine mesh_destruct
-
-
-  !---------------------------------------------------------------------
-  ! transform physical coordinate to logical space 
-  ! mesh_init1d() must be called prior to this call
-  !---------------------------------------------------------------------
-  double precision function mesh_unmap(m,x) 
-
-    type(mesh), intent(in) :: m
-    real*8, intent(in) :: x 
-    real*8 :: t
-
-    if(x.lt.m%xa) then
-      t = m%ta - m%ca2*log( m%ca1*(m%xa-x)+1. )
-    else if(x.le.m%xb) then
-      t = m%ta + (x-m%xa)*m%dtdx 
-    else 
-      t = m%tb + m%cb2*log( m%cb1*(x-m%xb)+1. ) 
-    endif
-    ! prevent mapping outiside of logical interval [0,1]
-    if(t >= 1.) t = 1.-epsilon(real(1)) 
-    if(t <= 0.) t = epsilon(real(1)) 
-    mesh_unmap = t
-
-    return
-  end function mesh_unmap
-
-
-  !---------------------------------------------------------------------
-  ! transform physical coordinate to logical space 
-  ! mesh_init1d() must be called prior to this call
-  !---------------------------------------------------------------------
-  double precision function mesh_map(m,t)
-
-    type(mesh), intent(in) :: m
-    real*8, intent(in) :: t 
-    real*8 :: x
-
-    if(t.lt.m%ta) then
-      x = m%xa-(exp((m%ta-t)/m%ca2)-1.)/m%ca1
-    else if(t.le.m%tb) then
-      x = m%xa + (t-m%ta)/m%dtdx
-    else 
-      x = m%xb + (exp((t-m%tb)/m%cb2)-1.)/m%cb1
-    endif
-    ! prevent mapping outside of physical interval [0,xl]
-    if(x >= m%xl) x = m%xl-epsilon(real(1)) 
-    if(x <= 0.) x = epsilon(real(1)) 
-    mesh_map = x
-    return
-  end function mesh_map
+  end subroutine mesh_init_1d
 
 
   !---------------------------------------------------------------------
@@ -220,7 +143,7 @@ module m_mesh
   ! then for each xu(i) find ix(i) such as 
   ! m%xc(ix) <= xu(i) < m%xc(ix+1) if inode==cell
   ! m%xn(ix) <= xu(i) < m%xn(ix+1) if inode==node
-  ! mesh_init1d() must be called prior to this call
+  ! mesh_init_1d() must be called prior to this call
   !---------------------------------------------------------------------
   subroutine mesh_index_yuri(m, inode, ix)
 
@@ -261,7 +184,7 @@ module m_mesh
   ! then for each xu(i) find ix(i) such as 
   ! m%xc(ix) <= xu(i) < m%xc(ix+1) if inode==cell
   ! m%xn(ix) <= xu(i) < m%xn(ix+1) if inode==node
-  ! mesh_init1d() must be called prior to this call
+  ! mesh_init_1d() must be called prior to this call
   !---------------------------------------------------------------------
   subroutine mesh_index_hxv(m, inode, ix, inode_uniform)
 
@@ -303,6 +226,57 @@ module m_mesh
 
 
   !---------------------------------------------------------------------
+  ! transform physical coordinate to logical space 
+  ! mesh_init_1d() must be called prior to this call
+  !---------------------------------------------------------------------
+  double precision function mesh_map(m,t)
+
+    type(mesh), intent(in) :: m
+    real*8, intent(in) :: t 
+    real*8 :: x
+
+    if(t.lt.m%ta) then
+      x = m%xa-(exp((m%ta-t)/m%ca2)-1.)/m%ca1
+    else if(t.le.m%tb) then
+      x = m%xa + (t-m%ta)/m%dtdx
+    else 
+      x = m%xb + (exp((t-m%tb)/m%cb2)-1.)/m%cb1
+    endif
+    ! prevent mapping outside of physical interval [0,xl]
+    if(x >= m%xl) x = m%xl-epsilon(real(1)) 
+    if(x <= 0.) x = epsilon(real(1)) 
+    mesh_map = x
+    return
+  end function mesh_map
+
+
+  !---------------------------------------------------------------------
+  ! transform physical coordinate to logical space 
+  ! mesh_init_1d() must be called prior to this call
+  !---------------------------------------------------------------------
+  double precision function mesh_unmap(m,x) 
+
+    type(mesh), intent(in) :: m
+    real*8, intent(in) :: x 
+    real*8 :: t
+
+    if(x.lt.m%xa) then
+      t = m%ta - m%ca2*log( m%ca1*(m%xa-x)+1. )
+    else if(x.le.m%xb) then
+      t = m%ta + (x-m%xa)*m%dtdx 
+    else 
+      t = m%tb + m%cb2*log( m%cb1*(x-m%xb)+1. ) 
+    endif
+    ! prevent mapping outiside of logical interval [0,1]
+    if(t >= 1.) t = 1.-epsilon(real(1)) 
+    if(t <= 0.) t = epsilon(real(1)) 
+    mesh_unmap = t
+
+    return
+  end function mesh_unmap
+
+
+  !---------------------------------------------------------------------
   ! initialize mesh
   !---------------------------------------------------------------------
   subroutine init_mesh
@@ -316,9 +290,9 @@ module m_mesh
     endif
 
     ! Initialize uniform mesh
-    call mesh_init1d(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh
-    call mesh_init1d(meshY,yaa,ybb,ymax,nay,nby,ny) ! initialize y-mesh
-    call mesh_init1d(meshZ,zaa,zbb,zmax,naz,nbz,nz) ! initialize z-mesh
+    call mesh_init_1d(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh
+    call mesh_init_1d(meshY,yaa,ybb,ymax,nay,nby,ny) ! initialize y-mesh
+    call mesh_init_1d(meshZ,zaa,zbb,zmax,naz,nbz,nz) ! initialize z-mesh
 
     ! mesh_index_yuri
     call mesh_index(meshX,cell,ixv_2_c_map)
