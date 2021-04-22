@@ -9,6 +9,7 @@
 program h3d 
   use m_parameters
   use m_functions
+  use m_init
   use m_mesh
   implicit none
 
@@ -36,120 +37,6 @@ program h3d
   call shutdown
 
 end program h3d
-
-
-!---------------------------------------------------------------------
-! initialize data from a previous run
-!---------------------------------------------------------------------
-subroutine init_restart
-  use m_parameters
-  use m_mesh
-  implicit none 
-
-  integer*8 :: ixe, iye, ize, i, j, k
-
-  ! read in restart data set and corresponding step of iteration
-  if (myid == 0) then
-    open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='old')
-    read(222,*) restart_index, itrestart 
-    print*, " "
-    print*, " Restart from set # ", restart_index
-    print*, " Restart from iteration # ", itrestart
-    print*, " "
-    close(222)
-  endif
-  call MPI_BCAST(restart_index,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-  call MPI_BCAST(itrestart    ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-
-  ! what's the purpose of nprocs_over_60
-  do i = 0, nprocs_over_60 
-    if (mod(myid,nprocs_over_60+1) .eq. i) then 
-        call write_read_restart_files(-1.0)  ! read restart data
-        call MPI_BCAST(itrestart,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
-    endif
-  enddo
-
-  ! determine start, finish number of steps
-  itstart = itrestart; it = itstart
-  itfinish = (tmax-t_stopped)/dtwci + itstart
-    
-  if (restart_index == 1) then
-    restart_index=2
-  else
-    restart_index=1
-  endif
-
-  ! Uniform mesh - Same as is in version 5.0
-  yb = (jb-1)*hy  ! where is hy, hz defined before this?
-  ye = je    *hy
-  zb = (kb-1)*hz
-  ze = ke    *hz
-    
-  ! Nonuniform mesh
-  zb = meshZ%xn(kb+1)
-  ze = meshZ%xn(ke+2)
-  do ipe = 0,nprocs-1
-    zbglobal(ipe) = meshZ%xn(kbglobal(ipe)+1)
-    zeglobal(ipe) = meshZ%xn(keglobal(ipe)+2)
-  enddo
-
-  yb = meshY%xn(jb+1)
-  ye = meshY%xn(je+2)
-  do ipe = 0,nprocs-1
-    ybglobal(ipe) = meshY%xn(jbglobal(ipe)+1)
-    yeglobal(ipe) = meshY%xn(jeglobal(ipe)+2)
-  enddo
-            
-  volume_fraction = (ye-yb)*(ze-zb)/(ymax*zmax)
-  
-  xb = 0.
-  xe = xmax
-  xb_logical = MESH_UNMAP(meshX,xb)
-  xe_logical = MESH_UNMAP(meshX,xe)
-  yb_logical = MESH_UNMAP(meshY,yb)
-  ye_logical = MESH_UNMAP(meshY,ye)
-  zb_logical = MESH_UNMAP(meshZ,zb)
-  ze_logical = MESH_UNMAP(meshZ,ze)
-            
-  do i = 1, nspec
-    npm = npx(i)*npy(i)*npz(i)*nprocs
-    dfac(i) = real(ny*nz*nx)/real(npm)
-    do ixe=1,nx2
-        do iye=jb-1,je+1
-          do ize=kb-1,ke+1
-              qp_cell(ixe,iye,ize,i) = meshX%dxc(ixe)*meshY%dxc(iye+1)*meshZ%dxc(ize+1)*dfac(i)*frac(i)
-          enddo
-        enddo
-    enddo
-  enddo
-          
-  do i = 1, nxmax
-    xc_uniform(i) = hx*(i-1.5)
-    xv_uniform(i) = hx*(i-2.0)
-  enddo
-
-  do j = 1, nymax
-    yc_uniform(j) = hy*(j-0.5)
-    yv_uniform(j) = hy*(j-1.0)
-  enddo
-
-  do k = 1, nzmax
-    zc_uniform(k) = hz*(k-0.5)
-    zv_uniform(k) = hz*(k-1.0)
-  enddo
-    
-  if (myid==0) then
-    my_short_int = it
-    call integer_to_character(cycle_ascii,len(cycle_ascii),my_short_int)
-    if (cycle_ascii=='') cycle_ascii='0'
-    cycle_ascii_new=trim(adjustl(cycle_ascii))
-    print*, " cycle = ", cycle_ascii_new
-  endif
-  call MPI_BCAST(cycle_ascii    ,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
-  call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
-
-  return 
-end subroutine init_restart
 
 
 !---------------------------------------------------------------------
