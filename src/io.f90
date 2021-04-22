@@ -1,7 +1,7 @@
 !---------------------------------------------------------------------
 ! open history diagnostic files
 subroutine open_hist_files
-  use parameter_mod
+  use m_parameters
   implicit none 
 
   character (len=240) :: filename1, filename2
@@ -49,7 +49,7 @@ end subroutine open_hist_files
 
 !---------------------------------------------------------------------
 subroutine open_files
-  use parameter_mod
+  use m_parameters
   implicit none
   
   integer*8 :: i, lenrec
@@ -142,7 +142,7 @@ end subroutine open_files
 ! write data
 !---------------------------------------------------------------------
 subroutine write_mesh_data
-  use parameter_mod
+  use m_parameters
   implicit none  
 
   integer :: is
@@ -407,7 +407,7 @@ end subroutine write_mesh_data
 ! rw = -1.0: read
 !---------------------------------------------------------------------
 subroutine write_read_restart_files(rw)
-  use parameter_mod
+  use m_parameters
   implicit none
 
   integer*8 :: f_unit, np_count, is, ixe, iye, ize, noresete
@@ -791,8 +791,8 @@ end subroutine write_read_restart_files
 
 !---------------------------------------------------------------------
 subroutine write_particle_in_volume
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
       
   real*8 :: fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8
@@ -1037,7 +1037,7 @@ end subroutine write_particle_in_volume
 
 !---------------------------------------------------------------------
 subroutine write_file(dat,rnorm,fileName,irec_start,ny1m,nz1m)
-  use parameter_mod
+  use m_parameters
   implicit none
 
   integer :: num_sdat
@@ -1143,7 +1143,7 @@ end subroutine write_file
 
 !---------------------------------------------------------------------
 subroutine write_file_non_mpio(dat,rnorm,filenum,irec_start,ny1m,nz1m) 
-  use parameter_mod
+  use m_parameters
   implicit none
 
   integer :: num_sdat

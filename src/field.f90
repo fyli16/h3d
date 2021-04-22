@@ -2,7 +2,7 @@
 ! advances electromagnetic field in time
 !---------------------------------------------------------------------
 subroutine field
-  use parameter_mod
+  use m_parameters
   implicit none
 
   call date_and_time(values=time_begin(:,9))
@@ -39,8 +39,8 @@ end subroutine field
 ! @param iflag: memory flag?
 !---------------------------------------------------------------------
 subroutine pressgrad(iflag)
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
 
   integer :: iflag
@@ -106,8 +106,8 @@ end subroutine pressgrad
 ! computes electric field and curl(E)
 !---------------------------------------------------------------------
 subroutine ecalc( iflag )
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
 
   integer :: iflag
@@ -519,8 +519,8 @@ end subroutine ecalc
 ! advances magnetic field
 !---------------------------------------------------------------------
 subroutine bcalc
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
 
   integer*8 :: i,j,k,ii
@@ -689,8 +689,8 @@ end subroutine bcalc
 ! ??
 !---------------------------------------------------------------------
 subroutine focalc
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
   
   real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8

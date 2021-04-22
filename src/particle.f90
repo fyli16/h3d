@@ -2,8 +2,8 @@
 ! This subourtine pushes particles for half a step
 !---------------------------------------------------------------------
 subroutine push
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
 
   integer*8 :: is,iixe,iiye,iize,l
@@ -300,8 +300,8 @@ end subroutine push
 
 !---------------------------------------------------------------------
 subroutine particle_boundary
-    use parameter_mod
-    use mesh_mod
+    use m_parameters
+    use m_mesh
     implicit none
 
     integer*4 :: ppacket(3),ppacketg(3),dpacket(4),dpacketg(4)
@@ -807,8 +807,8 @@ end subroutine particle_boundary
 
 !---------------------------------------------------------------------
 subroutine parmov   ! particle move?    
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
 
   real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8, &
@@ -1199,8 +1199,8 @@ end subroutine parmov
 ! sort the particles
 !---------------------------------------------------------------------
 subroutine sortit
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
 
   real*8 :: pstore(nplmax)
@@ -1365,8 +1365,8 @@ end subroutine sortit
 ! what is the difference between vxs and vix?
 !-----------------------------------------------------------------
 subroutine trans        
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
 
   integer*8 :: is, i, j, k, jbmin, jbmax, kbmin, kbmax
@@ -1486,8 +1486,8 @@ end subroutine trans
 ! compute perp and par temperature and pressure tensor
 !-----------------------------------------------------------------
 subroutine caltemp2_global
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
 
   real*8 :: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,xx,xy,xz,yy,yz,zz
@@ -1812,8 +1812,8 @@ end subroutine caltemp2_global
 ! and particle energies
 !-----------------------------------------------------------------
 subroutine energy
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
   real*8 :: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,xx,xy,xz,yy,yz,zz
   integer*8 ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,is,l,iix,iixe
@@ -2001,8 +2001,8 @@ end subroutine energy
 
 !---------------------------------------------------------------------
 subroutine parmov_2d
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
 
   real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8,by1,by2,by3,by4,by5,by6,by7,by8, &

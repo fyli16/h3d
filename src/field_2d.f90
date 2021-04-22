@@ -1,7 +1,7 @@
 !---------------------------------------------------------------------
 subroutine field_2d
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
 
   call date_and_time(values=time_begin(:,9))
@@ -35,8 +35,8 @@ end subroutine field_2d
 
 !---------------------------------------------------------------------
 subroutine pressgrad_2d(iflag)
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
   integer :: iflag
   integer*8 :: i,j,k
@@ -72,8 +72,8 @@ end subroutine pressgrad_2d
 
 !---------------------------------------------------------------------
 subroutine ecalc_2d(iflag)
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
 
   integer :: iflag
@@ -245,8 +245,8 @@ end subroutine ecalc_2d
 
 !---------------------------------------------------------------------
 subroutine bcalc_2d
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
   integer*8 :: i, j, k, ii
   real*8 :: dts, dts2, dts6
@@ -397,8 +397,8 @@ end subroutine bcalc_2d
 
 !---------------------------------------------------------------------
 subroutine focalc_2d
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
 
   real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8
@@ -525,7 +525,7 @@ end subroutine focalc_2d
 
 !---------------------------------------------------------------------
 subroutine xreal_2d(a,nx1m,ny1m,nz1m)
-  use parameter_mod
+  use m_parameters
   implicit none
 
   integer*8 :: i, j, nx1m, ny1m, nz1m, k
@@ -555,7 +555,7 @@ end subroutine xreal_2d
 
 !---------------------------------------------------------------------
 subroutine xrealbcc_2d(a, ibnd, nx1m, ny1m,nz1m)
-  use parameter_mod
+  use m_parameters
   implicit none
   integer*8 :: ibnd,i,j,nx1m,ny1m,nz1m
   real*8 :: a(nxmax,jb-1:je+1,kb-1:ke+1)&
@@ -579,7 +579,7 @@ end subroutine xrealbcc_2d
 
 !---------------------------------------------------------------------
 subroutine xrealbcc_pack_b_2d(a_x,a_y,a_z, ibnd, nx1m, ny1m,nz1m)
-  use parameter_mod
+  use m_parameters
   implicit none
 
   integer*8 :: i,j,nx1m,ny1m,nz1m,k,ibnd
@@ -640,8 +640,8 @@ end subroutine xrealbcc_pack_b_2d
     
 !---------------------------------------------------------------------
 subroutine caltemp2_global_2d
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
 
   real*8 :: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,xx,xy,xz,yy,yz,zz
@@ -917,7 +917,7 @@ end subroutine caltemp2_global_2d
 
 !---------------------------------------------------------------------
 subroutine xrealbcc_pack_e_2d(a_x,a_y,a_z, ibnd, nx1m, ny1m,nz1m)
-  use parameter_mod
+  use m_parameters
   implicit none
 
   integer*8 :: ibnd,i,j,nx1m,ny1m,nz1m,k
@@ -978,7 +978,7 @@ end subroutine xrealbcc_pack_e_2d
 
 !---------------------------------------------------------------------
 subroutine nsmth_2d (a,nx2m,ny2m,nz2m)
-  use parameter_mod
+  use m_parameters
   implicit none
 
   integer*8 :: i,j,k

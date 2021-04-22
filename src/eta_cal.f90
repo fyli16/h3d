@@ -10,8 +10,8 @@
 ! (5) (2) and (4) combined, with (4) reduced by a factor (1/5)
 !---------------------------------------------------------------------
 subroutine eta_calc
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
 
   real*8 :: ajl(nxmax, jb-1:jb+nylmax, kb-1:kb+nzlmax) 
@@ -305,7 +305,7 @@ end subroutine eta_calc
 ! (5) (2) and (4) combined, with (4) reduced by a factor (1/5)
 !-----------------------------------------------------------------------
 subroutine eta_calc_2d
-  use parameter_mod
+  use m_parameters
   implicit none
 
   double precision :: ajl(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax) 

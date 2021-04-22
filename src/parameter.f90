@@ -1,5 +1,5 @@
 ! Declare global parameters and global arrays in this module
-module parameter_mod  
+module m_parameters  
   use mpi
   implicit none
   save
@@ -642,4 +642,4 @@ module parameter_mod
 
   end subroutine allocate_arrays 
 
-end module parameter_mod
+end module m_parameters

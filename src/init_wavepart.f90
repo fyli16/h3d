@@ -2,8 +2,8 @@
 ! init waves
 !---------------------------------------------------------------------
 subroutine init_wavepart
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none
 
   integer*8 :: ibp1, ibp2, i, remake, field_subcycle

@@ -21,7 +21,7 @@
 ! xa/na > dx and (xl-xb)/(nl-nb) > dx
 !===============================================================
 
-module mesh_mod
+module m_mesh
   implicit none
 
   type mesh
@@ -365,7 +365,7 @@ module mesh_mod
 
   !---------------------------------------------------------------------
   ! subroutine mesh_interpolated_3d(nonuniform_mesh, uniform_mesh, nonuniform_mesh_global)
-  !   use parameter_mod
+  !   use m_parameters
 
   !   real*8 :: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,w1,w2,w3,w4,w5,w6,w7,w8
   !   integer*8:: ix,iy,iz,ixp1,iyp1,izp1,i,j,k,jmin,jmax,kmin,kmax
@@ -467,7 +467,7 @@ module mesh_mod
   ! set up uniform mesh
   !---------------------------------------------------------------------
   subroutine setup_mesh
-    use parameter_mod
+    use m_parameters
 
     integer :: i
 
@@ -477,7 +477,7 @@ module mesh_mod
     endif
 
     ! Initialize uniform mesh
-    ! where meshX, meshY, meshZ are declared in 'mesh_mod'
+    ! where meshX, meshY, meshZ are declared in 'm_mesh'
     call mesh_init(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh
     call mesh_init(meshY,yaa,ybb,ymax,nay,nby,ny) ! initialize y-mesh
     call mesh_init(meshZ,zaa,zbb,zmax,naz,nbz,nz) ! initialize z-mesh
@@ -528,4 +528,4 @@ module mesh_mod
 
   end subroutine setup_mesh
 
-end module mesh_mod
+end module m_mesh

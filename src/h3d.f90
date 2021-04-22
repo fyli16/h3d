@@ -9,9 +9,9 @@
 !***************************************************************************
 
 program h3d 
-  use parameter_mod
+  use m_parameters
   use functions_mod
-  use mesh_mod
+  use m_mesh
   implicit none
 
   ! Initialize MPI
@@ -53,8 +53,8 @@ end program h3d
 ! initialize data from a previous run
 !---------------------------------------------------------------------
 subroutine init_restart
-  use parameter_mod
-  use mesh_mod
+  use m_parameters
+  use m_mesh
   implicit none 
 
   integer*8 :: ixe, iye, ize, i, j, k
@@ -168,7 +168,8 @@ end subroutine init_restart
 ! main simulation loops
 !---------------------------------------------------------------------
 subroutine sim_loops
-  use parameter_mod
+  use m_parameters
+  use m_diagnostics
   implicit none 
 
   integer :: i
@@ -255,7 +256,7 @@ end subroutine sim_loops
 ! shutdown simulation and exit
 !---------------------------------------------------------------------
 subroutine shutdown
-  use parameter_mod
+  use m_parameters
   implicit none 
 
   if (myid == 0) then

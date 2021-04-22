@@ -40,7 +40,7 @@ end subroutine accumulate_time
 ! i.e. 27 points are involved
 !---------------------------------------------------------------------
 subroutine nsmth (a)
-  use parameter_mod
+  use m_parameters
   implicit none
   integer*8 i,j,k
   real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
@@ -112,7 +112,7 @@ end subroutine clock_write
 
 !---------------------------------------------------------------------
 subroutine makelist
-  use parameter_mod
+  use m_parameters
   implicit none
 
   integer*8:: ip
