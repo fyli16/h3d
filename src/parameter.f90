@@ -114,7 +114,7 @@ module m_parameter
   real :: single_prec
   real*8 :: double_prec
 
-  real*8 :: dB_B0, num_cycles ! for initializing waves
+  real*8 :: dB_B0, num_wave_cycles ! for initializing waves
 
   real*8, parameter :: zero=0.0d0, one=1.0d0, two=2.0d0, one_half=0.5d0, pi=acos(-1.)
 
