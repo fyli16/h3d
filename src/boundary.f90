@@ -329,3 +329,179 @@ subroutine xrealbcc_pack_e(a_x,a_y,a_z, ibnd, nx1m, ny1m,nz1m)
 
   return
 end subroutine xrealbcc_pack_e
+
+
+!---------------------------------------------------------------------
+subroutine xreal_2d(a,nx1m,ny1m,nz1m)
+  use m_parameters
+  implicit none
+
+  integer*8 :: i, j, nx1m, ny1m, nz1m, k
+  real*8 :: a(nxmax, jb-1:je+1, kb-1:ke+1)&
+                    ,tmp(nxmax, jb-1:je+1, kb-1:ke+1)
+
+  a(2,:,:) = a(2,:,:) + a(nx2,:,:)
+  a(nx1,:,:) = a(nx1,:,:) + a(1,:,:)
+  a(:,:,kb) = a(:,:,kb) + a(:,:,kb-1) + a(:,:,kb+1)
+  call MPI_SENDRECV(a    (1    ,je+1,kb-1),1,stridery,nbrrite,0, &
+                    tmp  (1    ,jb-1,kb-1),1,stridery,nbrleft,0, &
+                    mpi_comm_world,status,ierr)
+  a(:,jb,:)=a(:,jb,:)+tmp  (:,jb-1,:)
+  call MPI_SENDRECV(a    (1    ,jb-1,kb-1),1,stridery,nbrleft,1, &
+                    tmp  (1    ,je+1,kb-1),1,stridery,nbrrite,1, &
+                    mpi_comm_world,status,ierr)
+  a(:,je,:)=a(:,je,:)+tmp  (:,je+1,:)
+
+  a(1   ,:,:   )=a(nx1   ,:,: )
+  a(nx2,:,:   ) =a(2,:,: )
+  a(:   ,:,kb-1)=a(:   ,:,kb)
+  a(:   ,:,kb+1)=a(:   ,:,kb)
+
+  return
+end subroutine xreal_2d
+
+
+!---------------------------------------------------------------------
+subroutine xrealbcc_2d(a, ibnd, nx1m, ny1m,nz1m)
+  use m_parameters
+  implicit none
+  integer*8 :: ibnd,i,j,nx1m,ny1m,nz1m
+  real*8 :: a(nxmax,jb-1:je+1,kb-1:ke+1)&
+                    ,tmp(nxmax,jb-1:je+1,kb-1:ke+1)
+
+  tmp = a
+  a(1   ,:,:   )=a(nx1   ,:,: )
+  a(nx2,:,:   ) =a(2,:,: )
+  a(:   ,:,kb-1)=a(:   ,:,kb)
+  a(:   ,:,kb+1)=a(:   ,:,kb)
+
+  call MPI_SENDRECV(a(1    ,je  ,kb-1),1,stridery,nbrrite,0,&
+                  a(1    ,jb-1,kb-1),1,stridery,nbrleft,0,&
+                  mpi_comm_world,status,ierr)
+  call MPI_SENDRECV(a(1    ,jb  ,kb-1),1,stridery,nbrleft,1,&
+                  a(1    ,je+1,kb-1),1,stridery,nbrrite,1,&
+                  mpi_comm_world,status,ierr)
+  return
+end subroutine xrealbcc_2d
+
+
+!---------------------------------------------------------------------
+subroutine xrealbcc_pack_b_2d(a_x,a_y,a_z, ibnd, nx1m, ny1m,nz1m)
+  use m_parameters
+  implicit none
+
+  integer*8 :: i,j,nx1m,ny1m,nz1m,k,ibnd
+  real*8 :: a_x(nxmax,jb-1:je+1,kb-1:ke+1)&
+                    ,a_y(nxmax,jb-1:je+1,kb-1:ke+1)&
+                    ,a_z(nxmax,jb-1:je+1,kb-1:ke+1)&
+                    ,packed_data_xz_send(nxmax,kb-1:ke+1,3) &
+                    ,packed_data_xz_recv(nxmax,kb-1:ke+1,3) &
+                    ,packed_data_xy_send(nxmax,jb-1:je+1,3) &
+                    ,packed_data_xy_recv(nxmax,jb-1:je+1,3)
+
+  a_x(:,:,kb-1)=a_x(:,:,kb)
+  a_y(:,:,kb-1)=a_y(:,:,kb)
+  a_z(:,:,kb-1)=a_z(:,:,kb)
+  a_x(:,:,ke+1)=a_x(:,:,ke)
+  a_y(:,:,ke+1)=a_y(:,:,ke)
+  a_z(:,:,ke+1)=a_z(:,:,ke)
+
+  do k=kb-1,ke+1
+    do i=1,nxmax
+      packed_data_xz_send(i,k,1)=a_x(i,je,k)
+      packed_data_xz_send(i,k,2)=a_y(i,je,k)
+      packed_data_xz_send(i,k,3)=a_z(i,je,k)
+    enddo
+  enddo
+  call MPI_SENDRECV(packed_data_xz_send,size(packed_data_xz_send),MPI_DOUBLE_PRECISION,nbrrite,0,&
+                    packed_data_xz_recv,size(packed_data_xz_recv),MPI_DOUBLE_PRECISION,nbrleft,0,&
+                    mpi_comm_world,status,ierr)
+  do k=kb-1,ke+1
+      do i=1,nxmax
+        a_x(i,jb-1,k)=packed_data_xz_recv(i,k,1)
+        a_y(i,jb-1,k)=packed_data_xz_recv(i,k,2)
+        a_z(i,jb-1,k)=packed_data_xz_recv(i,k,3)
+      enddo
+  enddo
+
+  do k=kb-1,ke+1
+    do i=1,nxmax
+      packed_data_xz_send(i,k,1)=a_x(i,jb,k)
+      packed_data_xz_send(i,k,2)=a_y(i,jb,k)
+      packed_data_xz_send(i,k,3)=a_z(i,jb,k)
+    enddo
+  enddo
+  call MPI_SENDRECV(packed_data_xz_send,size(packed_data_xz_send),MPI_DOUBLE_PRECISION,nbrleft,0,&
+                    packed_data_xz_recv,size(packed_data_xz_recv),MPI_DOUBLE_PRECISION,nbrrite,0,&
+                    mpi_comm_world,status,ierr)
+  do k=kb-1,ke+1
+      do i=1,nxmax
+        a_x(i,je+1,k)=packed_data_xz_recv(i,k,1)
+        a_y(i,je+1,k)=packed_data_xz_recv(i,k,2)
+        a_z(i,je+1,k)=packed_data_xz_recv(i,k,3)
+      enddo
+  enddo
+
+  return
+end subroutine xrealbcc_pack_b_2d
+
+
+!---------------------------------------------------------------------
+subroutine xrealbcc_pack_e_2d(a_x,a_y,a_z, ibnd, nx1m, ny1m,nz1m)
+  use m_parameters
+  implicit none
+
+  integer*8 :: ibnd,i,j,nx1m,ny1m,nz1m,k
+  real*8 :: a_x(nxmax,jb-1:je+1,kb-1:ke+1)&
+                  ,a_y(nxmax,jb-1:je+1,kb-1:ke+1)&
+                  ,a_z(nxmax,jb-1:je+1,kb-1:ke+1)&
+                  ,packed_data_xz_send(nxmax,kb-1:ke+1,3) &
+                  ,packed_data_xz_recv(nxmax,kb-1:ke+1,3) &
+                  ,packed_data_xy_send(nxmax,jb-1:je+1,3) &
+                  ,packed_data_xy_recv(nxmax,jb-1:je+1,3)
+
+  a_x(:,:,kb-1)=a_x(:,:,kb)
+  a_y(:,:,kb-1)=a_y(:,:,kb)
+  a_z(:,:,kb-1)=a_z(:,:,kb)
+  a_x(:,:,ke+1)=a_x(:,:,ke)
+  a_y(:,:,ke+1)=a_y(:,:,ke)
+  a_z(:,:,ke+1)=a_z(:,:,ke)
+
+  do k=kb-1,ke+1
+    do i=1,nxmax
+      packed_data_xz_send(i,k,1)=a_x(i,je,k)
+      packed_data_xz_send(i,k,2)=a_y(i,je,k)
+      packed_data_xz_send(i,k,3)=a_z(i,je,k)
+    enddo
+  enddo
+  call MPI_SENDRECV(packed_data_xz_send,size(packed_data_xz_send),MPI_DOUBLE_PRECISION,nbrrite,0,&
+                    packed_data_xz_recv,size(packed_data_xz_recv),MPI_DOUBLE_PRECISION,nbrleft,0,&
+                    mpi_comm_world,status,ierr)
+  do k=kb-1,ke+1
+      do i=1,nxmax
+        a_x(i,jb-1,k)=packed_data_xz_recv(i,k,1)
+        a_y(i,jb-1,k)=packed_data_xz_recv(i,k,2)
+        a_z(i,jb-1,k)=packed_data_xz_recv(i,k,3)
+      enddo
+  enddo
+
+  do k=kb-1,ke+1
+      do i=1,nxmax
+        packed_data_xz_send(i,k,1)=a_x(i,jb,k)
+        packed_data_xz_send(i,k,2)=a_y(i,jb,k)
+        packed_data_xz_send(i,k,3)=a_z(i,jb,k)
+      enddo
+  enddo
+  call MPI_SENDRECV(packed_data_xz_send,size(packed_data_xz_send),MPI_DOUBLE_PRECISION,nbrleft,0,&
+                    packed_data_xz_recv,size(packed_data_xz_recv),MPI_DOUBLE_PRECISION,nbrrite,0,&
+                    mpi_comm_world,status,ierr)
+  do k=kb-1,ke+1
+      do i=1,nxmax
+        a_x(i,je+1,k)=packed_data_xz_recv(i,k,1)
+        a_y(i,je+1,k)=packed_data_xz_recv(i,k,2)
+        a_z(i,je+1,k)=packed_data_xz_recv(i,k,3)
+      enddo
+  enddo
+
+  return
+end subroutine xrealbcc_pack_e_2d

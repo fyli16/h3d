@@ -82,6 +82,45 @@ end subroutine nsmth
 
 
 !---------------------------------------------------------------------
+subroutine nsmth_2d (a,nx2m,ny2m,nz2m)
+  use m_parameters
+  implicit none
+
+  integer*8 :: i,j,k
+
+  integer*8 :: nx2m, ny2m, nz2m
+  real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
+
+  ! smoothing routine--assumes aperiodic in x
+  call xrealbcc_2d(a,0_8,NX,NY,NZ)
+  temp=a
+
+  do k=kb-1,ke+1
+    do j = jb,je
+      do i=2,nx1
+        a(i,j,k)=temp(i,j,k)/4.&
+                  +( temp(i-1,j  ,k)+temp(i+1,j  ,k)+temp(i  ,j+1,k)   &
+                  +temp(i  ,j-1,k))/8.&
+                  +( temp(i+1,j+1,k)+temp(i+1,j-1,k)+temp(i-1,j+1,k)   & 
+                  +temp(i-1,j-1,k))/16.
+      enddo
+    enddo
+  enddo
+
+  do k=kb-1,ke+1
+      do j = jb-1,je+1
+        a(1  ,j,k)=a(nx1  ,j,k)
+        a(nx2,j,k)=a(2,j,k)
+      enddo
+  enddo
+
+  call xrealbcc_2d(a,0_8,NX,NY,NZ)
+
+  return
+end subroutine nsmth_2d
+
+
+!---------------------------------------------------------------------
 subroutine BoundsToDimensions(ilo, ihi, jlo, jhi, klo, khi, dims, nCells)
   implicit none
 

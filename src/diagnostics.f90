@@ -34,9 +34,9 @@ module m_diagnostics
       ! calculate par & perp temperatures (needed only for diagnostics)
       call date_and_time(values=time_begin(:,6))
       if (ndim /= 1) then
-        call caltemp2_global
+        call cal_temp
       else
-        call caltemp2_global_2d
+        call cal_temp_2d
       endif
       call date_and_time(values=time_end(:,6))
       call accumulate_time(time_begin(1,6),time_end(1,6),time_elapsed(6))

@@ -120,6 +120,23 @@ module m_parameters
   contains
 
   !---------------------------------------------------------------------
+  ! initialize input & MPI decomposition, and alloate arrays
+  !---------------------------------------------------------------------
+  subroutine init_sim
+    ! read input deck
+    call read_input
+
+    ! MPI domain decomposition 
+    call domain_decomp
+
+    ! allocate global arrays
+    call allocate_arrays
+
+    return
+  end subroutine init_sim
+
+
+  !---------------------------------------------------------------------
   ! master process reads input parameters and broadcasts to all ranks
   !---------------------------------------------------------------------
   subroutine read_input
@@ -140,6 +157,11 @@ module m_parameters
     n_write_tracking, n_write_restart, n_write_particle, &  
     tracking_binary, tracking_mpi, xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
     fxsho, nxcel, rcorr, ishape, teti  ! others
+
+    ! Initialize MPI
+    call MPI_INIT(IERR)
+    call MPI_COMM_SIZE(MPI_COMM_WORLD,NPROCS,IERR)
+    call MPI_COMM_RANK(MPI_COMM_WORLD,MYID,IERR)
 
     ! convert number 'myid' to character
     ! these characters will be used in dumping restart files by rank

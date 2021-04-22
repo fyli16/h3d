@@ -1,30 +1,19 @@
 !***************************************************************************
-!                                                                          *
 !                                 VERSION 6.0                              *
 !                           YURI'S NONUNIFORM MESH                         *
 !                           3D IMPLEMENTATION ONLY                         *
 !                      UNIFORM LOADING IN PHYSICAL SPACE                   *
 !               UNIFORM LOADING IN LOGICAL SPACE NOT YET IMPLEMENTED       *
-!                                                                          *
 !***************************************************************************
 
 program h3d 
   use m_parameters
-  use functions_mod
+  use m_functions
   use m_mesh
   implicit none
 
-  ! Initialize MPI
-  call MPI_INIT(IERR)
-  call MPI_COMM_SIZE(MPI_COMM_WORLD,NPROCS,IERR)
-  call MPI_COMM_RANK(MPI_COMM_WORLD,MYID,IERR)
-
-  ! Read input file
-  call read_input
-  ! Decompose MPI/simulation domain  
-  call domain_decomp
-  ! allocate global parameters
-  call allocate_arrays  
+  ! initialize MPI, input, domain decomposition, & global arrays
+  call init_sim
     
   ! set up mesh 
   call setup_mesh
@@ -59,6 +48,7 @@ subroutine init_restart
 
   integer*8 :: ixe, iye, ize, i, j, k
 
+  ! read in restart data set and corresponding step of iteration
   if (myid == 0) then
     open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='old')
     read(222,*) restart_index, itrestart 
@@ -68,20 +58,19 @@ subroutine init_restart
     print*, " "
     close(222)
   endif
-
   call MPI_BCAST(restart_index,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
   call MPI_BCAST(itrestart    ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
 
+  ! what's the purpose of nprocs_over_60
   do i = 0, nprocs_over_60 
-    if (mod(int(myid,8), nprocs_over_60+1) .eq. i) then 
+    if (mod(myid,nprocs_over_60+1) .eq. i) then 
         call write_read_restart_files(-1.0)  ! read restart data
         call MPI_BCAST(itrestart,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
     endif
   enddo
 
   ! determine start, finish number of steps
-  itstart = itrestart
-  it = itstart
+  itstart = itrestart; it = itstart
   itfinish = (tmax-t_stopped)/dtwci + itstart
     
   if (restart_index == 1) then
@@ -149,14 +138,13 @@ subroutine init_restart
     zv_uniform(k) = hz*(k-1.0)
   enddo
     
-  if (myid ==0) then
+  if (myid==0) then
     my_short_int = it
     call integer_to_character(cycle_ascii,len(cycle_ascii),my_short_int)
     if (cycle_ascii=='') cycle_ascii='0'
     cycle_ascii_new=trim(adjustl(cycle_ascii))
     print*, " cycle = ", cycle_ascii_new
   endif
-  
   call MPI_BCAST(cycle_ascii    ,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
   call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
 

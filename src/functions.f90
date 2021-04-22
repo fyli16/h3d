@@ -390,7 +390,38 @@ module flux_mod
 end module flux_mod
 
 
-module functions_mod
+!---------------------------------------------------------------------
+real*8 function mahimax(x1, x2)
+  implicit none
+  real*8 :: x1, x2, x3
+  if (x1.gt.x2) then
+      x3=x1
+  else
+      x3=x2
+  endif
+  mahimax=x3
+  return
+end function mahimax
+
+
+!---------------------------------------------------------------------   
+real*8 function mahimin(x1, x2)
+  implicit none
+  real*8 :: x1, x2, x3
+  if (x1.gt.x2) then
+      x3=x2
+  else
+      x3=x1
+  endif
+  mahimin=x3
+  return
+end function mahimin
+
+
+!---------------------------------------------------------------------   
+! module of functions
+!---------------------------------------------------------------------   
+module m_functions
   contains
   double precision function sqrnoise(rkx,rky,netot,nitot,rkdesqr,rkdisqr,dx,dy)
     use sinc_mod
@@ -497,4 +528,4 @@ module functions_mod
     endif
   end function gammp
 
-end module functions_mod
+end module m_functions

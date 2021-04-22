@@ -1485,7 +1485,7 @@ end subroutine trans
 !-----------------------------------------------------------------
 ! compute perp and par temperature and pressure tensor
 !-----------------------------------------------------------------
-subroutine caltemp2_global
+subroutine cal_temp
   use m_parameters
   use m_mesh
   implicit none
@@ -1804,7 +1804,285 @@ subroutine caltemp2_global
    call accumulate_time(time_begin(1,23),time_end(1,23),time_elapsed(23))
 
   return
-end subroutine caltemp2_global
+end subroutine cal_temp
+
+
+!---------------------------------------------------------------------
+subroutine cal_temp_2d
+  use m_parameters
+  use m_mesh
+  implicit none
+
+  real*8 :: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,xx,xy,xz,yy,yz,zz
+  integer*8 ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,is,l,iix,iixe
+  real*8 :: vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
+        ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar,wmult
+  real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,h,hh,dns1,dns2,bxa,bya,bza,btota,dnst
+
+  call date_and_time(values=time_begin(:,23))
+ 
+  dtxi = 1./meshX%dt
+  dtyi = 1./meshY%dt
+  dtzi = 1./meshZ%dt
+
+  tpar  = 0.
+  tperp = 0.
+  rfrac = 0.
+
+  p_xx=0.;p_xy=0.;p_xz=0.;p_yy=0.;p_yz=0.;p_zz=0.
+
+  if (nspec >= 2) rfrac = frac(2)/frac(1)
+
+  call date_and_time(values=time_begin(:,26))
+
+  do IS=1,NSPEC
+    wmult=wspec(is)
+    h=dt*qspec(is)/wmult
+    hh=.5*h
+    dpedx = 0.
+
+    do IIZE = KB-1,KE
+      do IIYE = JB-1,JE
+        do IIXE = 1, NX1
+          NP=IPHEAD(IIXE,IIYE,IIZE,IS)
+          do while (NP.NE.0)
+            L=NP
+
+            ! Uniform mesh - Same as is in version 5.0
+            ! rx=hxi*x(l)+1.5000000000000001
+            ! ry=hyi*y(l)+0.5000000000000001d+00
+            ! rz=hzi*z(l)+0.5000000000000001d+00
+            ! ix=rx
+            ! iy=ry
+            ! iz=rz
+            ! IZ=1
+            ! fx=rx-ix
+            ! fy=ry-iy
+            ! fz=rz-iz
+
+            ! Nonuniform mesh - using MESH_UNMAP
+            rx=dtxi*MESH_UNMAP(meshX,x(l))+1.50000000000d+00
+            ry=dtyi*MESH_UNMAP(meshY,y(l))+1.50000000000d+00
+            rz=dtzi*MESH_UNMAP(meshZ,z(l))+1.50000000000d+00
+            ix=rx
+            iy=ry
+            iz=rz
+            IZ=1
+            fx=rx-ix
+            fy=ry-iy
+            fz=rz-iz
+            iy=iy-1             ! integer index in y direction starts at 0
+            iz=iz-1             ! integer index in z direction starts at 0
+
+            ixp1 = ix + 1
+            iyp1 = iy + 1
+
+            w1=(1.-fx)*(1.-fy)
+            w2=    fx *(1.-fy)
+            w3=(1.-fx)*    fy
+            w4=    fx*     fy
+
+            dns1= dns(ix,iy  ,iz  ,1)*w1+dns(ix+1,iy  ,iz  ,1)*w2&
+            +     dns(ix,iy+1,iz  ,1)*w3+dns(ix+1,iy+1,iz  ,1)*w4
+
+            dns2= 0.
+
+            dnst = dns1 + dns2
+    
+            vxavg1=vxs(ix,iy  ,iz  ,1)*w1+vxs(ix+1,iy  ,iz  ,1)*w2&
+            +      vxs(ix,iy+1,iz  ,1)*w3+vxs(ix+1,iy+1,iz  ,1)*w4
+
+            vxavg2= 0.
+
+            vxavg = (dns1*vxavg1 + dns2*vxavg2)/dnst
+
+            vyavg1=vys(ix,iy  ,iz  ,1)*w1+vys(ix+1,iy  ,iz  ,1)*w2&
+            +      vys(ix,iy+1,iz  ,1)*w3+vys(ix+1,iy+1,iz  ,1)*w4
+
+            vyavg2=0.
+
+            vyavg = (dns1*vyavg1 + dns2*vyavg2)/dnst
+
+            vzavg1=vzs(ix,iy  ,iz  ,1)*w1+vzs(ix+1,iy  ,iz  ,1)*w2&
+            +      vzs(ix,iy+1,iz  ,1)*w3+vzs(ix+1,iy+1,iz  ,1)*w4
+
+            vzavg2=0.
+
+            vzavg = (dns1*vzavg1 + dns2*vzavg2)/dnst
+
+            vxa=vx(l)-vxavg
+            vya=vy(l)-vyavg
+            vza=vz(l)-vzavg
+
+            bxa  =bx       (ix,iy  ,iz  )*w1+bx       (ix+1,iy  ,iz  )*w2&
+            +     bx       (ix,iy+1,iz  )*w3+bx(       ix+1,iy+1,iz  )*w4
+
+            bya  =by(       ix,iy  ,iz  )*w1+by(       ix+1,iy  ,iz  )*w2&
+            +     by(       ix,iy+1,iz  )*w3+by       (ix+1,iy+1,iz  )*w4
+
+            bza  =bz       (ix,iy  ,iz  )*w1+bz       (ix+1,iy  ,iz  )*w2&
+            +     bz       (ix,iy+1,iz  )*w3+bz       (ix+1,iy+1,iz  )*w4
+
+            btota=sqrt(bxa**2+bya**2+bza**2)
+            if(btota.lt.1.e-20) btota=1.e-20
+            wpar=(vxa*bxa+vya*bya+vza*bza)/btota
+            wperp2=vxa**2+vya**2+vza**2-wpar**2
+            xx=vxa**2
+            xy=vxa*vya
+            xz=vxa*vza
+            yy=vya**2
+            yz=vya*vza
+            zz=vza**2
+
+            tpar (ix  ,iy  ,iz,is)=tpar (ix  ,iy  ,iz,is)+qp(np)*w1*wpar*wpar
+            tpar (ix+1,iy  ,iz,is)=tpar (ix+1,iy  ,iz,is)+qp(np)*w2*wpar*wpar 
+            tpar (ix  ,iy+1,iz,is)=tpar (ix  ,iy+1,iz,is)+qp(np)*w3*wpar*wpar 
+            tpar (ix+1,iy+1,iz,is)=tpar (ix+1,iy+1,iz,is)+qp(np)*w4*wpar*wpar 
+            tperp(ix  ,iy  ,iz,is)=tperp(ix  ,iy  ,iz,is)+qp(np)*w1*wperp2 
+            tperp(ix+1,iy  ,iz,is)=tperp(ix+1,iy  ,iz,is)+qp(np)*w2*wperp2 
+            tperp(ix  ,iy+1,iz,is)=tperp(ix  ,iy+1,iz,is)+qp(np)*w3*wperp2 
+            tperp(ix+1,iy+1,iz,is)=tperp(ix+1,iy+1,iz,is)+qp(np)*w4*wperp2
+            dpedx(ix  ,iy  ,iz)=dpedx(ix  ,iy  ,iz)+qp(np)*w1
+            dpedx(ix+1,iy  ,iz)=dpedx(ix+1,iy  ,iz)+qp(np)*w2 
+            dpedx(ix  ,iy+1,iz)=dpedx(ix  ,iy+1,iz)+qp(np)*w3 
+            dpedx(ix+1,iy+1,iz)=dpedx(ix+1,iy+1,iz)+qp(np)*w4
+ 
+            p_xx (ix  ,iy  ,iz  ,is)=p_xx (ix  ,iy  ,iz  ,is)+qp(np)*w1*xx
+            p_xx (ixp1,iy  ,iz  ,is)=p_xx (ixp1,iy  ,iz  ,is)+qp(np)*w2*xx 
+            p_xx (ix  ,iyp1,iz  ,is)=p_xx (ix  ,iyp1,iz  ,is)+qp(np)*w3*xx 
+            p_xx (ixp1,iyp1,iz  ,is)=p_xx (ixp1,iyp1,iz  ,is)+qp(np)*w4*xx 
+
+            p_xy (ix  ,iy  ,iz  ,is)=p_xy (ix  ,iy  ,iz  ,is)+qp(np)*w1*xy
+            p_xy (ixp1,iy  ,iz  ,is)=p_xy (ixp1,iy  ,iz  ,is)+qp(np)*w2*xy 
+            p_xy (ix  ,iyp1,iz  ,is)=p_xy (ix  ,iyp1,iz  ,is)+qp(np)*w3*xy 
+            p_xy (ixp1,iyp1,iz  ,is)=p_xy (ixp1,iyp1,iz  ,is)+qp(np)*w4*xy 
+
+            p_xz (ix  ,iy  ,iz  ,is)=p_xz (ix  ,iy  ,iz  ,is)+qp(np)*w1*xz
+            p_xz (ixp1,iy  ,iz  ,is)=p_xz (ixp1,iy  ,iz  ,is)+qp(np)*w2*xz 
+            p_xz (ix  ,iyp1,iz  ,is)=p_xz (ix  ,iyp1,iz  ,is)+qp(np)*w3*xz 
+            p_xz (ixp1,iyp1,iz  ,is)=p_xz (ixp1,iyp1,iz  ,is)+qp(np)*w4*xz 
+
+            p_yy (ix  ,iy  ,iz  ,is)=p_yy (ix  ,iy  ,iz  ,is)+qp(np)*w1*yy
+            p_yy (ixp1,iy  ,iz  ,is)=p_yy (ixp1,iy  ,iz  ,is)+qp(np)*w2*yy 
+            p_yy (ix  ,iyp1,iz  ,is)=p_yy (ix  ,iyp1,iz  ,is)+qp(np)*w3*yy 
+            p_yy (ixp1,iyp1,iz  ,is)=p_yy (ixp1,iyp1,iz  ,is)+qp(np)*w4*yy 
+ 
+            p_yz (ix  ,iy  ,iz  ,is)=p_yz (ix  ,iy  ,iz  ,is)+qp(np)*w1*yz
+            p_yz (ixp1,iy  ,iz  ,is)=p_yz (ixp1,iy  ,iz  ,is)+qp(np)*w2*yz 
+            p_yz (ix  ,iyp1,iz  ,is)=p_yz (ix  ,iyp1,iz  ,is)+qp(np)*w3*yz 
+            p_yz (ixp1,iyp1,iz  ,is)=p_yz (ixp1,iyp1,iz  ,is)+qp(np)*w4*yz 
+
+            p_zz (ix  ,iy  ,iz  ,is)=p_zz (ix  ,iy  ,iz  ,is)+qp(np)*w1*zz
+            p_zz (ixp1,iy  ,iz  ,is)=p_zz (ixp1,iy  ,iz  ,is)+qp(np)*w2*zz 
+            p_zz (ix  ,iyp1,iz  ,is)=p_zz (ix  ,iyp1,iz  ,is)+qp(np)*w3*zz 
+            p_zz (ixp1,iyp1,iz  ,is)=p_zz (ixp1,iyp1,iz  ,is)+qp(np)*w4*zz 
+ 
+            np=link(np)
+          enddo
+        enddo
+      enddo
+    enddo
+
+    call xreal_2d(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
+    call xreal_2d(tperp(1,jb-1,kb-1,is),NX,NY,NZ)
+    call xreal_2d(dpedx(1,jb-1,kb-1   ),NX,NY,NZ)
+
+    call xreal_2d(p_xx (1,jb-1,kb-1,is),NX,NY,NZ)
+    call xreal_2d(p_xy (1,jb-1,kb-1,is),NX,NY,NZ)
+    call xreal_2d(p_xz (1,jb-1,kb-1,is),NX,NY,NZ)
+    call xreal_2d(p_yy (1,jb-1,kb-1,is),NX,NY,NZ)
+    call xreal_2d(p_yz (1,jb-1,kb-1,is),NX,NY,NZ)
+    call xreal_2d(p_zz (1,jb-1,kb-1,is),NX,NY,NZ)
+
+    do IZ = KB-1,KE
+      do IY = JB-1,JE
+        do IX = 1, NX1
+          if (dpedx(ix,iy,iz) /= 0.) then
+            tpar (ix,iy,iz,is) = tpar (ix,iy,iz,is)/(   tx0(is)*dpedx(ix,iy,iz))
+            tperp(ix,iy,iz,is) = tperp(ix,iy,iz,is)/(2.*tx0(is)*dpedx(ix,iy,iz))
+          endif
+        enddo
+      enddo
+    enddo
+
+    do IIZ=KB-1,KE+1
+      do IIY=JB-1,JE+1
+        do IIX=1,NX2
+          p_xx(iix,iiy,iiz,is) = p_xx(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+          p_xy(iix,iiy,iiz,is) = p_xy(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+          p_xz(iix,iiy,iiz,is) = p_xz(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+          p_yy(iix,iiy,iiz,is) = p_yy(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+          p_yz(iix,iiy,iiz,is) = p_yz(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+          p_zz(iix,iiy,iiz,is) = p_zz(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+        enddo
+      enddo
+    enddo
+    p_xx(:,:,:,is)=p_xx(:,:,:,is)/(tx0(is)*frac(is))
+    p_xy(:,:,:,is)=p_xy(:,:,:,is)/(tx0(is)*frac(is))
+    p_xz(:,:,:,is)=p_xz(:,:,:,is)/(tx0(is)*frac(is))
+    p_yy(:,:,:,is)=p_yy(:,:,:,is)/(tx0(is)*frac(is))
+    p_yz(:,:,:,is)=p_yz(:,:,:,is)/(tx0(is)*frac(is))
+    p_zz(:,:,:,is)=p_zz(:,:,:,is)/(tx0(is)*frac(is))
+
+  enddo
+
+  call date_and_time(values=time_end(:,26))
+  call accumulate_time(time_begin(1,26),time_end(1,26),time_elapsed(26))
+
+  ! do is=1,nspec
+  !   call date_and_time(values=time_begin(:,24))
+  !   call xreal_2d(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
+  !   call xreal_2d(tperp(1,jb-1,kb-1,is),NX,NY,NZ)
+  !   call date_and_time(values=time_end(:,24))
+  !   call accumulate_time(time_begin(1,24),time_end(1,24),time_elapsed(24))
+
+
+  !   call date_and_time(values=time_begin(:,25))
+  !   call xrealbcc_2d(tpar (1,jb-1,kb-1,is),1,NX,NY,NZ)
+  !   call xrealbcc_2d(tperp(1,jb-1,kb-1,is),1,NX,NY,NZ)
+  !   call date_and_time(values=time_end(:,25))
+  !   call accumulate_time(time_begin(1,25),time_end(1,25),time_elapsed(25))
+  ! enddo
+  
+  call date_and_time(values=time_begin(:,26))
+ 
+  ! GOTO 10  
+
+  ! do is=1,nspec
+  !   do k=kb-1,ke+1
+  !   do j = jb-1,je+1
+  !       do i=1,nx2
+  !         if(is.eq.1) then
+  !           dns1=dns(i,j,k,1)/(dfac(1)*frac(1))
+  !           dns2=0.
+  !           denum=dns1+rfrac*dns2
+  !         else
+  !           denum=dns(i,j,k,is)/(dfac(is)*frac(is))
+  !         endif
+  !         if(den(i,j,k).le.denmin)  then
+  !           tpar(i,j,k,is)=1.e-5
+  !           tperp(i,j,k,is)=1.e-5
+  !         else
+  !           denum=denum*tx0(is)
+  !           tpar(i,j,k,is)=tpar(i,j,k,is)*wspec(is)/denum
+  !           tperp(i,j,k,is)=0.5*tperp(i,j,k,is)*wspec(is)/denum
+  !         endif
+  !       enddo
+  !     enddo
+  !   enddo
+  ! enddo
+
+  ! 10   continue
+
+  call date_and_time(values=time_end(:,26))
+  call accumulate_time(time_begin(1,26),time_end(1,26),time_elapsed(26))
+
+  call date_and_time(values=time_end(:,23))
+  call accumulate_time(time_begin(1,23),time_end(1,23),time_elapsed(23))
+
+  return
+end subroutine cal_temp_2d
+
 
 
 !-----------------------------------------------------------------
