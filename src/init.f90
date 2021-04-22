@@ -1,5 +1,6 @@
 module m_init
   use m_parameters
+  use m_utils
   use m_io
   use m_mesh
   implicit none
@@ -280,6 +281,8 @@ module m_init
   ! init waves and particles
   !---------------------------------------------------------------------
   subroutine init_wavepart
+    use m_cal_eta
+    use m_field
 
     integer*8 :: ibp1, ibp2, i, remake, field_subcycle
     real*8 :: rxe, rye, rze, fxe, fye, fze, dtxi, dtyi, dtzi, &
@@ -647,9 +650,9 @@ module m_init
       print*, " "
     endif
     if (ndim /= 1) then
-        call eta_calc  ! Dietmar's resistivity
+        call cal_eta  ! Dietmar's resistivity
     else
-        call eta_calc_2d  ! Dietmar's resistivity
+        call cal_eta_2d  ! Dietmar's resistivity
     endif
     
     deallocate(seed) 

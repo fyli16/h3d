@@ -1,5 +1,6 @@
 module m_particles
   use m_parameters
+  use m_utils
   use m_mesh
   implicit none
 

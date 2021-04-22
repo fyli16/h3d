@@ -8,7 +8,9 @@
 !---------------------------------------------------------------------
 module m_diagnostics
   use m_parameters
+  use m_utils
   use m_io
+  use m_particles
   implicit none 
 
   contains 
