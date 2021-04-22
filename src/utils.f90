@@ -2,6 +2,8 @@ module m_utils
   use m_parameters
   implicit none 
 
+  contains 
+
   !---------------------------------------------------------------------
   ! get current time
   !---------------------------------------------------------------------
@@ -11,7 +13,7 @@ module m_utils
 
     call date_and_time(values=now)
     tlabel = now(5)*3600. + now(6)*60. + now(7) + now(8)*0.001
-
+    return
   end subroutine get_time
 
 
