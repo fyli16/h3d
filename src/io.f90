@@ -614,7 +614,7 @@ subroutine write_read_restart_files(rw)
     write(f_unit) tpar,tperp,dns,vxs,vys,vzs
 
     ! save user data
-    call user_data_write_restart(f_unit)
+    ! call user_data_write_restart(f_unit)
     
     close(unit=f_unit)
 
@@ -769,7 +769,7 @@ subroutine write_read_restart_files(rw)
     read(f_unit) tpar,tperp,dns,vxs,vys,vzs
 
     ! save user data
-    call user_diagnostics_restart(f_unit)        
+    ! call user_diagnostics_restart(f_unit)        
 
     close(unit=f_unit)
 
