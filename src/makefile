@@ -17,13 +17,12 @@ OBJS =  parameter.of90 \
 		functions.of90 \
 		mesh.of90 \
 		field.of90\
-		field_2d.of90 \
 		particle.of90 \
 		eta_cal.of90 \
 		boundary.of90 \
 	 	diagnostics.of90\
 		io.of90\
-		init_wavepart.of90 \
+		init.of90 \
 		h3d.of90
 
 $(EFILE): $(OBJS)
