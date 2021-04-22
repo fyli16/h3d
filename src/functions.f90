@@ -1,12 +1,13 @@
-!---------------------------------------------------------------------
-! F(t) = 0 to solve
-!---------------------------------------------------------------------
-module func_mod
-  implicit none
-  contains
-  double precision function func(t) 
-    implicit none
+module m_functions
+  use m_utils
+  implicit none 
 
+  contains
+
+  !---------------------------------------------------------------------
+  ! F(t) = 0 to solve
+  !---------------------------------------------------------------------
+  double precision function func(t) 
     real*8, intent(in) :: t 
     real*8 :: rhs
     integer*8 :: n
@@ -19,67 +20,57 @@ module func_mod
     endif
     return
   end function func 
-end module func_mod
 
 
-!---------------------------------------------------------------------
-! simple root finder
-!---------------------------------------------------------------------
-subroutine bisect(f,a,b,tol)
-  implicit none
+  !---------------------------------------------------------------------
+  ! simple root finder
+  !---------------------------------------------------------------------
+  subroutine bisect(f,a,b,tol)
+    real*8, intent(in) :: tol
+    real*8, intent(inout) :: a,b
+    real*8 :: c,u,v,w
+    real*8 :: f
 
-  real*8, intent(in) :: tol
-  real*8, intent(inout) :: a,b
-  real*8 :: c,u,v,w
-  real*8 :: f
-
-  u = f(a) ; v = f(b)      
-  if(u*v.gt.0.) then
-    call error_abort('bisect(): bad initial interval --- stop!')
-  else if(u.eq.0.) then
-    b=a
-    return
-  else if(v.eq.0.) then
-    a=b
-    return
-  endif
-
-  do while((abs(f(a)).gt.tol).or.(abs(f(b)).gt.tol) ) 
-    c = 0.5*(a+b) 
-    w = f(c)    
-    if(w.eq.0.) then 
-      a=c ; b=c
-      return;
+    u = f(a) ; v = f(b)      
+    if(u*v.gt.0.) then
+      call error_abort('bisect(): bad initial interval --- stop!')
+    else if(u.eq.0.) then
+      b=a
+      return
+    else if(v.eq.0.) then
+      a=b
+      return
     endif
-    if(w*u.lt.0.) then
-      b=c ; v=w       
-    else
-      a=c ; u=w       
-    endif
-  enddo
 
-  return      
-end subroutine bisect
+    do while((abs(f(a)).gt.tol).or.(abs(f(b)).gt.tol) ) 
+      c = 0.5*(a+b) 
+      w = f(c)    
+      if(w.eq.0.) then 
+        a=c ; b=c
+        return;
+      endif
+      if(w*u.lt.0.) then
+        b=c ; v=w       
+      else
+        a=c ; u=w       
+      endif
+    enddo
+
+    return      
+  end subroutine bisect
 
 
-!---------------------------------------------------------------------1
-! Helper functions
-! Solve for x: (x-1)/(x^N-1) - rhs = 0 
-! by using a simple bisection method
-!---------------------------------------------------------------------1
-module findexp_mod
-  implicit none
-  contains  
+  !---------------------------------------------------------------------1
+  ! Helper functions
+  ! Solve for x: (x-1)/(x^N-1) - rhs = 0 
+  ! by using a simple bisection method
+  !---------------------------------------------------------------------1
   double precision function findexp(rhsi,ni)
-    use func_mod
-
     real*8, intent(in) :: rhsi
     integer*8, intent(in) :: ni
     real*8 :: tol,rhs,af,bf
     integer*8 n
     common /fparams/ rhs,n
-    ! real*8 :: func
-    ! external func
 
     tol = 10.*epsilon(real(0))
     ! These are common block parameters
@@ -99,153 +90,134 @@ module findexp_mod
 
     return
   end function findexp
-end module findexp_mod
 
 
+  !---------------------------------------------------------------------
+  double precision function myranf()
+    integer*8:: idum
+    integer*8:: MBIG,MSEED,MZ
+    double precision:: FAC
+    integer*8:: i,iff,ii,inext,inextp,k
+    integer*8:: mj,mk,ma(55)
+    parameter (MBIG=1000000000, MSEED=161803398, MZ=0, FAC=1.d-09)
+    save iff,inext,inextp,ma
+    data iff /0/
+    common /myrandom/ idum
 
-
-    
-    double precision function myranf()
-      implicit none
-      integer*8:: idum
-      integer*8:: MBIG,MSEED,MZ
-      double precision:: FAC
-      integer*8:: i,iff,ii,inext,inextp,k
-      integer*8:: mj,mk,ma(55)
-      parameter (MBIG=1000000000, MSEED=161803398, MZ=0, FAC=1.d-09)
-      save iff,inext,inextp,ma
-      DATA iff /0/
-      common /myrandom/ idum
- 
-      if (idum < 0.or.iff == 0) then
-        iff=1
-        mj=MSEED-abs(idum)
-        mj=mod(mj,MBIG)
-        ma(55)=mj
-        mk=1
-        do 11 i=1,54
-          ii=mod(21*i,55)
-          ma(ii)=mk
-          mk=mj-mk
-          if (mk < MZ)mk=mk+MBIG
-          mj=ma(ii)
+    if (idum < 0.or.iff == 0) then
+      iff=1
+      mj=MSEED-abs(idum)
+      mj=mod(mj,MBIG)
+      ma(55)=mj
+      mk=1
+      do 11 i=1,54
+        ii=mod(21*i,55)
+        ma(ii)=mk
+        mk=mj-mk
+        if (mk < MZ)mk=mk+MBIG
+        mj=ma(ii)
 11      continue
-        do 13 k=1,4
-          do 12 i=1,55
-            ma(i)=ma(i)-ma(1+mod(i+30,55))
-            if (ma(i) < MZ)ma(i)=ma(i)+MBIG
+      do 13 k=1,4
+        do 12 i=1,55
+          ma(i)=ma(i)-ma(1+mod(i+30,55))
+          if (ma(i) < MZ)ma(i)=ma(i)+MBIG
 12        continue
 13      continue
-        inext=0
-        inextp=31
-        idum=1
-      endif
-      inext=inext+1
-      if (inext == 56)inext=1
-      inextp=inextp+1
-      if (inextp == 56)inextp=1
-      mj=ma(inext)-ma(inextp)
-      if (mj < MZ)mj=mj+MBIG
-      ma(inext)=mj
-      myranf=dble(mj*FAC)
-    end function myranf
+      inext=0
+      inextp=31
+      idum=1
+    endif
+    inext=inext+1
+    if (inext == 56)inext=1
+    inextp=inextp+1
+    if (inextp == 56)inextp=1
+    mj=ma(inext)-ma(inextp)
+    if (mj < MZ)mj=mj+MBIG
+    ma(inext)=mj
+    myranf=dble(mj*FAC)
+  end function myranf
 
 
-    module gammaln_mod
-      contains
-        double precision function gammln(xx)
-        implicit none
-        double precision :: xx
-        INTEGER*8 :: j
-        double precision :: ser,stp,tmp,x,y,cof(6)
-        SAVE cof,stp
-        DATA cof,stp/76.18009172947146d0,-86.50532032941677d0,&
-        24.01409824083091d0,-1.231739572450155d0,.1208650973866179d-2,&
-        -.5395239384953d-5,2.5066282746310005d0/
-        x=xx
-        y=x
-        tmp=x+5.5d0
-        tmp=(x+0.5d0)*log(tmp)-tmp
-        ser=1.000000000190015d0
-        do 11 j=1,6
-          y=y+1.d0
-          ser=ser+cof(j)/y
-11      continue
-        gammln=tmp+log(stp*ser/x)
-        end function gammln
-    end module gammaln_mod
+  !---------------------------------------------------------------------
+  double precision function gammln(xx)
+    double precision :: xx
+    integer*8 :: j
+    double precision :: ser,stp,tmp,x,y,cof(6)
+    SAVE cof,stp
+    DATA cof,stp/76.18009172947146d0,-86.50532032941677d0,&
+    24.01409824083091d0,-1.231739572450155d0,.1208650973866179d-2,&
+    -.5395239384953d-5,2.5066282746310005d0/
+    x=xx
+    y=x
+    tmp=x+5.5d0
+    tmp=(x+0.5d0)*log(tmp)-tmp
+    ser=1.000000000190015d0
+    do 11 j=1,6
+      y=y+1.d0
+      ser=ser+cof(j)/y
+  11  continue
+    gammln=tmp+log(stp*ser/x)
+  end function gammln
 
 
-    module gcf_mod
-      contains
-        subroutine gcf(gammcf,a,x,gln)
-        use gammaln_mod
-        implicit none
-        INTEGER*8 ITMAX
-        double precision a,gammcf,gln,x,EPS,FPMIN
-        PARAMETER (ITMAX=100,EPS=3.e-7,FPMIN=1.e-30)
-! U      USES gammln
-        INTEGER*8 i
-        double precision an,b,c,d,del,h
-        gln=gammln(a)
-        b=x+1.-a
-        c=1./FPMIN
-        d=1./b
-        h=d
-        do 11 i=1,ITMAX
-          an=-i*(i-a)
-          b=b+2.
-          d=an*d+b
-          if(abs(d).lt.FPMIN)d=FPMIN
-          c=b+an/c
-          if(abs(c).lt.FPMIN)c=FPMIN
-          d=1./d
-          del=d*c
-          h=h*del
-          if(abs(del-1.).lt.EPS) goto 1
-11      continue
-        stop 'a too large, ITMAX too small in gcf'
-1       gammcf=exp(-x+a*log(x)-gln)*h
-        end subroutine gcf
-    end module gcf_mod
+  !---------------------------------------------------------------------
+  subroutine gcf(gammcf,a,x,gln)
+    integer*8 ITMAX
+    double precision a,gammcf,gln,x,EPS,FPMIN
+    parameter (ITMAX=100,EPS=3.e-7,FPMIN=1.e-30)
+    integer*8 i
+    double precision an,b,c,d,del,h
+    gln=gammln(a)
+    b=x+1.-a
+    c=1./FPMIN
+    d=1./b
+    h=d
+    do 11 i=1,ITMAX
+      an=-i*(i-a)
+      b=b+2.
+      d=an*d+b
+      if(abs(d).lt.FPMIN)d=FPMIN
+      c=b+an/c
+      if(abs(c).lt.FPMIN)c=FPMIN
+      d=1./d
+      del=d*c
+      h=h*del
+      if(abs(del-1.).lt.EPS) goto 1
+  11      continue
+    stop 'a too large, ITMAX too small in gcf'
+  1       gammcf=exp(-x+a*log(x)-gln)*h
+  end subroutine gcf
 
 
-    module gser_mod
-      contains
-        subroutine gser(gamser,a,x,gln)
-        use gammaln_mod
-        implicit none
-        INTEGER*8 ITMAX
-        double precision a,gamser,gln,x,EPS
-        PARAMETER (ITMAX=100,EPS=3.e-7)
-!U      USES gammln
-        INTEGER*8 n
-        double precision ap,del,sum
-        gln=gammln(a)
-        if(x.le.0.)then
-          if(x.lt.0.) stop 'x < 0 in gser'
-          gamser=0.
-          return
-        endif
-        ap=a
-        sum=1./a
-        del=sum
-        do 11 n=1,ITMAX
-          ap=ap+1.
-          del=del*x/ap
-          sum=sum+del
-          if(abs(del).lt.abs(sum)*EPS)goto 1
-11      continue
-        stop 'a too large, ITMAX too small in gser'
-1       gamser=sum*exp(-x+a*log(x)-gln)
-        end subroutine gser
-    end module gser_mod
+  !---------------------------------------------------------------------
+  subroutine gser(gamser,a,x,gln)
+    integer*8 ITMAX
+    double precision a,gamser,gln,x,EPS
+    parameter (ITMAX=100,EPS=3.e-7)
+    integer*8 n
+    double precision ap,del,sum
+    gln=gammln(a)
+    if(x.le.0.)then
+      if(x.lt.0.) stop 'x < 0 in gser'
+      gamser=0.
+      return
+    endif
+    ap=a
+    sum=1./a
+    del=sum
+    do 11 n=1,ITMAX
+      ap=ap+1.
+      del=del*x/ap
+      sum=sum+del
+      if(abs(del).lt.abs(sum)*EPS)goto 1
+  11      continue
+    stop 'a too large, ITMAX too small in gser'
+  1       gamser=sum*exp(-x+a*log(x)-gln)
+  end subroutine gser
 
 
-module erf_mod
-  contains
+  !---------------------------------------------------------------------
   double precision function erf(x)
-    implicit none
     integer*8:: n,i
     double precision:: x,deltax,sqrtpi
     sqrtpi=sqrt(acos(-1.d+00))
@@ -261,13 +233,10 @@ module erf_mod
       erf=sign(1.d+00,x)*erf*deltax*2./sqrtpi
     endif
   end function erf
-end module erf_mod
 
 
-module sinc_mod
-  contains
+  !---------------------------------------------------------------------
   double precision function sinc(x)
-    implicit none
     double precision:: x
     if (x.eq.0.0) then
       sinc=1.
@@ -275,157 +244,98 @@ module sinc_mod
       sinc=sin(x)/x
     endif
   end function sinc
-end module sinc_mod
 
 
-  module zp_mod
-    contains
-    double complex function zp(u)
-      implicit none
-      double complex:: u,z,u2,azp,azpold,usqm
-      integer*8:: n,na
-      na=10
-      if(abs(u).ge.5.0) go to 3
-      usqm=-u**2
-      if (dble(usqm).lt.-100.) then
-      usqm=cmplx(-100.d+00,0.d+00)+0.5*(usqm-conjg(usqm))
-      else if (dble(usqm).gt.+100.) then
-      usqm=cmplx(+100.d+00,0.d+00)+0.5*(usqm-conjg(usqm))
-      endif
-      zp=cmplx(0.d+00,1.d+00)*1.772453850905516027298167*exp(usqm)
-      u2=-2.*u**2
-      azp=-2.*u
-      do 2 n=1,100
-      zp=zp+azp
+  !---------------------------------------------------------------------
+  double complex function zp(u)
+    double complex:: u,z,u2,azp,azpold,usqm
+    integer*8:: n,na
+    na=10
+    if(abs(u).ge.5.0) go to 3
+    usqm=-u**2
+    if (dble(usqm).lt.-100.) then
+    usqm=cmplx(-100.d+00,0.d+00)+0.5*(usqm-conjg(usqm))
+    else if (dble(usqm).gt.+100.) then
+    usqm=cmplx(+100.d+00,0.d+00)+0.5*(usqm-conjg(usqm))
+    endif
+    zp=cmplx(0.d+00,1.d+00)*1.772453850905516027298167*exp(usqm)
+    u2=-2.*u**2
+    azp=-2.*u
+    do 2 n=1,100
+    zp=zp+azp
 2     azp=azp*u2/(2.*n+1.)
-      zp=zp+azp
-      go to 11
+    zp=zp+azp
+    go to 11
 3     z=1./u
-      if(aimag(u).le.(0.)) go to 10
-      zp=0.
-      go to 20
+    if(aimag(u).le.(0.)) go to 10
+    zp=0.
+    go to 20
 10    continue
-      usqm=-u**2
-      if (dble(usqm).lt.-100.) then
-      usqm=cmplx(-100.,0.)+0.5*(usqm-conjg(usqm))
-      else if (dble(usqm).gt.+100.) then
-      usqm=cmplx(+100.,0.)+0.5*(usqm-conjg(usqm))
-      endif
-      zp=cmplx(0.,1.)*1.772453850905516027298167*exp(usqm)
-      if(aimag(u).lt.0.) zp=2.*zp
+    usqm=-u**2
+    if (dble(usqm).lt.-100.) then
+    usqm=cmplx(-100.,0.)+0.5*(usqm-conjg(usqm))
+    else if (dble(usqm).gt.+100.) then
+    usqm=cmplx(+100.,0.)+0.5*(usqm-conjg(usqm))
+    endif
+    zp=cmplx(0.,1.)*1.772453850905516027298167*exp(usqm)
+    if(aimag(u).lt.0.) zp=2.*zp
 20    azp=z
-      u2=.5*z**2
-      do 25 n=1,na
-      zp=zp-azp
-      azpold=azp
-      azp=(2.*n-1.)*azp*u2
-      if (abs(azp) .ge. abs(azpold)) go to 11
+    u2=.5*z**2
+    do 25 n=1,na
+    zp=zp-azp
+    azpold=azp
+    azp=(2.*n-1.)*azp*u2
+    if (abs(azp) .ge. abs(azpold)) go to 11
 25    continue
-      zp=zp-azp
+    zp=zp-azp
 11    continue
-    end function zp
-  end module zp_mod
+  end function zp
 
 
-module zprime_mod
-  contains
+  !---------------------------------------------------------------------
   double complex function zprime(u)
-    use zp_mod
-    implicit none
     double complex:: u
     zprime=-2.*(1.+u*zp(u))
   end function zprime
-end module zprime_mod
 
 
-module z2prime_mod
-    contains
-      double complex function z2prime(u)
-      use zp_mod
-      use zprime_mod
-      implicit none
-      double complex:: u
-      z2prime=-2.*(u*zprime(u)+zp(u))
-    end function z2prime
-end module z2prime_mod
+  !---------------------------------------------------------------------
+  double complex function z2prime(u)
+    double complex:: u
+    z2prime=-2.*(u*zprime(u)+zp(u))
+  end function z2prime
 
 
-module f_mod
-  contains
+  !---------------------------------------------------------------------
   double complex function f(omega,theta)
-    use zprime_mod
-    implicit none
     double precision:: theta
     double complex:: omega
     f=1.-0.5*theta*zprime(omega)
   end function f
-end module f_mod
 
 
-module fprime_mod
-  contains
+  !---------------------------------------------------------------------
   double complex function fprime(omega,theta)
-    use z2prime_mod
-    implicit none
-    double precision:: theta
-    double complex:: omega
+    double precision :: theta
+    double complex :: omega
     fprime=-0.5*theta*z2prime(omega)
   end function fprime
-end module fprime_mod
 
 
-module flux_mod
-  contains
+  !---------------------------------------------------------------------
   double precision function flux(x,argum,vtherm,xran,ss)
     !  this function finds the F(v) whose zero will generate
     !  the correct flux of particles from the left wall
-    use erf_mod
-    implicit none
     double precision:: argum,vtherm,x,x1,ss,xran,rat,sqrtpi
-    sqrtpi=sqrt(acos(-1.d+00))
-    rat=argum/vtherm
-    x1=(x-argum)/vtherm
+    sqrtpi = sqrt(acos(-1.d+00))
+    rat = argum/vtherm
+    x1 = (x-argum)/vtherm
     flux = ss*(1.d+00-xran) + argum*sqrtpi*(erf(x1)-1.d+00) - vtherm*exp(-x1*x1)
   end function flux
-end module flux_mod
 
 
-!---------------------------------------------------------------------
-real*8 function mahimax(x1, x2)
-  implicit none
-  real*8 :: x1, x2, x3
-  if (x1.gt.x2) then
-      x3=x1
-  else
-      x3=x2
-  endif
-  mahimax=x3
-  return
-end function mahimax
-
-
-!---------------------------------------------------------------------   
-real*8 function mahimin(x1, x2)
-  implicit none
-  real*8 :: x1, x2, x3
-  if (x1.gt.x2) then
-      x3=x2
-  else
-      x3=x1
-  endif
-  mahimin=x3
-  return
-end function mahimin
-
-
-!---------------------------------------------------------------------   
-! module of functions
-!---------------------------------------------------------------------   
-module m_functions
-  contains
+  !---------------------------------------------------------------------
   double precision function sqrnoise(rkx,rky,netot,nitot,rkdesqr,rkdisqr,dx,dy)
-    use sinc_mod
-    implicit none
     integer*8:: netot,nitot
     double precision:: rksqr,tmpx,rkxhat,tmpy,rkyhat,rkhatsqr,s,ssqr &
     ,chiebar,chie,chii,epsbar,rkx,rky,rkdesqr,rkdisqr,dx,dy
@@ -446,8 +356,9 @@ module m_functions
     +(1.-ssqr)**2*chiebar**2/(nitot*(1.+chie)**2*(1.+chiebar)*epsbar))*chiebar**2
   end function sqrnoise
 
+
+  !---------------------------------------------------------------------
   double precision function bessj0(x)
-    implicit none
     double precision:: ax,xx,z,p1,p2,p3,p4,p5,q1,q2,q3,q4,q5,r1,r2,r3 &
     ,r4,r5,r6,s1,s2,s3,s4,s5,s6,y,x
     save p1,p2,p3,p4,p5,q1,q2,q3,q4,q5,r1,r2,r3,r4 &
@@ -477,8 +388,9 @@ module m_functions
     endif
   end function bessj0
 
+
+  !---------------------------------------------------------------------
   double complex function shape(xix,xiy,f,rk0,xhs,yhs,xleft,plane_wave)
-    implicit none
     logical:: plane_wave
     double precision:: xix,xiy,f,rk0,xhs,yhs,xleft
     double complex:: sigma2
@@ -500,19 +412,24 @@ module m_functions
     endif
   end function shape
 
+
+  !---------------------------------------------------------------------
   double precision function fmaxwell(vx,vy,vthe)
-    implicit none
     double precision :: vx, vy, vthe, twopi 
     twopi = 2.0*acos(-1.0)
     fmaxwell=exp(-(vx**2+vy**2)/(2.*vthe**2))/(twopi*vthe**2)
   end function fmaxwell
-    
+      
+
+  !---------------------------------------------------------------------
   double precision function fmaxwell1d(vx,vy,vthe)
     double precision:: vx,vthe,vy,sqrttwopi
     sqrttwopi=sqrt(acos(-1.d+00))
     fmaxwell1d=exp(-vx**2/(2.*vthe**2))/(sqrttwopi*vthe)
   end function fmaxwell1d
 
+
+  !---------------------------------------------------------------------
   function gammp(a,x)
     use gser_mod
     use gcf_mod

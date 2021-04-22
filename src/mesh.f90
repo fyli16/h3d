@@ -49,7 +49,8 @@ module m_mesh
   ! initialize mesh attributes 
   !---------------------------------------------------------------------
   subroutine mesh_init(m, xa, xb, xl, na, nb, nl)
-    use findexp_mod
+    use m_functions
+    use m_utils
 
     type(mesh), intent(out) :: m
     real*8, intent(in) :: xa, xb, xl
