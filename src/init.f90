@@ -73,13 +73,13 @@ module m_init
     ! print head info
     if (myid==0) then
       print*, " "
-      print*, !***************************************************************************
-      print*, !                                 H3D (V6.0)                               *
-      print*, !                           YURI'S NONUNIFORM MESH                         *
-      print*, !                           3D IMPLEMENTATION ONLY                         *
-      print*, !                      UNIFORM LOADING IN PHYSICAL SPACE                   *
-      print*, !               UNIFORM LOADING IN LOGICAL SPACE NOT YET IMPLEMENTED       *
-      print*, !***************************************************************************
+      print*, "***************************************************************************"
+      print*, "                                 H3D (V6.0)                               *"
+      print*, "                           YURI'S NONUNIFORM MESH                         *"
+      print*, "                           3D IMPLEMENTATION ONLY                         *"
+      print*, "                      UNIFORM LOADING IN PHYSICAL SPACE                   *"
+      print*, "               UNIFORM LOADING IN LOGICAL SPACE NOT YET IMPLEMENTED       *"
+      print*, "***************************************************************************"
       print*, " "
       print*, " "
     endif 
