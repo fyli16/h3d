@@ -162,9 +162,9 @@ module m_functions
 
   !---------------------------------------------------------------------
   subroutine gcf(gammcf,a,x,gln)
-    integer*8 ITMAX
+    integer*8 itmax
     double precision a,gammcf,gln,x,EPS,FPMIN
-    parameter (ITMAX=100,EPS=3.e-7,FPMIN=1.e-30)
+    parameter (itmax=100,EPS=3.e-7,FPMIN=1.e-30)
     integer*8 i
     double precision an,b,c,d,del,h
     gln=gammln(a)
@@ -172,7 +172,7 @@ module m_functions
     c=1./FPMIN
     d=1./b
     h=d
-    do 11 i=1,ITMAX
+    do 11 i=1,itmax
       an=-i*(i-a)
       b=b+2.
       d=an*d+b
@@ -184,18 +184,18 @@ module m_functions
       h=h*del
       if(abs(del-1.).lt.EPS) goto 1
   11      continue
-    stop 'a too large, ITMAX too small in gcf'
+    stop 'a too large, itmax too small in gcf'
   1       gammcf=exp(-x+a*log(x)-gln)*h
   end subroutine gcf
 
 
   !---------------------------------------------------------------------
   subroutine gser(gamser,a,x,gln)
-    integer*8 ITMAX
-    double precision a,gamser,gln,x,EPS
-    parameter (ITMAX=100,EPS=3.e-7)
-    integer*8 n
-    double precision ap,del,sum
+    integer*8 :: itmax
+    double precision :: a,gamser,gln,x,EPS
+    parameter (itmax=100,EPS=3.e-7)
+    integer*8 :: n
+    double precision :: ap,del,sum
     gln=gammln(a)
     if(x.le.0.)then
       if(x.lt.0.) stop 'x < 0 in gser'
@@ -205,13 +205,13 @@ module m_functions
     ap=a
     sum=1./a
     del=sum
-    do 11 n=1,ITMAX
+    do 11 n=1,itmax
       ap=ap+1.
       del=del*x/ap
       sum=sum+del
       if(abs(del).lt.abs(sum)*EPS)goto 1
   11      continue
-    stop 'a too large, ITMAX too small in gser'
+    stop 'a too large, itmax too small in gser'
   1       gamser=sum*exp(-x+a*log(x)-gln)
   end subroutine gser
 

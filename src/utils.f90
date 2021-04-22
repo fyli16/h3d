@@ -1,5 +1,4 @@
 module m_utils
-  use m_parameters
   implicit none 
 
   contains 
@@ -42,7 +41,9 @@ module m_utils
   ! i.e. 27 points are involved
   !---------------------------------------------------------------------
   subroutine nsmth (a)
-    integer*8 i,j,k
+    use m_parameters
+
+    integer*8 :: i,j,k
     real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
 
     ! copy input array "a" to "temp" including ghost cells
@@ -83,6 +84,8 @@ module m_utils
 
   !---------------------------------------------------------------------
   subroutine nsmth_2d (a,nx2m,ny2m,nz2m)
+    use m_parameters
+
     integer*8 :: i,j,k
     integer*8 :: nx2m, ny2m, nz2m
     real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
@@ -144,6 +147,8 @@ module m_utils
 
   !---------------------------------------------------------------------
   subroutine makelist
+    use m_parameters
+    
     integer*8:: ip
 
     ipstore = 1
@@ -184,7 +189,6 @@ module m_utils
 
     return
   end subroutine mpe_decomp1d
-
 
   !---------------------------------------------------------------------
   subroutine error_abort(message)

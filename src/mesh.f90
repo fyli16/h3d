@@ -48,21 +48,21 @@ module m_mesh
   !---------------------------------------------------------------------
   ! initialize mesh attributes 
   !---------------------------------------------------------------------
-  subroutine mesh_init(m, _xa, _xb, xl, na, nb, nl)
+  subroutine mesh_init(m, xa, xb, xl, na, nb, nl)
     use m_functions
     use m_utils
 
     type(mesh), intent(out) :: m
-    real*8, intent(in) :: _xa, _xb, xl
+    real*8, intent(in) :: xa, xb, xl
     integer*8, intent(in) :: na, nb, nl
     integer*8 :: i, nbb
      
-    if( (_xa.ge._xb).or.(na.ge.nb) ) then 
+    if( (xa.ge.xb).or.(na.ge.nb) ) then 
       call error_abort('mesh_init(): bad parameters --- stop!')
     endif
 
     m%na=na ; m%nb=nb ; m%nl=nl
-    m%xa=_xa ; m%xb=_xb ; m%xl=xl
+    m%xa=xa ; m%xb=xb ; m%xl=xl
     nbb = nl - nb  ! -na?
 
     allocate(m%xn(nl+3))  ! -1:nl+1
@@ -71,14 +71,14 @@ module m_mesh
     allocate(m%dxc(nl+2)) ! -1:nl
 
     m%dt = 1./real(nl)  ! nb - na = nl
-    m%dx = (_xb-_xa)/(nb-na) 
+    m%dx = (xb-xa)/(nb-na) 
     m%dtdx = m%dt/m%dx
     m%ta = m%dt*na
     m%tb = m%dt*nb
 
     if(na.gt.0)  then
-        m%epsa = findexp(m%dx/_xa,na)
-        m%ca1 = (m%epsa**na-1.)/_xa
+        m%epsa = findexp(m%dx/xa,na)
+        m%ca1 = (m%epsa**na-1.)/xa
         m%ca2 = m%dt/log(m%epsa)
     else
         m%epsa = 1.
@@ -87,8 +87,8 @@ module m_mesh
     endif
 
     if(nbb.gt.0) then
-        m%epsb = findexp(m%dx/(xl-_xb),nbb)
-        m%cb1 = (m%epsb**nbb-1.)/(xl-_xb)
+        m%epsb = findexp(m%dx/(xl-xb),nbb)
+        m%cb1 = (m%epsb**nbb-1.)/(xl-xb)
         m%cb2 = m%dt/log(m%epsb) 
     else
         m%epsb = 1.
@@ -105,8 +105,8 @@ module m_mesh
         m%xc(i+2) = xa + m%dx*(i+0.5-na) 
     enddo
     do i = nb+1,nl
-        m%xn(i+2) = _xb + (m%epsb**(i-nb)-1.)/m%cb1
-        m%xc(i+2) = _xb + (m%epsb**(i+0.5-nb)-1.)/m%cb1
+        m%xn(i+2) = xb + (m%epsb**(i-nb)-1.)/m%cb1
+        m%xc(i+2) = xb + (m%epsb**(i+0.5-nb)-1.)/m%cb1
     enddo
 
     m%xn(2) = 0. ! correct round-off errors
