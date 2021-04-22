@@ -18,10 +18,10 @@ module m_init
     call init_mpi_decomp
     
     ! allocate global arrays
-    call allocate_arrays
+    call init_arrays
     
-    ! set up mesh 
-    call setup_mesh
+    ! initialize mesh 
+    call init_mesh
 
     ! open history diagnostic files
     call open_hist_files

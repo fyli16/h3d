@@ -123,7 +123,7 @@ module m_parameter
   !---------------------------------------------------------------------
   ! Set global parameters
   !---------------------------------------------------------------------
-  subroutine allocate_arrays
+  subroutine init_arrays
     integer :: i, j, k
 
     if (myid==0) then
@@ -423,6 +423,6 @@ module m_parameter
 
     allocate ( buf_p1(tracking_width,nspec*maxtags) )
 
-  end subroutine allocate_arrays 
+  end subroutine init_arrays 
 
 end module m_parameter

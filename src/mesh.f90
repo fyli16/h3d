@@ -36,8 +36,8 @@ module m_mesh
   end type meshtype
 
   type (mesh) :: meshX, meshY, meshZ 
-  type (meshtype), parameter :: cell = meshtype(0)
-  type (meshtype), parameter :: node = meshtype(1)
+  type (meshtype), parameter :: cell = meshtype(0) ! cell%type=0
+  type (meshtype), parameter :: node = meshtype(1) ! node%type=1
 
   interface mesh_index
     module procedure mesh_index_yuri, mesh_index_hxv
@@ -48,7 +48,7 @@ module m_mesh
   !---------------------------------------------------------------------
   ! initialize mesh attributes 
   !---------------------------------------------------------------------
-  subroutine mesh_init(m, xa, xb, xl, na, nb, nl)
+  subroutine mesh_init1d(m, xa, xb, xl, na, nb, nl)
     use m_functions
     use m_utils
     use m_parameter, only : myid
@@ -59,7 +59,7 @@ module m_mesh
     integer*8 :: i, nbb
      
     if( (xa.ge.xb).or.(na.ge.nb) ) then 
-      call error_abort('mesh_init(): bad parameters --- stop!')
+      call error_abort('mesh_init1d(): bad parameters --- stop!')
     endif
 
     m%na=na ; m%nb=nb ; m%nl=nl
@@ -96,17 +96,22 @@ module m_mesh
         m%cb1 = 0.
         m%cb2 = 0.
     endif
-    if (myid==0) print*, '  m%ca1, m%ca2, m%cb1, m%cb2 = ', m%ca1, m%ca2, m%cb1, m%cb2
-    if (myid==0) print*, '  m%epsa, m%epsb = ', m%epsa, m%epsb
+    ! if (myid==0) print*, '  m%ca1, m%ca2, m%cb1, m%cb2 = ', m%ca1, m%ca2, m%cb1, m%cb2
+    ! if (myid==0) print*, '  m%epsa, m%epsb = ', m%epsa, m%epsb
 
+    ! for na=0, this block is not executed
     do i = 0,na-1
         m%xn(i+2) = xa - (m%epsa**(na-i)-1.)/m%ca1 
         m%xc(i+2) = xa - (m%epsa**(na-i-0.5)-1.)/m%ca1 
     enddo
+
+    ! for na=0, nb=nl, only this block is executed
     do i = na,nb
-        m%xn(i+2) = xa + m%dx*(i-na) 
-        m%xc(i+2) = xa + m%dx*(i+0.5-na) 
+        m%xn(i+2) = xa + m%dx*(i-na) ! coordinates at nodes
+        m%xc(i+2) = xa + m%dx*(i+0.5-na) ! coordinates at half cells
     enddo
+
+    ! for nb=nl, this block is not executed
     do i = nb+1,nl
         m%xn(i+2) = xb + (m%epsb**(i-nb)-1.)/m%cb1
         m%xc(i+2) = xb + (m%epsb**(i+0.5-nb)-1.)/m%cb1
@@ -114,17 +119,17 @@ module m_mesh
 
     m%xn(2) = 0. ! correct round-off errors
 
-    m%xn(1)    = 2.*m%xn(2)-m%xn(3)
-    m%xc(1)    = 2.*m%xn(2)-m%xc(2)
-    m%xn(nl+3) = 2.*m%xn(nl+2)-m%xn(nl+1)
-    m%xc(nl+2) = 2.*m%xn(nl+2)-m%xc(nl+1)
+    m%xn(1)    = 2.*m%xn(2) - m%xn(3)
+    m%xc(1)    = 2.*m%xn(2) - m%xc(2)
+    m%xn(nl+3) = 2.*m%xn(nl+2) - m%xn(nl+1)
+    m%xc(nl+2) = 2.*m%xn(nl+2) - m%xc(nl+1)
 
-    ! compute cell-based mesh sizes
+    ! compute cell-based mesh cell sizes
     do i = 1,nl+2
         m%dxc(i) = m%xn(i+1)-m%xn(i)
     enddo
 
-    ! compute node-based mesh sizes
+    ! compute node-based mesh cell sizes
     do i = 2,nl+2
         m%dxn(i) = m%xc(i)-m%xc(i-1)
     enddo
@@ -132,7 +137,7 @@ module m_mesh
     m%dxn(nl+3) = m%dxn(nl+2) 
       
     return
-  end subroutine mesh_init
+  end subroutine mesh_init1d
 
 
   !---------------------------------------------------------------------
@@ -161,7 +166,7 @@ module m_mesh
 
   !---------------------------------------------------------------------
   ! transform physical coordinate to logical space 
-  ! MESH_INIT() must be called prior to this call
+  ! mesh_init1d() must be called prior to this call
   !---------------------------------------------------------------------
   double precision function mesh_unmap(m,x) 
 
@@ -187,7 +192,7 @@ module m_mesh
 
   !---------------------------------------------------------------------
   ! transform physical coordinate to logical space 
-  ! MESH_INIT() must be called prior to this call
+  ! mesh_init1d() must be called prior to this call
   !---------------------------------------------------------------------
   double precision function mesh_map(m,t)
 
@@ -215,7 +220,48 @@ module m_mesh
   ! then for each xu(i) find ix(i) such as 
   ! m%xc(ix) <= xu(i) < m%xc(ix+1) if inode==cell
   ! m%xn(ix) <= xu(i) < m%xn(ix+1) if inode==node
-  ! MESH_INIT() must be called prior to this call
+  ! mesh_init1d() must be called prior to this call
+  !---------------------------------------------------------------------
+  subroutine mesh_index_yuri(m, inode, ix)
+
+    type(mesh), intent(in) :: m
+    type(meshtype), intent(in) :: inode
+    integer*8, intent(out), dimension(:) :: ix
+    real*8, dimension(:), pointer :: pp
+    real*8 :: x,hx 
+    integer*8 i,k,nnx
+
+    ix(:)=0  
+    nullify(pp)
+
+    if(inode%type == cell%type) then ! cell-centered
+        pp => m%xc 
+    else
+        pp => m%xn 
+    endif
+
+    nnx = size(ix)
+    hx = m%xl/(nnx-1) ! nnx == number of nodes
+    do i = 1, nnx
+      x = (i-1)*hx
+      do k = 2, size(pp)
+          if(x.lt.pp(k)) then
+            ix(i) = k-1
+            exit
+          endif
+      enddo
+    enddo
+
+    nullify(pp)
+  end subroutine mesh_index_yuri
+
+
+  !---------------------------------------------------------------------
+  ! let xu(i=1:nnx)=[0,xl] be a uniform node-centered grid
+  ! then for each xu(i) find ix(i) such as 
+  ! m%xc(ix) <= xu(i) < m%xc(ix+1) if inode==cell
+  ! m%xn(ix) <= xu(i) < m%xn(ix+1) if inode==node
+  ! mesh_init1d() must be called prior to this call
   !---------------------------------------------------------------------
   subroutine mesh_index_hxv(m, inode, ix, inode_uniform)
 
@@ -241,7 +287,7 @@ module m_mesh
       if (inode_uniform%type == cell%type) then     ! Interpolate locations of cell uniform mesh
         x=(i-1-0.5)*hx
       else                                      ! Interpolate locations of node uniform mesh
-        x=(i-1    )*hx
+        x=(i-1)*hx
       endif
       do k=2,size(pp)
           if(x.lt.pp(k)) then
@@ -254,47 +300,6 @@ module m_mesh
     nullify(pp)
 
   end subroutine mesh_index_hxv
-
-
-  !---------------------------------------------------------------------
-  ! let xu(i=1:nnx)=[0,xl] be a uniform node-centered grid
-  ! then for each xu(i) find ix(i) such as 
-  ! m%xc(ix) <= xu(i) < m%xc(ix+1) if inode==cell
-  ! m%xn(ix) <= xu(i) < m%xn(ix+1) if inode==node
-  ! MESH_INIT() must be called prior to this call
-  !---------------------------------------------------------------------
-  subroutine mesh_index_yuri(m, inode, ix)
-
-    type(mesh), intent(in) :: m
-    type(meshtype), intent(in) :: inode
-    integer*8, intent(out), dimension(:) :: ix
-    real*8, dimension(:), pointer :: pp
-    real*8 :: x,hx 
-    integer*8 i,k,nnx
-
-    ix(:)=0  
-    nullify(pp)
-
-    if(inode%type == cell%type) then ! cell-centered
-        pp => m%xc 
-    else
-        pp => m%xn 
-    endif
-
-    nnx = size(ix)
-    hx = m%xl/(nnx-1) ! nnx == number of nodes
-    do i=1,nnx
-      x=(i-1    )*hx
-      do k=2,size(pp)
-          if(x.lt.pp(k)) then
-            ix(i)=k-1
-            exit
-          endif
-      enddo
-    enddo
-
-    nullify(pp)
-  end subroutine mesh_index_yuri
 
 
   !---------------------------------------------------------------------
@@ -469,7 +474,7 @@ module m_mesh
   !---------------------------------------------------------------------
   ! set up uniform mesh
   !---------------------------------------------------------------------
-  subroutine setup_mesh
+  subroutine init_mesh
     use m_parameter
 
     integer :: i
@@ -480,10 +485,9 @@ module m_mesh
     endif
 
     ! Initialize uniform mesh
-    ! where meshX, meshY, meshZ are declared in 'm_mesh'
-    call mesh_init(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh
-    call mesh_init(meshY,yaa,ybb,ymax,nay,nby,ny) ! initialize y-mesh
-    call mesh_init(meshZ,zaa,zbb,zmax,naz,nbz,nz) ! initialize z-mesh
+    call mesh_init1d(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh
+    call mesh_init1d(meshY,yaa,ybb,ymax,nay,nby,ny) ! initialize y-mesh
+    call mesh_init1d(meshZ,zaa,zbb,zmax,naz,nbz,nz) ! initialize z-mesh
 
     ! mesh_index_yuri
     call mesh_index(meshX,cell,ixv_2_c_map)
@@ -500,35 +504,6 @@ module m_mesh
     call mesh_index(meshY,node,iyc_2_v_map,cell)
     call mesh_index(meshZ,node,izc_2_v_map,cell)
 
-    ! write mesh properties into a file
-    if (myid == 0) then
-      open(unit=10, file=trim(data_directory)//'mesh_vertices.dat', status='unknown', form='formatted')
-      write(10,*) meshX%nl+1, meshY%nl+1, meshZ%nl+1
-
-      do i = 2, meshX%nl+2 
-        write(10,*) meshX%xn(i)
-      enddo
-      do i = 2, meshX%nl+2 
-        write(10,*) meshX%dxc(i)
-      enddo
-
-      do i = 2, meshY%nl+2 
-        write(10,*) meshY%xn(i)
-      enddo
-      do i = 2, meshY%nl+2 
-        write(10,*) meshY%dxc(i)
-      enddo
-
-      do i = 2, meshZ%nl+2 
-        write(10,*) meshZ%xn(i)
-      enddo
-      do i = 2, meshZ%nl+2 
-        write(10,*) meshZ%dxc(i)
-      enddo
-      
-      close(unit=10)
-    endif
-
-  end subroutine setup_mesh
+  end subroutine init_mesh
 
 end module m_mesh
