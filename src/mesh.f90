@@ -95,8 +95,8 @@ module m_mesh
         m%cb1 = 0.
         m%cb2 = 0.
     endif
-    print*, '  m%ca1, m%ca2, m%cb1, m%cb2 = ', m%ca1, m%ca2, m%cb1, m%cb2
-    print*, '  m%epsa, m%epsb = ', m%epsa, m%epsb
+    if (myid==0) print*, '  m%ca1, m%ca2, m%cb1, m%cb2 = ', m%ca1, m%ca2, m%cb1, m%cb2
+    if (myid==0) print*, '  m%epsa, m%epsb = ', m%epsa, m%epsb
 
     do i = 0,na-1
         m%xn(i+2) = xa - (m%epsa**(na-i)-1.)/m%ca1 
