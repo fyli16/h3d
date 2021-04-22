@@ -18,7 +18,7 @@ OBJS =  parameter.of90 \
 		mesh.of90 \
 		field.of90\
 		particle.of90 \
-		eta_cal.of90 \
+		cal_eta.of90 \
 		boundary.of90 \
 	 	diagnostics.of90\
 		io.of90\

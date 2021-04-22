@@ -8,6 +8,7 @@
 !---------------------------------------------------------------------
 module m_diagnostics
   use m_parameters
+  use m_io
   implicit none 
 
   contains 
@@ -114,6 +115,9 @@ module m_diagnostics
   end subroutine diagnostics
 
 
+  !---------------------------------------------------------------------
+  ! write energy history data
+  !---------------------------------------------------------------------
   subroutine diag_energy_hist
     if ( myid==0 .and. n_write_energy>0 .and. mod(it,n_write_energy)==0 ) then
       write(11,*) it, efld, bfld, efluid, ethermal, eptcl ! energy.dat

@@ -1,41 +1,12 @@
-!***************************************************************************
-!                                 VERSION 6.0                              *
-!                           YURI'S NONUNIFORM MESH                         *
-!                           3D IMPLEMENTATION ONLY                         *
-!                      UNIFORM LOADING IN PHYSICAL SPACE                   *
-!               UNIFORM LOADING IN LOGICAL SPACE NOT YET IMPLEMENTED       *
-!***************************************************************************
-
 program h3d 
-  use m_parameters
-  use m_functions
   use m_init
-  use m_mesh
   implicit none
-
-  ! initialize MPI, input, domain decomposition, & global arrays
+  ! initializing simulation
   call init_sim
-    
-  ! set up mesh 
-  call setup_mesh
-
-  ! open history diagnostic files
-  call open_hist_files
-
-  ! restart or a fresh start
-  call makelist  ! make list of particles (see utils.f90)
-  if (restart) then ! restart from previous run, read wave-particle parameters
-    call init_restart 
-  else ! fresh start, initialize wave-particle parameters
-    call init_wavepart 
-  endif 
-
-  ! main simulation loops
+  ! executing main loops
   call sim_loops
-
-  ! shutdown the program
+  ! shutdown the simulation
   call shutdown
-
 end program h3d
 
 
@@ -44,6 +15,10 @@ end program h3d
 !---------------------------------------------------------------------
 subroutine sim_loops
   use m_parameters
+  use m_utils
+  use m_cal_eta
+  use m_particles
+  use m_field
   use m_diagnostics
   implicit none 
 
@@ -71,18 +46,18 @@ subroutine sim_loops
       clock_old = clock_now
     endif
 
-    ! compute resistivity 
+    ! calculate resistivity (eta)
     ! (which could depend on local parameters such as current)
     call date_and_time(values=time_begin(:,2))
     if (ndim /= 1) then
-      call eta_calc       
+      call cal_eta       
     else
-      call eta_calc_2d    
+      call cal_eta_2d    
     endif
     call date_and_time(values=time_end(:,2))
     call accumulate_time(time_begin(1,2),time_end(1,2),time_elapsed(2))
 
-    ! compute density and v's, and push particles
+    ! calculate density and v's, and push particles
     call date_and_time(values=time_begin(:,3))
     ntot = 0 ! for particle tracking
     call trans

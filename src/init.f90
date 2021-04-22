@@ -1,5 +1,6 @@
 module m_init
   use m_parameters
+  use m_io
   use m_mesh
   implicit none
 
@@ -11,11 +12,28 @@ module m_init
   subroutine init_sim
     ! read input deck
     call init_input
+    
     ! MPI domain decomposition 
     call init_mpi_domain
+    
     ! allocate global arrays
     call allocate_arrays
-    return
+    
+    ! set up mesh 
+    call setup_mesh
+
+    ! open history diagnostic files
+    call open_hist_files
+
+    ! restart or a fresh start
+    call makelist  ! make list of particles (see utils.f90)
+    if (restart) then ! restart from previous run, read wave-particle parameters
+      call init_restart 
+    else ! fresh start, initialize wave-particle parameters
+      call init_wavepart 
+    endif 
+
+    return 
   end subroutine init_sim
 
 
@@ -51,7 +69,21 @@ module m_init
     my_short_int = myid
     call integer_to_character(myid_char, len(myid_char), my_short_int)
 
-    ! read input deck
+    ! print head info
+    if (myid==0) then
+      print*, " "
+      print*, !***************************************************************************
+      print*, !                                 H3D (V6.0)                               *
+      print*, !                           YURI'S NONUNIFORM MESH                         *
+      print*, !                           3D IMPLEMENTATION ONLY                         *
+      print*, !                      UNIFORM LOADING IN PHYSICAL SPACE                   *
+      print*, !               UNIFORM LOADING IN LOGICAL SPACE NOT YET IMPLEMENTED       *
+      print*, !***************************************************************************
+      print*, " "
+      print*, " "
+    endif 
+
+    ! read in input deck
     if (myid == 0) then
       write(6,*) " "
       write(6,*) "Reading input file ..."
@@ -154,6 +186,7 @@ module m_init
     ! field subcycling
     ! n_subcycles = max(n_subcycles, 1_8)
 
+    ! set output directories
     data_directory = 'data/'
     restart_directory = 'restart/'
     restart_index_suffix(1) = '.1'
@@ -244,7 +277,7 @@ module m_init
 
 
   !---------------------------------------------------------------------
-  ! init waves
+  ! init waves and particles
   !---------------------------------------------------------------------
   subroutine init_wavepart
 
