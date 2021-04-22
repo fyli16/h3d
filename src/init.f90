@@ -283,6 +283,7 @@ module m_init
   subroutine init_wavepart
     use m_cal_eta
     use m_field
+    use m_particles
 
     integer*8 :: ibp1, ibp2, i, remake, field_subcycle
     real*8 :: rxe, rye, rze, fxe, fye, fze, dtxi, dtyi, dtzi, &

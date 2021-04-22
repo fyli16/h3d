@@ -1,5 +1,6 @@
 module m_cal_eta
   use m_parameters
+  use m_utils
   implicit none
 
   contains 
@@ -182,7 +183,7 @@ module m_cal_eta
       enddo 
 
     else if ( (ieta .gt. 6).or.(ieta .lt. 0) ) then
-      call ERROR_ABORT('Currently cal_eta only accepts ieta = 0 ~ 6')
+      call error_abort('Currently cal_eta only accepts ieta = 0 ~ 6')
 
     endif
 
