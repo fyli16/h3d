@@ -37,7 +37,7 @@ module m_mesh
 
   type (mesh) :: meshX, meshY, meshZ 
   type (meshtype), parameter :: cell = meshtype(0)
-  type (meshtype), parameter :: NODE = meshtype(1)
+  type (meshtype), parameter :: node = meshtype(1)
 
   interface mesh_index
     module procedure mesh_index_yuri, mesh_index_hxv
@@ -95,6 +95,8 @@ module m_mesh
         m%cb1 = 0.
         m%cb2 = 0.
     endif
+    print*, '  m%ca1, m%ca2, m%cb1, m%cb2 = ', m%ca1, m%ca2, m%cb1, m%cb2
+    print*, '  m%epsa, m%epsb = ', m%epsa, m%epsb
 
     do i = 0,na-1
         m%xn(i+2) = xa - (m%epsa**(na-i)-1.)/m%ca1 
@@ -125,8 +127,8 @@ module m_mesh
     do i = 2,nl+2
         m%dxn(i) = m%xc(i)-m%xc(i-1)
     enddo
-    m%dxn(1) = m%dxn(2) ! fictitous
-    m%dxn(nl+3) = m%dxn(nl+2) ! fictitous
+    m%dxn(1) = m%dxn(2) 
+    m%dxn(nl+3) = m%dxn(nl+2) 
       
     return
   end subroutine mesh_init
@@ -211,7 +213,7 @@ module m_mesh
   ! let xu(i=1:nnx)=[0,xl] be a uniform node-centered grid
   ! then for each xu(i) find ix(i) such as 
   ! m%xc(ix) <= xu(i) < m%xc(ix+1) if inode==cell
-  ! m%xn(ix) <= xu(i) < m%xn(ix+1) if inode==NODE
+  ! m%xn(ix) <= xu(i) < m%xn(ix+1) if inode==node
   ! MESH_INIT() must be called prior to this call
   !---------------------------------------------------------------------
   subroutine mesh_index_hxv(m, inode, ix, inode_uniform)
@@ -237,7 +239,7 @@ module m_mesh
     do i=1,nnx
       if (inode_uniform%type == cell%type) then     ! Interpolate locations of cell uniform mesh
         x=(i-1-0.5)*hx
-      else                                      ! Interpolate locations of NODE uniform mesh
+      else                                      ! Interpolate locations of node uniform mesh
         x=(i-1    )*hx
       endif
       do k=2,size(pp)
@@ -257,7 +259,7 @@ module m_mesh
   ! let xu(i=1:nnx)=[0,xl] be a uniform node-centered grid
   ! then for each xu(i) find ix(i) such as 
   ! m%xc(ix) <= xu(i) < m%xc(ix+1) if inode==cell
-  ! m%xn(ix) <= xu(i) < m%xn(ix+1) if inode==NODE
+  ! m%xn(ix) <= xu(i) < m%xn(ix+1) if inode==node
   ! MESH_INIT() must be called prior to this call
   !---------------------------------------------------------------------
   subroutine mesh_index_yuri(m, inode, ix)
@@ -483,19 +485,19 @@ module m_mesh
     call mesh_init(meshZ,zaa,zbb,zmax,naz,nbz,nz) ! initialize z-mesh
 
     ! mesh_index_yuri
-    call mesh_index(meshX,CELL,ixv_2_c_map)
-    call mesh_index(meshY,CELL,iyv_2_c_map)
-    call mesh_index(meshZ,CELL,izv_2_c_map)
-    call mesh_index(meshX,NODE,ixv_2_v_map)
-    call mesh_index(meshY,NODE,iyv_2_v_map)
-    call mesh_index(meshZ,NODE,izv_2_v_map)
+    call mesh_index(meshX,cell,ixv_2_c_map)
+    call mesh_index(meshY,cell,iyv_2_c_map)
+    call mesh_index(meshZ,cell,izv_2_c_map)
+    call mesh_index(meshX,node,ixv_2_v_map)
+    call mesh_index(meshY,node,iyv_2_v_map)
+    call mesh_index(meshZ,node,izv_2_v_map)
     ! mesh_index_hxv
-    call mesh_index(meshX,CELL,ixc_2_c_map,CELL)
-    call mesh_index(meshY,CELL,iyc_2_c_map,CELL)
-    call mesh_index(meshZ,CELL,izc_2_c_map,CELL)
-    call mesh_index(meshX,NODE,ixc_2_v_map,CELL)
-    call mesh_index(meshY,NODE,iyc_2_v_map,CELL)
-    call mesh_index(meshZ,NODE,izc_2_v_map,CELL)
+    call mesh_index(meshX,cell,ixc_2_c_map,cell)
+    call mesh_index(meshY,cell,iyc_2_c_map,cell)
+    call mesh_index(meshZ,cell,izc_2_c_map,cell)
+    call mesh_index(meshX,node,ixc_2_v_map,cell)
+    call mesh_index(meshY,node,iyc_2_v_map,cell)
+    call mesh_index(meshZ,node,izc_2_v_map,cell)
 
     ! write mesh properties into a file
     if (myid == 0) then
