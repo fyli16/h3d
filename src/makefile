@@ -20,8 +20,8 @@ OBJS =  parameter.of90 \
 		particle.of90 \
 		cal_eta.of90 \
 		boundary.of90 \
-	 	diagnostics.of90\
 		io.of90\
+	 	diagnostics.of90\
 		init.of90 \
 		h3d.of90
 
