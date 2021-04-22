@@ -1,8 +1,8 @@
 ! Declare global parameters and global arrays in this module
-module m_parameters  
+module m_parameter  
   use mpi
   implicit none
-  
+
   save
 
   ! global simulation/MPI
@@ -425,4 +425,4 @@ module m_parameters
 
   end subroutine allocate_arrays 
 
-end module m_parameters
+end module m_parameter

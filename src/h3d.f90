@@ -1,9 +1,9 @@
 program h3d 
   use m_init
   implicit none
-  ! initializing simulation
+  ! initialize simulation
   call init_sim
-  ! executing main loops
+  ! execute main loops
   call sim_loops
   ! shutdown the simulation
   call shutdown
@@ -14,10 +14,10 @@ end program h3d
 ! main simulation loops
 !---------------------------------------------------------------------
 subroutine sim_loops
-  use m_parameters
+  use m_parameter
   use m_utils
   use m_cal_eta
-  use m_particles
+  use m_particle
   use m_field
   use m_diagnostics
   implicit none 
@@ -106,7 +106,7 @@ end subroutine sim_loops
 ! shutdown simulation and exit
 !---------------------------------------------------------------------
 subroutine shutdown
-  use m_parameters
+  use m_parameter
   implicit none 
 
   if (myid == 0) then

@@ -66,7 +66,7 @@ smoothing = .true.,
 
 ! ---------------------- init waves --------------------!
 dB_B0 = 0.1,
-num_cycles = 5,
+num_wave_cycles = 5,
 
 ! ------------------ diagnostic control ----------------!
 n_print = 100,  ! frequency at which to print simulation progression

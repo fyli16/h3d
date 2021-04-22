@@ -1,5 +1,5 @@
 module m_init
-  use m_parameters
+  use m_parameter
   use m_utils
   use m_io
   use m_mesh
@@ -8,14 +8,14 @@ module m_init
   contains 
 
   !---------------------------------------------------------------------
-  ! initialize input & MPI decomposition, and alloate arrays
+  ! initialize simulation
   !---------------------------------------------------------------------
   subroutine init_sim
     ! read input deck
     call init_input
     
     ! MPI domain decomposition 
-    call init_mpi_domain
+    call init_mpi_decomp
     
     ! allocate global arrays
     call allocate_arrays
@@ -27,10 +27,10 @@ module m_init
     call open_hist_files
 
     ! restart or a fresh start
-    call makelist  ! make list of particles (see utils.f90)
-    if (restart) then ! restart from previous run, read wave-particle parameters
+    call makelist  ! see utils.f90
+    if (restart) then 
       call init_restart 
-    else ! fresh start, initialize wave-particle parameters
+    else ! fresh start
       call init_wavepart 
     endif 
 
@@ -39,7 +39,7 @@ module m_init
 
 
   !---------------------------------------------------------------------
-  ! master process reads input parameters and broadcasts to all ranks
+  ! read in input file/parameters
   !---------------------------------------------------------------------
   subroutine init_input
     integer :: input_error
@@ -54,7 +54,7 @@ module m_init
     nspec, n_sort, qspec, wspec, frac, denmin, wpiwci, btspec, bete, &  ! plasma setup
     ieta, resis, netax, netay, etamin, etamax, eta_par, eta_zs, &
     anisot, gamma, ave1, ave2, phib, smoothing, &
-    dB_B0, num_cycles, &  ! init waves
+    dB_B0, num_wave_cycles, &  ! init waves
     n_print, n_write_mesh, n_write_energy, n_write_probes, & ! diagnostics
     n_write_tracking, n_write_restart, n_write_particle, &  
     tracking_binary, tracking_mpi, xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
@@ -74,11 +74,11 @@ module m_init
     if (myid==0) then
       print*, " "
       print*, "***************************************************************************"
-      print*, "                                 H3D (V6.0)                               *"
-      print*, "                           YURI'S NONUNIFORM MESH                         *"
-      print*, "                           3D IMPLEMENTATION ONLY                         *"
-      print*, "                      UNIFORM LOADING IN PHYSICAL SPACE                   *"
-      print*, "               UNIFORM LOADING IN LOGICAL SPACE NOT YET IMPLEMENTED       *"
+      print*, "*                                 H3D (V6.0)                               *"
+      print*, "*                           YURI'S NONUNIFORM MESH                         *"
+      print*, "*                           3D IMPLEMENTATION ONLY                         *"
+      print*, "*                      UNIFORM LOADING IN PHYSICAL SPACE                   *"
+      print*, "*               UNIFORM LOADING IN LOGICAL SPACE NOT YET IMPLEMENTED       *"
       print*, "***************************************************************************"
       print*, " "
       print*, " "
@@ -156,7 +156,7 @@ module m_init
     call MPI_BCAST(smoothing              ,1     ,MPI_LOGICAL,0,MPI_COMM_WORLD,IERR)
     ! init waves
     call MPI_BCAST(dB_B0                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(num_cycles             ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(num_wave_cycles        ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     ! diagnostic control
     call MPI_BCAST(n_print                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_write_mesh           ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
@@ -218,7 +218,9 @@ module m_init
 
 
   !---------------------------------------------------------------------
-  subroutine init_mpi_domain
+  ! initialize MPI domain decomposition
+  !---------------------------------------------------------------------
+  subroutine init_mpi_decomp
     integer :: i
 
     ! set MPI Cartesian geometry, define stride vector types, 
@@ -274,7 +276,7 @@ module m_init
       write(6,*) "  Local array size in z-direction = ", nzlmax
     endif
 
-  end subroutine init_mpi_domain
+  end subroutine init_mpi_decomp
 
 
   !---------------------------------------------------------------------
@@ -283,7 +285,7 @@ module m_init
   subroutine init_wavepart
     use m_cal_eta
     use m_field
-    use m_particles
+    use m_particle
 
     integer*8 :: ibp1, ibp2, i, remake, field_subcycle
     real*8 :: rxe, rye, rze, fxe, fye, fze, dtxi, dtyi, dtzi, &
@@ -291,7 +293,7 @@ module m_init
               r_c, q_p, dtsav
     integer*8 :: ip, ipb1, ipb2, is, ixe, iye, ize, j, k
     real*8 :: vxa, vya, vza, vmag, th, ranval(4)
-    real*8 :: x_pos, y_pos, z_pos, B0, VA, dB0, mi
+    real*8 :: x_pos, y_pos, z_pos, B0, VA, mi
     real*8 :: bx_, by_, bz_, ex_, ey_, ez_
     real*8 :: kx, ky, kz, kxmin, kymin, kzmin, dvx_, dvy_, dvz_, sin_factor
     real*8 :: w1e, w2e, w3e, w4e, w5e, w6e, w7e, w8e
@@ -322,7 +324,6 @@ module m_init
     call MPI_BCAST(seed, seed_size, MPI_INTEGER, 0, MPI_COMM_WORLD, IERR)  
     call random_seed(put=myid*seed) ! set current seed
 
-    ! init step of iterations
     it = 0; itrestart = 0; 
     itstart = it; itfinish = tmax/dtwci
 
@@ -333,18 +334,15 @@ module m_init
     hx = xmax/nx; hy = ymax/ny; hz = zmax/nz
     hxi = one/hx; hyi = one/hy; hzi = one/hz
 
-    xb = zero
-    xe = xmax
+    xb = zero; xe = xmax
 
-    yb = meshY%xn(jb+1)
-    ye = meshY%xn(je+2)
+    yb = meshY%xn(jb+1); ye = meshY%xn(je+2)
     do ipe = 0, nprocs-1
       ybglobal(ipe)=meshY%xn(jbglobal(ipe)+1)
       yeglobal(ipe)=meshY%xn(jeglobal(ipe)+2)
     enddo
 
-    zb = meshZ%xn(kb+1)
-    ze = meshZ%xn(ke+2)
+    zb = meshZ%xn(kb+1); ze = meshZ%xn(ke+2)
     do ipe = 0, nprocs-1
       zbglobal(ipe)=meshZ%xn(kbglobal(ipe)+1)
       zeglobal(ipe)=meshZ%xn(keglobal(ipe)+2)
@@ -352,12 +350,12 @@ module m_init
 
     volume_fraction = (ye-yb)*(ze-zb)/(ymax*zmax)
 
-    xb_logical = MESH_UNMAP(meshX,xb)
-    xe_logical = MESH_UNMAP(meshX,xe)
-    yb_logical = MESH_UNMAP(meshY,yb)
-    ye_logical = MESH_UNMAP(meshY,ye)
-    zb_logical = MESH_UNMAP(meshZ,zb)
-    ze_logical = MESH_UNMAP(meshZ,ze)
+    xb_logical = mesh_unmap(meshX,xb)
+    xe_logical = mesh_unmap(meshX,xe)
+    yb_logical = mesh_unmap(meshY,yb)
+    ye_logical = mesh_unmap(meshY,ye)
+    zb_logical = mesh_unmap(meshZ,zb)
+    ze_logical = mesh_unmap(meshZ,ze)
 
     do is = 1, nspec
       npm = npx(is)*npy(is)*npz(is)*nprocs
@@ -371,40 +369,37 @@ module m_init
       enddo
     enddo
 
-    ! VR: initialize wave parameters
-    ! dB_B0=0.1  ! now get it from input      
-    B0 = one/wpiwci  ! RMS amplitude of the pertubation [B0=RMS(B)]
-    ! Alfven speed
-    mi=0.
-    do j =1, nspec
-      mi = mi + frac(j)*wspec(j)
-    enddo
-    VA = one/wpiwci/sqrt(mi)      
-
-    kxmin = two*pi/xmax
-    kymin = two*pi/ymax
-    kzmin = two*pi/zmax
-    kx = zero
-    ky = zero
-    kz = num_cycles*kzmin  ! num_cycles is taken from input
-
-    bx = zero; by = zero; bz = zero
-    ex = zero; ey = zero; ez = zero
-    
     !---------------------------------------------------------------------
-    ! initialie perturbation on the mesh 
+    ! initialie wave perturbation on the mesh 
     !---------------------------------------------------------------------
     if (myid==0) then
       print*, " "
       print*, "Initializing wave on the mesh ..."
     endif 
 
+    B0 = one/wpiwci  ! RMS amplitude of the wave: B0=RMS(B)  
+    mi=0.
+    do j =1, nspec
+      mi = mi + frac(j)*wspec(j)
+    enddo
+    VA = one/wpiwci/sqrt(mi) ! Alfven speed      
+
+    kxmin = two*pi/xmax
+    kymin = two*pi/ymax
+    kzmin = two*pi/zmax
+    kx = zero
+    ky = zero
+    kz = num_wave_cycles*kzmin
+
+    bx = zero; by = zero; bz = zero
+    ex = zero; ey = zero; ez = zero
+
     do k = kb-1, ke+1
       z_pos = meshZ%xc(k+1)
       do j = jb-1, je+1  
         y_pos = meshY%xc(j+1)
         do i = 1, nx2
-          x_pos = meshX%xc(i) ! x has different indexing compared to y and z               
+          x_pos = meshX%xc(i) ! x has different indexing than y/z               
 
           ! single Alfven wave
           bx_ =  dB_B0*B0*sin(kz*z_pos)
@@ -513,10 +508,10 @@ module m_init
         endif
         tag = tag+1
 
-        ! Nonuniform mesh - using MESH_UNMAP
-        rxe=dtxi*MESH_UNMAP(meshX,x(np))+1.50000000000d+00
-        rye=dtyi*MESH_UNMAP(meshY,y(np))+1.50000000000d+00
-        rze=dtzi*MESH_UNMAP(meshZ,z(np))+1.50000000000d+00
+        ! Nonuniform mesh - using mesh_unmap
+        rxe=dtxi*mesh_unmap(meshX,x(np))+1.50000000000d+00
+        rye=dtyi*mesh_unmap(meshY,y(np))+1.50000000000d+00
+        rze=dtzi*mesh_unmap(meshZ,z(np))+1.50000000000d+00
         ixe=rxe
         iye=rye
         ize=rze
@@ -608,18 +603,19 @@ module m_init
       call xrealbcc_pack_e_2d(ex,ey,ez,1_8,nx,ny,nz)
     endif
     
-    ! set the friction force and resitivity (friction force can be zero at t=0)
+    ! set the friction force and resitivity (the former can be zero at t=0)
     if(myid==0) then
       print*, " "
       print*, '  setting friction force and resistivity'
     endif
+
     do k = kb-1,ke+1
       do j = jb-1,je+1
         do i = 1,nx2
-          fox(i,j,k)=zero
-          foy(i,j,k)=zero
-          foz(i,j,k)=zero
-          eta(i,j,k)=resis
+          fox(i,j,k) = zero
+          foy(i,j,k) = zero
+          foz(i,j,k) = zero
+          eta(i,j,k) = resis
         enddo
       enddo
     enddo
@@ -644,16 +640,11 @@ module m_init
       endif
     enddo
 
-    ! calculate resistivity
-    if(myid==0) then
-      print*, " "
-      print*, "  calculating resistivity"
-      print*, " "
-    endif
+    ! calculate resistivity (Dietmar's resistivity)
     if (ndim /= 1) then
-        call cal_eta  ! Dietmar's resistivity
+        call cal_eta  
     else
-        call cal_eta_2d  ! Dietmar's resistivity
+        call cal_eta_2d
     endif
     
     deallocate(seed) 
@@ -662,7 +653,7 @@ module m_init
 
 
   !---------------------------------------------------------------------
-  ! initialize data from a previous run
+  ! initialize restart from a previous run
   !---------------------------------------------------------------------
   subroutine init_restart
 
@@ -724,12 +715,12 @@ module m_init
     
     xb = 0.
     xe = xmax
-    xb_logical = MESH_UNMAP(meshX,xb)
-    xe_logical = MESH_UNMAP(meshX,xe)
-    yb_logical = MESH_UNMAP(meshY,yb)
-    ye_logical = MESH_UNMAP(meshY,ye)
-    zb_logical = MESH_UNMAP(meshZ,zb)
-    ze_logical = MESH_UNMAP(meshZ,ze)
+    xb_logical = mesh_unmap(meshX,xb)
+    xe_logical = mesh_unmap(meshX,xe)
+    yb_logical = mesh_unmap(meshY,yb)
+    ye_logical = mesh_unmap(meshY,ye)
+    zb_logical = mesh_unmap(meshZ,zb)
+    ze_logical = mesh_unmap(meshZ,ze)
               
     do i = 1, nspec
       npm = npx(i)*npy(i)*npz(i)*nprocs

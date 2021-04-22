@@ -7,10 +7,10 @@
 ! user diagnostics
 !---------------------------------------------------------------------
 module m_diagnostics
-  use m_parameters
+  use m_parameter
   use m_utils
   use m_io
-  use m_particles
+  use m_particle
   implicit none 
 
   contains 
@@ -129,6 +129,8 @@ module m_diagnostics
 
 
   !---------------------------------------------------------------------
+  ! virtual probes
+  !---------------------------------------------------------------------
   subroutine virtual_probes
     integer :: i,j,k,m,bufsize
     double precision, dimension(nprobes) :: factor
@@ -190,6 +192,8 @@ module m_diagnostics
   end subroutine virtual_probes_mpi
 
 
+  !---------------------------------------------------------------------
+  ! track particle data
   !---------------------------------------------------------------------
   subroutine track_particles
     double precision, dimension(tracking_width,nspec*maxtags) :: buf_p2

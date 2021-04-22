@@ -365,7 +365,7 @@ module m_mesh
 
   !---------------------------------------------------------------------
   ! subroutine mesh_interpolated_3d(nonuniform_mesh, uniform_mesh, nonuniform_mesh_global)
-  !   use m_parameters
+  !   use m_parameter
 
   !   real*8 :: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,w1,w2,w3,w4,w5,w6,w7,w8
   !   integer*8:: ix,iy,iz,ixp1,iyp1,izp1,i,j,k,jmin,jmax,kmin,kmax
@@ -467,7 +467,7 @@ module m_mesh
   ! set up uniform mesh
   !---------------------------------------------------------------------
   subroutine setup_mesh
-    use m_parameters
+    use m_parameter
 
     integer :: i
 

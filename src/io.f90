@@ -1,5 +1,5 @@
 module m_io
-  use m_parameters
+  use m_parameter
   use m_utils
   implicit none 
 
@@ -409,7 +409,7 @@ module m_io
   ! rw = -1.0: read
   !---------------------------------------------------------------------
   subroutine write_read_restart_files(rw)
-    use m_particles
+    use m_particle
 
     integer*8 :: f_unit, np_count, is, ixe, iye, ize, noresete
     real :: rw

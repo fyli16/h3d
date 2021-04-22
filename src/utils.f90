@@ -35,13 +35,13 @@ module m_utils
 
 
   !---------------------------------------------------------------------
-  ! XF:  smoothing routine--for periodic B.C.
+  ! smoothing routine for periodic B.C.
   ! 3D version of 3-point binomial smoothing
   !            y(i)=(x(i-1)+2*x(i)+x(i+1))/4
   ! i.e. 27 points are involved
   !---------------------------------------------------------------------
   subroutine nsmth (a)
-    use m_parameters
+    use m_parameter
 
     integer*8 :: i,j,k
     real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
@@ -84,7 +84,7 @@ module m_utils
 
   !---------------------------------------------------------------------
   subroutine nsmth_2d (a,nx2m,ny2m,nz2m)
-    use m_parameters
+    use m_parameter
 
     integer*8 :: i,j,k
     integer*8 :: nx2m, ny2m, nz2m
@@ -120,6 +120,8 @@ module m_utils
 
 
   !---------------------------------------------------------------------
+  ! bounds to dimensions?
+  !---------------------------------------------------------------------
   subroutine BoundsToDimensions(ilo, ihi, jlo, jhi, klo, khi, dims, nCells)
     integer:: ilo,ihi,&    ! bounds of a 3d array
               jlo,jhi,&
@@ -137,18 +139,11 @@ module m_utils
 
 
   !---------------------------------------------------------------------
-  subroutine clock_write(iunit,message,i2,i1,is,it)
-    integer*8 iunit,i2,i1,is,it
-    character*10 message
-    write(iunit,"(i4,a10,e20.8)") it, real(i2-i1)/real(is)
-    return
-  end subroutine clock_write
-
-
+  ! make list?
   !---------------------------------------------------------------------
   subroutine makelist
-    use m_parameters
-    
+    use m_parameter
+
     integer*8:: ip
 
     ipstore = 1
@@ -190,6 +185,9 @@ module m_utils
     return
   end subroutine mpe_decomp1d
 
+
+  !---------------------------------------------------------------------
+  ! error abort
   !---------------------------------------------------------------------
   subroutine error_abort(message)
     character(*), intent(in) :: message
@@ -198,6 +196,8 @@ module m_utils
   end subroutine error_abort
 
 
+  !---------------------------------------------------------------------
+  ! warning 
   !---------------------------------------------------------------------
   subroutine warning(message)
     character(*), intent(in) :: message

@@ -1,5 +1,5 @@
-module m_particles
-  use m_parameters
+module m_particle
+  use m_parameter
   use m_utils
   use m_mesh
   implicit none
@@ -3188,4 +3188,4 @@ module m_particles
     return
   end subroutine parmov_2d
 
-end module m_particles
+end module m_particle

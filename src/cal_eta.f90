@@ -1,9 +1,10 @@
 module m_cal_eta
-  use m_parameters
+  use m_parameter
   use m_utils
   implicit none
 
   contains 
+
   !---------------------------------------------------------------------
   !> calculate a resistivity that depends on physical quantities
   ! remember, eta and fo{x,y,z} are cell-centered quantities
@@ -309,7 +310,6 @@ module m_cal_eta
   ! (5) (2) and (4) combined, with (4) reduced by a factor (1/5)
   !-----------------------------------------------------------------------
   subroutine cal_eta_2d
-
     double precision :: ajl(nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax) 
     double precision :: ainv4b,ajg,ajmx,ajmy,ajpx,gb2,gb4,expo,eps,dxa,dya,dza, &
                 wpiwcigb,cfront,dbxdy,dbydx,dbzdx,dbzdy,ba1,ba2,ba3,ba4,b2,anetax,anetay,ajpy

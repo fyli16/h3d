@@ -13,7 +13,7 @@
 ! Blocking is avoided by first sending to the right and then to the left
 !---------------------------------------------------------------------
 subroutine xreal(a, nx1m, ny1m, nz1m)
-  use m_parameters
+  use m_parameter
   implicit none
 
   integer*8 :: i, j, nx1m, ny1m, nz1m, k
@@ -69,7 +69,7 @@ end subroutine xreal
 ! set at end of routine
 !---------------------------------------------------------------------
 subroutine xrealbcc(a, ibnd, nx1m, ny1m,nz1m)
-  use m_parameters
+  use m_parameter
   implicit none
 
   integer*8 :: ibnd,i,j,nx1m,ny1m,nz1m
@@ -102,7 +102,7 @@ end subroutine xrealbcc
 ! xrealbcc_pack_e subroutine
 !---------------------------------------------------------------------
 subroutine xrealbcc_pack_b(a_x,a_y,a_z, ibnd, nx1m, ny1m,nz1m)
-  use m_parameters
+  use m_parameter
   implicit none
   integer*8 ibnd,i,j,nx1m,ny1m,nz1m,k
   double precision a_x(nxmax,jb-1:je+1,kb-1:ke+1)&
@@ -216,7 +216,7 @@ end subroutine xrealbcc_pack_b
 
 !---------------------------------------------------------------------
 subroutine xrealbcc_pack_e(a_x,a_y,a_z, ibnd, nx1m, ny1m,nz1m)
-  use m_parameters
+  use m_parameter
   implicit none
 
   integer*8 :: ibnd,i,j,nx1m,ny1m,nz1m,k
@@ -333,7 +333,7 @@ end subroutine xrealbcc_pack_e
 
 !---------------------------------------------------------------------
 subroutine xreal_2d(a,nx1m,ny1m,nz1m)
-  use m_parameters
+  use m_parameter
   implicit none
 
   integer*8 :: i, j, nx1m, ny1m, nz1m, k
@@ -363,7 +363,7 @@ end subroutine xreal_2d
 
 !---------------------------------------------------------------------
 subroutine xrealbcc_2d(a, ibnd, nx1m, ny1m,nz1m)
-  use m_parameters
+  use m_parameter
   implicit none
   integer*8 :: ibnd,i,j,nx1m,ny1m,nz1m
   real*8 :: a(nxmax,jb-1:je+1,kb-1:ke+1)&
@@ -387,7 +387,7 @@ end subroutine xrealbcc_2d
 
 !---------------------------------------------------------------------
 subroutine xrealbcc_pack_b_2d(a_x,a_y,a_z, ibnd, nx1m, ny1m,nz1m)
-  use m_parameters
+  use m_parameter
   implicit none
 
   integer*8 :: i,j,nx1m,ny1m,nz1m,k,ibnd
@@ -448,7 +448,7 @@ end subroutine xrealbcc_pack_b_2d
 
 !---------------------------------------------------------------------
 subroutine xrealbcc_pack_e_2d(a_x,a_y,a_z, ibnd, nx1m, ny1m,nz1m)
-  use m_parameters
+  use m_parameter
   implicit none
 
   integer*8 :: ibnd,i,j,nx1m,ny1m,nz1m,k
