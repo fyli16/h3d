@@ -409,6 +409,7 @@ module m_io
   ! rw = -1.0: read
   !---------------------------------------------------------------------
   subroutine write_read_restart_files(rw)
+    use m_particles
 
     integer*8 :: f_unit, np_count, is, ixe, iye, ize, noresete
     real :: rw
