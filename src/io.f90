@@ -580,7 +580,7 @@ module m_io
       enddo
 
       write(f_unit) ninj,ninj_global,nescape,nescape_global,npart, &
-      npart_global,qleft,qrite,t_stopped
+      npart_global,t_stopped
 
       write(f_unit) x0,x1,tx0,vpar,vper,vbal,bbal,rcorr,teti,ishape
 
@@ -735,7 +735,7 @@ module m_io
       enddo
 
       read(f_unit) ninj,ninj_global,nescape,nescape_global,npart,  &
-      npart_global,qleft,qrite,t_stopped
+      npart_global,t_stopped
 
       read(f_unit) x0,x1,tx0,vpar,vper,vbal,bbal,rcorr,teti,ishape
 

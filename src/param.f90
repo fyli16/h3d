@@ -60,7 +60,6 @@ module m_parameter
                                         ,nescape_xy_global,nescape_yx_global              &
                                         ,nescape_xz_global,nescape_zx_global
 
-  real*8, dimension(:), allocatable :: qleft, qrite
   real*8, dimension(:), allocatable:: x0,x1,tx0,vpar,vper,bbal
   real*8, dimension(:,:), allocatable :: vbal
   real*8, dimension(5) :: rcorr
@@ -121,21 +120,266 @@ module m_parameter
   contains
 
   !---------------------------------------------------------------------
+  ! read in input file/parameters
+  !---------------------------------------------------------------------
+  subroutine init_input
+    integer :: input_error
+
+    namelist /datum/ &
+    tmax, dtwci, restart, &   ! global info
+    MPI_IO_format, &
+    nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, node_conf, periods, &  ! simulation domain
+    xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
+    uniform_load_logical, &
+    n_subcycles, nskipx, nskipy, nskipz, iterb, &  ! field solver
+    nspec, n_sort, qspec, wspec, frac, denmin, wpiwci, btspec, bete, &  ! plasma setup
+    ieta, resis, netax, netay, etamin, etamax, eta_par, eta_zs, &
+    anisot, gamma, ave1, ave2, phib, smoothing, &
+    dB_B0, num_wave_cycles, &  ! init waves
+    n_print, n_write_mesh, n_write_energy, n_write_probes, & ! diagnostics
+    n_write_tracking, n_write_restart, n_write_particle, &  
+    tracking_binary, tracking_mpi, xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
+    fxsho, nxcel, rcorr, ishape, teti  ! others
+
+    ! Initialize MPI
+    call MPI_INIT(IERR)
+    call MPI_COMM_SIZE(MPI_COMM_WORLD,NPROCS,IERR)
+    call MPI_COMM_RANK(MPI_COMM_WORLD,MYID,IERR)
+
+    ! convert number 'myid' to character
+    ! these characters will be used in dumping restart files by rank
+    my_short_int = myid
+    call integer_to_character(myid_char, len(myid_char), my_short_int)
+
+    ! print head info
+    if (myid==0) then
+      print*, " "
+      print*, "***************************************************************************"
+      print*, "*           |||     |||    ======\\    |||=====\\                         *"
+      print*, "*           |||     |||          ||    |||      \\                        *"
+      print*, "*           |||=====|||     =====||    |||       ||                       *"
+      print*, "*           |||     |||          ||    |||      //                       *"
+      print*, "*           |||     |||    ======//    |||=====//                         *"
+      print*, "***************************************************************************"
+      print*, " "
+      print*, " "
+    endif 
+
+    ! read in input deck
+    if (myid == 0) then
+      print*, " "
+      print*, "Reading input file ..."
+      open(5, file='input.f90', form='formatted', status='old')
+      read(5, nml=datum, iostat=input_error)
+      ! write(6, datum)
+    endif
+
+    ! Broadcast input parameters (read in at rank 0) to all other ranks
+    ! global sim. info
+    call MPI_BCAST(tmax                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(dtwci                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(restart                ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(MPI_IO_format          ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
+    ! sim. domain
+    call MPI_BCAST(nx                     ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(ny                     ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(nz                     ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(xmax                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(ymax                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(zmax                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(npx                    ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(npy                    ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(npz                    ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(node_conf              ,2     ,MPI_INTEGER         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(periods                ,2     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(xaa                    ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(xbb                    ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(nax                    ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(nbx                    ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(yaa                    ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(ybb                    ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(nay                    ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(nby                    ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(zaa                    ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(zbb                    ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(naz                    ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(nbz                    ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(uniform_load_logical,1     ,MPI_LOGICAL,0,MPI_COMM_WORLD,IERR)
+    ! field solver
+    call MPI_BCAST(n_subcycles            ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(nskipx                 ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(nskipy                 ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(nskipz                 ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(iterb                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    ! plasma setup
+    call MPI_BCAST(nspec                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_sort                 ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(qspec                  ,5     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(wspec                  ,5     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(frac                   ,5     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(denmin                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(wpiwci                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(btspec                 ,5     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(bete                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(ieta                   ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(resis                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(netax                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(netay                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(etamin                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(etamax                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(eta_par                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(eta_zs                 ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(anisot                 ,5     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(gamma                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(ave1                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(ave2                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(phib                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(smoothing              ,1     ,MPI_LOGICAL,0,MPI_COMM_WORLD,IERR)
+    ! init waves
+    call MPI_BCAST(dB_B0                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(num_wave_cycles        ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    ! diagnostic control
+    call MPI_BCAST(n_print                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_write_mesh           ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_write_energy         ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_write_probes         ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_write_tracking       ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_write_restart        ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_write_particle       ,1     ,MPI_INTEGER8        ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(tracking_binary        ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(tracking_mpi           ,1     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(xbox_l                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(xbox_r                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(ybox_l                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(ybox_r                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(zbox_l                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(zbox_r                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    ! others 
+    call MPI_BCAST(fxsho                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(nxcel                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(rcorr                  ,5     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(ishape                 ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(teti                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+
+    ! The unit of dt is 1/wci in input file, 
+    ! but now converted to 1/wpi inside the code
+    dt = dtwci * wpiwci
+
+    ! steps of iteration 
+    ! (could be modified later in 'init_restart' if restart=.true.)
+    it = 0; itrestart = 0; 
+    itstart = it; itfinish = tmax/dtwci
+
+    ! field subcycling
+    ! n_subcycles = max(n_subcycles, 1_8)
+
+    ! set output directories
+    data_directory = 'data/'
+    restart_directory = 'restart/'
+    restart_index_suffix(1) = '.1'
+    restart_index_suffix(2) = '.2'
+
+    ! print some simulation info
+    if (myid==0) then
+      print*, " "
+      if (restart) then 
+        print*, "  *** Restart run ***"
+      else 
+        print*, "  *** New run ***"
+      endif 
+
+      print*, " "
+      print*, "  xmax, ymax, zmax = ", xmax, ymax, zmax
+      print*, "  nx,   ny,   nz   = ", nx, ny, nz
+      print*, "  tmax, dtwci = ", tmax, dtwci
+      print*, "  npx = ", npx
+      print*, "  npy = ", npy
+      print*, "  npz = ", npz
+      print*, "  node_conf = ", node_conf
+      print*, "  xaa, xbb = ", xaa, xbb
+      print*, "  nax, nbx = ", nax, nbx 
+      print*, "  yaa, ybb = ", yaa, ybb
+      print*, "  nay, nby = ", nay, nby 
+      print*, "  zaa, zbb = ", zaa, zbb
+      print*, "  naz, nbz = ", naz, nbz 
+
+    endif  
+
+  end subroutine init_input
+
+
+  !---------------------------------------------------------------------
+  ! initialize MPI domain decomposition
+  !---------------------------------------------------------------------
+  subroutine init_mpi_decomp
+    integer :: i
+
+    if (myid==0) then
+      print*, " "
+      print*, "MPI decompsition ..."
+      print*, "  Total number of processors = ", nprocs
+    endif 
+
+    ! specify MPI decomposition (along y, z only; no decomposition along x) 
+    if (nz==1 .and. ny==1) then ! only nx>1 and 1 rank will be used  
+      ndim=0; dims(1)=1; dims(2)=1
+    else if (nz == 1) then ! ny>1 and decomposition only occurs in y
+      ndim=1; dims(1)=node_conf(1); dims(2)=1
+    else ! ny>1, nz>1, and decomposition in both y and z
+      ndim=2; dims=node_conf
+    endif
+
+    ! npy(z) now means number of particles in each rank along y(z)
+    npy=npy/dims(1); npz=npz/dims(2)
+
+    ! print MPI decomposition information
+    if (myid == 0) then
+      do i = 1, ndim
+        print*, "  Dimension = ", i, " Dims = ", dims(i)
+      enddo
+    endif
+
+    REORDER = .TRUE. ! reorder ranking or not
+    ! Makes a new communicator with topology information attached
+    call MPI_CART_CREATE(MPI_COMM_WORLD, NDIM, DIMS, PERIODS, REORDER, COMM2D, IERR) 
+    ! Determines calling rank in the new communicator
+    call MPI_COMM_RANK(COMM2D, MYID, IERR)
+    ! Retrieves Cartesian topology info of the new communicator
+    call MPI_CART_GET(COMM2D, NDIM, DIMS, PERIODS, COORDS, IERR)
+    ! splits mesh cell elements between nprocs processors
+    call MPE_DECOMP1D(NY, DIMS(1), COORDS(1), JB, JE)
+    call MPE_DECOMP1D(NZ, DIMS(2), COORDS(2), KB, KE)
+    ! print decomposition info (debug purpose)
+    ! print*, 'myid=', myid, 'jb, je =', jb, je, 'kb, ke = ',kb, ke, 'coords =', coords
+
+    ! max number of cells. why adding 2?
+    nxmax = nx + 2; nymax = ny + 2; nzmax = nz + 2
+    ! local max number of cells
+    nylmax = je - jb + 1 ; nzlmax = ke - kb + 1  
+    if (myid == 0) then
+      print*, "  Local array size in x-direction = ", nx
+      print*, "  Local array size in y-direction = ", nylmax
+      print*, "  Local array size in z-direction = ", nzlmax
+    endif
+
+  end subroutine init_mpi_decomp
+
+  !---------------------------------------------------------------------
   ! Set global parameters
   !---------------------------------------------------------------------
   subroutine init_arrays
     integer :: i, j, k
 
     if (myid==0) then
-      write(6,*) " "
-      write(6,*) "Setting up global arrays ..."
+      print*, " "
+      print*, "Setting up global arrays ..."
     endif
 
     ! INQUIRE (IOLENGTH=iolength) output-items
     ! iolength is a scalar default INTEGER variable having
     ! a value that would result from the use of output-items
     ! in an unformatted output statement.  The value is used
-    ! as a RECL= specifier in an OPEN statement that connects
+    ! as a RECL=specifier in an OPEN statement that connects
     ! a file for unformatted direct access when there are
     ! input/output statements with the same list of output-items.
     single_prec=0.; double_prec=0.
@@ -149,21 +393,20 @@ module m_parameter
     enddo
     nplmax = 5* nptotp  ! pad storage requirement by a factor; why?
     if (myid==0) then
-      write(6,*) "  total particle # per rank = ", nptotp
-      write(6,*) "  total particle # per rank (pad by 5 times) = ", nplmax
+      print*, "  total particle # per rank = ", nptotp
+      print*, "  total particle # per rank (pad by 5 times) = ", nplmax
     endif
 
-    ! number of tags used to track particles per species per rank
+    ! number of tags used to track particles per species-rank
     ! maxtags was initialized as 100
-    ! so for nspec=1, using >100 ranks would result in 'nprocs' particles to be tracked
-    ! (this is a poor design)
     maxtags_pe = maxtags/nprocs/nspec
     if (maxtags_pe==0) then
-        maxtags_pe = 1  ! at least tracking one particle per species per rank
+        maxtags_pe = 1 
         maxtags = maxtags_pe * nprocs
     endif
+    if (myid==0) print*, "  maxtags_pe, maxtags = ", maxtags_pe, maxtags
 
-    ! gathered enough info, now allocate arrays
+    ! allocate arrays that depend on 'nprocs', 'nplmax'
     allocate( zbglobal(0:nprocs-1), zeglobal(0:nprocs-1), ybglobal(0:nprocs-1), yeglobal(0:nprocs-1), &
               kbglobal(0:nprocs-1), keglobal(0:nprocs-1), jbglobal(0:nprocs-1), jeglobal(0:nprocs-1), &
               nsendp(0:nprocs-1), nrecvp(0:nprocs-1) )
@@ -172,7 +415,7 @@ module m_parameter
               link(nplmax), porder(nplmax), qp(nplmax), ptag(nplmax) )
 
     allocate( ninj(nspec), ninj_global(nspec), nescape(nspec), nescape_global(nspec), &
-              npart(nspec), npart_global(nspec), qleft(nspec), qrite(nspec) )
+              npart(nspec), npart_global(nspec) )
             
     allocate( nescape_xy(nspec), nescape_yx(nspec), &
               nescape_xz(nspec), nescape_zx(nspec), &
@@ -188,12 +431,8 @@ module m_parameter
 
     allocate( idmap_yz(0:ny+1,0:nz+1), idmap(0:nzmax), idfft(nzmax), kvec(nzlmax), jvec(nylmax) )
 
-    ! ?
-    do i = 1, nspec
-      qleft(i) = 0; qrite(i) = 0
-    enddo 
-
-    ! Use CART_SHIFT to determine processor to immediate left (NBRLEFT) and right (NBRRITE) of processor MYID
+    ! Use CART_SHIFT to determine processor to immediate left (NBRLEFT) 
+    ! and right (NBRRITE) of processor MYID
     ! Since code is aperiodic in z, need to manually set the left boundary for processor 0 and right boundary for nprocs-1
     if (ndim == 2) then
       call MPI_CART_SHIFT(COMM2D,0,1,NBRLEFT,NBRRITE,IERR)
@@ -209,6 +448,7 @@ module m_parameter
       NBRBOT = MYID
     endif
 
+    ! what's doing here
     call MPI_SENDRECV(NBRTOP    ,1,MPI_INTEGER ,NBRRITE,0,&
                       NBRLEFTTOP,1,MPI_INTEGER ,NBRLEFT,0,&
                       mpi_comm_world,status,ierr)
@@ -347,6 +587,7 @@ module m_parameter
     call MPI_TYPE_VECTOR(int(nylmax+2,4), int(nx+2,4), int(nx+2,4), MPI_DOUBLE_PRECISION, STRIDERZ, IERR)
     call MPI_TYPE_COMMIT(STRIDERZ, IERR)
 
+    ! allocate arrays for local ranks
     allocate ( uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1), &
       ex    (nxmax,jb-1:je+1,kb-1:ke+1), ey     (nxmax,jb-1:je+1,kb-1:ke+1), ez     (nxmax,jb-1:je+1,kb-1:ke+1), &
       bx    (nxmax,jb-1:je+1,kb-1:ke+1), by     (nxmax,jb-1:je+1,kb-1:ke+1), bz     (nxmax,jb-1:je+1,kb-1:ke+1), &

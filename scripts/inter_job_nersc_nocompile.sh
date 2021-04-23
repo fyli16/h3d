@@ -10,7 +10,7 @@ module load PrgEnv-gnu openmpi
 # make clean
 # echo ""
 
-set verbose
+# set verbose
 setenv OMP_NUM_THREADS 1
 
 # setenv DATA_DIRECTORY ./data
