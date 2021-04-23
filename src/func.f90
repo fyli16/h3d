@@ -432,7 +432,9 @@ module m_functions
   function gammp(a,x)
     double precision a,gammp,x
     double precision gammcf,gamser,gln
-    if(x.lt.0..or.a.le.0.) stop 'bad arguments in gammp'
+
+    if(x.lt.0. .or. a.le.0.) stop 'bad arguments in gammp'
+    
     if(x.lt.a+1.)then
       call gser(gamser,a,x,gln)
       gammp=gamser
