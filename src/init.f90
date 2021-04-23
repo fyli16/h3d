@@ -21,6 +21,7 @@ module m_init
     call init_mesh
 
     ! restart or a fresh start
+    call makelist
     if (restart) then 
       call init_restart 
     else

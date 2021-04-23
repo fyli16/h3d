@@ -421,9 +421,6 @@ module m_parameter
 
     allocate ( buf_p1(tracking_width,nspec*maxtags) )
 
-    ! make list
-    call makelist
-
   end subroutine init_arrays 
 
 end module m_parameter
