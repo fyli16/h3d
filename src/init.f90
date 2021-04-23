@@ -597,12 +597,8 @@ module m_init
       call xrealbcc_pack_e_2d(ex,ey,ez,1_8,nx,ny,nz)
     endif
     
-    ! set the friction force and resitivity (the former can be zero at t=0)
-    if(myid==0) then
-      print*, " "
-      print*, '  setting friction force and resistivity'
-    endif
-
+    ! initialize friction force and resitivity (temporal)
+    ! friction force is zero, and eta is just 'resis'
     do k = kb-1,ke+1
       do j = jb-1,je+1
         do i = 1,nx2
@@ -614,13 +610,9 @@ module m_init
       enddo
     enddo
 
-    ! what's done here
-    if(myid==0) then
-      print*, " "
-      print*, "  setting dt=0 temporarily and call 'trans'"
-    endif
+    ! what's done here (no actual particle push)
     dtsav = dt
-    dt    = zero
+    dt    = zero ! temporarily set dt=0
     call trans  ! because dt=0, no actual push is done (see 'parmov')
     dt    = dtsav
 

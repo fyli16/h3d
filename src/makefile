@@ -11,17 +11,17 @@ LIBS        =
 
 # Define dependecies
 EFILE = h3d
-OBJS =  parameter.of90 \
+OBJS =  param.of90 \
 		utils.of90\
-		c_int_to_char.ogcc \
-		functions.of90 \
+		int2char.ogcc \
+		func.of90 \
 		mesh.of90 \
 		field.of90\
 		particle.of90 \
-		cal_eta.of90 \
+		eta.of90 \
 		boundary.of90 \
 		io.of90\
-	 	diagnostics.of90\
+	 	diag.of90\
 		init.of90 \
 		h3d.of90
 

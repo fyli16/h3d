@@ -146,17 +146,17 @@ module m_utils
 
     integer*8:: ip
 
-    ipstore = 1
-    ipleft = 0
+    ipstore = 1 ! integer scalar
+    ipleft = 0 ! ipleft(nspec)
     iprite = 0
     iprecv = 0
-    iphead = 0
+    iphead = 0 ! iphead(nxmax,jb-1:je+1,kb-1:ke+1,nspec)
     iptemp = 0
 
     do ip = 1, nplmax-1
-        link(ip) = ip+1
+        link(ip) = ip+1  ! link(nplmax) as defined in m_parameter
     enddo
-    link(nplmax)=0
+    link(nplmax)=0 ! why linking in this strange way?
 
     return
   end subroutine makelist
