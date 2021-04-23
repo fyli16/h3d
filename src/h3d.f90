@@ -1,3 +1,11 @@
+!---------------------------------------------------------------------
+!                                 H3D (V6.0)                               
+!                           YURI'S NONUNIFORM MESH                         
+!                           3D IMPLEMENTATION ONLY                         
+!                      UNIFORM LOADING IN PHYSICAL SPACE                   
+!               UNIFORM LOADING IN LOGICAL SPACE NOT YET IMPLEMENTED       
+!---------------------------------------------------------------------
+
 program h3d 
   use m_init
   implicit none
@@ -31,7 +39,12 @@ subroutine sim_loops
   clock_old = clock_init
   
   ! main simulation loop
-  if (myid==0) print*, "Executing main simulation loops:"
+  if (myid==0) then 
+    print*, " " 
+    print*, " " 
+    print*, "Executing main simulation loops:"
+    print*, " " 
+  endif 
 
   do while(it <= itfinish)
     call date_and_time(values=time_begin(:,1)) ! time one-whole-loop
