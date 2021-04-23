@@ -124,6 +124,7 @@ module m_parameter
   ! Set global parameters
   !---------------------------------------------------------------------
   subroutine init_arrays
+    use m_utils
     integer :: i, j, k
 
     if (myid==0) then
