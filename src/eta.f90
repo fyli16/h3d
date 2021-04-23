@@ -1,4 +1,4 @@
-module m_cal_eta
+module m_eta
   use m_parameter
   use m_utils
   implicit none
@@ -521,4 +521,4 @@ module m_cal_eta
     return
   end subroutine cal_eta_2d
 
-end module m_cal_eta
+end module m_eta

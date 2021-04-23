@@ -62,8 +62,8 @@ module m_mesh
       call error_abort('mesh_init_1d(): bad parameters --- stop!')
     endif
 
-    m%na=na ; m%nb=nb ; m%nl=nl
-    m%xa=xa ; m%xb=xb ; m%xl=xl
+    m%na=na; m%nb=nb ; m%nl=nl
+    m%xa=xa; m%xb=xb ; m%xl=xl
     nbb = nl - nb  ! -na?
 
     allocate(m%xn(nl+3))  ! -1:nl+1

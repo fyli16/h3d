@@ -92,21 +92,17 @@ module m_diagnostics
     ! write restart files
     if ( n_write_restart>0 .and. it>itstart .and. mod(it,n_write_restart)==0 ) then
       itrestart = it
-      do i = 0, nprocs_over_60  
-        if ( mod(int(myid,8),nprocs_over_60+1).eq.i) then
-          call write_read_restart_files(1.0)
-        endif
-        call MPI_BARRIER(MPI_COMM_WORLD,IERR)
-      enddo
+      call write_read_restart_files(1.0)
+      call MPI_BARRIER(MPI_COMM_WORLD,IERR)
 
-      ! write the latest restart dump info into file
+      ! write info of this dump into file
       if (myid == 0) then
         open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='unknown')
         write(222,*) restart_index, itrestart
         close(222)
       endif
 
-      ! keep only two sets of restart files (overwrite previous dump by swapping index)
+      ! swap index for next dump
       if (restart_index == 1) then
         restart_index=2
       else

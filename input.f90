@@ -8,7 +8,7 @@ MPI_IO_format = .true. ! use MPI IO (one file only) instead of traditional binar
 
 ! MPI nodes(ranks) configuration along y, z (no decompostion along x)
 ! and whether the ranks are treated periodic in both directions
-node_conf(:) = 2, 16
+node_conf(:) = 2, 16,
 periods(:) = .true., .true.,
 
 ! ------------------ simulation domain ----------------!

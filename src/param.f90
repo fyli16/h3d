@@ -13,7 +13,7 @@ module m_parameter
   logical :: periods(2), reorder
   integer :: status(mpi_status_size), status1(mpi_status_size), status2(mpi_status_size), status_array(mpi_status_size,8)
 
-  integer*8 :: nxmax, nymax, nzmax, nvar, nylmax, nzlmax, npm, nprocs_over_60
+  integer*8 :: nxmax, nymax, nzmax, nvar, nylmax, nzlmax, npm
   
   integer :: nprocs, ndim, dims(2), node_conf(2), comm2d, myid, req(8), & 
             nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot, &      
@@ -142,18 +142,15 @@ module m_parameter
     inquire(IOLENGTH=recl_for_single) single_prec
     inquire(IOLENGTH=recl_for_double) double_prec
 
-    ! if nprocs > 512? shouldn't it be nprocs_over_512?
-    nprocs_over_60 = nprocs/512  
-
     ! estimate on particle storage requirement
     nptotp = 0  ! total local number of particles
     do i = 1, nspec
       nptotp = nptotp + npx(i)*npy(i)*npz(i)
     enddo
-    nplmax = 10* nptotp  ! pad storage requirement by a factor
+    nplmax = 5* nptotp  ! pad storage requirement by a factor; why?
     if (myid==0) then
       write(6,*) "  total particle # per rank = ", nptotp
-      write(6,*) "  total particle # per rank (exaggerated) = ", nplmax
+      write(6,*) "  total particle # per rank (pad by 5 times) = ", nplmax
     endif
 
     ! number of tags used to track particles per species per rank
@@ -191,9 +188,9 @@ module m_parameter
 
     allocate( idmap_yz(0:ny+1,0:nz+1), idmap(0:nzmax), idfft(nzmax), kvec(nzlmax), jvec(nylmax) )
 
+    ! ?
     do i = 1, nspec
-      qleft(i) = 0
-      qrite(i) = 0
+      qleft(i) = 0; qrite(i) = 0
     enddo 
 
     ! Use CART_SHIFT to determine processor to immediate left (NBRLEFT) and right (NBRRITE) of processor MYID
@@ -422,6 +419,9 @@ module m_parameter
     allocate ( buf_particle(tracking_width,nspec*maxtags,nbufsteps) )
 
     allocate ( buf_p1(tracking_width,nspec*maxtags) )
+
+    ! make list
+    call makelist
 
   end subroutine init_arrays 
 
