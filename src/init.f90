@@ -108,7 +108,7 @@ module m_init
     zb_logical = mesh_unmap(meshZ,zb)
     ze_logical = mesh_unmap(meshZ,ze)
     if (myid==0) then
-      print*, "  xb, meshX%xa, meshX%xb = ", xb, meshX%xa, meshX%xb
+      print*, "  xb, meshX%xa, meshX%xb, meshX%ta = ", xb, meshX%xa, meshX%xb, meshX%ta
       print*, "  xb_logical, xe_logical = ", xb_logical, xe_logical
       print*, "  yb_logical, ye_logical = ", yb_logical, ye_logical
       print*, "  zb_logical, ze_logical = ", zb_logical, ze_logical
