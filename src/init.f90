@@ -1,6 +1,5 @@
 module m_init
   use m_parameter
-  use m_utils
   use m_io
   use m_mesh
   implicit none

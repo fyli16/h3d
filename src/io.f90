@@ -1,6 +1,5 @@
 module m_io
   use m_parameter
-  use m_utils
   implicit none 
 
   contains 

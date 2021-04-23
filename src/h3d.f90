@@ -23,7 +23,6 @@ end program h3d
 !---------------------------------------------------------------------
 subroutine sim_loops
   use m_parameter
-  use m_utils
   use m_eta
   use m_particle
   use m_field

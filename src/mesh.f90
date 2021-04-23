@@ -50,7 +50,6 @@ module m_mesh
   !---------------------------------------------------------------------
   subroutine mesh_init_1d(m, xa, xb, xl, na, nb, nl)
     use m_functions
-    use m_utils
     use m_parameter, only : myid
 
     type(mesh), intent(out) :: m

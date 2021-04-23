@@ -1,5 +1,4 @@
 module m_functions
-  use m_utils
   implicit none 
 
   contains

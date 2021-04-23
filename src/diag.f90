@@ -8,7 +8,6 @@
 !---------------------------------------------------------------------
 module m_diagnostics
   use m_parameter
-  use m_utils
   use m_io
   use m_particle
   implicit none 
