@@ -464,13 +464,13 @@ module m_init
     zb_logical = mesh_unmap(meshZ,zb)
     ze_logical = mesh_unmap(meshZ,ze)
               
-    do i = 1, nspec
-      npm = npx(i)*npy(i)*npz(i)*nprocs
-      dfac(i) = real(ny*nz*nx)/real(npm)
+    do is = 1, nspec
+      npm = npx(is)*npy(is)*npz(is)*nprocs
+      dfac(is) = real(ny*nz*nx)/real(npm)
       do ixe=1,nx2
           do iye=jb-1,je+1
             do ize=kb-1,ke+1
-                qp_cell(ixe,iye,ize,i) = meshX%dxc(ixe)*meshY%dxc(iye+1)*meshZ%dxc(ize+1)*dfac(i)*frac(i)
+                qp_cell(ixe,iye,ize,is) = meshX%dxc(ixe)*meshY%dxc(iye+1)*meshZ%dxc(ize+1)*dfac(is)*frac(is)
             enddo
           enddo
       enddo
