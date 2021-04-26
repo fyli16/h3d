@@ -412,7 +412,7 @@ module m_init
   !---------------------------------------------------------------------
   subroutine init_restart
 
-    integer*8 :: ixe, iye, ize, i, j, k
+    integer*8 :: ixe, iye, ize, i, j, k, is
 
     ! read in restart data set and corresponding step of iteration
     if (myid == 0) then
