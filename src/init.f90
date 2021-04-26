@@ -161,11 +161,16 @@ module m_init
       do j = jb-1, je+1  
         y_pos = meshY%xc(j+1)
         do i = 1, nx2
-          x_pos = meshX%xc(i) ! x has different indexing than y/z               
+          x_pos = meshX%xc(i) ! x has a different indexing              
 
           ! single Alfven wave
-          bx_ =  dB_B0*B0*sin(kz*z_pos)
-          by_ = -dB_B0*B0*cos(kz*z_pos)
+          if (k>eta_zs .and. k<nz-eta_zs) then
+            bx_ =  dB_B0*B0*sin(kz*z_pos)
+            by_ = -dB_B0*B0*cos(kz*z_pos)
+          else
+            bx_ = 0.
+            by_ = 0.
+          endif 
           bz_ = B0
           ex_ = zero  ! why e component is zero?
           ey_ = zero

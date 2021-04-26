@@ -12,17 +12,17 @@ node_conf(:) = 2, 16,
 periods(:) = .true., .true.,
 
 ! ------------------ simulation domain ----------------!
-nx = 1, ny = 4, nz = 224,  ! number of cells along each dim
-xmax = 1., ymax = 4., zmax = 224.,  ! max lengths of each dim
+nx = 1, ny = 4, nz = 2240,  ! number of cells along each dim
+xmax = 1., ymax = 4., zmax = 2240.,  ! max lengths of each dim
 npx(1:5) = 10, ! number of particles along x over full length (not one cell) for maximum 5 ion species
 npy(1:5) = 40, 
-npz(1:5) = 2240,  
+npz(1:5) = 22400,  
 
 ! boundaries of the uniform region
 ! setting xbb/ybb/zbb to xmax/ymax/zmax would leave only the uniform region to be simulated
 xaa = 0., xbb = 1., nax = 0, nbx = 1
 yaa = 0., ybb = 4., nay = 0, nby = 4
-zaa = 0., zbb = 224., naz = 0, nbz = 224
+zaa = 0., zbb = 2240., naz = 0, nbz = 2240
 
 ! uniform loading in logical space
 ! used in loading particles? see 'init waves'
@@ -47,8 +47,8 @@ bete = 0.01, ! beta of electrons
 n_sort = 10, ! frequency at which to sort particles
 
 ! resistivity 
-ieta = 0,  ! other models ieta=1,2,3,4,5,6; see 'etacal.f90'
-resis = 1.e-6,  ! ieta=0 model; constant resisitivity, i.e., eta=resis
+ieta = 6,  ! other models ieta=1,2,3,4,5,6; see 'etacal.f90'
+resis = 1.e-1,  ! ieta=0 model; constant resisitivity, i.e., eta=resis
 netax = 10, netay = 2 ! used in ieta=1 model
 etamin = 1.0e-6, etamax = 5.0e-5,  ! used in ieta>1 models
 eta_par = 0, ! parallel resisitivity? sth used in 'field.f90'
@@ -66,7 +66,7 @@ smoothing = .true.,
 
 ! ---------------------- init waves --------------------!
 dB_B0 = 0.1,
-num_wave_cycles = 5,
+num_wave_cycles = 32,
 
 ! ------------------ diagnostic control ----------------!
 n_print = 100,  ! frequency at which to print simulation progression

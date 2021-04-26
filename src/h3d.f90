@@ -50,7 +50,7 @@ subroutine sim_loops
     ! print time & step info
     if (myid==0 .and. mod(it,n_print)==0) then
       call get_time(clock_now)
-      print '(A5,I7,A2,I7,A11,F8.3,A14,F8.3,A12,F8.3)', 'it = ', it, '/', itfinish, &
+      write(6,"(A5,I7,A2,I7,A11,F8.3,A14,F8.3,A12,F8.3)") 'it = ', it, '/', itfinish, &
                     ',   time = ', time, &
                     ',   delta_t = ', real(clock_now - clock_old), &
                     ',   tot_t = ', real(clock_now - clock_init)
