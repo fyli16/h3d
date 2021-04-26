@@ -285,7 +285,8 @@ module m_mesh
 
     if (myid==0) then
       print*, " "
-      print*, "Setting up mesh ..."
+      print*, "Setting up mesh"
+      print*, "-------------------------------------------------"
     endif
 
     ! Initialize uniform mesh

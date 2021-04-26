@@ -62,7 +62,7 @@ module m_init
     dtyi = one/meshY%dt ! dtyi=ny
     dtzi = one/meshZ%dt ! dtzi=nz
     if (myid==0) then
-      print*, "  dtxi, dtyi, dtzi = ", dtxi, dtyi, dtzi
+      print*, "dtxi, dtyi, dtzi = ", dtxi, dtyi, dtzi
     endif 
 
     ! initialize random number generator for each rank
@@ -107,14 +107,17 @@ module m_init
     ye_logical = mesh_unmap(meshY,ye)
     zb_logical = mesh_unmap(meshZ,zb)
     ze_logical = mesh_unmap(meshZ,ze)
+    ! notice here 'xb' is different from 'meshX%xb'
+    ! the former refers to the beginning of x
+    ! the latter refers to 'xbb' which is actually the end of x
     if (myid==0) then
-      print*, "  xb, meshX%xa, meshX%xb, meshX%ta = ", xb, meshX%xa, meshX%xb, meshX%ta
-      print*, "  xb_logical, xe_logical = ", xb_logical, xe_logical
-      print*, "  yb_logical, ye_logical = ", yb_logical, ye_logical
-      print*, "  zb_logical, ze_logical = ", zb_logical, ze_logical
+      print*, "xb, meshX%xa, meshX%xb, meshX%ta = ", xb, meshX%xa, meshX%xb, meshX%ta
+      print*, "xb_logical, xe_logical = ", xb_logical, xe_logical
+      print*, "yb_logical, ye_logical = ", yb_logical, ye_logical
+      print*, "zb_logical, ze_logical = ", zb_logical, ze_logical
     endif 
 
-    ! ion charge per cell?
+    ! what is qp_cell
     do is = 1, nspec
       npm = npx(is)*npy(is)*npz(is)*nprocs
       dfac(is)=real(ny*nz*nx)/real(npm)
@@ -128,11 +131,12 @@ module m_init
     enddo
 
     !---------------------------------------------------------------------
-    ! initialie wave perturbation on the mesh 
+    ! initialize wave perturbation on the mesh 
     !---------------------------------------------------------------------
     if (myid==0) then
       print*, " "
-      print*, "Initializing wave on the mesh ..."
+      print*, "Initializing wave on the mesh"
+      print*, "-------------------------------------------------"
     endif 
 
     B0 = one/wpiwci  ! RMS amplitude of the wave: B0=RMS(B)  
@@ -190,7 +194,8 @@ module m_init
     !---------------------------------------------------------------------
     if (myid==0) then
       print*, " "
-      print*, "Initializing particles ..." 
+      print*, "Initializing particles"
+      print*, "-------------------------------------------------" 
     endif
 
     do is = 1, nspec
@@ -223,12 +228,12 @@ module m_init
       vper(is) = vpar(is)*sqrt(anisot(is))
 
       if (myid==0) then
-        print*, "  species #", is
-        print*, "  frac = ", frac(is)
-        print*, "  npx = ", npx(is)
-        print*, "  npy = ", npy(is)
-        print*, "  npz = ", npz(is)
-        print*, "  dfrac = ", dfac(is)
+        print*, "species #", is
+        print*, "frac = ", frac(is)
+        print*, "npx = ", npx(is)
+        print*, "npy = ", npy(is)
+        print*, "npz = ", npz(is)
+        print*, "dfrac = ", dfac(is)
         print*, " "
       endif
 
@@ -345,7 +350,7 @@ module m_init
         loaded_percentage = 100.0*real(ip-ipb1)/(ipb2-ipb1)
         
         if (myid==0 .and. loaded_percentage>=print_percentage) then
-            write(6,"(A,F5.1,A)") "   loaded ", loaded_percentage," % of particles"
+            write(6,"(A,F5.1,A)") "loaded ", loaded_percentage," % of particles"
             print_percentage = print_percentage + 20.0d0
         endif
 
@@ -414,8 +419,8 @@ module m_init
       open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='old')
       read(222,*) restart_index, itrestart 
       print*, " "
-      print*, " Restart from set # ", restart_index
-      print*, " Restart from iteration # ", itrestart
+      print*, "Restart from set # ", restart_index
+      print*, "Restart from iteration # ", itrestart
       print*, " "
       close(222)
     endif
@@ -434,23 +439,17 @@ module m_init
     else
       restart_index=1
     endif
-
-    ! Uniform mesh - Same as is in version 5.0
-    yb = (jb-1)*hy  ! where is hy, hz defined before this?
-    ye = je    *hy
-    zb = (kb-1)*hz
-    ze = ke    *hz
       
     ! Nonuniform mesh
-    zb = meshZ%xn(kb+1)
-    ze = meshZ%xn(ke+2)
+    xb = 0.; xe = xmax
+
+    zb = meshZ%xn(kb+1); ze = meshZ%xn(ke+2)
     do ipe = 0,nprocs-1
       zbglobal(ipe) = meshZ%xn(kbglobal(ipe)+1)
       zeglobal(ipe) = meshZ%xn(keglobal(ipe)+2)
     enddo
 
-    yb = meshY%xn(jb+1)
-    ye = meshY%xn(je+2)
+    yb = meshY%xn(jb+1); ye = meshY%xn(je+2)
     do ipe = 0,nprocs-1
       ybglobal(ipe) = meshY%xn(jbglobal(ipe)+1)
       yeglobal(ipe) = meshY%xn(jeglobal(ipe)+2)
@@ -458,8 +457,6 @@ module m_init
               
     volume_fraction = (ye-yb)*(ze-zb)/(ymax*zmax)
     
-    xb = 0.
-    xe = xmax
     xb_logical = mesh_unmap(meshX,xb)
     xe_logical = mesh_unmap(meshX,xe)
     yb_logical = mesh_unmap(meshY,yb)

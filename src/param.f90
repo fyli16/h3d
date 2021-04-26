@@ -162,13 +162,13 @@ module m_parameter
       print*, "*           |||     |||    ======//     |||=====//                        *"
       print*, "***************************************************************************"
       print*, " "
-      print*, " "
     endif 
 
     ! read in input deck
     if (myid == 0) then
       print*, " "
-      print*, "Reading input file ..."
+      print*, "Reading input file"
+      print*, "-------------------------------------------------"
       open(5, file='input.f90', form='formatted', status='old')
       read(5, nml=datum, iostat=input_error)
       ! write(6, datum)
@@ -283,25 +283,25 @@ module m_parameter
     if (myid==0) then
       print*, " "
       if (restart) then 
-        print*, "  *** Restart run ***"
+        print*, "*** Restart run ***"
       else 
-        print*, "  *** New run ***"
+        print*, "*** New run ***"
       endif 
 
       print*, " "
-      print*, "  xmax, ymax, zmax = ", xmax, ymax, zmax
-      print*, "  nx,   ny,   nz   = ", nx, ny, nz
-      print*, "  tmax, dtwci = ", tmax, dtwci
-      print*, "  npx = ", npx
-      print*, "  npy = ", npy
-      print*, "  npz = ", npz
-      print*, "  node_conf = ", node_conf
-      print*, "  xaa, xbb = ", xaa, xbb
-      print*, "  nax, nbx = ", nax, nbx 
-      print*, "  yaa, ybb = ", yaa, ybb
-      print*, "  nay, nby = ", nay, nby 
-      print*, "  zaa, zbb = ", zaa, zbb
-      print*, "  naz, nbz = ", naz, nbz 
+      print*, "xmax, ymax, zmax = ", xmax, ymax, zmax
+      print*, "nx,   ny,   nz   = ", nx, ny, nz
+      print*, "tmax, dtwci = ", tmax, dtwci
+      print*, "npx = ", npx
+      print*, "npy = ", npy
+      print*, "npz = ", npz
+      print*, "node_conf = ", node_conf
+      print*, "xaa, xbb = ", xaa, xbb
+      print*, "nax, nbx = ", nax, nbx 
+      print*, "yaa, ybb = ", yaa, ybb
+      print*, "nay, nby = ", nay, nby 
+      print*, "zaa, zbb = ", zaa, zbb
+      print*, "naz, nbz = ", naz, nbz 
 
     endif  
 
@@ -316,8 +316,9 @@ module m_parameter
 
     if (myid==0) then
       print*, " "
-      print*, "MPI decompsition ..."
-      print*, "  Total number of processors = ", nprocs
+      print*, "MPI decompsition"
+      print*, "-------------------------------------------------"
+      print*, "Total number of processors = ", nprocs
     endif 
 
     ! specify MPI decomposition (along y, z only; no decomposition along x) 
@@ -335,7 +336,7 @@ module m_parameter
     ! print MPI decomposition information
     if (myid == 0) then
       do i = 1, ndim
-        print*, "  Dimension = ", i, " Dims = ", dims(i)
+        print*, "Dimension = ", i, " Dims = ", dims(i)
       enddo
     endif
 
@@ -357,9 +358,9 @@ module m_parameter
     ! local max number of cells
     nylmax = je - jb + 1 ; nzlmax = ke - kb + 1  
     if (myid == 0) then
-      print*, "  Local array size in x-direction = ", nx
-      print*, "  Local array size in y-direction = ", nylmax
-      print*, "  Local array size in z-direction = ", nzlmax
+      print*, "Local array size in x-direction = ", nx
+      print*, "Local array size in y-direction = ", nylmax
+      print*, "Local array size in z-direction = ", nzlmax
     endif
 
   end subroutine init_mpi_decomp
@@ -372,7 +373,8 @@ module m_parameter
 
     if (myid==0) then
       print*, " "
-      print*, "Setting up global arrays ..."
+      print*, "Setting up global arrays"
+      print*, "-------------------------------------------------"
     endif
 
     ! INQUIRE (IOLENGTH=iolength) output-items
@@ -393,8 +395,8 @@ module m_parameter
     enddo
     nplmax = 5* nptotp  ! pad storage requirement by a factor; why?
     if (myid==0) then
-      print*, "  total particle # per rank = ", nptotp
-      print*, "  total particle # per rank (pad by 5 times) = ", nplmax
+      print*, "total particle # per rank = ", nptotp
+      print*, "total particle # per rank (pad by 5 times) = ", nplmax
     endif
 
     ! number of tags used to track particles per species-rank
@@ -404,7 +406,7 @@ module m_parameter
         maxtags_pe = 1 
         maxtags = maxtags_pe * nprocs
     endif
-    if (myid==0) print*, "  maxtags_pe, maxtags = ", maxtags_pe, maxtags
+    if (myid==0) print*, "maxtags_pe, maxtags = ", maxtags_pe, maxtags
 
     ! allocate arrays that depend on 'nprocs', 'nplmax'
     allocate( zbglobal(0:nprocs-1), zeglobal(0:nprocs-1), ybglobal(0:nprocs-1), yeglobal(0:nprocs-1), &

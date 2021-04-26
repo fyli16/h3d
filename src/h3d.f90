@@ -40,9 +40,8 @@ subroutine sim_loops
   ! main simulation loop
   if (myid==0) then 
     print*, " " 
-    print*, " " 
     print*, "Executing main simulation loops:"
-    print*, " " 
+    print*, "-------------------------------------------------"
   endif 
 
   do while(it <= itfinish)
