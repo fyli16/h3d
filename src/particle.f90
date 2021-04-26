@@ -1436,7 +1436,7 @@ module m_particle
           call nsmth(vix)
           call nsmth(viy)
           call nsmth(viz)
-        endif 
+        enddo
       else
         call nsmth_2d(den, nx2, ny2, nz2)
         call nsmth_2d(denh, nx2, ny2, nz2)
