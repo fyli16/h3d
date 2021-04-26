@@ -51,21 +51,21 @@ subroutine nsmth (a)
   enddo
 
   ! smoothing only for inner cells (exclude ghost cells)
-  do k=kb,ke
-      do j = jb,je
-        do i=2,nx1
-            a(i,j,k)=temp(i,j,k)/8.&
-                +( temp(i-1,j,k)+temp(i+1,j,k)+temp(i,j+1,k)+temp(i,j-1,k)&
-                +temp(i,j,k+1)+temp(i,j,k-1))/16.&
-                +( temp(i+1,j+1,k)+temp(i+1,j-1,k)+temp(i-1,j+1,k)&
-                +temp(i-1,j-1,k)&
-                +temp(i,j+1,k+1)+temp(i,j-1,k+1)+temp(i,j+1,k-1)+temp(i,j-1,k-1)&
-                +temp(i+1,j,k+1)+temp(i-1,j,k+1)+temp(i+1,j,k-1)&
-                +temp(i-1,j,k-1))/32.&
-                +( temp(i+1,j+1,k+1)+temp(i-1,j+1,k+1)&
-                +temp(i+1,j-1,k+1)+temp(i-1,j-1,k+1)&
-                +temp(i+1,j+1,k-1)+temp(i-1,j+1,k-1)&
-                +temp(i+1,j-1,k-1)+temp(i-1,j-1,k-1))/64.
+  do k = kb, ke
+      do j = jb, je
+        do i = 2, nx1
+          a(i,j,k)=temp(i,j,k)/8. &
+            + ( temp(i-1,j,k)+temp(i+1,j,k)+temp(i,j+1,k)+temp(i,j-1,k) &
+            + temp(i,j,k+1)+temp(i,j,k-1))/16. &
+            + ( temp(i+1,j+1,k)+temp(i+1,j-1,k)+temp(i-1,j+1,k) &
+            + temp(i-1,j-1,k)+temp(i,j+1,k+1)+temp(i,j-1,k+1) &
+            + temp(i,j+1,k-1)+temp(i,j-1,k-1) &
+            + temp(i+1,j,k+1)+temp(i-1,j,k+1)+temp(i+1,j,k-1) &
+            + temp(i-1,j,k-1))/32. &
+            +( temp(i+1,j+1,k+1)+temp(i-1,j+1,k+1) &
+            + temp(i+1,j-1,k+1)+temp(i-1,j-1,k+1) &
+            + temp(i+1,j+1,k-1)+temp(i-1,j+1,k-1) &
+            + temp(i+1,j-1,k-1)+temp(i-1,j-1,k-1)) / 64.
         enddo
       enddo
   enddo
