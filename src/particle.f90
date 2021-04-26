@@ -1430,11 +1430,13 @@ module m_particle
     ! smooth density and velocity
     if (smoothing) then
       if (ndim /=1) then
-        call nsmth(den)
-        call nsmth(denh)
-        call nsmth(vix)
-        call nsmth(viy)
-        call nsmth(viz)
+        do i = 1, smooth_pass
+          call nsmth(den)
+          call nsmth(denh)
+          call nsmth(vix)
+          call nsmth(viy)
+          call nsmth(viz)
+        endif 
       else
         call nsmth_2d(den, nx2, ny2, nz2)
         call nsmth_2d(denh, nx2, ny2, nz2)

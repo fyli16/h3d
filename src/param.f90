@@ -82,7 +82,8 @@ module m_parameter
   integer*8 :: ieta, netax, netay, eta_par, eta_zs
   real*8 :: etamin, etamax
 
-  logical :: restart, uniform_load_logical, MPI_IO_format, smoothing  
+  logical :: restart, uniform_load_logical, MPI_IO_format, smoothing 
+  integer :: smooth_pass 
 
   real*8 ::  hx, hy, hz, hxi, hyi, hzi, efld, bfld, efluid, ethermal, eptcl, time, te0
   integer*8 :: nsteps0, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(25), &
@@ -134,7 +135,7 @@ module m_parameter
     n_subcycles, nskipx, nskipy, nskipz, iterb, &  ! field solver
     nspec, n_sort, qspec, wspec, frac, denmin, wpiwci, btspec, bete, &  ! plasma setup
     ieta, resis, netax, netay, etamin, etamax, eta_par, eta_zs, &
-    anisot, gamma, ave1, ave2, phib, smoothing, &
+    anisot, gamma, ave1, ave2, phib, smoothing, smooth_pass, &
     dB_B0, num_wave_cycles, &  ! init waves
     n_print, n_write_mesh, n_write_energy, n_write_probes, & ! diagnostics
     n_write_tracking, n_write_restart, n_write_particle, &  
@@ -235,6 +236,7 @@ module m_parameter
     call MPI_BCAST(ave2                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(phib                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(smoothing              ,1     ,MPI_LOGICAL,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(smooth_pass            ,1     ,MPI_INTEGER         ,0,MPI_COMM_WORLD,IERR)
     ! init waves
     call MPI_BCAST(dB_B0                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(num_wave_cycles        ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
@@ -403,8 +405,8 @@ module m_parameter
     enddo
     nplmax = 5* nptotp  ! pad storage requirement by a factor; why?
     if (myid==0) then
-      print*, "total particle # per rank = ", nptotp
-      print*, "total particle # per rank (pad by 5 times) = ", nplmax
+      print*, "total particle # per rank      = ", nptotp
+      print*, "total particle # per rank (x5) = ", nplmax
     endif
 
     ! number of tags used to track particles per species-rank
