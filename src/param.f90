@@ -15,7 +15,7 @@ module m_parameter
 
   integer*8 :: nxmax, nymax, nzmax, nvar, nylmax, nzlmax, npm
   
-  integer :: nprocs, ndim, dims(2), node_conf(2), comm2d, myid, req(8), & 
+  integer :: nprocs, ndim, dims(2), node_conf(3), comm2d, myid, req(8), & 
             nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot, &      
             nbrleft, nbrrite, ipe, stridery, striderz, iseed(1), coords(2)
 
@@ -190,7 +190,7 @@ module m_parameter
     call MPI_BCAST(npx                    ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(npy                    ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(npz                    ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(node_conf              ,2     ,MPI_INTEGER         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(node_conf              ,3     ,MPI_INTEGER         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(periods                ,2     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(xaa                    ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(xbb                    ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
@@ -289,19 +289,27 @@ module m_parameter
       endif 
 
       print*, " "
+      print*, "--- global simulation info ---"
+      print*, "tmax, dtwci = ", tmax, dtwci
+      print*, "node_conf   = ", node_conf
+      print*
+      print*, "--- mesh info ---"
       print*, "xmax, ymax, zmax = ", xmax, ymax, zmax
       print*, "nx,   ny,   nz   = ", nx, ny, nz
-      print*, "tmax, dtwci = ", tmax, dtwci
-      print*, "npx = ", npx
-      print*, "npy = ", npy
-      print*, "npz = ", npz
-      print*, "node_conf = ", node_conf
       print*, "xaa, xbb = ", xaa, xbb
       print*, "nax, nbx = ", nax, nbx 
       print*, "yaa, ybb = ", yaa, ybb
       print*, "nay, nby = ", nay, nby 
       print*, "zaa, zbb = ", zaa, zbb
       print*, "naz, nbz = ", naz, nbz 
+      print*
+      print*, "--- plasma info ---"
+      print*, "nspec = ", nspec
+      print*, "npx   = ", npx
+      print*, "npy   = ", npy
+      print*, "npz   = ", npz
+      
+      
 
     endif  
 
@@ -325,9 +333,9 @@ module m_parameter
     if (nz==1 .and. ny==1) then ! only nx>1 and 1 rank will be used  
       ndim=0; dims(1)=1; dims(2)=1
     else if (nz == 1) then ! ny>1 and decomposition only occurs in y
-      ndim=1; dims(1)=node_conf(1); dims(2)=1
+      ndim=1; dims(1)=node_conf(2); dims(2)=1
     else ! ny>1, nz>1, and decomposition in both y and z
-      ndim=2; dims=node_conf
+      ndim=2; dims(1)=node_conf(2); dims(2)=node_conf(3)
     endif
 
     ! npy(z) now means number of particles in each rank along y(z)
