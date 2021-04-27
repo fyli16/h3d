@@ -403,7 +403,6 @@ module m_parameter
       nptotp = nptotp + npx(i)*npy(i)*npz(i)
     enddo
     nplmax = 5* nptotp  ! pad storage requirement by a factor; why?
-    call makelist
     if (myid==0) then
       print*, "total particle # per rank      = ", nptotp
       print*, "total particle # per rank (x5) = ", nplmax
@@ -672,6 +671,8 @@ module m_parameter
     allocate ( buf_particle(tracking_width,nspec*maxtags,nbufsteps) )
 
     allocate ( buf_p1(tracking_width,nspec*maxtags) )
+
+    call makelist
 
   end subroutine init_arrays 
 
