@@ -9,12 +9,16 @@
 program h3d 
   use m_init
   implicit none
+
   ! initialize simulation
   call init_sim
+  
   ! execute main loops
   call sim_loops
-  ! shutdown the simulation
+  
+  ! shutdown and exit
   call shutdown
+
 end program h3d
 
 

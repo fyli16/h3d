@@ -3189,4 +3189,85 @@ module m_particle
     return
   end subroutine parmov_2d
 
+
+!---------------------------------------------------------------------
+! smoothing routine for periodic B.C.
+! 3D version of 3-point binomial smoothing
+!            y(i)=(x(i-1)+2*x(i)+x(i+1))/4
+! i.e. 27 points are involved
+!---------------------------------------------------------------------
+subroutine nsmth (a)
+  integer*8 :: i,j,k
+  real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
+
+  ! copy input array "a" to "temp" including ghost cells
+  do k=kb-1,ke+1
+      do j = jb-1,je+1
+        do i=1,nx2
+            temp(i,j,k)=a(i,j,k)
+        enddo
+      enddo
+  enddo
+
+  ! smoothing only for inner cells (exclude ghost cells)
+  do k = kb, ke
+      do j = jb, je
+        do i = 2, nx1
+          a(i,j,k)=temp(i,j,k)/8. &
+            + ( temp(i-1,j,k)+temp(i+1,j,k)+temp(i,j+1,k)+temp(i,j-1,k) &
+            + temp(i,j,k+1)+temp(i,j,k-1))/16. &
+            + ( temp(i+1,j+1,k)+temp(i+1,j-1,k)+temp(i-1,j+1,k) &
+            + temp(i-1,j-1,k)+temp(i,j+1,k+1)+temp(i,j-1,k+1) &
+            + temp(i,j+1,k-1)+temp(i,j-1,k-1) &
+            + temp(i+1,j,k+1)+temp(i-1,j,k+1)+temp(i+1,j,k-1) &
+            + temp(i-1,j,k-1))/32. &
+            +( temp(i+1,j+1,k+1)+temp(i-1,j+1,k+1) &
+            + temp(i+1,j-1,k+1)+temp(i-1,j-1,k+1) &
+            + temp(i+1,j+1,k-1)+temp(i-1,j+1,k-1) &
+            + temp(i+1,j-1,k-1)+temp(i-1,j-1,k-1)) / 64.
+        enddo
+      enddo
+  enddo
+
+  ! apply periodic BCs 
+  call XREALBCC(a,0_8,NX,NY,NZ)
+
+  return
+end subroutine nsmth
+
+
+!---------------------------------------------------------------------
+subroutine nsmth_2d (a,nx2m,ny2m,nz2m)
+  integer*8 :: i,j,k
+  integer*8 :: nx2m, ny2m, nz2m
+  real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
+
+  ! smoothing routine--assumes aperiodic in x
+  call xrealbcc_2d(a,0_8,NX,NY,NZ)
+  temp=a
+
+  do k=kb-1,ke+1
+    do j = jb,je
+      do i=2,nx1
+        a(i,j,k)=temp(i,j,k)/4.&
+          +( temp(i-1,j  ,k)+temp(i+1,j  ,k)+temp(i  ,j+1,k)   &
+          +temp(i  ,j-1,k))/8.&
+          +( temp(i+1,j+1,k)+temp(i+1,j-1,k)+temp(i-1,j+1,k)   & 
+          +temp(i-1,j-1,k))/16.
+      enddo
+    enddo
+  enddo
+
+  do k=kb-1,ke+1
+      do j = jb-1,je+1
+        a(1  ,j,k)=a(nx1  ,j,k)
+        a(nx2,j,k)=a(2,j,k)
+      enddo
+  enddo
+
+  call xrealbcc_2d(a,0_8,NX,NY,NZ)
+
+  return
+end subroutine nsmth_2d
+
 end module m_particle

@@ -403,6 +403,7 @@ module m_parameter
       nptotp = nptotp + npx(i)*npy(i)*npz(i)
     enddo
     nplmax = 5* nptotp  ! pad storage requirement by a factor; why?
+    call makelist
     if (myid==0) then
       print*, "total particle # per rank      = ", nptotp
       print*, "total particle # per rank (x5) = ", nplmax
@@ -673,5 +674,27 @@ module m_parameter
     allocate ( buf_p1(tracking_width,nspec*maxtags) )
 
   end subroutine init_arrays 
+
+
+  !---------------------------------------------------------------------
+  ! make list
+  !---------------------------------------------------------------------
+  subroutine makelist
+    integer*8:: ip
+
+    ipstore = 1 ! integer scalar
+    ipleft = 0 ! ipleft(nspec)
+    iprite = 0
+    iprecv = 0
+    iphead = 0 ! iphead(nxmax,jb-1:je+1,kb-1:ke+1,nspec)
+    iptemp = 0
+
+    do ip = 1, nplmax-1
+        link(ip) = ip+1  ! link(nplmax) as defined in m_parameter
+    enddo
+    link(nplmax)=0 ! why linking in this strange way?
+
+    return
+  end subroutine makelist
 
 end module m_parameter

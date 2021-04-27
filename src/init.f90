@@ -12,15 +12,17 @@ module m_init
   subroutine init_sim
     ! read input deck
     call init_input
+
     ! MPI domain decomposition 
     call init_mpi_decomp
+    
     ! allocate global arrays
     call init_arrays
+    
     ! initialize mesh 
     call init_mesh
 
     ! restart or a fresh start
-    call makelist
     if (restart) then 
       call init_restart 
     else
