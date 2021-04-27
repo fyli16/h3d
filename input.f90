@@ -1,7 +1,7 @@
 &datum
 
 ! ------------------ global simulation info -----------!
-tmax = 1000.0, ! max sim. time, in units of 1/wci
+tmax = 10.0, ! max sim. time, in units of 1/wci
 dtwci = 0.01,  ! value of dt*wci
 restart = .false.,  ! whether to restart from 'restart' directory
 MPI_IO_format = .true. ! use MPI IO (one file only) instead of traditional binary output
@@ -49,7 +49,7 @@ n_sort = 10, ! frequency at which to sort particles
 
 ! resistivity 
 ieta = 6,  ! other models ieta=1,2,3,4,5,6; see 'etacal.f90'
-resis = 1.e-1,  ! ieta=0 model; constant resisitivity, i.e., eta=resis
+resis = 1.e-3,  ! ieta=0 model; constant resisitivity, i.e., eta=resis
 netax = 10, netay = 2 ! used in ieta=1 model
 etamin = 1.0e-6, etamax = 5.0e-5,  ! used in ieta>1 models
 eta_zs = 280, ! scale length of resistive layer along z (in unit of cell size)

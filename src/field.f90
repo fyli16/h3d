@@ -9,30 +9,30 @@ module m_field
   ! advances electromagnetic field in time
   !---------------------------------------------------------------------
   subroutine field
-    call date_and_time(values=time_begin(:,9))
+    call date_and_time(values=time_begin(:,51))
     call pressgrad(1)
-    call date_and_time(values=time_end(:,9))
-    call add_time(time_begin(1,9), time_end(1,9), time_elapsed(9))
+    call date_and_time(values=time_end(:,51))
+    call add_time(time_begin(1,51), time_end(1,51), time_elapsed(51))
 
-    call date_and_time(values=time_begin(:,10))
+    call date_and_time(values=time_begin(:,52))
     call bcalc
-    call date_and_time(values=time_end(:,10))
-    call add_time(time_begin(1,10), time_end(1,10), time_elapsed(10))
+    call date_and_time(values=time_end(:,52))
+    call add_time(time_begin(1,52), time_end(1,52), time_elapsed(52))
 
-    call date_and_time(values=time_begin(:,9))
+    call date_and_time(values=time_begin(:,51))
     call pressgrad(0)
-    call date_and_time(values=time_end(:,9))
-    call add_time(time_begin(1,9), time_end(1,9), time_elapsed(9))
+    call date_and_time(values=time_end(:,51))
+    call add_time(time_begin(1,51), time_end(1,51), time_elapsed(51))
 
-    call date_and_time(values=time_begin(:,11))
+    call date_and_time(values=time_begin(:,53))
     call ecalc(0)
-    call date_and_time(values=time_end(:,11))
-    call add_time(time_begin(1,11), time_end(1,11), time_elapsed(11))
+    call date_and_time(values=time_end(:,53))
+    call add_time(time_begin(1,53), time_end(1,53), time_elapsed(53))
 
-    call date_and_time(values=time_begin(:,12))
+    call date_and_time(values=time_begin(:,54))
     call focalc
-    call date_and_time(values=time_end(:,12))
-    call add_time(time_begin(1,12), time_end(1,12), time_elapsed(12))
+    call date_and_time(values=time_end(:,54))
+    call add_time(time_begin(1,54), time_end(1,54), time_elapsed(54))
 
     return
   end subroutine field
@@ -462,10 +462,7 @@ module m_field
       bxs=bx; bys=by; bzs=bz ! save B at start of subcycle
 
       ! R-K first part
-      call date_and_time(values=time_begin(:,16))
       call ecalc( 1 )
-      call date_and_time(values=time_end(:,16))
-      call add_time(time_begin(1,16),time_end(1,16),time_elapsed(16))
         
       ! B = B(n)+dt*K1/2
       do k=kb,ke+1
@@ -490,10 +487,7 @@ module m_field
       enddo
         
       ! R-K part 2
-      call date_and_time(values=time_begin(:,16))
       call ecalc(1)
-      call date_and_time(values=time_end(:,16))
-      call add_time(time_begin(1,16),time_end(1,16),time_elapsed(16))
         
       ! B = B(n)+dt*K2/2
       do k=kb,ke+1
@@ -518,10 +512,7 @@ module m_field
       enddo
         
       ! R-K part 3
-      call date_and_time(values=time_begin(:,16))
       call ecalc(1)
-      call date_and_time(values=time_end(:,16))
-      call add_time(time_begin(1,16),time_end(1,16),time_elapsed(16))
         
       ! B = B(n)+dt*K3
       do k=kb,ke+1
@@ -546,10 +537,7 @@ module m_field
       enddo
         
       ! R-K  part 4
-      call date_and_time(values=time_begin(:,16))
       call ecalc( 1 )
-      call date_and_time(values=time_end(:,16))
-      call add_time(time_begin(1,16),time_end(1,16),time_elapsed(16))
 
       ! B = B(n) + dt*(K1+2K2+2K3+K4)/6
       do k=kb,ke+1
@@ -668,30 +656,30 @@ module m_field
 
   !---------------------------------------------------------------------
   subroutine field_2d
-    call date_and_time(values=time_begin(:,9))
+    call date_and_time(values=time_begin(:,51))
     call pressgrad_2d(1)
-    call date_and_time(values=time_end(:,9))
-    call add_time(time_begin(1,9),time_end(1,9),time_elapsed(9))
+    call date_and_time(values=time_end(:,51))
+    call add_time(time_begin(1,51),time_end(1,51),time_elapsed(51))
 
-    call date_and_time(values=time_begin(:,10))
+    call date_and_time(values=time_begin(:,52))
     call bcalc_2d
-    call date_and_time(values=time_end(:,10))
-    call add_time(time_begin(1,10),time_end(1,10),time_elapsed(10))
+    call date_and_time(values=time_end(:,52))
+    call add_time(time_begin(1,52),time_end(1,52),time_elapsed(52))
 
-    call date_and_time(values=time_begin(:,9))
+    call date_and_time(values=time_begin(:,51))
     call pressgrad_2d(0)
-    call date_and_time(values=time_end(:,9))
-    call add_time(time_begin(1,9),time_end(1,9),time_elapsed(9))
+    call date_and_time(values=time_end(:,51))
+    call add_time(time_begin(1,51),time_end(1,51),time_elapsed(51))
 
-    call date_and_time(values=time_begin(:,11))
+    call date_and_time(values=time_begin(:,53))
     call ecalc_2d( 0)
-    call date_and_time(values=time_end(:,11))
-    call add_time(time_begin(1,11),time_end(1,11),time_elapsed(11))
+    call date_and_time(values=time_end(:,53))
+    call add_time(time_begin(1,53),time_end(1,53),time_elapsed(53))
 
-    call date_and_time(values=time_begin(:,12))
+    call date_and_time(values=time_begin(:,54))
     call focalc_2d
-    call date_and_time(values=time_end(:,12))
-    call add_time(time_begin(1,12),time_end(1,12),time_elapsed(12))
+    call date_and_time(values=time_end(:,54))
+    call add_time(time_begin(1,54),time_end(1,54),time_elapsed(54))
 
     return
   end subroutine field_2d
@@ -901,10 +889,7 @@ module m_field
       bzs=bz
 
       ! R-K first part
-      call date_and_time(values=time_begin(:,16))
       call ecalc_2d( 1 )
-      call date_and_time(values=time_end(:,16))
-      call add_time(time_begin(1,16),time_end(1,16),time_elapsed(16))
   
       ! B = B(n)+dt*K1/2
       bx=bxs-dts2*curlex
@@ -917,10 +902,7 @@ module m_field
       tempz1=curlez
 
       ! R-K part 2
-      call date_and_time(values=time_begin(:,16))
       call ecalc_2d( 1 )
-      call date_and_time(values=time_end(:,16))
-      call add_time(time_begin(1,16),time_end(1,16),time_elapsed(16))
   
       ! B = B(n)+dt*K2/2
       bx=bxs-dts2*curlex
@@ -933,10 +915,7 @@ module m_field
       tempz1=tempz1+2.*curlez
 
       ! R-K  part 3
-      call date_and_time(values=time_begin(:,16))
       call ecalc_2d( 1 )
-      call date_and_time(values=time_end(:,16))
-      call add_time(time_begin(1,16),time_end(1,16),time_elapsed(16))
 
       ! B = B(n)+dt*K3
       bx=bxs-dts*curlex
@@ -949,10 +928,7 @@ module m_field
       tempz1=tempz1+2.*curlez
 
       ! R-K  part 4
-      call date_and_time(values=time_begin(:,16))
       call ecalc_2d( 1 )
-      call date_and_time(values=time_end(:,16)) 
-      call add_time(time_begin(1,16),time_end(1,16),time_elapsed(16))
   
       ! B = B(n) + dt*(K1+2K2+2K3+K4)/6
       bx=bxs-dts6*(tempx1+curlex)

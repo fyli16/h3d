@@ -9,7 +9,6 @@ module m_particle
   ! This subourtine pushes particles for half a step
   !---------------------------------------------------------------------
   subroutine push
-  
     integer*8 :: is,iixe,iiye,iize,l
     integer*8:: ix,iy,iz,ixe,iye,ize,ixep1,iyep1,izep1,ixp1,iyp1,izp1
     real*8 :: wmult, h, hh, dth
@@ -55,37 +54,6 @@ module m_particle
             do while (np.ne.0)
               L=np
 
-              ! Uniform mesh - Same as in version 5.0
-              ! rxe=hxi*x(l)+1.5000000000000001d+00
-              ! rye=hyi*y(l)+0.5000000000000001d+00
-              ! rze=hzi*z(l)+0.5000000000000001d+00
-              ! ixe=rxe
-              ! iye=rye
-              ! ize=rze
-              ! ixe=max(1   ,min(ixe,nx1))
-              ! iye=max(jb-1,min(iye,je))
-              ! ize=max(kb-1,min(ize,ke))
-              ! ixep1 = ixe+1
-              ! iyep1 = iye+1
-              ! izep1 = ize+1
-              ! fxe=rxe-ixe
-              ! fye=rye-iye
-              ! fze=rze-ize
-
-              ! Nonuniform mesh - without using mesh_unmap
-              ! rxe=hxi*x(l)+1.500000000000000d+00
-              ! rye=hyi*y(l)+1.500000000000000d+00
-              ! rze=hzi*z(l)+1.500000000000000d+00
-              ! ixe=rxe
-              ! iye=rye
-              ! ize=rze
-              ! ixe=ixc_2_c_map(ixe)
-              ! iye=iyc_2_c_map(iye)
-              ! ize=izc_2_c_map(ize)
-              ! fxe=(x(l)-meshX%xc(ixe))/meshX%dxn(ixep1)
-              ! fye=(y(l)-meshY%xc(iye))/meshY%dxn(iyep1)
-              ! fze=(z(l)-meshZ%xc(ize))/meshZ%dxn(izep1)
-
               ! Nonuniform mesh - using mesh_unmap
               rxe=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
               rye=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
@@ -96,26 +64,12 @@ module m_particle
               fxe=rxe-ixe
               fye=rye-iye
               fze=rze-ize
-              iye=iye-1             ! integer index in y direction starts at 0
-              ize=ize-1             ! integer index in z direction starts at 0
+              iye=iye-1 ! integer index in y direction starts at 0
+              ize=ize-1 ! integer index in z direction starts at 0
 
               ixep1 = ixe+1
               iyep1 = iye+1
               izep1 = ize+1
-
-              ! Diagnosic test on particle cell index algorithm
-              ! if (     fxe < 0. .or. fxe > 1.                &
-              !     .or. fye < 0. .or. fye > 1.                &
-              !     .or. fze < 0. .or. fze > 1.) then 
-              !     print*, " SCATTER LOOP"
-              !     print*, fxe,fye,fze
-              !     print*, " x;",x(l),meshX%xn(ixe),meshX%xc(ixe)
-              !     print*, " y;",y(l),meshY%xn(iye),meshY%xc(iye)
-              !     print*, " z;",z(l),meshZ%xn(ize),meshZ%xc(ize)
-              !     print*, " r; ",rxe,rye,rze
-              !     print*, " ixc_map; ",ixe,iye,ize
-              !     print*, " xc     ; ",meshX%xc(ixe),meshY%xc(iye),meshZ%xc(ize)
-              ! endif
 
               w1e=(1.-fxe)*(1.-fye)*(1.-fze)
               w2e=fxe*(1.-fye)*(1.-fze)
@@ -297,14 +251,13 @@ module m_particle
           STOP
       endif
 
-    enddo !is
+    enddo ! is
 
   end subroutine push
 
 
   !---------------------------------------------------------------------
   subroutine particle_boundary
-
       integer*4 :: ppacket(3),ppacketg(3),dpacket(4),dpacketg(4)
       integer*8 :: epacket(2),epacketg(2),loop
       real*8 :: xpart,ypart,zpart
@@ -802,13 +755,11 @@ module m_particle
           ! endif
 
         enddo ! for is
-  
   end subroutine particle_boundary
 
 
   !---------------------------------------------------------------------
   subroutine parmov   ! particle move?    
-
     real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8, &
               by1,by2,by3,by4,by5,by6,by7,by8, &
               bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8, &
@@ -911,19 +862,19 @@ module m_particle
     ! if dt==0, no actual particle push is done
     if (dt .ne. 0) then 
       ! advance particles for a first half step
-      call date_and_time(values=time_begin(:,13))
+      call date_and_time(values=time_begin(:,33))
       call push
-      call date_and_time(values=time_end(:,13))
-      call add_time(time_begin(1,13),time_end(1,13),time_elapsed(13))
+      call date_and_time(values=time_end(:,33))
+      call add_time(time_begin(1,33),time_end(1,33),time_elapsed(33))
 
       ! check particles
-      call date_and_time(values=time_begin(:,14))
+      call date_and_time(values=time_begin(:,34))
       call particle_boundary
-      call date_and_time(values=time_end(:,14))
-      call add_time(time_begin(1,14),time_end(1,14),time_elapsed(14))
+      call date_and_time(values=time_end(:,34))
+      call add_time(time_begin(1,34),time_end(1,34),time_elapsed(34))
 
       ! collect Vi, ni at half step
-      call date_and_time(values=time_begin(:,15))
+      call date_and_time(values=time_begin(:,35))
       do is = 1, nspec
         nptotp = 0
         npart(is) = 0
@@ -1026,11 +977,11 @@ module m_particle
           enddo
         enddo
       enddo ! for is
-      call date_and_time(values=time_end(:,15))
-      call add_time(time_begin(1,15),time_end(1,15),time_elapsed(15))
+      call date_and_time(values=time_end(:,35))
+      call add_time(time_begin(1,35),time_end(1,35),time_elapsed(35))
 
       ! advance particles for second half step
-      call date_and_time(values=time_begin(:,13))
+      call date_and_time(values=time_begin(:,33))
       do is = 1, nspec
         do iize = kb-1, ke
           do iiye = jb-1, je
@@ -1052,19 +1003,19 @@ module m_particle
           enddo ! for iiye
         enddo ! for iize
       enddo ! for is
-      call date_and_time(values=time_end(:,13))
-      call add_time(time_begin(1,13),time_end(1,13),time_elapsed(13))
+      call date_and_time(values=time_end(:,33))
+      call add_time(time_begin(1,33),time_end(1,33),time_elapsed(33))
 
     endif ! dt>0
 
     ! check particles
-    call date_and_time(values=time_begin(:,14))
+    call date_and_time(values=time_begin(:,34))
     call particle_boundary
-    call date_and_time(values=time_end(:,14))
-    call add_time(time_begin(1,14),time_end(1,14),time_elapsed(14))
+    call date_and_time(values=time_end(:,34))
+    call add_time(time_begin(1,34),time_end(1,34),time_elapsed(34))
 
     ! collect density
-    call date_and_time(values=time_begin(:,15))
+    call date_and_time(values=time_begin(:,35))
     do is = 1, nspec
       nptotp = 0
       npart(is) = 0
@@ -1152,8 +1103,8 @@ module m_particle
         enddo
       enddo
     enddo ! for is
-    call date_and_time(values=time_end(:,15))
-    call add_time(time_begin(1,15),time_end(1,15),time_elapsed(15))
+    call date_and_time(values=time_end(:,35))
+    call add_time(time_begin(1,35),time_end(1,35),time_elapsed(35))
 
     ! diagnostic info
     epacket(1) = nptotp
@@ -1197,7 +1148,6 @@ module m_particle
   ! sort the particles
   !---------------------------------------------------------------------
   subroutine sortit
-
     real*8 :: pstore(nplmax)
     integer :: pstore2(nplmax)
     integer*8 :: id, kb1, is, ix, iy, iz, ixe ,iye, ize, l, nttot, nplist
@@ -1217,11 +1167,6 @@ module m_particle
           do ix = 1, nx1
             np = iphead(ix,iy,iz,is)
             do while (np.ne.0)
-              ! Uniform mesh - Same as in version 5.0
-              ! ixe = hxi*x(np)+1.5000000000000001d+00
-              ! iye = hyi*y(np)+0.5000000000000001d+00
-              ! ize = hzi*z(np)+0.5000000000000001d+00
-
               ! Nonuniform mesh - using mesh_unmap
               rxe=dtxi*mesh_unmap(meshX,x(np))+1.50000000000d+00
               rye=dtyi*mesh_unmap(meshY,y(np))+1.50000000000d+00
@@ -1229,8 +1174,8 @@ module m_particle
               ixe=rxe
               iye=rye
               ize=rze
-              iye=iye-1    ! integer index in y direction starts at 0
-              ize=ize-1    ! integer index in z direction starts at 0
+              iye=iye-1 ! integer index in y direction starts at 0
+              ize=ize-1 ! integer index in z direction starts at 0
 
               porder(np)=iptemp(ixe,iye,ize,is)
               iptemp(ixe,iye,ize,is)=np
@@ -1360,7 +1305,6 @@ module m_particle
   ! what is the difference between vxs and vix?
   !-----------------------------------------------------------------
   subroutine trans        
-
     integer*8 :: is, i, j, k, jbmin, jbmax, kbmin, kbmax
     real*8 :: dns_tmp
 
@@ -1388,14 +1332,14 @@ module m_particle
     enddo
 
     ! push particles
-    call date_and_time(values=time_begin(:,7))
+    call date_and_time(values=time_begin(:,31))
     if (ndim /= 1) then
       call parmov
     else
       call parmov_2d
     endif
-    call date_and_time(values=time_end(:,7))
-    call add_time(time_begin(1,7),time_end(1,7),time_elapsed(7))
+    call date_and_time(values=time_end(:,31))
+    call add_time(time_begin(1,31),time_end(1,31),time_elapsed(31))
 
     ! what
     do is = 1, nspec
@@ -1463,10 +1407,10 @@ module m_particle
     endif
 
     ! calculate field, fluid, and particle energy
-    call date_and_time(values=time_begin(:,8))
+    call date_and_time(values=time_begin(:,32))
     if (mod(it,n_write_energy)==0) call energy
-    call date_and_time(values=time_end(:,8))
-    call add_time(time_begin(1,8),time_end(1,8),time_elapsed(8))
+    call date_and_time(values=time_end(:,32))
+    call add_time(time_begin(1,32),time_end(1,32),time_elapsed(32))
 
     kbmin = kb-1; kbmax = ke+1
     jbmin = jb-1; jbmax = je+1
@@ -1486,8 +1430,6 @@ module m_particle
               ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar,wmult
     real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,h,hh,dns1,dns2,bxa,bya,bza,btota,dnst
 
-    call date_and_time(values=time_begin(:,23))
-
     dtxi = 1./meshX%dt
     dtyi = 1./meshY%dt
     dtzi = 1./meshZ%dt
@@ -1502,7 +1444,6 @@ module m_particle
       rfrac = 0.
     endif
 
-    call date_and_time(values=time_begin(:,26))
     do is=1,nspec
       wmult=wspec(is)
       h=dt*qspec(is)/wmult
@@ -1512,21 +1453,8 @@ module m_particle
         do iiye = jb-1,je
           do iixe = 1, NX1
             np=iphead(iixe,iiye,iize,is)
-            !  begin advance of particle position and velocity
-            !  If dt=0, skip
             do while (np.ne.0)
               L=np
-              ! Uniform mesh - Same as is in version 5.0
-              ! rx=hxi*x(l)+1.5000000000000001
-              ! ry=hyi*y(l)+0.5000000000000001d+00
-              ! rz=hzi*z(l)+0.5000000000000001d+00
-              ! ix=rx
-              ! iy=ry
-              ! iz=rz
-              ! fx=rx-ix
-              ! fy=ry-iy
-              ! fz=rz-iz
-
               ! Nonuniform mesh - using mesh_unmap
               rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
               ry=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
@@ -1537,8 +1465,8 @@ module m_particle
               fx=rx-ix
               fy=ry-iy
               fz=rz-iz
-              iy=iy-1             ! integer index in y direction starts at 0
-              iz=iz-1             ! integer index in z direction starts at 0
+              iy=iy-1 ! integer index in y direction starts at 0
+              iz=iz-1 ! integer index in z direction starts at 0
 
               ixp1 = ix+1
               iyp1 = iy+1
@@ -1577,7 +1505,6 @@ module m_particle
               +      vzs(ix  ,iy  ,izp1,is)*w5+vzs(ixp1,iy  ,izp1,is)*w6  &
               +      vzs(ix  ,iyp1,izp1,is)*w7+vzs(ixp1,iyp1,izp1,is)*w8
               vzavg=vzavg/dnst
-
 
               vxa=vx(l)-vxavg
               vya=vy(l)-vyavg
@@ -1729,69 +1656,7 @@ module m_particle
         enddo
       enddo
 
-      ! p_xx(:,:,:,is)=p_xx(:,:,:,is)/(tx0(is)*frac(is))
-      ! p_xy(:,:,:,is)=p_xy(:,:,:,is)/(tx0(is)*frac(is))
-      ! p_xz(:,:,:,is)=p_xz(:,:,:,is)/(tx0(is)*frac(is))
-      ! p_yy(:,:,:,is)=p_yy(:,:,:,is)/(tx0(is)*frac(is))
-      ! p_yz(:,:,:,is)=p_yz(:,:,:,is)/(tx0(is)*frac(is))
-      ! p_zz(:,:,:,is)=p_zz(:,:,:,is)/(tx0(is)*frac(is))
-
     enddo
-
-    call date_and_time(values=time_end(:,26))
-    call add_time(time_begin(1,26),time_end(1,26),time_elapsed(26))
-
-  !  do is=1,nspec
-  !    call date_and_time(values=time_begin(:,24))
-  !    call xreal(tpar (1,jb-1,kb-1,is),nx,ny,nz)
-  !    call xreal(tperp(1,jb-1,kb-1,is),nx,ny,nz)
-  !    call date_and_time(values=time_end(:,24))
-  !    call add_time(time_begin(1,24) &
-  ! &                                 ,time_end(1,24) &
-  ! &                                 ,time_elapsed(24))
-
-  !    call date_and_time(values=time_begin(:,25))
-  !    call xrealbcc(tpar (1,jb-1,kb-1,is),1,nx,ny,nz)
-  !    call xrealbcc(tperp(1,jb-1,kb-1,is),1,nx,ny,nz)
-  !    call date_and_time(values=time_end(:,25))
-  !    call add_time(time_begin(1,25) &
-  ! &                                 ,time_end(1,25) &
-  ! &                                 ,time_elapsed(25))
-
-  !  enddo
-
-
-  !  call date_and_time(values=time_begin(:,26))
-  !  do is=1,nspec
-  !    do k=kb-1,ke+1
-  !      do j = jb-1,je+1
-  !        do i=1,nx2
-  !          if (is == 1) then
-  !            dns1=dns(i,j,k,1)/(dfac(1)*frac(1))
-  !            dns2=0.
-  !            denum=dns1+rfrac*dns2
-  !          else
-  !            denum=dns(i,j,k,is)/(dfac(is)*frac(is))
-  !          endif
-  !          if (denum < denmin)  then
-  !           tpar(i,j,k,is)=1.e-5
-  !           tperp(i,j,k,is)=1.e-5
-  !          else
-  !           denum=denum*tx0(is)
-  !           tpar(i,j,k,is)=tpar(i,j,k,is)*wspec(is)/denum
-  !           tperp(i,j,k,is)=0.5*tperp(i,j,k,is)*wspec(is)/denum
-  !          endif
-  !        enddo
-  !      enddo
-  !    enddo
-  !  enddo
-  !  call date_and_time(values=time_end(:,26))
-  !  call add_time(time_begin(1,26) &
-  ! &                               ,time_end(1,26) &
-  ! &                               ,time_elapsed(26))
-
-    call date_and_time(values=time_end(:,23))
-    call add_time(time_begin(1,23),time_end(1,23),time_elapsed(23))
 
     return
   end subroutine cal_temp
@@ -1799,14 +1664,11 @@ module m_particle
 
   !---------------------------------------------------------------------
   subroutine cal_temp_2d
-
     real*8 :: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,xx,xy,xz,yy,yz,zz
     integer*8 ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,is,l,iix,iixe
     real*8 :: vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
           ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar,wmult
     real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,h,hh,dns1,dns2,bxa,bya,bza,btota,dnst
-
-    call date_and_time(values=time_begin(:,23))
   
     dtxi = 1./meshX%dt
     dtyi = 1./meshY%dt
@@ -1820,8 +1682,6 @@ module m_particle
 
     if (nspec >= 2) rfrac = frac(2)/frac(1)
 
-    call date_and_time(values=time_begin(:,26))
-
     do IS=1,NSPEC
       wmult=wspec(is)
       h=dt*qspec(is)/wmult
@@ -1834,18 +1694,6 @@ module m_particle
             NP=IPHEAD(IIXE,IIYE,IIZE,IS)
             do while (NP.NE.0)
               L=NP
-
-              ! Uniform mesh - Same as is in version 5.0
-              ! rx=hxi*x(l)+1.5000000000000001
-              ! ry=hyi*y(l)+0.5000000000000001d+00
-              ! rz=hzi*z(l)+0.5000000000000001d+00
-              ! ix=rx
-              ! iy=ry
-              ! iz=rz
-              ! IZ=1
-              ! fx=rx-ix
-              ! fy=ry-iy
-              ! fz=rz-iz
 
               ! Nonuniform mesh - using MESH_UNMAP
               rx=dtxi*MESH_UNMAP(meshX,x(l))+1.50000000000d+00
@@ -2013,63 +1861,8 @@ module m_particle
 
     enddo
 
-    call date_and_time(values=time_end(:,26))
-    call add_time(time_begin(1,26),time_end(1,26),time_elapsed(26))
-
-    ! do is=1,nspec
-    !   call date_and_time(values=time_begin(:,24))
-    !   call xreal_2d(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
-    !   call xreal_2d(tperp(1,jb-1,kb-1,is),NX,NY,NZ)
-    !   call date_and_time(values=time_end(:,24))
-    !   call add_time(time_begin(1,24),time_end(1,24),time_elapsed(24))
-
-
-    !   call date_and_time(values=time_begin(:,25))
-    !   call xrealbcc_2d(tpar (1,jb-1,kb-1,is),1,NX,NY,NZ)
-    !   call xrealbcc_2d(tperp(1,jb-1,kb-1,is),1,NX,NY,NZ)
-    !   call date_and_time(values=time_end(:,25))
-    !   call add_time(time_begin(1,25),time_end(1,25),time_elapsed(25))
-    ! enddo
-    
-    call date_and_time(values=time_begin(:,26))
-  
-    ! GOTO 10  
-
-    ! do is=1,nspec
-    !   do k=kb-1,ke+1
-    !   do j = jb-1,je+1
-    !       do i=1,nx2
-    !         if(is.eq.1) then
-    !           dns1=dns(i,j,k,1)/(dfac(1)*frac(1))
-    !           dns2=0.
-    !           denum=dns1+rfrac*dns2
-    !         else
-    !           denum=dns(i,j,k,is)/(dfac(is)*frac(is))
-    !         endif
-    !         if(den(i,j,k).le.denmin)  then
-    !           tpar(i,j,k,is)=1.e-5
-    !           tperp(i,j,k,is)=1.e-5
-    !         else
-    !           denum=denum*tx0(is)
-    !           tpar(i,j,k,is)=tpar(i,j,k,is)*wspec(is)/denum
-    !           tperp(i,j,k,is)=0.5*tperp(i,j,k,is)*wspec(is)/denum
-    !         endif
-    !       enddo
-    !     enddo
-    !   enddo
-    ! enddo
-
-    ! 10   continue
-
-    call date_and_time(values=time_end(:,26))
-    call add_time(time_begin(1,26),time_end(1,26),time_elapsed(26))
-
-    call date_and_time(values=time_end(:,23))
-    call add_time(time_begin(1,23),time_end(1,23),time_elapsed(23))
-
     return
   end subroutine cal_temp_2d
-
 
 
   !-----------------------------------------------------------------
@@ -2077,7 +1870,6 @@ module m_particle
   ! and particle energies
   !-----------------------------------------------------------------
   subroutine energy
-
     real*8 :: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,xx,xy,xz,yy,yz,zz
     integer*8 ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,is,l,iix,iixe
     real*8 :: vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
@@ -2264,7 +2056,6 @@ module m_particle
 
   !---------------------------------------------------------------------
   subroutine parmov_2d
-
     real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8,by1,by2,by3,by4,by5,by6,by7,by8, &
               bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8,bxa,bya,bza
     real*8 :: ex1,ex2,ex3,ex4,ex5,ex6,ex7,ex8,ey1,ey2,ey3,ey4,ey5,ey6,ey7,ey8, &
@@ -2396,7 +2187,7 @@ module m_particle
 
     ! beginning of main particle loop
     do IS = 1, NSPEC
-      call date_and_time(values=time_begin(:,13))
+      call date_and_time(values=time_begin(:,33))
       NPTOTP=0
       do ize=kb-1,ke
         do iye=jb-1,je
@@ -2616,10 +2407,10 @@ module m_particle
           STOP
       endif
 
-      call date_and_time(values=time_end(:,13))
-      call add_time(time_begin(1,13),time_end(1,13),time_elapsed(13))
+      call date_and_time(values=time_end(:,33))
+      call add_time(time_begin(1,33),time_end(1,33),time_elapsed(33))
 
-      call date_and_time(values=time_begin(:,14))
+      call date_and_time(values=time_begin(:,34))
       ICOUNT=0                  !ICOUNT records how many times the particle
   11    ICOUNT=ICOUNT+1           !  exchange routine has been run. If there               
       irepeatp=0                !  are no fast particles, it will be called 
@@ -2983,10 +2774,10 @@ module m_particle
       endif
   999   continue
 
-      call date_and_time(values=time_end(:,14))
-      call add_time(time_begin(1,14),time_end(1,14),time_elapsed(14))
+      call date_and_time(values=time_end(:,34))
+      call add_time(time_begin(1,34),time_end(1,34),time_elapsed(34))
 
-      call date_and_time(values=time_begin(:,15))
+      call date_and_time(values=time_begin(:,35))
       NPTOTP = 0
       do IIZ=KB-1,KE
         do IIY=JB-1,JE
@@ -3132,8 +2923,8 @@ module m_particle
         enddo
       enddo
 
-      call date_and_time(values=time_end(:,15))
-      call add_time(time_begin(1,15),time_end(1,15),time_elapsed(15))
+      call date_and_time(values=time_end(:,35))
+      call add_time(time_begin(1,35),time_end(1,35),time_elapsed(35))
 
     enddo  ! IS DO LOOP
 

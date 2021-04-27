@@ -27,45 +27,47 @@ module m_diagnostics
     call MPI_BCAST(cycle_ascii_new,160,MPI_CHARACTER,0,MPI_COMM_WORLD,IERR)
 
     ! write mesh data
+    call date_and_time(values=time_begin(:,61))
     if ( n_write_mesh>0 .and. mod(it,n_write_mesh)==0 ) then
       ! this block is not executed when MPI_IO_format=.true.
       if (myid==0 .and. .not.MPI_IO_format) then
         call open_files
       endif 
-      
       ! calculate par & perp temperatures (needed only for diagnostics)
-      call date_and_time(values=time_begin(:,6))
       if (ndim /= 1) then
         call cal_temp
       else
         call cal_temp_2d
       endif
-      call date_and_time(values=time_end(:,6))
-      call add_time(time_begin(1,6),time_end(1,6),time_elapsed(6))
-
       ! write data
       call write_mesh_data
-      
       ! this block is not executed when MPI_IO_format=.true.
       if (myid==0 .and. .not.MPI_IO_format) then
         do i = 1, 25
           close(file_unit(i))
         enddo
       endif
-
     endif 
+    call date_and_time(values=time_end(:,61))
+    call add_time(time_begin(1,61),time_end(1,61),time_elapsed(61))
 
     ! write history data: energy.dat
+    call date_and_time(values=time_begin(:,62))
     if (it==itstart) call open_hist_files  ! open files at the first step
     call diag_energy_hist
+    call date_and_time(values=time_end(:,62))
+    call add_time(time_begin(1,62),time_end(1,62),time_elapsed(62))
       
     ! write particles (within a volume)
+    call date_and_time(values=time_begin(:,63))
     if (n_write_particle>0 .and. mod(it,n_write_particle)==0) then
       call write_particle_in_volume
     endif
+    call date_and_time(values=time_end(:,63))
+    call add_time(time_begin(1,63),time_end(1,63),time_elapsed(63))
 
     ! write probe data
-    call date_and_time(values=time_begin(:,31))
+    call date_and_time(values=time_begin(:,64))
     if ( n_write_probes>0 .and. mod(it,n_write_probes)==0 ) then
       if (tracking_mpi) then
         call virtual_probes_mpi
@@ -73,11 +75,11 @@ module m_diagnostics
         call virtual_probes
       endif
     endif 
-    call date_and_time(values=time_end(:,31))
-    call add_time(time_begin(1,31),time_end(1,31),time_elapsed(31))
+    call date_and_time(values=time_end(:,64))
+    call add_time(time_begin(1,64),time_end(1,64),time_elapsed(64))
 
     ! write particle tracking data
-    call date_and_time(values=time_begin(:,32))
+    call date_and_time(values=time_begin(:,65))
     if ( n_write_tracking>0 .and. mod(it,n_write_tracking)>0 ) then
       if (tracking_mpi) then
         call track_particles_mpi
@@ -85,30 +87,30 @@ module m_diagnostics
         call track_particles
       endif
     endif 
-    call date_and_time(values=time_end(:,32))
-    call add_time(time_begin(1,32),time_end(1,32),time_elapsed(32))
+    call date_and_time(values=time_end(:,65))
+    call add_time(time_begin(1,65),time_end(1,65),time_elapsed(65))
 
     ! write restart files
+    call date_and_time(values=time_begin(:,66))
     if ( n_write_restart>0 .and. it>itstart .and. mod(it,n_write_restart)==0 ) then
       itrestart = it
       call write_read_restart_files(1.0)
       call MPI_BARRIER(MPI_COMM_WORLD,IERR)
-
       ! write info of this dump into file
       if (myid == 0) then
         open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='unknown')
         write(222,*) restart_index, itrestart
         close(222)
       endif
-
       ! swap index for next dump
       if (restart_index == 1) then
         restart_index=2
       else
         restart_index=1
       endif
-
     endif 
+    call date_and_time(values=time_end(:,66))
+    call add_time(time_begin(1,66),time_end(1,66),time_elapsed(66))
 
   end subroutine diagnostics
 
