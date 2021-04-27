@@ -42,7 +42,7 @@ module m_init
     integer*8 :: ibp1, ibp2, i, remake, field_subcycle
     real*8 :: rxe, rye, rze, fxe, fye, fze, dtxi, dtyi, dtzi, &
               x_p, y_p, z_p, x_p_logical, y_p_logical, z_p_logical, &
-              r_c, q_p, dtsav
+              r_c, q_p, dt_save
     integer*8 :: ip, ipb1, ipb2, is, ixe, iye, ize, j, k
     real*8 :: vxa, vya, vza, vmag, th, ranval(4)
     real*8 :: x_pos, y_pos, z_pos, B0, VA, mi
@@ -124,7 +124,8 @@ module m_init
       do ixe = 1, nx2 
         do iye = jb-1, je+1
           do ize = kb-1, ke+1
-            qp_cell(ixe,iye,ize,is) = meshX%dxc(ixe) * meshY%dxc(iye+1) * meshZ%dxc(ize+1) * dfac(is)*frac(is)
+            qp_cell(ixe,iye,ize,is) = meshX%dxc(ixe) * &
+                meshY%dxc(iye+1) * meshZ%dxc(ize+1) * dfac(is)*frac(is)
           enddo
         enddo
       enddo
@@ -234,27 +235,24 @@ module m_init
       else
         ipb2 = npx(is)*npy(is)*npz(is)*nprocs*volume_fraction ! local particle #
       endif
-      if (myid==0) print*, "local part. #: ipb2 = ", ipb2
+      if (myid==0) print*, "local particle number: ipb2 = ", ipb2
 
       npm = npx(is)*npy(is)*npz(is)*nprocs
       dfac(is) = real(ny*nz)*(x1(is)-x0(is))/(hx*real(npm))
       vpar(is) = sqrt(beta_spec(is)/(wspec(is)*wpiwci*wpiwci))
       vper(is) = vpar(is)*sqrt(anisot(is))
-      if (myid==0) then 
-        print*, 'npm = ', npm 
-        print*, 'dfac(is) = ', dfac 
-        print*, 'vpar(is) = ', vpar
-        print*, 'vper(is) = ', vper
-      endif 
 
       if (myid==0) then
         print*
         print*, "species #", is
-        print*, "frac = ", frac(is)
-        print*, "npx = ", npx(is)
-        print*, "npy = ", npy(is)
-        print*, "npz = ", npz(is)
-        print*, "dfrac = ", dfac(is)
+        print*, "frac     = ", frac(is)
+        print*, "npx      = ", npx(is)
+        print*, "npy      = ", npy(is)
+        print*, "npz      = ", npz(is)
+        print*, "dfrac    = ", dfac(is)
+        print*, 'npm      = ', npm 
+        print*, 'vpar(is) = ', vpar
+        print*, 'vper(is) = ', vper
         print*, " "
       endif
 
@@ -378,7 +376,7 @@ module m_init
       enddo
     enddo
 
-    ! what's doing here?
+    ! updates ghost cells for e-fields
     if (ndim /= 1) then
       call xrealbcc(ex,1_8,nx,ny,nz)
       call xrealbcc(ey,1_8,nx,ny,nz)
@@ -401,10 +399,10 @@ module m_init
     enddo
 
     ! what's done here (no actual particle push)
-    dtsav = dt
+    dt_save = dt
     dt    = zero ! temporarily set dt=0
     call trans  ! because dt=0, no actual push is done (see 'parmov')
-    dt    = dtsav
+    dt    = dt_save
 
     ! advance field if n_subcyles>=1
     ! since currently n_subcycles==0, this block is skipped
