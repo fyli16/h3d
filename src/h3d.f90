@@ -14,10 +14,7 @@ program h3d
   call init_sim
   
   ! execute main loops
-  call date_and_time(values=time_begin(:,1))
   call sim_loops
-  call date_and_time(values=time_end(:,1))
-  call add_time(time_begin(1,1),time_end(1,1),time_elapsed(1))
   
   ! shutdown and exit
   call shutdown
@@ -52,6 +49,9 @@ subroutine sim_loops
   endif 
 
   do while(it <= itfinish)
+
+    call date_and_time(values=time_begin(:,1))
+
     ! print time & step info
     if (myid==0 .and. mod(it,n_print)==0) then
       call get_time(clock_now)
@@ -106,6 +106,9 @@ subroutine sim_loops
     time = time + dtwci
     it = it + 1
 
+    call date_and_time(values=time_end(:,1))
+    call add_time(time_begin(1,1),time_end(1,1),time_elapsed(1))
+
   enddo 
 
 end subroutine sim_loops
@@ -130,10 +133,10 @@ subroutine shutdown
   if (myid==0) then
     print*, " "
     print*, " "
-    print*, " *** Run completed *** "
+    print*, "*** Run completed *** "
     print*, " "
     print*, " "
-    print*, " total time                   (s)          =",time_elapsed(1)
+    print*, "total time                    (s)          =",time_elapsed(1)
     print*, "   subroutine cal_eta         (s)          =",time_elapsed(2)
     print*, "   subroutine trans           (s)          =",time_elapsed(3)
     print*, "   subroutine sort            (s)          =",time_elapsed(4)
@@ -141,20 +144,20 @@ subroutine shutdown
     print*, "   subroutine diagnostics     (s)          =",time_elapsed(6)
     print*, " "
     print*, " "
-    print*, " In subroutine trans," 
+    print*, "In subroutine trans," 
     print*, "   subroutine parmov          (s)          =",time_elapsed(31)
     print*, "   subroutine energy          (s)          =",time_elapsed(32)
     print*, "   total trans                (s)          =",time_elapsed(3)
     print*, " "
     print*, " "
-    print*, " In subroutine parmov,"
+    print*, "In subroutine parmov,"
     print*, "   push                       (s)          =",time_elapsed(33)
     print*, "   particle_boundary          (s)          =",time_elapsed(34)
     print*, "   moment calculation         (s)          =",time_elapsed(35)
     print*, "   total parmov               (s)          =",time_elapsed(31)
     print*, " "
     print*, " "
-    print*, " In subroutine field,"
+    print*, "In subroutine field,"
     print*, "   subroutine pressgrad       (s)          =",time_elapsed(51)
     print*, "   subroutine bcalc           (s)          =",time_elapsed(52)
     print*, "   subroutine ecalc           (s)          =",time_elapsed(53)
@@ -162,7 +165,7 @@ subroutine shutdown
     print*, "   total field                (s)          =",time_elapsed(5)
     print*, " "
     print*, " "
-    print*, " In subroutine diagnostics,"
+    print*, "In subroutine diagnostics,"
     print*, "   write_mesh_data            (s)          =",time_elapsed(61)
     print*, "   diag_energy_hist           (s)          =",time_elapsed(62)
     print*, "   write_particle_in_volume   (s)          =",time_elapsed(63)
