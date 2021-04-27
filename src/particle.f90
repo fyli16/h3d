@@ -914,13 +914,13 @@ module m_particle
       call date_and_time(values=time_begin(:,13))
       call push
       call date_and_time(values=time_end(:,13))
-      call accumulate_time(time_begin(1,13),time_end(1,13),time_elapsed(13))
+      call add_time(time_begin(1,13),time_end(1,13),time_elapsed(13))
 
       ! check particles
       call date_and_time(values=time_begin(:,14))
       call particle_boundary
       call date_and_time(values=time_end(:,14))
-      call accumulate_time(time_begin(1,14),time_end(1,14),time_elapsed(14))
+      call add_time(time_begin(1,14),time_end(1,14),time_elapsed(14))
 
       ! collect Vi, ni at half step
       call date_and_time(values=time_begin(:,15))
@@ -1027,7 +1027,7 @@ module m_particle
         enddo
       enddo ! for is
       call date_and_time(values=time_end(:,15))
-      call accumulate_time(time_begin(1,15),time_end(1,15),time_elapsed(15))
+      call add_time(time_begin(1,15),time_end(1,15),time_elapsed(15))
 
       ! advance particles for second half step
       call date_and_time(values=time_begin(:,13))
@@ -1053,7 +1053,7 @@ module m_particle
         enddo ! for iize
       enddo ! for is
       call date_and_time(values=time_end(:,13))
-      call accumulate_time(time_begin(1,13),time_end(1,13),time_elapsed(13))
+      call add_time(time_begin(1,13),time_end(1,13),time_elapsed(13))
 
     endif ! dt>0
 
@@ -1061,7 +1061,7 @@ module m_particle
     call date_and_time(values=time_begin(:,14))
     call particle_boundary
     call date_and_time(values=time_end(:,14))
-    call accumulate_time(time_begin(1,14),time_end(1,14),time_elapsed(14))
+    call add_time(time_begin(1,14),time_end(1,14),time_elapsed(14))
 
     ! collect density
     call date_and_time(values=time_begin(:,15))
@@ -1153,7 +1153,7 @@ module m_particle
       enddo
     enddo ! for is
     call date_and_time(values=time_end(:,15))
-    call accumulate_time(time_begin(1,15),time_end(1,15),time_elapsed(15))
+    call add_time(time_begin(1,15),time_end(1,15),time_elapsed(15))
 
     ! diagnostic info
     epacket(1) = nptotp
@@ -1395,7 +1395,7 @@ module m_particle
       call parmov_2d
     endif
     call date_and_time(values=time_end(:,7))
-    call accumulate_time(time_begin(1,7),time_end(1,7),time_elapsed(7))
+    call add_time(time_begin(1,7),time_end(1,7),time_elapsed(7))
 
     ! what
     do is = 1, nspec
@@ -1450,7 +1450,6 @@ module m_particle
       do j = jb-1, je+1
         do i = 1, nx2
           den(i,j,k)=max(denmin,den(i,j,k))
-          ! pe(i,j,k) =te0*den(i,j,k)**gamma ! pressure calculation moved to pressgrad
           vix(i,j,k)=vix(i,j,k)/denh(i,j,k)
           viy(i,j,k)=viy(i,j,k)/denh(i,j,k)
           viz(i,j,k)=viz(i,j,k)/denh(i,j,k)
@@ -1467,7 +1466,7 @@ module m_particle
     call date_and_time(values=time_begin(:,8))
     if (mod(it,n_write_energy)==0) call energy
     call date_and_time(values=time_end(:,8))
-    call accumulate_time(time_begin(1,8),time_end(1,8),time_elapsed(8))
+    call add_time(time_begin(1,8),time_end(1,8),time_elapsed(8))
 
     kbmin = kb-1; kbmax = ke+1
     jbmin = jb-1; jbmax = je+1
@@ -1740,14 +1739,14 @@ module m_particle
     enddo
 
     call date_and_time(values=time_end(:,26))
-    call accumulate_time(time_begin(1,26),time_end(1,26),time_elapsed(26))
+    call add_time(time_begin(1,26),time_end(1,26),time_elapsed(26))
 
   !  do is=1,nspec
   !    call date_and_time(values=time_begin(:,24))
   !    call xreal(tpar (1,jb-1,kb-1,is),nx,ny,nz)
   !    call xreal(tperp(1,jb-1,kb-1,is),nx,ny,nz)
   !    call date_and_time(values=time_end(:,24))
-  !    call accumulate_time(time_begin(1,24) &
+  !    call add_time(time_begin(1,24) &
   ! &                                 ,time_end(1,24) &
   ! &                                 ,time_elapsed(24))
 
@@ -1755,7 +1754,7 @@ module m_particle
   !    call xrealbcc(tpar (1,jb-1,kb-1,is),1,nx,ny,nz)
   !    call xrealbcc(tperp(1,jb-1,kb-1,is),1,nx,ny,nz)
   !    call date_and_time(values=time_end(:,25))
-  !    call accumulate_time(time_begin(1,25) &
+  !    call add_time(time_begin(1,25) &
   ! &                                 ,time_end(1,25) &
   ! &                                 ,time_elapsed(25))
 
@@ -1787,12 +1786,12 @@ module m_particle
   !    enddo
   !  enddo
   !  call date_and_time(values=time_end(:,26))
-  !  call accumulate_time(time_begin(1,26) &
+  !  call add_time(time_begin(1,26) &
   ! &                               ,time_end(1,26) &
   ! &                               ,time_elapsed(26))
 
     call date_and_time(values=time_end(:,23))
-    call accumulate_time(time_begin(1,23),time_end(1,23),time_elapsed(23))
+    call add_time(time_begin(1,23),time_end(1,23),time_elapsed(23))
 
     return
   end subroutine cal_temp
@@ -2015,21 +2014,21 @@ module m_particle
     enddo
 
     call date_and_time(values=time_end(:,26))
-    call accumulate_time(time_begin(1,26),time_end(1,26),time_elapsed(26))
+    call add_time(time_begin(1,26),time_end(1,26),time_elapsed(26))
 
     ! do is=1,nspec
     !   call date_and_time(values=time_begin(:,24))
     !   call xreal_2d(tpar (1,jb-1,kb-1,is),NX,NY,NZ)
     !   call xreal_2d(tperp(1,jb-1,kb-1,is),NX,NY,NZ)
     !   call date_and_time(values=time_end(:,24))
-    !   call accumulate_time(time_begin(1,24),time_end(1,24),time_elapsed(24))
+    !   call add_time(time_begin(1,24),time_end(1,24),time_elapsed(24))
 
 
     !   call date_and_time(values=time_begin(:,25))
     !   call xrealbcc_2d(tpar (1,jb-1,kb-1,is),1,NX,NY,NZ)
     !   call xrealbcc_2d(tperp(1,jb-1,kb-1,is),1,NX,NY,NZ)
     !   call date_and_time(values=time_end(:,25))
-    !   call accumulate_time(time_begin(1,25),time_end(1,25),time_elapsed(25))
+    !   call add_time(time_begin(1,25),time_end(1,25),time_elapsed(25))
     ! enddo
     
     call date_and_time(values=time_begin(:,26))
@@ -2063,10 +2062,10 @@ module m_particle
     ! 10   continue
 
     call date_and_time(values=time_end(:,26))
-    call accumulate_time(time_begin(1,26),time_end(1,26),time_elapsed(26))
+    call add_time(time_begin(1,26),time_end(1,26),time_elapsed(26))
 
     call date_and_time(values=time_end(:,23))
-    call accumulate_time(time_begin(1,23),time_end(1,23),time_elapsed(23))
+    call add_time(time_begin(1,23),time_end(1,23),time_elapsed(23))
 
     return
   end subroutine cal_temp_2d
@@ -2618,7 +2617,7 @@ module m_particle
       endif
 
       call date_and_time(values=time_end(:,13))
-      call accumulate_time(time_begin(1,13),time_end(1,13),time_elapsed(13))
+      call add_time(time_begin(1,13),time_end(1,13),time_elapsed(13))
 
       call date_and_time(values=time_begin(:,14))
       ICOUNT=0                  !ICOUNT records how many times the particle
@@ -2985,7 +2984,7 @@ module m_particle
   999   continue
 
       call date_and_time(values=time_end(:,14))
-      call accumulate_time(time_begin(1,14),time_end(1,14),time_elapsed(14))
+      call add_time(time_begin(1,14),time_end(1,14),time_elapsed(14))
 
       call date_and_time(values=time_begin(:,15))
       NPTOTP = 0
@@ -3134,7 +3133,7 @@ module m_particle
       enddo
 
       call date_and_time(values=time_end(:,15))
-      call accumulate_time(time_begin(1,15),time_end(1,15),time_elapsed(15))
+      call add_time(time_begin(1,15),time_end(1,15),time_elapsed(15))
 
     enddo  ! IS DO LOOP
 
@@ -3184,7 +3183,7 @@ module m_particle
     ninj_global = 0
 
     call date_and_time(values=time_end(:,19))
-    call accumulate_time(time_begin(1,19),time_end(1,19),time_elapsed(19))
+    call add_time(time_begin(1,19),time_end(1,19),time_elapsed(19))
 
     return
   end subroutine parmov_2d

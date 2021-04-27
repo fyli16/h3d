@@ -14,7 +14,7 @@ end subroutine get_time
 !---------------------------------------------------------------------
 ! accumulate time between two stamps
 !---------------------------------------------------------------------
-subroutine accumulate_time(tbegin, tend, telapsed)
+subroutine add_time(tbegin, tend, telapsed)
   integer, dimension(8) :: tbegin, tend
   real*8 :: telapsed
   
@@ -26,7 +26,7 @@ subroutine accumulate_time(tbegin, tend, telapsed)
       + (tend(8)-tbegin(8))*0.001
 
   return
-end subroutine accumulate_time
+end subroutine add_time
 
 
 !---------------------------------------------------------------------
@@ -73,19 +73,21 @@ end subroutine mpe_decomp1d
 
 
 !---------------------------------------------------------------------
-! error abort
-!---------------------------------------------------------------------
-subroutine error_abort(message)
-  character(*), intent(in) :: message
-  write(6,*) message
-  stop
-end subroutine error_abort
-
-
-!---------------------------------------------------------------------
 ! warning 
 !---------------------------------------------------------------------
 subroutine warning(message)
   character(*), intent(in) :: message
   write(6,*) message
 end subroutine warning
+
+
+!---------------------------------------------------------------------
+! error abort
+!---------------------------------------------------------------------
+subroutine error_abort(message)
+  character(*), intent(in) :: message
+  call warning(message)
+  stop
+end subroutine error_abort
+
+

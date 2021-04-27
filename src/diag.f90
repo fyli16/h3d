@@ -41,7 +41,7 @@ module m_diagnostics
         call cal_temp_2d
       endif
       call date_and_time(values=time_end(:,6))
-      call accumulate_time(time_begin(1,6),time_end(1,6),time_elapsed(6))
+      call add_time(time_begin(1,6),time_end(1,6),time_elapsed(6))
 
       ! write data
       call write_mesh_data
@@ -74,7 +74,7 @@ module m_diagnostics
       endif
     endif 
     call date_and_time(values=time_end(:,31))
-    call accumulate_time(time_begin(1,31),time_end(1,31),time_elapsed(31))
+    call add_time(time_begin(1,31),time_end(1,31),time_elapsed(31))
 
     ! write particle tracking data
     call date_and_time(values=time_begin(:,32))
@@ -86,7 +86,7 @@ module m_diagnostics
       endif
     endif 
     call date_and_time(values=time_end(:,32))
-    call accumulate_time(time_begin(1,32),time_end(1,32),time_elapsed(32))
+    call add_time(time_begin(1,32),time_end(1,32),time_elapsed(32))
 
     ! write restart files
     if ( n_write_restart>0 .and. it>itstart .and. mod(it,n_write_restart)==0 ) then

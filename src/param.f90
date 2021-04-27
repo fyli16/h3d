@@ -657,19 +657,13 @@ module m_parameter
 
     allocate ( xc_uniform(nxmax), yc_uniform(nymax), zc_uniform(nzmax), &
                xv_uniform(nxmax), yv_uniform(nymax), zv_uniform(nzmax) ) 
-
+               
     allocate ( ixc_2_c_map(nx+1), iyc_2_c_map(ny+1), izc_2_c_map(nz+1) )
-
     allocate ( ixc_2_v_map(nx+1), iyc_2_v_map(ny+1), izc_2_v_map(nz+1) )
-
     allocate ( ixv_2_c_map(nx+1), iyv_2_c_map(ny+1), izv_2_c_map(nz+1) )
-
     allocate ( ixv_2_v_map(nx+1), iyv_2_v_map(ny+1), izv_2_v_map(nz+1) )
-
     allocate ( buf(nprobes,nbufsteps), buf2(nprobes*nprocs,nbufsteps), buftime(nbufsteps) )
-
     allocate ( buf_particle(tracking_width,nspec*maxtags,nbufsteps) )
-
     allocate ( buf_p1(tracking_width,nspec*maxtags) )
 
     call makelist
@@ -691,9 +685,9 @@ module m_parameter
     iptemp = 0
 
     do ip = 1, nplmax-1
-        link(ip) = ip+1  ! link(nplmax) as defined in m_parameter
+        link(ip) = ip+1  
     enddo
-    link(nplmax)=0 ! why linking in this strange way?
+    link(nplmax)=0
 
     return
   end subroutine makelist

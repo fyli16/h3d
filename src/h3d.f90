@@ -70,20 +70,20 @@ subroutine sim_loops
       call cal_eta_2d    
     endif
     call date_and_time(values=time_end(:,2))
-    call accumulate_time(time_begin(1,2),time_end(1,2),time_elapsed(2))
+    call add_time(time_begin(1,2),time_end(1,2),time_elapsed(2))
 
     ! calculate density and v's, and push particles
     call date_and_time(values=time_begin(:,3))
     ntot = 0 ! for particle tracking
     call trans
     call date_and_time(values=time_end(:,3))
-    call accumulate_time(time_begin(1,3),time_end(1,3),time_elapsed(3))
+    call add_time(time_begin(1,3),time_end(1,3),time_elapsed(3))
 
     ! sort particles
     call date_and_time(values=time_begin(:,4))
     if (mod(it,n_sort) == 0) call sortit  
     call date_and_time(values=time_end(:,4))
-    call accumulate_time(time_begin(1,4),time_end(1,4),time_elapsed(4))
+    call add_time(time_begin(1,4),time_end(1,4),time_elapsed(4))
 
     ! call field solver
     call date_and_time(values=time_begin(:,5))
@@ -93,7 +93,7 @@ subroutine sim_loops
       call field_2d
     endif     
     call date_and_time(values=time_end(:,5))
-    call accumulate_time(time_begin(1,5),time_end(1,5),time_elapsed(5))
+    call add_time(time_begin(1,5),time_end(1,5),time_elapsed(5))
 
     ! inject_wave ?
     ! if (it == 21000) call inject_wave
@@ -103,14 +103,14 @@ subroutine sim_loops
     call date_and_time(values=time_begin(:,30))
     call diagnostics
     call date_and_time(values=time_end(:,30))
-    call accumulate_time(time_begin(1,30),time_end(1,30),time_elapsed(30))
+    call add_time(time_begin(1,30),time_end(1,30),time_elapsed(30))
 
     ! time/step increment
     time = time + dtwci
     it = it + 1
 
     call date_and_time(values=time_end(:,1))
-    call accumulate_time(time_begin(1,1),time_end(1,1),time_elapsed(1))
+    call add_time(time_begin(1,1),time_end(1,1),time_elapsed(1))
 
   enddo 
 
@@ -179,7 +179,7 @@ subroutine shutdown
     print*, " In subroutine bcalc,"
     print*, "   subroutine ecalc           (s)          =",time_elapsed(16)
     print*, "   subroutine xrealbcc        (s)          =",time_elapsed(17)
-    print*, "   total bcalc                (s)          =",time_elapsed(22)
+    print*, "   total bcalc                (s)          =",time_elapsed(10)
     print*, " "
     print*, " "
     print*, " In subroutine diagnostics,"
