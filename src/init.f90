@@ -7,33 +7,6 @@ module m_init
   contains 
 
   !---------------------------------------------------------------------
-  ! initialize simulation
-  !---------------------------------------------------------------------
-  subroutine init_sim
-    ! read input deck
-    call init_input
-
-    ! MPI domain decomposition 
-    call init_mpi_decomp
-    
-    ! allocate global arrays
-    call init_arrays
-    
-    ! initialize mesh 
-    call init_mesh
-
-    ! restart or a fresh start
-    if (restart) then 
-      call init_restart 
-    else
-      call init_wavepart 
-    endif 
-
-    return 
-  end subroutine init_sim
-
-
-  !---------------------------------------------------------------------
   ! init waves and particles
   !---------------------------------------------------------------------
   subroutine init_wavepart

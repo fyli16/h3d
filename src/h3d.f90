@@ -7,17 +7,31 @@
 !---------------------------------------------------------------------
 
 program h3d 
+  use m_parameter
   use m_init
   implicit none
 
-  ! initialize simulation
-  call init_sim
-  
-  ! execute main loops
-  call sim_loops
-  
-  ! shutdown and exit
-  call shutdown
+  ! ---- init sim. ---- !
+  ! read input deck
+  call init_input
+  ! MPI domain decomposition 
+  call init_decomp
+  ! allocate global arrays
+  call init_arrays
+  ! initialize mesh 
+  call init_mesh
+  ! restart or a fresh start
+  if (restart) then 
+    call init_restart 
+  else
+    call init_wavepart 
+  endif 
+
+  ! ---- main loops --- !
+  call run_sim
+
+  ! --- close sim. --- !
+  call close_sim
 
 end program h3d
 
@@ -25,7 +39,7 @@ end program h3d
 !---------------------------------------------------------------------
 ! main simulation loops
 !---------------------------------------------------------------------
-subroutine sim_loops
+subroutine run_sim
   use m_parameter
   use m_eta
   use m_particle
@@ -111,13 +125,13 @@ subroutine sim_loops
 
   enddo 
 
-end subroutine sim_loops
+end subroutine run_sim
 
 
 !---------------------------------------------------------------------
-! shutdown simulation and exit
+! close simulation and exit
 !---------------------------------------------------------------------
-subroutine shutdown
+subroutine close_sim
   use m_parameter
   implicit none 
 
@@ -178,4 +192,4 @@ subroutine shutdown
   call MPI_FINALIZE(IERR)
   stop
 
-end subroutine shutdown
+end subroutine close_sim

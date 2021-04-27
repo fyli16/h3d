@@ -320,7 +320,7 @@ module m_parameter
   !---------------------------------------------------------------------
   ! initialize MPI domain decomposition
   !---------------------------------------------------------------------
-  subroutine init_mpi_decomp
+  subroutine init_decomp
     integer :: i
 
     if (myid==0) then
@@ -372,7 +372,7 @@ module m_parameter
       print*, "Local array size in z-direction = ", nzlmax
     endif
 
-  end subroutine init_mpi_decomp
+  end subroutine init_decomp
 
   !---------------------------------------------------------------------
   ! Set global parameters
@@ -657,7 +657,7 @@ module m_parameter
 
     allocate ( xc_uniform(nxmax), yc_uniform(nymax), zc_uniform(nzmax), &
                xv_uniform(nxmax), yv_uniform(nymax), zv_uniform(nzmax) ) 
-               
+
     allocate ( ixc_2_c_map(nx+1), iyc_2_c_map(ny+1), izc_2_c_map(nz+1) )
     allocate ( ixc_2_v_map(nx+1), iyc_2_v_map(ny+1), izc_2_v_map(nz+1) )
     allocate ( ixv_2_c_map(nx+1), iyv_2_c_map(ny+1), izv_2_c_map(nz+1) )
