@@ -8,7 +8,7 @@ MPI_IO_format = .true. ! use MPI IO (one file only) instead of traditional binar
 
 ! MPI nodes(ranks) configuration along y, z (no decompostion along x)
 ! and whether the ranks are treated periodic in both directions
-node_conf(:) = 1, 2, 16,
+node_conf(:) = 2, 16,
 periods(:) = .true., .true.,
 
 ! ------------------ simulation domain ----------------!
@@ -42,8 +42,8 @@ frac(1:5) = 1., ! density normalized to n0 (associated with wpi)
 
 denmin = 0.05,  ! when density is smaller than this value, force it to this value to avoid divergence in calculating E field
 wpiwci = 400., ! ratio of ion plasma frequency to ion cyclotron frequency
-btspec(1:5) = 0.01, ! beta of each ion species 
-bete = 0.01, ! beta of electrons
+beta_spec(1:5) = 0.01, ! beta of each ion species 
+beta_e = 0.01, ! beta of electrons
 n_sort = 10, ! frequency at which to sort particles
 
 ! resistivity 

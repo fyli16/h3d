@@ -15,7 +15,7 @@ module m_parameter
 
   integer*8 :: nxmax, nymax, nzmax, nvar, nylmax, nzlmax, npm
   
-  integer :: nprocs, ndim, dims(2), node_conf(3), comm2d, myid, req(8), & 
+  integer :: nprocs, ndim, dims(2), node_conf(2), comm2d, myid, req(8), & 
             nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot, &      
             nbrleft, nbrrite, ipe, stridery, striderz, iseed(1), coords(2)
 
@@ -60,14 +60,13 @@ module m_parameter
                                         ,nescape_xy_global,nescape_yx_global              &
                                         ,nescape_xz_global,nescape_zx_global
 
-  real*8, dimension(:), allocatable:: x0,x1,tx0,vpar,vper,bbal
-  real*8, dimension(:,:), allocatable :: vbal
+  real*8, dimension(:), allocatable:: x0,x1,tx0,vpar,vper
   real*8, dimension(5) :: rcorr
   integer*8, dimension(5) :: ishape
 
-  real*8, dimension(5) :: btspec, qspec, wspec, frac, anisot
+  real*8, dimension(5) :: beta_spec, qspec, wspec, frac, anisot
 
-  real*8 :: denmin, resis, wpiwci, bete, fxsho,ave1,ave2,phib,demin2, &
+  real*8 :: denmin, resis, wpiwci, beta_e, fxsho,ave1,ave2,phib,demin2, &
             xmax, ymax, zmax, dt, gamma, dtwci, wall_clock_elapsed, tmax,  &
             xaa, xbb, yaa, ybb, zaa, zbb, t_stopped=0.
 
@@ -133,7 +132,7 @@ module m_parameter
     xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
     uniform_load_logical, &
     n_subcycles, nskipx, nskipy, nskipz, iterb, &  ! field solver
-    nspec, n_sort, qspec, wspec, frac, denmin, wpiwci, btspec, bete, &  ! plasma setup
+    nspec, n_sort, qspec, wspec, frac, denmin, wpiwci, beta_spec, beta_e, &  ! plasma setup
     ieta, resis, netax, netay, etamin, etamax, eta_par, eta_zs, &
     anisot, gamma, ave1, ave2, phib, smoothing, smooth_pass, &
     dB_B0, num_wave_cycles, &  ! init waves
@@ -191,7 +190,7 @@ module m_parameter
     call MPI_BCAST(npx                    ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(npy                    ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(npz                    ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(node_conf              ,3     ,MPI_INTEGER         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(node_conf              ,2     ,MPI_INTEGER         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(periods                ,2     ,MPI_LOGICAL         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(xaa                    ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(xbb                    ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
@@ -220,8 +219,8 @@ module m_parameter
     call MPI_BCAST(frac                   ,5     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(denmin                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(wpiwci                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(btspec                 ,5     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(bete                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(beta_spec              ,5     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(beta_e                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(ieta                   ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(resis                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(netax                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
@@ -335,9 +334,9 @@ module m_parameter
     if (nz==1 .and. ny==1) then ! only nx>1 and 1 rank will be used  
       ndim=0; dims(1)=1; dims(2)=1
     else if (nz == 1) then ! ny>1 and decomposition only occurs in y
-      ndim=1; dims(1)=node_conf(2); dims(2)=1
+      ndim=1; dims(1)=node_conf(1); dims(2)=1
     else ! ny>1, nz>1, and decomposition in both y and z
-      ndim=2; dims(1)=node_conf(2); dims(2)=node_conf(3)
+      ndim=2; dims(1)=node_conf(1); dims(2)=node_conf(2)
     endif
 
     ! npy(z) now means number of particles in each rank along y(z)
@@ -435,7 +434,7 @@ module m_parameter
               nescape_xy_global(nspec), nescape_yx_global(nspec), nescape_xz_global(nspec), &
               nescape_zx_global(nspec), nescape_yz_global(nspec), nescape_zy_global(nspec) )
 
-    allocate( x0(nspec), x1(nspec), tx0(nspec), vpar(nspec), vper(nspec), vbal(nxmax,nspec), bbal(nxmax) )
+    allocate( x0(nspec), x1(nspec), tx0(nspec), vpar(nspec), vper(nspec) )
 
     allocate( dfac(nspec),nskip(nspec),ipleft(nspec),iprite(nspec),ipsendleft(nspec),ipsendrite(nspec), &
               iprecv(nspec),ipsendtop(nspec),ipsendbot(nspec),ipsendlefttop(nspec),ipsendleftbot(nspec), &

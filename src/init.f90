@@ -177,7 +177,7 @@ module m_init
             by_ = -dB_B0*B0*cos(kz*z_pos)
           endif 
           bz_ = B0
-          ex_ = zero  ! why e component is zero?
+          ex_ = zero  ! why e-fld is zero?
           ey_ = zero
           ez_ = zero
           dvx_ = -VA*bx_/B0 
@@ -191,7 +191,7 @@ module m_init
           ey(i,j,k) = ey_
           ez(i,j,k) = ez_
 
-          ! use vix to temporary store values of V on the grid
+          ! use vix to temporarily store values of V on the grid
           vix(i,j,k) = dvx_
           viy(i,j,k) = dvy_
           viz(i,j,k) = dvz_
@@ -212,13 +212,16 @@ module m_init
       ninj(is) = 0
       ninj_global(is) = 0
       npart(is) = 0
-      tx0(is) = btspec(is)/(two*wpiwci**2)/wspec(is)
+      tx0(is) = beta_spec(is)/(two*wpiwci**2)/wspec(is) ! plasma temp.
       x0(is) = zero
       x1(is) = xmax
       call MPI_ALLREDUCE(npart(is),npart_global(is),1,MPI_INTEGER8,MPI_SUM,MPI_COMM_WORLD,IERR)
     enddo
-    te0 = bete/(two*wpiwci**2)
-    vbal = one
+    te0 = beta_e/(two*wpiwci**2) ! electron temp.
+    if (myid==0) then
+      print*, "naprt(is) = ", npart
+      print*, "npart_global(is) = ", npart_global
+    endif 
 
     do is = 1, nspec
       tag0 = maxtags_pe*nspec*myid + (is-1)*maxtags_pe
@@ -229,15 +232,23 @@ module m_init
       if (uniform_load_logical) then
         ipb2 = npx(is)*npy(is)*npz(is)
       else
-        ipb2 = npx(is)*npy(is)*npz(is)*nprocs*volume_fraction
+        ipb2 = npx(is)*npy(is)*npz(is)*nprocs*volume_fraction ! local particle #
       endif
+      if (myid==0) print*, "local part. #: ipb2 = ", ipb2
 
       npm = npx(is)*npy(is)*npz(is)*nprocs
       dfac(is) = real(ny*nz)*(x1(is)-x0(is))/(hx*real(npm))
-      vpar(is) = sqrt(btspec(is)/(wspec(is)*wpiwci*wpiwci))
+      vpar(is) = sqrt(beta_spec(is)/(wspec(is)*wpiwci*wpiwci))
       vper(is) = vpar(is)*sqrt(anisot(is))
+      if (myid==0) then 
+        print*, 'npm = ', npm 
+        print*, 'dfac(is) = ', dfac 
+        print*, 'vpar(is) = ', vpar
+        print*, 'vper(is) = ', vper
+      endif 
 
       if (myid==0) then
+        print*
         print*, "species #", is
         print*, "frac = ", frac(is)
         print*, "npx = ", npx(is)
@@ -263,9 +274,9 @@ module m_init
           ize          = dtzi*z_p_logical+1.50000000000d+00
           q_p          = meshX%dxc(ixe) * meshY%dxc(iye) * meshZ%dxc(ize) * dfac(is)*frac(is)
         else
-          x_p  = X0(IS)+(X1(IS)-X0(IS))*ranval(1)
-          y_p  = YB+(YE-YB)*ranval(2)
-          z_p  = ZB+(ZE-ZB)*ranval(3)
+          x_p  = x0(is)+(x1(is)-x0(is))*ranval(1)
+          y_p  = yb+(ye-yb)*ranval(2)
+          z_p  = zb+(ze-zb)*ranval(3)
           q_p  = hx*hy*hz*dfac(is)*frac(is)
         endif
 

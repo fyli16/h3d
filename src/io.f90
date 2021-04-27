@@ -581,10 +581,10 @@ module m_io
       write(f_unit) ninj,ninj_global,nescape,nescape_global,npart, &
       npart_global,t_stopped
 
-      write(f_unit) x0,x1,tx0,vpar,vper,vbal,bbal,rcorr,teti,ishape
+      write(f_unit) x0,x1,tx0,vpar,vper,rcorr,teti,ishape
 
-      write(f_unit) btspec, qspec, wspec, frac,                    &
-      anisot, denmin, resis, wpiwci, bete, fxsho,ave1,             &
+      write(f_unit) beta_spec, qspec, wspec, frac,                    &
+      anisot, denmin, resis, wpiwci, beta_e, fxsho,ave1,             &
       ave2,phib, xmax,ymax,zmax,gamma,                              &
       npx, npy, npz,                                               &
       iterb,nxcel,netax,netay,nspec,   &
@@ -736,10 +736,10 @@ module m_io
       read(f_unit) ninj,ninj_global,nescape,nescape_global,npart,  &
       npart_global,t_stopped
 
-      read(f_unit) x0,x1,tx0,vpar,vper,vbal,bbal,rcorr,teti,ishape
+      read(f_unit) x0,x1,tx0,vpar,vper,rcorr,teti,ishape
 
-      read(f_unit) btspec, qspec, wspec, frac,       &
-      anisot, denmin, resis, wpiwci, bete, fxsho,ave1,      &
+      read(f_unit) beta_spec, qspec, wspec, frac,       &
+      anisot, denmin, resis, wpiwci, beta_e, fxsho,ave1,      &
       ave2,phib, xmax,ymax,zmax,gamma,                  &
       npx, npy, npz,                                               &
       iterb,nxcel,netax,netay,nspec,   &
