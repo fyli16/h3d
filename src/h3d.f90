@@ -158,20 +158,14 @@ subroutine close_sim
     print*, "   sub diag                       (s)          =",time_elapsed(6)
     print*, " "
     print*, " "
-    print*, "In subroutine trans," 
-    print*, "   sub parmov                     (s)          =",time_elapsed(31)
-    print*, "   sub energy                     (s)          =",time_elapsed(32)
-    print*, "   total trans                    (s)          =",time_elapsed(3)
-    print*, " "
-    print*, " "
-    print*, "In subroutine parmov,"
+    print*, "In trans.parmov,"
     print*, "   sub push                       (s)          =",time_elapsed(33)
     print*, "   sub particle_boundary          (s)          =",time_elapsed(34)
     print*, "   sub moment_calculation         (s)          =",time_elapsed(35)
     print*, "   total parmov                   (s)          =",time_elapsed(31)
     print*, " "
     print*, " "
-    print*, "In subroutine field,"
+    print*, "In field,"
     print*, "   sub pressgrad                  (s)          =",time_elapsed(51)
     print*, "   sub bcalc                      (s)          =",time_elapsed(52)
     print*, "   sub ecalc                      (s)          =",time_elapsed(53)
@@ -179,7 +173,7 @@ subroutine close_sim
     print*, "   total field                    (s)          =",time_elapsed(5)
     print*, " "
     print*, " "
-    print*, "In subroutine diag,"
+    print*, "In diag,"
     print*, "   sub diag_mesh                  (s)          =",time_elapsed(61)
     print*, "   sub diag_ene_hist              (s)          =",time_elapsed(62)
     print*, "   sub diag_particle              (s)          =",time_elapsed(63)

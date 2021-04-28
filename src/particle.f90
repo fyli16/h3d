@@ -1406,12 +1406,6 @@ module m_particle
       deno=den; vixo=vix; viyo=viy; vizo=viz
     endif
 
-    ! calculate field, fluid, and particle energy
-    call date_and_time(values=time_begin(:,32))
-    if (mod(it,n_diag_ene_hist)==0) call energy
-    call date_and_time(values=time_end(:,32))
-    call add_time(time_begin(1,32),time_end(1,32),time_elapsed(32))
-
     kbmin = kb-1; kbmax = ke+1
     jbmin = jb-1; jbmax = je+1
 
@@ -1893,16 +1887,6 @@ module m_particle
             np = iphead(iixe,iiye,iize,is)
             do while (np.ne.0)
               L=np
-              ! Uniform mesh - Same as is in version 5.0
-              ! rx=hxi*x(l)+1.5000000000000001
-              ! ry=hyi*y(l)+0.5000000000000001d+00
-              ! rz=hzi*z(l)+0.5000000000000001d+00
-              ! ix=rx
-              ! iy=ry
-              ! iz=rz
-              ! fx=rx-ix
-              ! fy=ry-iy
-              ! fz=rz-iz
 
               ! Nonuniform mesh - using mesh_unmap
               rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
@@ -1914,8 +1898,8 @@ module m_particle
               fx=rx-ix
               fy=ry-iy
               fz=rz-iz
-              iy=iy-1             ! integer index in y direction starts at 0
-              iz=iz-1             ! integer index in z direction starts at 0
+              iy=iy-1  ! integer index in y direction starts at 0
+              iz=iz-1  ! integer index in z direction starts at 0
 
               ixp1 = ix+1
               iyp1 = iy+1
