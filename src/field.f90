@@ -106,294 +106,117 @@ module m_field
     real*8 :: bxav, byav, bzav  
     real*8 :: dexdy, dexdz, deydx, deydz, dezdx,dezdy  
 
-    if (eta_par == 0) then
-      do k = kb,ke
-        do j = jb,je
-          do i=2,nx1
-            bx1=bx(i+1,j+1,k)  
-            bx2=bx(i  ,j+1,k)  
-            bx3=bx(i  ,j  ,k)  
-            bx4=bx(i+1,j  ,k)  
-            bx5=bx(i+1,j+1,k+1)
-            bx6=bx(i  ,j+1,k+1)
-            bx7=bx(i  ,j  ,k+1)
-            bx8=bx(i+1,j  ,k+1)
-            by1=by(i+1,j+1,k)  
-            by2=by(i  ,j+1,k)  
-            by3=by(i  ,j  ,k)  
-            by4=by(i+1,j  ,k)  
-            by5=by(i+1,j+1,k+1)
-            by6=by(i  ,j+1,k+1)
-            by7=by(i  ,j  ,k+1)
-            by8=by(i+1,j  ,k+1)
-            bz1=bz(i+1,j+1,k)  
-            bz2=bz(i  ,j+1,k)  
-            bz3=bz(i  ,j  ,k)  
-            bz4=bz(i+1,j  ,k)  
-            bz5=bz(i+1,j+1,k+1)
-            bz6=bz(i  ,j+1,k+1)
-            bz7=bz(i  ,j  ,k+1)
-            bz8=bz(i+1,j  ,k+1)
+    do k = kb,ke
+      do j = jb,je
+        do i=2,nx1
+          bx1=bx(i+1,j+1,k)  
+          bx2=bx(i  ,j+1,k)  
+          bx3=bx(i  ,j  ,k)  
+          bx4=bx(i+1,j  ,k)  
+          bx5=bx(i+1,j+1,k+1)
+          bx6=bx(i  ,j+1,k+1)
+          bx7=bx(i  ,j  ,k+1)
+          bx8=bx(i+1,j  ,k+1)
+          by1=by(i+1,j+1,k)  
+          by2=by(i  ,j+1,k)  
+          by3=by(i  ,j  ,k)  
+          by4=by(i+1,j  ,k)  
+          by5=by(i+1,j+1,k+1)
+          by6=by(i  ,j+1,k+1)
+          by7=by(i  ,j  ,k+1)
+          by8=by(i+1,j  ,k+1)
+          bz1=bz(i+1,j+1,k)  
+          bz2=bz(i  ,j+1,k)  
+          bz3=bz(i  ,j  ,k)  
+          bz4=bz(i+1,j  ,k)  
+          bz5=bz(i+1,j+1,k+1)
+          bz6=bz(i  ,j+1,k+1)
+          bz7=bz(i  ,j  ,k+1)
+          bz8=bz(i+1,j  ,k+1)
 
-            vixa=(1.-iflag)*(1.5*vix(i,j,k)-0.5*vixo(i,j,k))+iflag*vix(i,j,k)
-            viya=(1.-iflag)*(1.5*viy(i,j,k)-0.5*viyo(i,j,k))+iflag*viy(i,j,k)
-            viza=(1.-iflag)*(1.5*viz(i,j,k)-0.5*vizo(i,j,k))+iflag*viz(i,j,k)
+          vixa=(1.-iflag)*(1.5*vix(i,j,k)-0.5*vixo(i,j,k))+iflag*vix(i,j,k)
+          viya=(1.-iflag)*(1.5*viy(i,j,k)-0.5*viyo(i,j,k))+iflag*viy(i,j,k)
+          viza=(1.-iflag)*(1.5*viz(i,j,k)-0.5*vizo(i,j,k))+iflag*viz(i,j,k)
 
-            dena = iflag*den(i,j,k) + (1-iflag)*denh(i,j,k)
-            a = one/dena
+          ! dena=iflag*den(i,j,k) + (1-iflag)*denh(i,j,k)
+          dena=iflag*0.5*(den(i,j,k)+deno(i,j,k))+(1.-iflag)*den(i,j,k)
+          a=one/dena
 
-            dxa=a/(4.*meshX%dxc(i))
-            dya=a/(4.*meshY%dxc(j+1)) ! integer index in y direction starts at 0
-            dza=a/(4.*meshZ%dxc(k+1)) ! integer index in z direction starts at 0
+          dxa=a/(4.*meshX%dxc(i))
+          dya=a/(4.*meshY%dxc(j+1)) ! integer index in y direction starts at 0
+          dza=a/(4.*meshZ%dxc(k+1)) ! integer index in z direction starts at 0
 
-            dbxdy= bx(i+1,j+1,k+1)+bx(i  ,j+1,k+1)&
-                +bx(i  ,j+1,k  )+bx(i+1,j+1,k  )&
-                -bx(i+1,j  ,k+1)-bx(i  ,j  ,k+1)&
-                -bx(i  ,j  ,k  )-bx(i+1,j  ,k  )
-            dbxdz= bx(i+1,j+1,k+1)+bx(i  ,j+1,k+1)&
-                +bx(i  ,j  ,k+1)+bx(i+1,j  ,k+1)&
-                -bx(i+1,j+1,k  )-bx(i  ,j+1,k  )&
-                -bx(i  ,j  ,k  )-bx(i+1,j ,k  )
-            dbydx= by(i+1,j+1,k+1)+by(i+1,j  ,k+1)&
-                +by(i+1,j  ,k  )+by(i+1,j+1,k  )&
-                -by(i  ,j+1,k+1)-by(i  ,j  ,k+1)&
-                -by(i  ,j  ,k  )-by(i  ,j+1,k  )
-            dbydz= by(i+1,j+1,k+1)+by(i  ,j+1,k+1)&
-                +by(i  ,j  ,k+1)+by(i+1,j  ,k+1)&
-                -by(i+1,j+1,k  )-by(i  ,j+1,k  )&
-                -by(i  ,j  ,k  )-by(i+1,j  ,k  )
-            dbzdx= bz(i+1,j+1,k+1)+bz(i+1,j  ,k+1)&
-                +bz(i+1,j  ,k  )+bz(i+1,j+1,k  )&
-                -bz(i  ,j+1,k+1)-bz(i  ,j  ,k+1)&
-                -bz(i  ,j  ,k  )-bz(i  ,j+1,k  )
-            dbzdy= bz(i+1,j+1,k+1)+bz(i  ,j+1,k+1)&
-                +bz(i  ,j+1,k  )+bz(i+1,j+1,k  )&
-                -bz(i+1,j  ,k+1)-bz(i  ,j  ,k+1)&
-                -bz(i  ,j  ,k  )-bz(i+1,j  ,k  )
-            curlbx_scalar=dya*dbzdy-dza*dbydz
-            curlby_scalar=dza*dbxdz-dxa*dbzdx
-            curlbz_scalar=dxa*dbydx-dya*dbxdy
-            bxav=.125*(bx1+bx2+bx3+bx4+bx5+bx6+bx7+bx8)
-            byav=.125*(by1+by2+by3+by4+by5+by6+by7+by8)
-            bzav=.125*(bz1+bz2+bz3+bz4+bz5+bz6+bz7+bz8)
-            xj = curlbx_scalar
-            yj = curlby_scalar
-            zj = curlbz_scalar
+          dbxdy= bx(i+1,j+1,k+1)+bx(i  ,j+1,k+1)&
+              +bx(i  ,j+1,k  )+bx(i+1,j+1,k  )&
+              -bx(i+1,j  ,k+1)-bx(i  ,j  ,k+1)&
+              -bx(i  ,j  ,k  )-bx(i+1,j  ,k  )
+          dbxdz= bx(i+1,j+1,k+1)+bx(i  ,j+1,k+1)&
+              +bx(i  ,j  ,k+1)+bx(i+1,j  ,k+1)&
+              -bx(i+1,j+1,k  )-bx(i  ,j+1,k  )&
+              -bx(i  ,j  ,k  )-bx(i+1,j ,k  )
+          dbydx= by(i+1,j+1,k+1)+by(i+1,j  ,k+1)&
+              +by(i+1,j  ,k  )+by(i+1,j+1,k  )&
+              -by(i  ,j+1,k+1)-by(i  ,j  ,k+1)&
+              -by(i  ,j  ,k  )-by(i  ,j+1,k  )
+          dbydz= by(i+1,j+1,k+1)+by(i  ,j+1,k+1)&
+              +by(i  ,j  ,k+1)+by(i+1,j  ,k+1)&
+              -by(i+1,j+1,k  )-by(i  ,j+1,k  )&
+              -by(i  ,j  ,k  )-by(i+1,j  ,k  )
+          dbzdx= bz(i+1,j+1,k+1)+bz(i+1,j  ,k+1)&
+              +bz(i+1,j  ,k  )+bz(i+1,j+1,k  )&
+              -bz(i  ,j+1,k+1)-bz(i  ,j  ,k+1)&
+              -bz(i  ,j  ,k  )-bz(i  ,j+1,k  )
+          dbzdy= bz(i+1,j+1,k+1)+bz(i  ,j+1,k+1)&
+              +bz(i  ,j+1,k  )+bz(i+1,j+1,k  )&
+              -bz(i+1,j  ,k+1)-bz(i  ,j  ,k+1)&
+              -bz(i  ,j  ,k  )-bz(i+1,j  ,k  )
+          curlbx_scalar=dya*dbzdy-dza*dbydz
+          curlby_scalar=dza*dbxdz-dxa*dbzdx
+          curlbz_scalar=dxa*dbydx-dya*dbxdy
+          bxav=.125*(bx1+bx2+bx3+bx4+bx5+bx6+bx7+bx8)
+          byav=.125*(by1+by2+by3+by4+by5+by6+by7+by8)
+          bzav=.125*(bz1+bz2+bz3+bz4+bz5+bz6+bz7+bz8)
+          xj = curlbx_scalar
+          yj = curlby_scalar
+          zj = curlbz_scalar
 
-            ! From the eta_par conditional
+          if (eta_par==0) then
             tenx = eta(i,j,k)*xj
             teny = eta(i,j,k)*yj
             tenz = eta(i,j,k)*zj
-            ! End content from the eta_par conditional
-
-            ex(i,j,k)=(viza*byav-viya*bzav)+(curlby_scalar*bzav-curlbz_scalar*byav)&
-                    -dpedx(i,j,k)+tenx/a
-            ey(i,j,k)=(vixa*bzav-viza*bxav)+(curlbz_scalar*bxav-curlbx_scalar*bzav)&
-                    -dpedy(i,j,k)+teny/a
-            ez(i,j,k)=(viya*bxav-vixa*byav)+(curlbx_scalar*byav-curlby_scalar*bxav)&
-                    -dpedz(i,j,k)+tenz/a
-          enddo
-        enddo
-      enddo
-    else if (eta_par == 1) then
-      do k = kb,ke
-        do j = jb,je
-          do i=2,nx1
-            bx1=bx(i+1,j+1,k)  
-            bx2=bx(i  ,j+1,k)  
-            bx3=bx(i  ,j  ,k)  
-            bx4=bx(i+1,j  ,k)  
-            bx5=bx(i+1,j+1,k+1)
-            bx6=bx(i  ,j+1,k+1)
-            bx7=bx(i  ,j  ,k+1)
-            bx8=bx(i+1,j  ,k+1)
-            by1=by(i+1,j+1,k)  
-            by2=by(i  ,j+1,k)  
-            by3=by(i  ,j  ,k)  
-            by4=by(i+1,j  ,k)  
-            by5=by(i+1,j+1,k+1)
-            by6=by(i  ,j+1,k+1)
-            by7=by(i  ,j  ,k+1)
-            by8=by(i+1,j  ,k+1)
-            bz1=bz(i+1,j+1,k)  
-            bz2=bz(i  ,j+1,k)  
-            bz3=bz(i  ,j  ,k)  
-            bz4=bz(i+1,j  ,k)  
-            bz5=bz(i+1,j+1,k+1)
-            bz6=bz(i  ,j+1,k+1)
-            bz7=bz(i  ,j  ,k+1)
-            bz8=bz(i+1,j  ,k+1)
-
-            vixa=(1.-iflag)*(1.5*vix(i,j,k)-0.5*vixo(i,j,k))+iflag*vix(i,j,k)
-            viya=(1.-iflag)*(1.5*viy(i,j,k)-0.5*viyo(i,j,k))+iflag*viy(i,j,k)
-            viza=(1.-iflag)*(1.5*viz(i,j,k)-0.5*vizo(i,j,k))+iflag*viz(i,j,k)
-
-            dena=iflag*0.5*(den(i,j,k)+deno(i,j,k))+(1.-iflag)*den(i,j,k)
-            a=one/dena
-
-            dxa=a/(4.*meshX%dxc(i))
-            dya=a/(4.*meshY%dxc(j+1))  ! integer index in y direction starts at 0
-            dza=a/(4.*meshZ%dxc(k+1))  ! integer index in z direction starts at 0
-
-            dbxdy= bx(i+1,j+1,k+1)+bx(i  ,j+1,k+1)&
-                +bx(i  ,j+1,k  )+bx(i+1,j+1,k  )&
-                -bx(i+1,j  ,k+1)-bx(i  ,j  ,k+1)&
-                -bx(i  ,j  ,k  )-bx(i+1,j  ,k  )
-            dbxdz= bx(i+1,j+1,k+1)+bx(i  ,j+1,k+1)&
-                +bx(i  ,j  ,k+1)+bx(i+1,j  ,k+1)&
-                -bx(i+1,j+1,k  )-bx(i  ,j+1,k  )&
-                -bx(i  ,j  ,k  )-bx(i+1,j ,k  )
-            dbydx= by(i+1,j+1,k+1)+by(i+1,j  ,k+1)&
-                +by(i+1,j  ,k  )+by(i+1,j+1,k  )&
-                -by(i  ,j+1,k+1)-by(i  ,j  ,k+1)&
-                -by(i  ,j  ,k  )-by(i  ,j+1,k  )
-            dbydz= by(i+1,j+1,k+1)+by(i  ,j+1,k+1)&
-                +by(i  ,j  ,k+1)+by(i+1,j  ,k+1)&
-                -by(i+1,j+1,k  )-by(i  ,j+1,k  )&
-                -by(i  ,j  ,k  )-by(i+1,j  ,k  )
-            dbzdx= bz(i+1,j+1,k+1)+bz(i+1,j  ,k+1)&
-                +bz(i+1,j  ,k  )+bz(i+1,j+1,k  )&
-                -bz(i  ,j+1,k+1)-bz(i  ,j  ,k+1)&
-                -bz(i  ,j  ,k  )-bz(i  ,j+1,k  )
-            dbzdy= bz(i+1,j+1,k+1)+bz(i  ,j+1,k+1)&
-                +bz(i  ,j+1,k  )+bz(i+1,j+1,k  )&
-                -bz(i+1,j  ,k+1)-bz(i  ,j  ,k+1)&
-                -bz(i  ,j  ,k  )-bz(i+1,j  ,k  )
-            curlbx_scalar=dya*dbzdy-dza*dbydz
-            curlby_scalar=dza*dbxdz-dxa*dbzdx
-            curlbz_scalar=dxa*dbydx-dya*dbxdy
-            bxav=.125*(bx1+bx2+bx3+bx4+bx5+bx6+bx7+bx8)
-            byav=.125*(by1+by2+by3+by4+by5+by6+by7+by8)
-            bzav=.125*(bz1+bz2+bz3+bz4+bz5+bz6+bz7+bz8)
-            xj = curlbx_scalar
-            yj = curlby_scalar
-            zj = curlbz_scalar
-
-            ! From eta_par conditional
+          else 
             bxx = bxav
             byy = byav
             bzz = bzav
             btot = sqrt(bxx**2 + byy**2 + bzz**2)
-            tjdotb = eta(i,j,k)*(bxx*xj + byy*yj + bzz*zj)/btot
-            tenx = tjdotb*bxx/btot
-            teny = tjdotb*byy/btot
-            tenz = tjdotb*bzz/btot
-            ! End content from eta_par conditional
+            if (eta_par==1) then     
+              tjdotb = eta(i,j,k)*(bxx*xj + byy*yj + bzz*zj)/btot
+              tenx = tjdotb*bxx/btot
+              teny = tjdotb*byy/btot
+              tenz = tjdotb*bzz/btot
+            else if (eta_par==2) then
+              curr_tot = max(1.d-12,sqrt(xj**2 + yj**2 + zj**2))
+              tenx = abs(eta(i,j,k)*bxx*xj/(btot*curr_tot))
+              tenx = min(resis,tenx)
+              tenx = tenx*xj
+              teny = abs(eta(i,j,k)*byy*yj/(btot*curr_tot))
+              teny = min(resis,teny)
+              teny = teny*yj
+              tenz = abs(eta(i,j,k)*bzz*zj/(btot*curr_tot))
+              tenz = min(resis,tenz)
+              tenz = tenz*zj
+            endif 
+          endif 
 
-            ex(i,j,k)=(viza*byav-viya*bzav)+(curlby_scalar*bzav-curlbz_scalar*byav)&
-                    -dpedx(i,j,k)+tenx/a
-            ey(i,j,k)=(vixa*bzav-viza*bxav)+(curlbz_scalar*bxav-curlbx_scalar*bzav)&
-                    -dpedy(i,j,k)+teny/a
-            ez(i,j,k)=(viya*bxav-vixa*byav)+(curlbx_scalar*byav-curlby_scalar*bxav)&
-                    -dpedz(i,j,k)+tenz/a
-          enddo
+          ex(i,j,k)=(viza*byav-viya*bzav)+(curlby_scalar*bzav-curlbz_scalar*byav)&
+                  -dpedx(i,j,k)+tenx/a
+          ey(i,j,k)=(vixa*bzav-viza*bxav)+(curlbz_scalar*bxav-curlbx_scalar*bzav)&
+                  -dpedy(i,j,k)+teny/a
+          ez(i,j,k)=(viya*bxav-vixa*byav)+(curlbx_scalar*byav-curlby_scalar*bxav)&
+                  -dpedz(i,j,k)+tenz/a
         enddo
       enddo
-    else if (eta_par == 2) then
-      do k = kb,ke
-        do j = jb,je
-          do i=2,nx1
-            bx1=bx(i+1,j+1,k)  
-            bx2=bx(i  ,j+1,k)  
-            bx3=bx(i  ,j  ,k)  
-            bx4=bx(i+1,j  ,k)  
-            bx5=bx(i+1,j+1,k+1)
-            bx6=bx(i  ,j+1,k+1)
-            bx7=bx(i  ,j  ,k+1)
-            bx8=bx(i+1,j  ,k+1)
-            by1=by(i+1,j+1,k)  
-            by2=by(i  ,j+1,k)  
-            by3=by(i  ,j  ,k)  
-            by4=by(i+1,j  ,k)  
-            by5=by(i+1,j+1,k+1)
-            by6=by(i  ,j+1,k+1)
-            by7=by(i  ,j  ,k+1)
-            by8=by(i+1,j  ,k+1)
-            bz1=bz(i+1,j+1,k)  
-            bz2=bz(i  ,j+1,k)  
-            bz3=bz(i  ,j  ,k)  
-            bz4=bz(i+1,j  ,k)  
-            bz5=bz(i+1,j+1,k+1)
-            bz6=bz(i  ,j+1,k+1)
-            bz7=bz(i  ,j  ,k+1)
-            bz8=bz(i+1,j  ,k+1)
-
-            vixa=(1.-iflag)*(1.5*vix(i,j,k)-0.5*vixo(i,j,k))&
-                +iflag*vix(i,j,k)
-            viya=(1.-iflag)*(1.5*viy(i,j,k)-0.5*viyo(i,j,k))&
-                +iflag*viy(i,j,k)
-            viza=(1.-iflag)*(1.5*viz(i,j,k)-0.5*vizo(i,j,k))&
-                +iflag*viz(i,j,k)
-
-            dena=iflag*0.5*(den(i,j,k)+deno(i,j,k))&
-                +(1.-iflag)*den(i,j,k)
-            a=one/dena
-
-            dxa=a/(4.*meshX%dxc(i))
-            dya=a/(4.*meshY%dxc(j+1))  ! integer index in y direction starts at 0
-            dza=a/(4.*meshZ%dxc(k+1))  ! integer index in z direction starts at 0
-
-            dbxdy= bx(i+1,j+1,k+1)+bx(i  ,j+1,k+1)&
-                +bx(i  ,j+1,k  )+bx(i+1,j+1,k  )&
-                -bx(i+1,j  ,k+1)-bx(i  ,j  ,k+1)&
-                -bx(i  ,j  ,k  )-bx(i+1,j  ,k  )
-            dbxdz= bx(i+1,j+1,k+1)+bx(i  ,j+1,k+1)&
-                +bx(i  ,j  ,k+1)+bx(i+1,j  ,k+1)&
-                -bx(i+1,j+1,k  )-bx(i  ,j+1,k  )&
-                -bx(i  ,j  ,k  )-bx(i+1,j ,k  )
-            dbydx= by(i+1,j+1,k+1)+by(i+1,j  ,k+1)&
-                +by(i+1,j  ,k  )+by(i+1,j+1,k  )&
-                -by(i  ,j+1,k+1)-by(i  ,j  ,k+1)&
-                -by(i  ,j  ,k  )-by(i  ,j+1,k  )
-            dbydz= by(i+1,j+1,k+1)+by(i  ,j+1,k+1)&
-                +by(i  ,j  ,k+1)+by(i+1,j  ,k+1)&
-                -by(i+1,j+1,k  )-by(i  ,j+1,k  )&
-                -by(i  ,j  ,k  )-by(i+1,j  ,k  )
-            dbzdx= bz(i+1,j+1,k+1)+bz(i+1,j  ,k+1)&
-                +bz(i+1,j  ,k  )+bz(i+1,j+1,k  )&
-                -bz(i  ,j+1,k+1)-bz(i  ,j  ,k+1)&
-                -bz(i  ,j  ,k  )-bz(i  ,j+1,k  )
-            dbzdy= bz(i+1,j+1,k+1)+bz(i  ,j+1,k+1)&
-                +bz(i  ,j+1,k  )+bz(i+1,j+1,k  )&
-                -bz(i+1,j  ,k+1)-bz(i  ,j  ,k+1)&
-                -bz(i  ,j  ,k  )-bz(i+1,j  ,k  )
-            curlbx_scalar=dya*dbzdy-dza*dbydz
-            curlby_scalar=dza*dbxdz-dxa*dbzdx
-            curlbz_scalar=dxa*dbydx-dya*dbxdy
-            bxav=.125*(bx1+bx2+bx3+bx4+bx5+bx6+bx7+bx8)
-            byav=.125*(by1+by2+by3+by4+by5+by6+by7+by8)
-            bzav=.125*(bz1+bz2+bz3+bz4+bz5+bz6+bz7+bz8)
-            xj = curlbx_scalar
-            yj = curlby_scalar
-            zj = curlbz_scalar
-
-            ! From eta_par conditional
-            bxx = bxav
-            byy = byav
-            bzz = bzav
-            btot = sqrt(bxx**2 + byy**2 + bzz**2)
-            curr_tot = max(1.d-12,sqrt(xj**2 + yj**2 + zj**2))
-            tenx = abs(eta(i,j,k)*bxx*xj/(btot*curr_tot))
-            tenx = min(resis,tenx)
-            tenx = tenx*xj
-            teny = abs(eta(i,j,k)*byy*yj/(btot*curr_tot))
-            teny = min(resis,teny)
-            teny = teny*yj
-            tenz = abs(eta(i,j,k)*bzz*zj/(btot*curr_tot))
-            tenz = min(resis,tenz)
-            tenz = tenz*zj
-            ! End content from eta_par conditional
-
-            ex(i,j,k)=(viza*byav-viya*bzav)+(curlby_scalar*bzav-curlbz_scalar*byav)&
-                    -dpedx(i,j,k)+tenx/a
-            ey(i,j,k)=(vixa*bzav-viza*bxav)+(curlbz_scalar*bxav-curlbx_scalar*bzav)&
-                    -dpedy(i,j,k)+teny/a
-            ez(i,j,k)=(viya*bxav-vixa*byav)+(curlbx_scalar*byav-curlby_scalar*bxav)&
-                    -dpedz(i,j,k)+tenz/a
-          enddo
-        enddo
-      enddo
-    endif
+    enddo
 
     ! boundary conditions
     call date_and_time(values=time_begin(:,18))
@@ -744,14 +567,10 @@ module m_field
           bz2=bz(i  ,j+1,k)  
           bz3=bz(i  ,j  ,k)  
           bz4=bz(i+1,j  ,k)  
-          vixa=(1.-iflag)*(1.5*vix(i,j,k)-0.5*vixo(i,j,k))&
-              +iflag*vix(i,j,k)
-          viya=(1.-iflag)*(1.5*viy(i,j,k)-0.5*viyo(i,j,k))&
-              +iflag*viy(i,j,k)
-          viza=(1.-iflag)*(1.5*viz(i,j,k)-0.5*vizo(i,j,k))&
-              +iflag*viz(i,j,k)
-          dena=iflag*0.5*(den(i,j,k)+deno(i,j,k))&
-              +(1.-iflag)*den(i,j,k)
+          vixa=(1.-iflag)*(1.5*vix(i,j,k)-0.5*vixo(i,j,k))+iflag*vix(i,j,k)
+          viya=(1.-iflag)*(1.5*viy(i,j,k)-0.5*viyo(i,j,k))+iflag*viy(i,j,k)
+          viza=(1.-iflag)*(1.5*viz(i,j,k)-0.5*vizo(i,j,k))+iflag*viz(i,j,k)
+          dena=iflag*0.5*(den(i,j,k)+deno(i,j,k))+(1.-iflag)*den(i,j,k)
           a=1/dena
 
           dxa=a/(2.*meshX%dxc(i))
