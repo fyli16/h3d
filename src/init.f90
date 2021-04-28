@@ -423,7 +423,7 @@ module m_init
     call MPI_BCAST(itrestart    ,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
 
     ! read in restart data
-    call write_read_restart_files(-1.0)  
+    call read_restart 
     call MPI_BCAST(itrestart,1,MPI_INTEGER8,0,MPI_COMM_WORLD,IERR)
     ! modify start and finish steps of iteration
     itstart = itrestart; it = itstart

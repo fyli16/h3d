@@ -72,11 +72,12 @@ num_wave_cycles = 32,
 ! ------------------ diagnostic control ----------------!
 n_print = 100,  ! frequency at which to print simulation progression
 
-n_write_mesh = 1000, ! frequency at which to write mesh data 
-n_write_energy = 100, ! frequency at which to write integrated energy data
-n_write_probes = 0, ! frequency at which to write field probe data
-n_write_tracking = 0, ! frequency at which to write tracking particle data
-n_write_particle = 0, ! frequency at which to write particles within a volume
+n_diag_mesh = 1000, ! frequency at which to write mesh data 
+n_diag_ene_hist = 100, ! frequency at which to write integrated energy data
+n_diag_probe = 0, ! frequency at which to write field probe data
+n_diag_tracking = 0, ! frequency at which to write tracking particle data
+n_diag_particle = 0, ! frequency at which to write particles within a volume
+
 n_write_restart = 0, ! frequency at which to write restart files
 
 tracking_binary = .true. ! write tracking data in binary (unformatted) or formatted form

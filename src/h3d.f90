@@ -44,7 +44,7 @@ subroutine run_sim
   use m_eta
   use m_particle
   use m_field
-  use m_diagnostics
+  use m_diag
   implicit none 
 
   integer :: i
@@ -150,43 +150,43 @@ subroutine close_sim
     print*, "*** Run completed *** "
     print*, " "
     print*, " "
-    print*, "total time                    (s)          =",time_elapsed(1)
-    print*, "   subroutine cal_eta         (s)          =",time_elapsed(2)
-    print*, "   subroutine trans           (s)          =",time_elapsed(3)
-    print*, "   subroutine sort            (s)          =",time_elapsed(4)
-    print*, "   subroutine field           (s)          =",time_elapsed(5)
-    print*, "   subroutine diagnostics     (s)          =",time_elapsed(6)
+    print*, "total time                        (s)          =",time_elapsed(1)
+    print*, "   sub cal_eta                    (s)          =",time_elapsed(2)
+    print*, "   sub trans                      (s)          =",time_elapsed(3)
+    print*, "   sub sort                       (s)          =",time_elapsed(4)
+    print*, "   sub field                      (s)          =",time_elapsed(5)
+    print*, "   sub diag                       (s)          =",time_elapsed(6)
     print*, " "
     print*, " "
     print*, "In subroutine trans," 
-    print*, "   subroutine parmov          (s)          =",time_elapsed(31)
-    print*, "   subroutine energy          (s)          =",time_elapsed(32)
-    print*, "   total trans                (s)          =",time_elapsed(3)
+    print*, "   sub parmov                     (s)          =",time_elapsed(31)
+    print*, "   sub energy                     (s)          =",time_elapsed(32)
+    print*, "   total trans                    (s)          =",time_elapsed(3)
     print*, " "
     print*, " "
     print*, "In subroutine parmov,"
-    print*, "   push                       (s)          =",time_elapsed(33)
-    print*, "   particle_boundary          (s)          =",time_elapsed(34)
-    print*, "   moment calculation         (s)          =",time_elapsed(35)
-    print*, "   total parmov               (s)          =",time_elapsed(31)
+    print*, "   sub push                       (s)          =",time_elapsed(33)
+    print*, "   sub particle_boundary          (s)          =",time_elapsed(34)
+    print*, "   sub moment_calculation         (s)          =",time_elapsed(35)
+    print*, "   total parmov                   (s)          =",time_elapsed(31)
     print*, " "
     print*, " "
     print*, "In subroutine field,"
-    print*, "   subroutine pressgrad       (s)          =",time_elapsed(51)
-    print*, "   subroutine bcalc           (s)          =",time_elapsed(52)
-    print*, "   subroutine ecalc           (s)          =",time_elapsed(53)
-    print*, "   subroutine focalc          (s)          =",time_elapsed(54)
-    print*, "   total field                (s)          =",time_elapsed(5)
+    print*, "   sub pressgrad                  (s)          =",time_elapsed(51)
+    print*, "   sub bcalc                      (s)          =",time_elapsed(52)
+    print*, "   sub ecalc                      (s)          =",time_elapsed(53)
+    print*, "   sub focalc                     (s)          =",time_elapsed(54)
+    print*, "   total field                    (s)          =",time_elapsed(5)
     print*, " "
     print*, " "
-    print*, "In subroutine diagnostics,"
-    print*, "   write_mesh_data            (s)          =",time_elapsed(61)
-    print*, "   diag_energy_hist           (s)          =",time_elapsed(62)
-    print*, "   write_particle_in_volume   (s)          =",time_elapsed(63)
-    print*, "   virtual_probes             (s)          =",time_elapsed(64)
-    print*, "   track_particle             (s)          =",time_elapsed(65)
-    print*, "   write_restart_files        (s)          =",time_elapsed(66)
-    print*, "   total diagnostics          (s)          =",time_elapsed(6)
+    print*, "In subroutine diag,"
+    print*, "   sub diag_mesh                  (s)          =",time_elapsed(61)
+    print*, "   sub diag_ene_hist              (s)          =",time_elapsed(62)
+    print*, "   sub diag_particle              (s)          =",time_elapsed(63)
+    print*, "   sub diag_probe                 (s)          =",time_elapsed(64)
+    print*, "   sub diag_tracking              (s)          =",time_elapsed(65)
+    print*, "   sub write_restart              (s)          =",time_elapsed(66)
+    print*, "   total diag                     (s)          =",time_elapsed(6)
   endif
 
   call MPI_FINALIZE(IERR)

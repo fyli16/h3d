@@ -6,7 +6,7 @@
 !---------------------------------------------------------------------
 ! user diagnostics
 !---------------------------------------------------------------------
-module m_diagnostics
+module m_diag
   use m_parameter
   use m_io
   use m_particle
@@ -14,8 +14,9 @@ module m_diagnostics
 
   contains 
   
-  subroutine diagnostics
+  subroutine diag
     integer :: i
+
     ! convert 'it' to char and broadcast to all ranks,
     ! which will be used in file dumps by rank.
     if (myid==0) then
@@ -28,7 +29,7 @@ module m_diagnostics
 
     ! write mesh data
     call date_and_time(values=time_begin(:,61))
-    if ( n_write_mesh>0 .and. mod(it,n_write_mesh)==0 ) then
+    if ( n_diag_mesh>0 .and. mod(it,n_diag_mesh)==0 ) then
       ! this block is not executed when MPI_IO_format=.true.
       if (myid==0 .and. .not.MPI_IO_format) then
         call open_files
@@ -40,7 +41,7 @@ module m_diagnostics
         call cal_temp_2d
       endif
       ! write data
-      call write_mesh_data
+      call diag_mesh
       ! this block is not executed when MPI_IO_format=.true.
       if (myid==0 .and. .not.MPI_IO_format) then
         do i = 1, 25
@@ -51,28 +52,30 @@ module m_diagnostics
     call date_and_time(values=time_end(:,61))
     call add_time(time_begin(1,61),time_end(1,61),time_elapsed(61))
 
-    ! write history data: energy.dat
+    ! write energy history data: energy.dat
     call date_and_time(values=time_begin(:,62))
     if (it==itstart) call open_hist_files  ! open files at the first step
-    call diag_energy_hist
+    if ( myid==0 .and. n_diag_ene_hist>0 .and. mod(it,n_diag_ene_hist)==0 ) then
+      call diag_ene_hist
+    endif 
     call date_and_time(values=time_end(:,62))
     call add_time(time_begin(1,62),time_end(1,62),time_elapsed(62))
       
     ! write particles (within a volume)
     call date_and_time(values=time_begin(:,63))
-    if (n_write_particle>0 .and. mod(it,n_write_particle)==0) then
-      call write_particle_in_volume
+    if (n_diag_particle>0 .and. mod(it,n_diag_particle)==0) then
+      call diag_particle
     endif
     call date_and_time(values=time_end(:,63))
     call add_time(time_begin(1,63),time_end(1,63),time_elapsed(63))
 
     ! write probe data
     call date_and_time(values=time_begin(:,64))
-    if ( n_write_probes>0 .and. mod(it,n_write_probes)==0 ) then
+    if ( n_diag_probe>0 .and. mod(it,n_diag_probe)==0 ) then
       if (tracking_mpi) then
-        call virtual_probes_mpi
+        call diag_probe_mpi
       else
-        call virtual_probes
+        call diag_probe
       endif
     endif 
     call date_and_time(values=time_end(:,64))
@@ -80,11 +83,11 @@ module m_diagnostics
 
     ! write particle tracking data
     call date_and_time(values=time_begin(:,65))
-    if ( n_write_tracking>0 .and. mod(it,n_write_tracking)>0 ) then
+    if ( n_diag_tracking>0 .and. mod(it,n_diag_tracking)>0 ) then
       if (tracking_mpi) then
-        call track_particles_mpi
+        call diag_tracking_mpi
       else
-        call track_particles
+        call diag_tracking
       endif
     endif 
     call date_and_time(values=time_end(:,65))
@@ -94,7 +97,7 @@ module m_diagnostics
     call date_and_time(values=time_begin(:,66))
     if ( n_write_restart>0 .and. it>itstart .and. mod(it,n_write_restart)==0 ) then
       itrestart = it
-      call write_read_restart_files(1.0)
+      call write_restart
       call MPI_BARRIER(MPI_COMM_WORLD,IERR)
       ! write info of this dump into file
       if (myid == 0) then
@@ -112,24 +115,22 @@ module m_diagnostics
     call date_and_time(values=time_end(:,66))
     call add_time(time_begin(1,66),time_end(1,66),time_elapsed(66))
 
-  end subroutine diagnostics
+  end subroutine diag
 
 
   !---------------------------------------------------------------------
   ! write energy history data
   !---------------------------------------------------------------------
-  subroutine diag_energy_hist
-    if ( myid==0 .and. n_write_energy>0 .and. mod(it,n_write_energy)==0 ) then
-      write(11,*) it, efld, bfld, efluid, ethermal, eptcl ! energy.dat
-      ! write(14,*) it, time_elapsed(1:40)  ! time.dat 
-    endif
-  end subroutine diag_energy_hist
+  subroutine diag_ene_hist
+    write(11,*) it, efld, bfld, efluid, ethermal, eptcl ! energy.dat
+    ! write(14,*) it, time_elapsed(1:40)  ! time.dat 
+  end subroutine diag_ene_hist
 
 
   !---------------------------------------------------------------------
   ! virtual probes
   !---------------------------------------------------------------------
-  subroutine virtual_probes
+  subroutine diag_probe
     integer :: i,j,k,m,bufsize
     double precision, dimension(nprobes) :: factor
 
@@ -171,13 +172,13 @@ module m_diagnostics
         call MPI_Send(buf, bufsize, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, ierr)
       endif
     endif
-  end subroutine virtual_probes
+  end subroutine diag_probe
 
 
   !---------------------------------------------------------------------
   ! write field probe data by MPI rank
   !---------------------------------------------------------------------
-  subroutine virtual_probes_mpi
+  subroutine diag_probe_mpi
 
     integer :: i, j, k, m, bufsize
     double precision, dimension(nprobes) :: factor
@@ -187,13 +188,13 @@ module m_diagnostics
           ex(2,jb,kb)*factor(1), ey(2,jb,kb)*factor(2), ez(2,jb,kb)*factor(3), &
           bx(2,jb,kb)*factor(4), by(2,jb,kb)*factor(5), bz(2,jb,kb)*factor(6)
 
-  end subroutine virtual_probes_mpi
+  end subroutine diag_probe_mpi
 
 
   !---------------------------------------------------------------------
   ! track particle data
   !---------------------------------------------------------------------
-  subroutine track_particles
+  subroutine diag_tracking
     double precision, dimension(tracking_width,nspec*maxtags) :: buf_p2
     integer :: iix,iiy,iiz,is, isize, m, n,l,i,k,ii
 
@@ -246,18 +247,16 @@ module m_diagnostics
       call MPI_Send(buf_p1, ntot*tracking_width, MPI_DOUBLE, 0, myid, MPI_COMM_WORLD, ierr)
     endif
 
-  end subroutine track_particles
+  end subroutine diag_tracking
 
 
   !---------------------------------------------------------------------
   ! write tracking particles by MPI rank
   !---------------------------------------------------------------------
-  subroutine track_particles_mpi
-
+  subroutine diag_tracking_mpi
     write(13) it, ntot
     write(13) buf_p1(:,1:ntot)
-
-  end subroutine track_particles_mpi
+  end subroutine diag_tracking_mpi
 
 
   ! !---------------------------------------------------------------------
@@ -278,4 +277,4 @@ module m_diagnostics
 
   ! end subroutine user_diagnostics_restart
 
-end module m_diagnostics
+end module m_diag

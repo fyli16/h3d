@@ -144,7 +144,7 @@ module m_io
   !---------------------------------------------------------------------
   ! write data
   !---------------------------------------------------------------------
-  subroutine write_mesh_data
+  subroutine diag_mesh
 
     integer :: is
     integer*8 :: irec_num, irec_del, irec_start
@@ -399,7 +399,7 @@ module m_io
 
     irec_num = irec_num + irec_del
 
-  end subroutine write_mesh_data
+  end subroutine diag_mesh
 
 
   !---------------------------------------------------------------------
@@ -407,7 +407,7 @@ module m_io
   ! rw = +1.0: write 
   ! rw = -1.0: read
   !---------------------------------------------------------------------
-  subroutine write_read_restart_files(rw)
+  subroutine wr_restart(rw)
     use m_particle
 
     integer*8 :: f_unit, np_count, is, ixe, iye, ize, noresete
@@ -786,11 +786,29 @@ module m_io
     call sortit  ! see 'utils.f90'
 
     return
-  end subroutine write_read_restart_files
+  end subroutine wr_restart
 
 
   !---------------------------------------------------------------------
-  subroutine write_particle_in_volume
+  ! write restart
+  !---------------------------------------------------------------------
+  subroutine write_restart
+    call wr_restart(1.0)
+  end subroutine write_restart
+
+
+  !---------------------------------------------------------------------
+  ! read restart
+  !---------------------------------------------------------------------
+  subroutine read_restart
+    call wr_restart(-1.0)
+  end subroutine read_restart
+
+
+  !---------------------------------------------------------------------
+  ! write particles within a volume
+  !---------------------------------------------------------------------
+  subroutine diag_particle
     use m_mesh
         
     real*8 :: fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8
@@ -883,17 +901,6 @@ module m_io
                 VYW(N_IN_VOLUME) = VY(np)
                 VZW(N_IN_VOLUME) = VZ(np)
                 QW(N_IN_VOLUME)  = QP(np)
-
-                ! Uniform mesh - Same as is in version 5.0
-                ! rx=hxi*x(l)+1.5000000000000001
-                ! ry=hyi*y(l)+0.5000000000000001d+00
-                ! rz=hzi*z(l)+0.5000000000000001d+00
-                ! ix=rx
-                ! iy=ry
-                ! iz=rz
-                ! fx=rx-ix
-                ! fy=ry-iy
-                ! fz=rz-iz
 
                 ! Nonuniform mesh - using MESH_UNMAP
                 rx=dtxi*MESH_UNMAP(meshX,x(l))+1.50000000000d+00
@@ -1030,7 +1037,7 @@ module m_io
     deallocate (XW,YW,ZW,VXW,VYW,VZW,QW,VWPAR,VWPERP1,VWPERP2)
 
   return
-  end subroutine write_particle_in_volume
+  end subroutine diag_particle
 
 
   !---------------------------------------------------------------------
