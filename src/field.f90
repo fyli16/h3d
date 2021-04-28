@@ -648,7 +648,7 @@ module m_field
     ! have latest information. Care must be exercised so that
     ! BCs are set wrt proecessor that corresponds to that location. 
     ! To that end, keep z loops set to limits of kb and ke.
-    call XREALBCC_PACK_E(fox,foy,foz,1_8,NX,NY,NZ)
+    call xrealbcc_pack_e(fox,foy,foz,1_8,nx,ny,nz)
 
     return
   end subroutine focalc
@@ -823,7 +823,7 @@ module m_field
   
     ! boundary conditions
     call date_and_time(values=time_begin(:,18))
-    call XREALBCC_PACK_E_2D(EX,EY,EZ,1_8,NX,NY,NZ)
+    call xrealbcc_pack_e_2d(ex,ey,ez,1_8,nx,ny,nz)
     call date_and_time(values=time_end(:,18))
     call add_time(time_begin(1,18),time_end(1,18),time_elapsed(18))
 
@@ -1055,7 +1055,7 @@ module m_field
     ! have latest information. Care must be exercised so that
     ! BCs are set wrt proecessor that corresponds to that location. 
     ! To that end, keep z loops set to limits of kb and ke.
-    call XREALBCC_PACK_E_2D(fox,foy,foz,1_8,NX,NY,NZ)
+    call xrealbcc_pack_e_2d(fox,foy,foz,1_8,nx,ny,nz)
 
     fox(1  ,:,:)=fox(nx1  ,:,:)
     foy(1  ,:,:)=foy(nx1  ,:,:)
