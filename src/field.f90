@@ -397,7 +397,7 @@ module m_field
 
     ! boundary conditions
     call date_and_time(values=time_begin(:,18))
-    call xrealbcc_pack_e(ex,ey,ex,1_8,nx,ny,nz)
+    call xrealbcc_pack_e(ex,ey,ez,1_8,nx,ny,nz)
     call date_and_time(values=time_end(:,18))
     call add_time(time_begin(1,18),time_end(1,18),time_elapsed(18))
 
