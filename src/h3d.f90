@@ -112,7 +112,7 @@ subroutine run_sim
 
     ! call user diagnostics
     call date_and_time(values=time_begin(:,6))
-    call diagnostics
+    call diag
     call date_and_time(values=time_end(:,6))
     call add_time(time_begin(1,6),time_end(1,6),time_elapsed(6))
 
