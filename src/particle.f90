@@ -1406,9 +1406,7 @@ module m_particle
       deno=den; vixo=vix; viyo=viy; vizo=viz
     endif
 
-    if (myid==0) print*, "before calling energy in trans"
-    if (mod(it,n_diag_energy)==0) call energy
-    if (myid==0) print*, "after calling energy in trans"
+    if ( mod(it,10)==0 ) call energy
 
     kbmin = kb-1; kbmax = ke+1
     jbmin = jb-1; jbmax = je+1
