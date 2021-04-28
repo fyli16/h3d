@@ -73,7 +73,7 @@ num_wave_cycles = 32,
 n_print = 100,  ! frequency at which to print simulation progression
 
 n_diag_mesh = 1000, ! frequency at which to write mesh data 
-n_diag_ene_hist = 100, ! frequency at which to write integrated energy data
+n_diag_energy = 100, ! frequency at which to write integrated energy data
 n_diag_probe = 0, ! frequency at which to write field probe data
 n_diag_tracking = 0, ! frequency at which to write tracking particle data
 n_diag_particle = 0, ! frequency at which to write particles within a volume

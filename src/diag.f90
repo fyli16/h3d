@@ -55,9 +55,8 @@ module m_diag
     ! write energy history data: energy.dat
     call date_and_time(values=time_begin(:,62))
     if (it==itstart) call open_hist_files  ! open files at the first step
-    if ( n_diag_ene_hist>0 .and. mod(it,n_diag_ene_hist)==0 ) then
-      call energy
-      if (myid==0) call diag_ene_hist
+    if ( myid==0 .and. n_diag_energy>0 .and. mod(it,n_diag_energy)==0 ) then
+      call diag_energy
     endif 
     call date_and_time(values=time_end(:,62))
     call add_time(time_begin(1,62),time_end(1,62),time_elapsed(62))
@@ -100,7 +99,7 @@ module m_diag
       itrestart = it
       call write_restart
       call MPI_BARRIER(MPI_COMM_WORLD,IERR)
-      ! write info of this dump into file
+      ! write misc info into file
       if (myid == 0) then
         open(unit=222, file=trim(restart_directory)//'restart_index.dat', status='unknown')
         write(222,*) restart_index, itrestart
@@ -122,10 +121,10 @@ module m_diag
   !---------------------------------------------------------------------
   ! write energy history data
   !---------------------------------------------------------------------
-  subroutine diag_ene_hist
+  subroutine diag_energy
     write(11,*) it, efld, bfld, efluid, ethermal, eptcl ! energy.dat
     ! write(14,*) it, time_elapsed(1:40)  ! time.dat 
-  end subroutine diag_ene_hist
+  end subroutine diag_energy
 
 
   !---------------------------------------------------------------------

@@ -1341,7 +1341,7 @@ module m_particle
     call date_and_time(values=time_end(:,31))
     call add_time(time_begin(1,31),time_end(1,31),time_elapsed(31))
 
-    ! what
+    ! density, velocity
     do is = 1, nspec
       do k = kb-1, ke+1
         do j = jb-1, je+1
@@ -1371,7 +1371,7 @@ module m_particle
       call xrealbcc_2d(viz,1_8,nx,ny,nz)
     endif
 
-    ! smooth density and velocity
+    ! smoothing density and velocity
     if (smoothing) then
       if (ndim /=1) then
         do i = 1, smooth_pass
@@ -1405,6 +1405,8 @@ module m_particle
     if (it == 0) then
       deno=den; vixo=vix; viyo=viy; vizo=viz
     endif
+
+    if (mod(it,n_diag_energy)==0) call energy
 
     kbmin = kb-1; kbmax = ke+1
     jbmin = jb-1; jbmax = je+1

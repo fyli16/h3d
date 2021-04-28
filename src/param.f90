@@ -74,7 +74,7 @@ module m_parameter
   integer*8, dimension(8) :: wall_clock_begin,wall_clock_end
   integer*8, dimension(5) :: npx, npy, npz
   integer*8 :: iterb, nxcel, nspec, n_sort, nx, ny, nz, n_print, &
-            n_diag_mesh, n_diag_ene_hist, n_diag_probe, n_diag_tracking, &
+            n_diag_mesh, n_diag_energy, n_diag_probe, n_diag_tracking, &
             n_diag_particle, n_write_restart, nskipx,nskipy,nskipz
 
   ! resistivity
@@ -136,7 +136,7 @@ module m_parameter
     ieta, resis, netax, netay, etamin, etamax, eta_par, eta_zs, &
     anisot, gamma, ave1, ave2, phib, smoothing, smooth_pass, &
     dB_B0, num_wave_cycles, &  ! init waves
-    n_print, n_diag_mesh, n_diag_ene_hist, n_diag_probe, & ! diagnostics
+    n_print, n_diag_mesh, n_diag_energy, n_diag_probe, & ! diagnostics
     n_diag_tracking, n_write_restart, n_diag_particle, &  
     tracking_binary, tracking_mpi, xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
     fxsho, nxcel, rcorr, ishape, teti  ! others
@@ -242,7 +242,7 @@ module m_parameter
     ! diagnostic control
     call MPI_BCAST(n_print                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_diag_mesh            ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(n_diag_ene_hist        ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_diag_energy          ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_diag_probe           ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_diag_tracking        ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_diag_particle        ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)

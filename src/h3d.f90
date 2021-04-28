@@ -175,7 +175,7 @@ subroutine close_sim
     print*, " "
     print*, "In diag,"
     print*, "   sub diag_mesh                  (s)          =",time_elapsed(61)
-    print*, "   sub diag_ene_hist              (s)          =",time_elapsed(62)
+    print*, "   sub diag_energy                (s)          =",time_elapsed(62)
     print*, "   sub diag_particle              (s)          =",time_elapsed(63)
     print*, "   sub diag_probe                 (s)          =",time_elapsed(64)
     print*, "   sub diag_tracking              (s)          =",time_elapsed(65)
