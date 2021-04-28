@@ -1408,7 +1408,7 @@ module m_particle
 
     ! calculate field, fluid, and particle energy
     call date_and_time(values=time_begin(:,32))
-    if (mod(it,n_write_energy)==0) call energy
+    if (mod(it,n_diag_ene_hist)==0) call energy
     call date_and_time(values=time_end(:,32))
     call add_time(time_begin(1,32),time_end(1,32),time_elapsed(32))
 
