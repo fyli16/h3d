@@ -11,7 +11,6 @@ program h3d
   use m_init
   implicit none
 
-  ! ---- init sim. ---- !
   ! read input deck
   call init_input
   ! MPI domain decomposition 
@@ -27,10 +26,10 @@ program h3d
     call init_wavepart 
   endif 
 
-  ! ---- main loops --- !
+  ! main simulation loops
   call run_sim
 
-  ! --- close sim. --- !
+  ! close program and exit
   call close_sim
 
 end program h3d

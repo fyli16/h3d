@@ -10,7 +10,7 @@ module m_field
   !---------------------------------------------------------------------
   subroutine field
     call date_and_time(values=time_begin(:,51))
-    call pressgrad(1)
+    call pressgrad(1) ! full step at N
     call date_and_time(values=time_end(:,51))
     call add_time(time_begin(1,51), time_end(1,51), time_elapsed(51))
 
@@ -20,7 +20,7 @@ module m_field
     call add_time(time_begin(1,52), time_end(1,52), time_elapsed(52))
 
     call date_and_time(values=time_begin(:,51))
-    call pressgrad(0)
+    call pressgrad(0) ! half step N+1/2
     call date_and_time(values=time_end(:,51))
     call add_time(time_begin(1,51), time_end(1,51), time_elapsed(51))
 
@@ -58,8 +58,8 @@ module m_field
           dena = iflag*den(i,j,k) + (1-iflag)*denh(i,j,k)
           a = one/dena
           dxa=a/(4.*(meshX%dxn(i  )+meshX%dxn(i+1)))
-          dya=a/(4.*(meshY%dxn(j+1)+meshY%dxn(j+2)))  ! integer index in y direction starts at 0
-          dza=a/(4.*(meshZ%dxn(k+1)+meshZ%dxn(k+2)))  ! integer index in z direction starts at 0
+          dya=a/(4.*(meshY%dxn(j+1)+meshY%dxn(j+2))) ! integer index in y direction starts at 0
+          dza=a/(4.*(meshZ%dxn(k+1)+meshZ%dxn(k+2))) ! integer index in z direction starts at 0
 
           dpedx(i,j,k) = ( (pe(i+1,j-1,k+1)+2.*pe(i+1,j,k+1) + pe(i+1,j+1,k+1))/4. &
                 + 2.*(pe(i+1,j-1,k  )+2.*pe(i+1,j,k  )+pe(i+1,j+1,k  ))/4. &
@@ -95,87 +95,51 @@ module m_field
   subroutine ecalc( iflag )
     integer :: iflag
     integer*8 :: i,j,k
-    real*8 :: tenx,teny,tenz,xj,yj,zj,bxx,byy,bzz,btot,tjdotb &
-                      ,curr_tot
-    real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8 
-    real*8 :: by1,by2,by3,by4,by5,by6,by7,by8 
-    real*8 :: bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8  
+    real*8 :: tenx,teny,tenz,xj,yj,zj,bxx,byy,bzz,btot,tjdotb,curr_tot
     real*8 :: vixa, viya, viza, dena, a, dxa, dya, dza 
     real*8 :: dbxdy, dbxdz, dbydx, dbydz, dbzdx, dbzdy 
     real*8 :: curlbx_scalar,curlby_scalar,curlbz_scalar
     real*8 :: bxav, byav, bzav  
-    real*8 :: dexdy, dexdz, deydx, deydz, dezdx,dezdy  
+    real*8 :: dexdy, dexdz, deydx, deydz, dezdx, dezdy  
 
-    do k = kb,ke
-      do j = jb,je
-        do i=2,nx1
-          bx1=bx(i+1,j+1,k)  
-          bx2=bx(i  ,j+1,k)  
-          bx3=bx(i  ,j  ,k)  
-          bx4=bx(i+1,j  ,k)  
-          bx5=bx(i+1,j+1,k+1)
-          bx6=bx(i  ,j+1,k+1)
-          bx7=bx(i  ,j  ,k+1)
-          bx8=bx(i+1,j  ,k+1)
-          by1=by(i+1,j+1,k)  
-          by2=by(i  ,j+1,k)  
-          by3=by(i  ,j  ,k)  
-          by4=by(i+1,j  ,k)  
-          by5=by(i+1,j+1,k+1)
-          by6=by(i  ,j+1,k+1)
-          by7=by(i  ,j  ,k+1)
-          by8=by(i+1,j  ,k+1)
-          bz1=bz(i+1,j+1,k)  
-          bz2=bz(i  ,j+1,k)  
-          bz3=bz(i  ,j  ,k)  
-          bz4=bz(i+1,j  ,k)  
-          bz5=bz(i+1,j+1,k+1)
-          bz6=bz(i  ,j+1,k+1)
-          bz7=bz(i  ,j  ,k+1)
-          bz8=bz(i+1,j  ,k+1)
-
-          vixa=(1.-iflag)*(1.5*vix(i,j,k)-0.5*vixo(i,j,k))+iflag*vix(i,j,k)
-          viya=(1.-iflag)*(1.5*viy(i,j,k)-0.5*viyo(i,j,k))+iflag*viy(i,j,k)
-          viza=(1.-iflag)*(1.5*viz(i,j,k)-0.5*vizo(i,j,k))+iflag*viz(i,j,k)
+    do k = kb, ke
+      do j = jb, je
+        do i = 2, nx1
+          vixa = (1.-iflag)*(1.5*vix(i,j,k)-0.5*vixo(i,j,k)) + iflag*vix(i,j,k)
+          viya = (1.-iflag)*(1.5*viy(i,j,k)-0.5*viyo(i,j,k)) + iflag*viy(i,j,k)
+          viza = (1.-iflag)*(1.5*viz(i,j,k)-0.5*vizo(i,j,k)) + iflag*viz(i,j,k)
 
           ! dena=iflag*den(i,j,k) + (1-iflag)*denh(i,j,k)
-          dena=iflag*0.5*(den(i,j,k)+deno(i,j,k))+(1.-iflag)*den(i,j,k)
-          a=one/dena
+          dena = iflag*0.5*(den(i,j,k)+deno(i,j,k)) + (1.-iflag)*den(i,j,k)
+          a = one/dena
 
-          dxa=a/(4.*meshX%dxc(i))
-          dya=a/(4.*meshY%dxc(j+1)) ! integer index in y direction starts at 0
-          dza=a/(4.*meshZ%dxc(k+1)) ! integer index in z direction starts at 0
+          dxa = a/(4.*meshX%dxc(i))
+          dya = a/(4.*meshY%dxc(j+1)) ! integer index in y direction starts at 0
+          dza = a/(4.*meshZ%dxc(k+1)) ! integer index in z direction starts at 0
 
-          dbxdy= bx(i+1,j+1,k+1)+bx(i  ,j+1,k+1)&
-              +bx(i  ,j+1,k  )+bx(i+1,j+1,k  )&
-              -bx(i+1,j  ,k+1)-bx(i  ,j  ,k+1)&
-              -bx(i  ,j  ,k  )-bx(i+1,j  ,k  )
-          dbxdz= bx(i+1,j+1,k+1)+bx(i  ,j+1,k+1)&
-              +bx(i  ,j  ,k+1)+bx(i+1,j  ,k+1)&
-              -bx(i+1,j+1,k  )-bx(i  ,j+1,k  )&
-              -bx(i  ,j  ,k  )-bx(i+1,j ,k  )
-          dbydx= by(i+1,j+1,k+1)+by(i+1,j  ,k+1)&
-              +by(i+1,j  ,k  )+by(i+1,j+1,k  )&
-              -by(i  ,j+1,k+1)-by(i  ,j  ,k+1)&
-              -by(i  ,j  ,k  )-by(i  ,j+1,k  )
-          dbydz= by(i+1,j+1,k+1)+by(i  ,j+1,k+1)&
-              +by(i  ,j  ,k+1)+by(i+1,j  ,k+1)&
-              -by(i+1,j+1,k  )-by(i  ,j+1,k  )&
-              -by(i  ,j  ,k  )-by(i+1,j  ,k  )
-          dbzdx= bz(i+1,j+1,k+1)+bz(i+1,j  ,k+1)&
-              +bz(i+1,j  ,k  )+bz(i+1,j+1,k  )&
-              -bz(i  ,j+1,k+1)-bz(i  ,j  ,k+1)&
-              -bz(i  ,j  ,k  )-bz(i  ,j+1,k  )
-          dbzdy= bz(i+1,j+1,k+1)+bz(i  ,j+1,k+1)&
-              +bz(i  ,j+1,k  )+bz(i+1,j+1,k  )&
-              -bz(i+1,j  ,k+1)-bz(i  ,j  ,k+1)&
-              -bz(i  ,j  ,k  )-bz(i+1,j  ,k  )
-          curlbx_scalar=dya*dbzdy-dza*dbydz
-          curlby_scalar=dza*dbxdz-dxa*dbzdx
-          curlbz_scalar=dxa*dbydx-dya*dbxdy
-          bxav=.125*(bx1+bx2+bx3+bx4+bx5+bx6+bx7+bx8)
-          byav=.125*(by1+by2+by3+by4+by5+by6+by7+by8)
-          bzav=.125*(bz1+bz2+bz3+bz4+bz5+bz6+bz7+bz8)
+          dbxdy = bx(i+1,j+1,k+1) + bx(i,j+1,k+1) + bx(i,j+1,k) + bx(i+1,j+1,k) &
+                - bx(i+1,j,k+1) - bx(i,j,k+1) - bx(i,j,k) - bx(i+1,j,k)
+          dbxdz = bx(i+1,j+1,k+1)+bx(i  ,j+1,k+1)+bx(i  ,j  ,k+1)+bx(i+1,j  ,k+1) &
+                -bx(i+1,j+1,k  )-bx(i  ,j+1,k  )-bx(i  ,j  ,k  )-bx(i+1,j ,k  )
+          dbydx = by(i+1,j+1,k+1)+by(i+1,j  ,k+1)+by(i+1,j  ,k  )+by(i+1,j+1,k  )&
+                -by(i  ,j+1,k+1)-by(i  ,j  ,k+1)-by(i  ,j  ,k  )-by(i  ,j+1,k  )
+          dbydz= by(i+1,j+1,k+1)+by(i  ,j+1,k+1)+by(i  ,j  ,k+1)+by(i+1,j  ,k+1)&
+                -by(i+1,j+1,k  )-by(i  ,j+1,k  )-by(i  ,j  ,k  )-by(i+1,j  ,k  )
+          dbzdx= bz(i+1,j+1,k+1)+bz(i+1,j  ,k+1)+bz(i+1,j  ,k  )+bz(i+1,j+1,k  )&
+                -bz(i  ,j+1,k+1)-bz(i  ,j  ,k+1)-bz(i  ,j  ,k  )-bz(i  ,j+1,k  )
+          dbzdy= bz(i+1,j+1,k+1)+bz(i  ,j+1,k+1)+bz(i  ,j+1,k  )+bz(i+1,j+1,k  )&
+                -bz(i+1,j  ,k+1)-bz(i  ,j  ,k+1)-bz(i  ,j  ,k  )-bz(i+1,j  ,k  )
+
+          curlbx_scalar = dya*dbzdy - dza*dbydz
+          curlby_scalar = dza*dbxdz - dxa*dbzdx
+          curlbz_scalar = dxa*dbydx - dya*dbxdy
+
+          bxav = 0.125*( bx(i+1,j+1,k) + bx(i,j+1,k) + bx(i,j,k) + bx(i+1,j ,k) &
+                  + bx(i+1,j+1,k+1) + bx(i,j+1,k+1) + bx(i,j,k+1) + bx(i+1,j,k+1) )
+          byav = 0.125*( by(i+1,j+1,k) + by(i,j+1,k) + by(i,j,k) + by(i+1,j ,k) &
+                  + by(i+1,j+1,k+1) + by(i,j+1,k+1) + by(i,j,k+1) + by(i+1,j,k+1) )
+          bzav = 0.125*( bz(i+1,j+1,k) + bz(i,j+1,k) + bz(i,j,k) + bz(i+1,j ,k) &
+                  + bz(i+1,j+1,k+1) + bz(i,j+1,k+1) + bz(i,j,k+1) + bz(i+1,j,k+1) )
           xj = curlbx_scalar
           yj = curlby_scalar
           zj = curlbz_scalar
@@ -208,12 +172,10 @@ module m_field
             endif 
           endif 
 
-          ex(i,j,k)=(viza*byav-viya*bzav)+(curlby_scalar*bzav-curlbz_scalar*byav)&
-                  -dpedx(i,j,k)+tenx/a
-          ey(i,j,k)=(vixa*bzav-viza*bxav)+(curlbz_scalar*bxav-curlbx_scalar*bzav)&
-                  -dpedy(i,j,k)+teny/a
-          ez(i,j,k)=(viya*bxav-vixa*byav)+(curlbx_scalar*byav-curlby_scalar*bxav)&
-                  -dpedz(i,j,k)+tenz/a
+          ex(i,j,k) = (viza*byav-viya*bzav) + (curlby_scalar*bzav-curlbz_scalar*byav) - dpedx(i,j,k) + tenx/a
+          ey(i,j,k) = (vixa*bzav-viza*bxav) + (curlbz_scalar*bxav-curlbx_scalar*bzav) - dpedy(i,j,k) + teny/a
+          ez(i,j,k) = (viya*bxav-vixa*byav) + (curlbx_scalar*byav-curlby_scalar*bxav) - dpedz(i,j,k) + tenz/a 
+
         enddo
       enddo
     enddo
@@ -253,9 +215,9 @@ module m_field
                 - ez(i  ,j-1,k  ) - ez(i-1,j-1,k  )   &
                 - ez(i-1,j-1,k-1) - ez(i  ,j-1,k-1)
 
-          curlex(i,j,k)=dezdy/(4.*meshY%dxn(j+1))-deydz/(4.*meshZ%dxn(k+1))        ! integer index in y and z directions start  at 0
-          curley(i,j,k)=dexdz/(4.*meshZ%dxn(k+1))-dezdx/(4.*meshX%dxn(i  ))        ! integer index in z       direction  starts at 0
-          curlez(i,j,k)=deydx/(4.*meshX%dxn(i  ))-dexdy/(4.*meshY%dxn(j+1))        ! integer index in y       direction  starts at 0
+          curlex(i,j,k) = dezdy/(4.*meshY%dxn(j+1)) - deydz/(4.*meshZ%dxn(k+1))        ! integer index in y and z directions start  at 0
+          curley(i,j,k) = dexdz/(4.*meshZ%dxn(k+1)) - dezdx/(4.*meshX%dxn(i  ))        ! integer index in z       direction  starts at 0
+          curlez(i,j,k) = deydx/(4.*meshX%dxn(i  )) - dexdy/(4.*meshY%dxn(j+1))        ! integer index in y       direction  starts at 0
         enddo
       enddo
     enddo
@@ -265,7 +227,7 @@ module m_field
 
 
   !---------------------------------------------------------------------
-  ! advances magnetic field
+  ! advance magnetic field
   !---------------------------------------------------------------------
   subroutine bcalc
     integer*8 :: i, j, k, ii
@@ -285,8 +247,7 @@ module m_field
       bxs=bx; bys=by; bzs=bz ! save B at start of subcycle
 
       ! R-K first part
-      call ecalc( 1 )
-        
+      call ecalc( 1 )    
       ! B = B(n)+dt*K1/2
       do k=kb,ke+1
         do j = jb,je+1
@@ -296,8 +257,7 @@ module m_field
             bz(i,j,k) = bzs(i,j,k) - dts2*curlez(i,j,k)
           enddo
         enddo
-      enddo
-        
+      enddo   
       ! temp1 = K1
       do k=kb,ke+1
         do j = jb,je+1
@@ -311,7 +271,6 @@ module m_field
         
       ! R-K part 2
       call ecalc(1)
-        
       ! B = B(n)+dt*K2/2
       do k=kb,ke+1
         do j = jb,je+1
@@ -322,7 +281,6 @@ module m_field
           enddo
         enddo
       enddo
-        
       ! temp2 = K2
       do k=kb,ke+1
         do j = jb,je+1
@@ -336,7 +294,6 @@ module m_field
         
       ! R-K part 3
       call ecalc(1)
-        
       ! B = B(n)+dt*K3
       do k=kb,ke+1
         do j = jb,je+1
@@ -347,7 +304,6 @@ module m_field
           enddo
         enddo
       enddo
-        
       ! temp3 = K3
       do k=kb,ke+1
         do j = jb,je+1
@@ -361,7 +317,6 @@ module m_field
         
       ! R-K  part 4
       call ecalc( 1 )
-
       ! B = B(n) + dt*(K1+2K2+2K3+K4)/6
       do k=kb,ke+1
         do j = jb,je+1
@@ -372,9 +327,10 @@ module m_field
           enddo
         enddo
       enddo
-        
+
       ! end of iteration loop
-      CALL XREALBCC_PACK_B(BX,BY,BZ,1_8,NX,NY,NZ)  
+      CALL xrealbcc_pack_b(bx,by,bz,1_8,nx,ny,nz) 
+
     end do
 
     return
@@ -570,6 +526,7 @@ module m_field
           vixa=(1.-iflag)*(1.5*vix(i,j,k)-0.5*vixo(i,j,k))+iflag*vix(i,j,k)
           viya=(1.-iflag)*(1.5*viy(i,j,k)-0.5*viyo(i,j,k))+iflag*viy(i,j,k)
           viza=(1.-iflag)*(1.5*viz(i,j,k)-0.5*vizo(i,j,k))+iflag*viz(i,j,k)
+          
           dena=iflag*0.5*(den(i,j,k)+deno(i,j,k))+(1.-iflag)*den(i,j,k)
           a=1/dena
 
@@ -754,7 +711,7 @@ module m_field
       by=bys-dts6*(tempy1+curley)
       bz=bzs-dts6*(tempz1+curlez)
 
-      call XREALBCC_PACK_B_2D(BX,BY,BZ,1_8,NX,NY,NZ)
+      call xrealbcc_pack_b_2d(bx,by,bz,1_8,nx,ny,nz)
       !VR: exchange X and Z info
       bx(1  ,:,:)=bx(nx1  ,:,:)
       by(1  ,:,:)=by(nx1  ,:,:)
