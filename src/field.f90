@@ -140,6 +140,7 @@ module m_field
                   + by(i+1,j+1,k+1) + by(i,j+1,k+1) + by(i,j,k+1) + by(i+1,j,k+1) )
           bzav = 0.125*( bz(i+1,j+1,k) + bz(i,j+1,k) + bz(i,j,k) + bz(i+1,j ,k) &
                   + bz(i+1,j+1,k+1) + bz(i,j+1,k+1) + bz(i,j,k+1) + bz(i+1,j,k+1) )
+
           xj = curlbx_scalar
           yj = curlby_scalar
           zj = curlbz_scalar
@@ -338,86 +339,53 @@ module m_field
 
 
   !---------------------------------------------------------------------
-  ! ??
+  ! compute friction force due to resistivity?
   !---------------------------------------------------------------------
   subroutine focalc
-    real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8
-    real*8 :: by1,by2,by3,by4,by5,by6,by7,by8
-    real*8 :: bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8
-    real*8 :: tenx,teny,tenz,xj,yj,zj,bxx,byy,bzz,btot,tjdotb,curr_tot
     integer*8 :: i,j,k
+    real*8 :: tenx,teny,tenz,xj,yj,zj,bxx,byy,bzz,btot,tjdotb,curr_tot
     real*8 :: dbxdy,dbydx,dbzdx,dbxdz,dbzdy,dbydz
     real*8 :: curlbx_scalar,curlby_scalar,curlbz_scalar,bxav,byav,bzav
 
     do k = kb, ke 
       do j = jb, je
         do i = 2, nx1
-          dbxdy= bx(i,j,k)+bx(i-1,j,k)&
-                +bx(i-1,j,k-1)+bx(i,j,k-1)&
-                -bx(i,j-1,k)-bx(i-1,j-1,k)&
-                -bx(i-1,j-1,k-1)-bx(i,j-1,k-1)
-          dbxdz= bx(i,j,k  )+bx(i-1,j,k  )&
-                +bx(i-1,j-1,k  )+bx(i,j-1,k  )&
-                -bx(i,j,k-1)-bx(i-1,j,k-1)&
-                -bx(i-1,j-1,k-1)-bx(i,j-1,k-1)
-          dbydx= by(i  ,j,k)+by(i  ,j-1,k)&
-                +by(i  ,j-1,k-1)+by(i  ,j,k-1)&
-                -by(i-1,j,k)-by(i-1,j-1,k)&
-                -by(i-1,j-1,k-1)-by(i-1,j,k-1)
-          dbydz= by(i,j,k  )+by(i-1,j,k  )&
-                +by(i-1,j-1,k  )+by(i,j-1,k  )&
-                -by(i,j,k-1)-by(i-1,j,k-1)&
-                -by(i-1,j-1,k-1)-by(i,j-1,k-1)
-          dbzdx= bz(i  ,j,k)+bz(i  ,j-1,k)&
-                +bz(i  ,j-1,k-1)+bz(i  ,j,k-1)&
-                -bz(i-1,j,k)-bz(i-1,j-1,k)&
-                -bz(i-1,j-1,k-1)-bz(i-1,j,k-1)
-          dbzdy= bz(i,j  ,k)+bz(i-1,j  ,k)&
-                +bz(i-1,j  ,k-1)+bz(i,j  ,k-1)&
-                -bz(i,j-1,k)-bz(i-1,j-1,k)&
-                -bz(i-1,j-1,k-1)-bz(i,j-1,k-1)
+          dbxdy= bx(i,j,k)+bx(i-1,j,k)+bx(i-1,j,k-1)+bx(i,j,k-1)&
+                -bx(i,j-1,k)-bx(i-1,j-1,k)-bx(i-1,j-1,k-1)-bx(i,j-1,k-1)
+          dbxdz= bx(i,j,k  )+bx(i-1,j,k  )+bx(i-1,j-1,k  )+bx(i,j-1,k  )&
+                -bx(i,j,k-1)-bx(i-1,j,k-1)-bx(i-1,j-1,k-1)-bx(i,j-1,k-1)
+          dbydx= by(i  ,j,k)+by(i  ,j-1,k)+by(i  ,j-1,k-1)+by(i  ,j,k-1)&
+                -by(i-1,j,k)-by(i-1,j-1,k)-by(i-1,j-1,k-1)-by(i-1,j,k-1)
+          dbydz= by(i,j,k  )+by(i-1,j,k  )+by(i-1,j-1,k  )+by(i,j-1,k  )&
+                -by(i,j,k-1)-by(i-1,j,k-1)-by(i-1,j-1,k-1)-by(i,j-1,k-1)
+          dbzdx= bz(i  ,j,k)+bz(i  ,j-1,k)+bz(i  ,j-1,k-1)+bz(i  ,j,k-1)&
+                -bz(i-1,j,k)-bz(i-1,j-1,k)-bz(i-1,j-1,k-1)-bz(i-1,j,k-1)
+          dbzdy= bz(i,j  ,k)+bz(i-1,j  ,k)+bz(i-1,j  ,k-1)+bz(i,j  ,k-1)&
+                -bz(i,j-1,k)-bz(i-1,j-1,k)-bz(i-1,j-1,k-1)-bz(i,j-1,k-1)
 
           curlbx_scalar=dbzdy/(4.*meshY%dxc(j+1))-dbydz/(4.*meshZ%dxc(k+1))
           curlby_scalar=dbxdz/(4.*meshZ%dxc(k+1))-dbzdx/(4.*meshX%dxc(i  ))
           curlbz_scalar=dbydx/(4.*meshX%dxc(i  ))-dbxdy/(4.*meshY%dxc(j+1))
 
           ! 6/25/2006 New eta_par option: tensor eta
-          bx1=bx(i+1,j+1,k)  
-          bx2=bx(i  ,j+1,k)  
-          bx3=bx(i  ,j  ,k)  
-          bx4=bx(i+1,j  ,k)  
-          bx5=bx(i+1,j+1,k+1)
-          bx6=bx(i  ,j+1,k+1)
-          bx7=bx(i  ,j  ,k+1)
-          bx8=bx(i+1,j  ,k+1)
-          by1=by(i+1,j+1,k)  
-          by2=by(i  ,j+1,k)  
-          by3=by(i  ,j  ,k)  
-          by4=by(i+1,j  ,k)  
-          by5=by(i+1,j+1,k+1)
-          by6=by(i  ,j+1,k+1)
-          by7=by(i  ,j  ,k+1)
-          by8=by(i+1,j  ,k+1)
-          bz1=bz(i+1,j+1,k)  
-          bz2=bz(i  ,j+1,k)  
-          bz3=bz(i  ,j  ,k)  
-          bz4=bz(i+1,j  ,k)  
-          bz5=bz(i+1,j+1,k+1)
-          bz6=bz(i  ,j+1,k+1)
-          bz7=bz(i  ,j  ,k+1)
-          bz8=bz(i+1,j  ,k+1)
-          bxav=.125*(bx1+bx2+bx3+bx4+bx5+bx6+bx7+bx8)
-          byav=.125*(by1+by2+by3+by4+by5+by6+by7+by8)
-          bzav=.125*(bz1+bz2+bz3+bz4+bz5+bz6+bz7+bz8)
+          bxav = 0.125*( bx(i+1,j+1,k) + bx(i,j+1,k) + bx(i,j,k) + bx(i+1,j ,k) &
+                  + bx(i+1,j+1,k+1) + bx(i,j+1,k+1) + bx(i,j,k+1) + bx(i+1,j,k+1) )
+          byav = 0.125*( by(i+1,j+1,k) + by(i,j+1,k) + by(i,j,k) + by(i+1,j ,k) &
+                  + by(i+1,j+1,k+1) + by(i,j+1,k+1) + by(i,j,k+1) + by(i+1,j,k+1) )
+          bzav = 0.125*( bz(i+1,j+1,k) + bz(i,j+1,k) + bz(i,j,k) + bz(i+1,j ,k) &
+                  + bz(i+1,j+1,k+1) + bz(i,j+1,k+1) + bz(i,j,k+1) + bz(i+1,j,k+1) )
+          
           xj = curlbx_scalar
           yj = curlby_scalar
           zj = curlbz_scalar
-          tenx=eta(i,j,k)*xj
-          teny=eta(i,j,k)*yj
-          tenz=eta(i,j,k)*zj
-          fox(i,j,k)=-tenx
-          foy(i,j,k)=-teny
-          foz(i,j,k)=-tenz
+
+          tenx = eta(i,j,k)*xj
+          teny = eta(i,j,k)*yj
+          tenz = eta(i,j,k)*zj
+
+          fox(i,j,k) = -tenx
+          foy(i,j,k) = -teny
+          foz(i,j,k) = -tenz
         enddo
       enddo
     enddo
@@ -523,6 +491,7 @@ module m_field
           bz2=bz(i  ,j+1,k)  
           bz3=bz(i  ,j  ,k)  
           bz4=bz(i+1,j  ,k)  
+
           vixa=(1.-iflag)*(1.5*vix(i,j,k)-0.5*vixo(i,j,k))+iflag*vix(i,j,k)
           viya=(1.-iflag)*(1.5*viy(i,j,k)-0.5*viyo(i,j,k))+iflag*viy(i,j,k)
           viza=(1.-iflag)*(1.5*viz(i,j,k)-0.5*vizo(i,j,k))+iflag*viz(i,j,k)
@@ -534,19 +503,17 @@ module m_field
           dya=a/(2.*meshY%dxc(j+1)) ! integer index in y direction starts at 0
           dza=a/(2.*meshZ%dxc(k+1)) ! integer index in z direction starts at 0
 
-          dbxdy=+bx(i  ,j+1,k  )+bx(i+1,j+1,k  )&
-                -bx(i  ,j  ,k  )-bx(i+1,j  ,k  )
-          dbxdz= 0.0
-          dbydx=+by(i+1,j  ,k  )+by(i+1,j+1,k  )&
-                -by(i  ,j  ,k  )-by(i  ,j+1,k  )
-          dbydz= 0.0
-          dbzdx=+bz(i+1,j  ,k  )+bz(i+1,j+1,k  )&
-                -bz(i  ,j  ,k  )-bz(i  ,j+1,k  )
-          dbzdy=+bz(i  ,j+1,k  )+bz(i+1,j+1,k  )&
-                -bz(i  ,j  ,k  )-bz(i+1,j  ,k  )
+          dbxdy = bx(i  ,j+1,k  )+bx(i+1,j+1,k  )-bx(i  ,j  ,k  )-bx(i+1,j  ,k  )
+          dbxdz = 0.0
+          dbydx = by(i+1,j  ,k  )+by(i+1,j+1,k  )-by(i  ,j  ,k  )-by(i  ,j+1,k  )
+          dbydz = 0.0
+          dbzdx = bz(i+1,j  ,k  )+bz(i+1,j+1,k  )-bz(i  ,j  ,k  )-bz(i  ,j+1,k  )
+          dbzdy = bz(i  ,j+1,k  )+bz(i+1,j+1,k  )-bz(i  ,j  ,k  )-bz(i+1,j  ,k  )
+
           curlbx_scalar=dya*dbzdy-dza*dbydz
           curlby_scalar=dza*dbxdz-dxa*dbzdx
           curlbz_scalar=dxa*dbydx-dya*dbxdy
+
           bxav=0.25*(bx1+bx2+bx3+bx4)
           byav=0.25*(by1+by2+by3+by4)
           bzav=0.25*(bz1+bz2+bz3+bz4)
@@ -590,9 +557,9 @@ module m_field
             endif
           endif
 
-          ex(i,j,k)=(viza*byav-viya*bzav)+(curlby_scalar*bzav-curlbz_scalar*byav)-dpedx(i,j,k)+tenx/a     
-          ey(i,j,k)=(vixa*bzav-viza*bxav)+(curlbz_scalar*bxav-curlbx_scalar*bzav)-dpedy(i,j,k)+teny/a     
-          ez(i,j,k)=(viya*bxav-vixa*byav)+(curlbx_scalar*byav-curlby_scalar*bxav)-dpedz(i,j,k)+tenz/a                     
+          ex(i,j,k) = (viza*byav-viya*bzav) + (curlby_scalar*bzav-curlbz_scalar*byav) - dpedx(i,j,k) + tenx/a     
+          ey(i,j,k) = (vixa*bzav-viza*bxav) + (curlbz_scalar*bxav-curlbx_scalar*bzav) - dpedy(i,j,k) + teny/a     
+          ez(i,j,k) = (viya*bxav-vixa*byav) + (curlbx_scalar*byav-curlby_scalar*bxav) - dpedz(i,j,k) + tenz/a                     
         enddo
       enddo
     enddo
@@ -666,12 +633,10 @@ module m_field
 
       ! R-K first part
       call ecalc_2d( 1 )
-  
       ! B = B(n)+dt*K1/2
       bx=bxs-dts2*curlex
       by=bys-dts2*curley
       bz=bzs-dts2*curlez
-
       ! temp1 = K1
       tempx1=curlex
       tempy1=curley
@@ -679,12 +644,10 @@ module m_field
 
       ! R-K part 2
       call ecalc_2d( 1 )
-  
       ! B = B(n)+dt*K2/2
       bx=bxs-dts2*curlex
       by=bys-dts2*curley
       bz=bzs-dts2*curlez
-
       ! temp2 = K2
       tempx1=tempx1+2.*curlex
       tempy1=tempy1+2.*curley
@@ -692,12 +655,10 @@ module m_field
 
       ! R-K  part 3
       call ecalc_2d( 1 )
-
       ! B = B(n)+dt*K3
       bx=bxs-dts*curlex
       by=bys-dts*curley
       bz=bzs-dts*curlez
-
       ! temp3 = K3
       tempx1=tempx1+2.*curlex
       tempy1=tempy1+2.*curley
@@ -705,7 +666,6 @@ module m_field
 
       ! R-K  part 4
       call ecalc_2d( 1 )
-  
       ! B = B(n) + dt*(K1+2K2+2K3+K4)/6
       bx=bxs-dts6*(tempx1+curlex)
       by=bys-dts6*(tempy1+curley)
@@ -772,9 +732,11 @@ module m_field
           bz2=bz(i  ,j+1,k)  
           bz3=bz(i  ,j  ,k)  
           bz4=bz(i+1,j  ,k)  
+
           bxav=.25*(bx1+bx2+bx3+bx4)
           byav=.25*(by1+by2+by3+by4)
           bzav=.25*(bz1+bz2+bz3+bz4)
+          
           xj = curlbx_scalar
           yj = curlby_scalar
           zj = curlbz_scalar
