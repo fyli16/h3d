@@ -21,9 +21,9 @@ OBJS =  param.of90 \
 		eta.of90 \
 		boundary.of90 \
 		io.of90\
+		restart.of90 \
 	 	diag.of90\
 		init.of90 \
-		restart.of90 \
 		h3d.of90
 
 $(EFILE): $(OBJS)
