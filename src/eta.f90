@@ -5,6 +5,17 @@ module m_eta
   contains 
 
   !---------------------------------------------------------------------
+  ! calculate resistivity (eta)
+  !---------------------------------------------------------------------
+  subroutine update_eta
+    if (ndim /= 1) then
+      call cal_eta_3d       
+    else
+      call cal_eta_2d    
+    endif
+  end subroutine update_eta
+
+  !---------------------------------------------------------------------
   !> calculate a resistivity that depends on physical quantities
   ! remember, eta and fo{x,y,z} are cell-centered quantities
   ! ghost cells are only used in diagnostic output
@@ -15,7 +26,7 @@ module m_eta
   ! (4) Homas method: 2nd derivative of current
   ! (5) (2) and (4) combined, with (4) reduced by a factor (1/5)
   !---------------------------------------------------------------------
-  subroutine cal_eta
+  subroutine cal_eta_3d
     use m_mesh
   
     real*8 :: ajl(nxmax, jb-1:jb+nylmax, kb-1:kb+nzlmax) 
@@ -294,7 +305,7 @@ module m_eta
 
     endif
 
-  end subroutine cal_eta
+  end subroutine cal_eta_3d
 
 
   !-----------------------------------------------------------------------

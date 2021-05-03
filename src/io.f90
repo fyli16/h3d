@@ -142,9 +142,9 @@ module m_io
 
 
   !---------------------------------------------------------------------
-  ! write data
+  ! write mesh data
   !---------------------------------------------------------------------
-  subroutine diag_mesh
+  subroutine write_mesh
 
     integer :: is
     integer*8 :: irec_num, irec_del, irec_start
@@ -408,8 +408,6 @@ module m_io
   ! rw = -1.0: read
   !---------------------------------------------------------------------
   subroutine rw_restart(rw)
-    use m_particle
-
     integer*8 :: f_unit, np_count, is, ixe, iye, ize, noresete
     real :: rw
     real*8, dimension(:), allocatable :: particle_tmp_array
@@ -782,8 +780,6 @@ module m_io
       endif
 
     endif
-      
-    call sortit  ! see 'utils.f90'
 
     return
   end subroutine rw_restart

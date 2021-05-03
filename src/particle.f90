@@ -5,6 +5,125 @@ module m_particle
 
   contains 
 
+  !-----------------------------------------------------------------
+  ! update particles
+  ! (computes velocities? what is the difference between vxs and vix?)
+  !-----------------------------------------------------------------
+  subroutine update_particles        
+    integer*8 :: is, i, j, k, jbmin, jbmax, kbmin, kbmax
+    real*8 :: dns_tmp
+
+    ! initialize sth
+    do is = 1, nspec
+      do k = kb-1, ke+1
+        do j = jb-1, je+1
+          do i = 1, nx2
+            dns(i,j,k,is)=1.e-10; dnsh(i,j,k,is)=1.e-10
+            vxs(i,j,k,is)=0.; vys(i,j,k,is)=0.; vzs(i,j,k,is)=0.
+            if (is==1) then
+              deno(i,j,k)=den(i,j,k)
+              vixo(i,j,k)=vix(i,j,k)
+              viyo(i,j,k)=viy(i,j,k)
+              vizo(i,j,k)=viz(i,j,k)
+              den(i,j,k)=0.
+              denh(i,j,k)=0.
+              vix(i,j,k)=0.
+              viy(i,j,k)=0.
+              viz(i,j,k)=0.
+            endif
+          enddo
+        enddo
+      enddo
+    enddo
+
+    ! push particles
+    call date_and_time(values=time_begin(:,31))
+    if (ndim /= 1) then
+      call parmov
+    else
+      call parmov_2d
+    endif
+    call date_and_time(values=time_end(:,31))
+    call add_time(time_begin(1,31),time_end(1,31),time_elapsed(31))
+
+    ! density, velocity
+    do is = 1, nspec
+      do k = kb-1, ke+1
+        do j = jb-1, je+1
+          do i = 1, nx2 
+            den(i,j,k) = den(i,j,k) + dns(i,j,k,is)*qspec(is) 
+            denh(i,j,k) = denh(i,j,k) + dnsh(i,j,k,is)*qspec(is) 
+            vix(i,j,k) = vix(i,j,k) + qspec(is)*vxs(i,j,k,is) 
+            viy(i,j,k) = viy(i,j,k) + qspec(is)*vys(i,j,k,is) 
+            viz(i,j,k) = viz(i,j,k) + qspec(is)*vzs(i,j,k,is)
+          enddo
+        enddo
+      enddo
+    enddo
+
+    ! apply boundary conditions
+    if (ndim /= 1) then
+      call xrealbcc(den,1_8,nx,ny,nz)
+      call xrealbcc(denh,1_8,nx,ny,nz)
+      call xrealbcc(vix,1_8,nx,ny,nz)
+      call xrealbcc(viy,1_8,nx,ny,nz)
+      call xrealbcc(viz,1_8,nx,ny,nz)
+    else
+      call xrealbcc_2d(den,1_8,nx,ny,nz)
+      call xrealbcc_2d(denh,1_8,nx,ny,nz)
+      call xrealbcc_2d(vix,1_8,nx,ny,nz)
+      call xrealbcc_2d(viy,1_8,nx,ny,nz)
+      call xrealbcc_2d(viz,1_8,nx,ny,nz)
+    endif
+
+    ! smoothing density and velocity
+    if (smoothing) then
+      if (ndim /=1) then
+        do i = 1, smooth_pass
+          call nsmth(den)
+          call nsmth(denh)
+          call nsmth(vix)
+          call nsmth(viy)
+          call nsmth(viz)
+        enddo
+      else
+        call nsmth_2d(den, nx2, ny2, nz2)
+        call nsmth_2d(denh, nx2, ny2, nz2)
+        call nsmth_2d(vix, nx2, ny2, nz2)
+        call nsmth_2d(viy, nx2, ny2, nz2)
+        call nsmth_2d(viz, nx2, ny2, nz2)
+      endif
+    endif
+
+    do k = kb-1, ke+1
+      do j = jb-1, je+1
+        do i = 1, nx2
+          den(i,j,k)=max(denmin,den(i,j,k))
+          vix(i,j,k)=vix(i,j,k)/denh(i,j,k)
+          viy(i,j,k)=viy(i,j,k)/denh(i,j,k)
+          viz(i,j,k)=viz(i,j,k)/denh(i,j,k)
+        enddo
+      enddo
+    enddo
+
+    ! for 1st step?
+    if (it == 0) then
+      deno=den; vixo=vix; viyo=viy; vizo=viz
+    endif
+
+    kbmin = kb-1; kbmax = ke+1
+    jbmin = jb-1; jbmax = je+1
+
+    ! sort particles
+    call date_and_time(values=time_begin(:,4))
+    if (mod(it,n_sort) == 0) call sort  
+    call date_and_time(values=time_end(:,4))
+    call add_time(time_begin(1,4),time_end(1,4),time_elapsed(4))
+
+    return
+  end subroutine update_particles
+
+
   !---------------------------------------------------------------------
   ! This subourtine pushes particles for half a step
   !---------------------------------------------------------------------
@@ -204,6 +323,7 @@ module m_particle
               z_disp_max_p = max(z_disp_max_p,abs(z_disp)/meshZ%dxn(izep1))
 
               ! particle tracking
+              ntot = 0 ! for particle tracking
               if (ptag(np).ne.0) then
                 ntot=ntot+1
                 buf_p1(1,ntot)=x(np)
@@ -1145,9 +1265,9 @@ module m_particle
 
 
   !---------------------------------------------------------------------
-  ! sort the particles
+  ! sort particles
   !---------------------------------------------------------------------
-  subroutine sortit
+  subroutine sort
     real*8 :: pstore(nplmax)
     integer :: pstore2(nplmax)
     integer*8 :: id, kb1, is, ix, iy, iz, ixe ,iye, ize, l, nttot, nplist
@@ -1297,120 +1417,7 @@ module m_particle
     link(nplmax) = 0
 
     return
-  end subroutine sortit
-
-
-  !-----------------------------------------------------------------
-  ! computes velocities?
-  ! what is the difference between vxs and vix?
-  !-----------------------------------------------------------------
-  subroutine trans        
-    integer*8 :: is, i, j, k, jbmin, jbmax, kbmin, kbmax
-    real*8 :: dns_tmp
-
-    ! initialize sth
-    do is = 1, nspec
-      do k = kb-1, ke+1
-        do j = jb-1, je+1
-          do i = 1, nx2
-            dns(i,j,k,is)=1.e-10; dnsh(i,j,k,is)=1.e-10
-            vxs(i,j,k,is)=0.; vys(i,j,k,is)=0.; vzs(i,j,k,is)=0.
-            if (is==1) then
-              deno(i,j,k)=den(i,j,k)
-              vixo(i,j,k)=vix(i,j,k)
-              viyo(i,j,k)=viy(i,j,k)
-              vizo(i,j,k)=viz(i,j,k)
-              den(i,j,k)=0.
-              denh(i,j,k)=0.
-              vix(i,j,k)=0.
-              viy(i,j,k)=0.
-              viz(i,j,k)=0.
-            endif
-          enddo
-        enddo
-      enddo
-    enddo
-
-    ! push particles
-    call date_and_time(values=time_begin(:,31))
-    if (ndim /= 1) then
-      call parmov
-    else
-      call parmov_2d
-    endif
-    call date_and_time(values=time_end(:,31))
-    call add_time(time_begin(1,31),time_end(1,31),time_elapsed(31))
-
-    ! density, velocity
-    do is = 1, nspec
-      do k = kb-1, ke+1
-        do j = jb-1, je+1
-          do i = 1, nx2 
-            den(i,j,k) = den(i,j,k) + dns(i,j,k,is)*qspec(is) 
-            denh(i,j,k) = denh(i,j,k) + dnsh(i,j,k,is)*qspec(is) 
-            vix(i,j,k) = vix(i,j,k) + qspec(is)*vxs(i,j,k,is) 
-            viy(i,j,k) = viy(i,j,k) + qspec(is)*vys(i,j,k,is) 
-            viz(i,j,k) = viz(i,j,k) + qspec(is)*vzs(i,j,k,is)
-          enddo
-        enddo
-      enddo
-    enddo
-
-    ! apply boundary conditions
-    if (ndim /= 1) then
-      call xrealbcc(den,1_8,nx,ny,nz)
-      call xrealbcc(denh,1_8,nx,ny,nz)
-      call xrealbcc(vix,1_8,nx,ny,nz)
-      call xrealbcc(viy,1_8,nx,ny,nz)
-      call xrealbcc(viz,1_8,nx,ny,nz)
-    else
-      call xrealbcc_2d(den,1_8,nx,ny,nz)
-      call xrealbcc_2d(denh,1_8,nx,ny,nz)
-      call xrealbcc_2d(vix,1_8,nx,ny,nz)
-      call xrealbcc_2d(viy,1_8,nx,ny,nz)
-      call xrealbcc_2d(viz,1_8,nx,ny,nz)
-    endif
-
-    ! smoothing density and velocity
-    if (smoothing) then
-      if (ndim /=1) then
-        do i = 1, smooth_pass
-          call nsmth(den)
-          call nsmth(denh)
-          call nsmth(vix)
-          call nsmth(viy)
-          call nsmth(viz)
-        enddo
-      else
-        call nsmth_2d(den, nx2, ny2, nz2)
-        call nsmth_2d(denh, nx2, ny2, nz2)
-        call nsmth_2d(vix, nx2, ny2, nz2)
-        call nsmth_2d(viy, nx2, ny2, nz2)
-        call nsmth_2d(viz, nx2, ny2, nz2)
-      endif
-    endif
-
-    do k = kb-1, ke+1
-      do j = jb-1, je+1
-        do i = 1, nx2
-          den(i,j,k)=max(denmin,den(i,j,k))
-          vix(i,j,k)=vix(i,j,k)/denh(i,j,k)
-          viy(i,j,k)=viy(i,j,k)/denh(i,j,k)
-          viz(i,j,k)=viz(i,j,k)/denh(i,j,k)
-        enddo
-      enddo
-    enddo
-
-    ! for 1st step?
-    if (it == 0) then
-      deno=den; vixo=vix; viyo=viy; vizo=viz
-    endif
-
-    kbmin = kb-1; kbmax = ke+1
-    jbmin = jb-1; jbmax = je+1
-
-    return
-  end subroutine trans
+  end subroutine sort
 
 
   !-----------------------------------------------------------------

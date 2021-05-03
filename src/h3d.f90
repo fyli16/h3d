@@ -283,6 +283,7 @@ program h3d
 
     do while(it <= itfinish)
 
+      ! timing a full loop
       call date_and_time(values=time_begin(:,1))
 
       ! print time & step info
@@ -295,43 +296,29 @@ program h3d
         clock_old = clock_now
       endif
 
-      ! calculate resistivity (eta)
+      ! update resistivity (eta)
       ! (which could depend on local parameters such as current)
       call date_and_time(values=time_begin(:,2))
-      if (ndim /= 1) then
-        call cal_eta       
-      else
-        call cal_eta_2d    
-      endif
+      call update_eta
       call date_and_time(values=time_end(:,2))
       call add_time(time_begin(1,2),time_end(1,2),time_elapsed(2))
 
-      ! calculate density and v's, and push particles
+      ! update particles
+      ! (calculate density and v's, push & sort particles)
       call date_and_time(values=time_begin(:,3))
-      ntot = 0 ! for particle tracking
-      call trans
+      call update_particles
       call date_and_time(values=time_end(:,3))
       call add_time(time_begin(1,3),time_end(1,3),time_elapsed(3))
 
-      ! sort particles
-      call date_and_time(values=time_begin(:,4))
-      if (mod(it,n_sort) == 0) call sortit  
-      call date_and_time(values=time_end(:,4))
-      call add_time(time_begin(1,4),time_end(1,4),time_elapsed(4))
-
       ! call field solver
       call date_and_time(values=time_begin(:,5))
-      if (ndim /=1) then 
-        call field
-      else
-        call field_2d
-      endif     
+      call update_fields
       call date_and_time(values=time_end(:,5))
       call add_time(time_begin(1,5),time_end(1,5),time_elapsed(5))
 
       ! call user diagnostics
       call date_and_time(values=time_begin(:,6))
-      call diag
+      call diagnostics
       call date_and_time(values=time_end(:,6))
       call add_time(time_begin(1,6),time_end(1,6),time_elapsed(6))
 
@@ -368,14 +355,14 @@ program h3d
       print*, " "
       print*, " "
       print*, "total time                        (s)          =",time_elapsed(1)
-      print*, "   sub cal_eta                    (s)          =",time_elapsed(2)
-      print*, "   sub trans                      (s)          =",time_elapsed(3)
+      print*, "   sub update_eta                 (s)          =",time_elapsed(2)
+      print*, "   sub update_particles           (s)          =",time_elapsed(3)
       print*, "   sub sort                       (s)          =",time_elapsed(4)
-      print*, "   sub field                      (s)          =",time_elapsed(5)
-      print*, "   sub diag                       (s)          =",time_elapsed(6)
+      print*, "   sub update_fields              (s)          =",time_elapsed(5)
+      print*, "   sub diagnostics                (s)          =",time_elapsed(6)
       print*, " "
       print*, " "
-      print*, "In trans.parmov,"
+      print*, "In update_particles.parmov,"
       print*, "   sub push                       (s)          =",time_elapsed(33)
       print*, "   sub particle_boundary          (s)          =",time_elapsed(34)
       print*, "   sub moment_calculation         (s)          =",time_elapsed(35)

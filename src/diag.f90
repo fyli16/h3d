@@ -14,7 +14,7 @@ module m_diag
 
   contains 
   
-  subroutine diag
+  subroutine diagnostics
     ! convert 'it' to char and broadcast to all ranks,
     ! which will be used in file dumps by rank.
     if (myid==0) then
@@ -89,7 +89,7 @@ module m_diag
     call date_and_time(values=time_end(:,66))
     call add_time(time_begin(1,66),time_end(1,66),time_elapsed(66))
 
-  end subroutine diag
+  end subroutine diagnostics
 
 
   !---------------------------------------------------------------------

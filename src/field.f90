@@ -8,7 +8,19 @@ module m_field
   !---------------------------------------------------------------------
   ! advances electromagnetic field in time
   !---------------------------------------------------------------------
-  subroutine field
+  subroutine update_fields
+    if (ndim /=1) then 
+      call field_3d
+    else
+      call field_2d
+    endif 
+  end subroutine update_fields
+
+
+  !---------------------------------------------------------------------
+  ! advances electromagnetic field in time (3D)
+  !---------------------------------------------------------------------
+  subroutine field_3d
     call date_and_time(values=time_begin(:,51))
     call pressgrad(1) ! full step at N
     call date_and_time(values=time_end(:,51))
@@ -35,7 +47,7 @@ module m_field
     call add_time(time_begin(1,54), time_end(1,54), time_elapsed(54))
 
     return
-  end subroutine field
+  end subroutine field_3d
 
 
   !---------------------------------------------------------------------
@@ -401,6 +413,8 @@ module m_field
   end subroutine focalc
 
 
+  !---------------------------------------------------------------------
+  ! advances electromagnetic field in time (2D)
   !---------------------------------------------------------------------
   subroutine field_2d
     call date_and_time(values=time_begin(:,51))

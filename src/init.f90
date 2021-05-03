@@ -377,25 +377,17 @@ module m_init
     ! what's done here (no actual particle push)
     dt_save = dt
     dt    = zero ! temporarily set dt=0
-    call trans  ! because dt=0, no actual push is done (see 'parmov')
+    call update_particles  ! no actual push is done as dt=0 (see 'parmov')
     dt    = dt_save
 
     ! advance field if n_subcyles>=1
     ! since currently n_subcycles==0, this block is skipped
     do field_subcycle = 1, n_subcycles 
-      if (ndim /= 1) then
-        call field
-      else
-        call field_2d
-      endif
+      call update_fields
     enddo
 
     ! calculate resistivity (Dietmar's resistivity)
-    if (ndim /= 1) then
-        call cal_eta  
-    else
-        call cal_eta_2d
-    endif
+    call update_eta
     
     deallocate(seed) 
 
