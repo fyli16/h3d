@@ -3,13 +3,9 @@ module m_particle
   use m_mesh
   implicit none
 
-  real*8, dimension(5), private :: hh 
+  real*8, private :: hh, dth 
   real*8, private :: dth 
   integer, private :: is, i, j, k
-
-  do is = 1, nspec
-    hh(is)   = 0.5 * dt * qspec(is)/wspec(is)
-  enddo 
 
   dth = dt/2
 
@@ -548,6 +544,7 @@ module m_particle
       x_disp_max_p        = 0
       y_disp_max_p        = 0
       z_disp_max_p        = 0
+      hh = 0.5*dt*qspec(is)/wspec(is)
   
       do iize = kb-1,ke
         do iiye = jb-1,je
@@ -676,16 +673,16 @@ module m_particle
               bza=w1e*bz1+w2e*bz2+w3e*bz3+w4e*bz4      &
                   +w5e*bz5+w6e*bz6+w7e*bz7+w8e*bz8
 
-              ff=2./(1.+hh(is)*hh(is)*(bxa**2+bya**2+bza**2))
-              vex=vx(l)+exa*hh(is)
-              vey=vy(l)+eya*hh(is)
-              vez=vz(l)+eza*hh(is)
-              p2xs=vex+(vey*bza-vez*bya)*hh(is)
-              p2ys=vey+(vez*bxa-vex*bza)*hh(is)
-              p2zs=vez+(vex*bya-vey*bxa)*hh(is)
-              vx(l)=vex+ff*(p2ys*bza-p2zs*bya)*hh(is)+exa*hh(is)
-              vy(l)=vey+ff*(p2zs*bxa-p2xs*bza)*hh(is)+eya*hh(is)
-              vz(l)=vez+ff*(p2xs*bya-p2ys*bxa)*hh(is)+eza*hh(is)
+              ff=2./(1.+hh*hh*(bxa**2+bya**2+bza**2))
+              vex=vx(l)+exa*hh
+              vey=vy(l)+eya*hh
+              vez=vz(l)+eza*hh
+              p2xs=vex+(vey*bza-vez*bya)*hh
+              p2ys=vey+(vez*bxa-vex*bza)*hh
+              p2zs=vez+(vex*bya-vey*bxa)*hh
+              vx(l)=vex+ff*(p2ys*bza-p2zs*bya)*hh+exa*hh
+              vy(l)=vey+ff*(p2zs*bxa-p2xs*bza)*hh+eya*hh
+              vz(l)=vez+ff*(p2xs*bya-p2ys*bxa)*hh+eza*hh
 
               ! advance particles for a half step to calcualte Vi
               x_disp = dth*vx(l)
@@ -2190,6 +2187,7 @@ module m_particle
     ! beginning of main particle loop
     do IS = 1, NSPEC
       call date_and_time(values=time_begin(:,33))
+      hh = 0.5*dt*qspec(is)/wspec(is)
       NPTOTP=0
       do ize=kb-1,ke
         do iye=jb-1,je
@@ -2357,16 +2355,16 @@ module m_particle
                 bya=w1e*by1+w2e*by2+w3e*by3+w4e*by4      
                 bza=w1e*bz1+w2e*bz2+w3e*bz3+w4e*bz4      
               
-                ff=2./(1.+hh(is)*hh(is)*(bxa**2+bya**2+bza**2))
-                vex=vx(l)+exa*hh(is)
-                vey=vy(l)+eya*hh(is)
-                vez=vz(l)+eza*hh(is)
-                p2xs=vex+(vey*bza-vez*bya)*hh(is)
-                p2ys=vey+(vez*bxa-vex*bza)*hh(is)
-                p2zs=vez+(vex*bya-vey*bxa)*hh(is)
-                vx(l)=vex+ff*(p2ys*bza-p2zs*bya)*hh(is)+exa*hh(is)
-                vy(l)=vey+ff*(p2zs*bxa-p2xs*bza)*hh(is)+eya*hh(is)
-                vz(l)=vez+ff*(p2xs*bya-p2ys*bxa)*hh(is)+eza*hh(is)
+                ff=2./(1.+hh*hh*(bxa**2+bya**2+bza**2))
+                vex=vx(l)+exa*hh
+                vey=vy(l)+eya*hh
+                vez=vz(l)+eza*hh
+                p2xs=vex+(vey*bza-vez*bya)*hh
+                p2ys=vey+(vez*bxa-vex*bza)*hh
+                p2zs=vez+(vex*bya-vey*bxa)*hh
+                vx(l)=vex+ff*(p2ys*bza-p2zs*bya)*hh+exa*hh
+                vy(l)=vey+ff*(p2zs*bxa-p2xs*bza)*hh+eya*hh
+                vz(l)=vez+ff*(p2xs*bya-p2ys*bxa)*hh+eza*hh
               
                 x_disp = dt*vx(l)
                 y_disp = dt*vy(l)
