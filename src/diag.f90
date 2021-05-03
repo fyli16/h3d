@@ -15,8 +15,6 @@ module m_diag
   contains 
   
   subroutine diag
-    integer :: i
-
     ! convert 'it' to char and broadcast to all ranks,
     ! which will be used in file dumps by rank.
     if (myid==0) then
@@ -29,44 +27,19 @@ module m_diag
 
     ! write mesh data
     call date_and_time(values=time_begin(:,61))
-    if ( n_diag_mesh>0 .and. mod(it,n_diag_mesh)==0 ) then
-      ! this block is not executed when MPI_IO_format=.true.
-      if (myid==0 .and. .not.MPI_IO_format) then
-        call open_files
-      endif 
-      ! calculate par & perp temperatures (needed only for diagnostics)
-      if (ndim /= 1) then
-        call cal_temp
-      else
-        call cal_temp_2d
-      endif
-      ! write data
-      call diag_mesh
-      ! this block is not executed when MPI_IO_format=.true.
-      if (myid==0 .and. .not.MPI_IO_format) then
-        do i = 1, 25
-          close(file_unit(i))
-        enddo
-      endif
-    endif 
+    call diag_mesh
     call date_and_time(values=time_end(:,61))
     call add_time(time_begin(1,61),time_end(1,61),time_elapsed(61))
 
     ! write energy history data: energy.dat
     call date_and_time(values=time_begin(:,62))
-    if (it==itstart) call open_hist_files  ! open files at the first step
-    if ( n_diag_energy>0 .and. mod(it,n_diag_energy)==0 ) then
-      call energy 
-      if (myid==0) call diag_energy
-    endif 
+    call diag_energy
     call date_and_time(values=time_end(:,62))
     call add_time(time_begin(1,62),time_end(1,62),time_elapsed(62))
       
     ! write particles (within a volume)
     call date_and_time(values=time_begin(:,63))
-    if (n_diag_particle>0 .and. mod(it,n_diag_particle)==0) then
-      call diag_particle
-    endif
+    call diag_particle
     call date_and_time(values=time_end(:,63))
     call add_time(time_begin(1,63),time_end(1,63),time_elapsed(63))
 
@@ -120,12 +93,56 @@ module m_diag
 
 
   !---------------------------------------------------------------------
+  ! diagnose mesh data
+  !---------------------------------------------------------------------
+  subroutine diag_mesh
+    integer :: i
+    if ( n_diag_mesh>0 .and. mod(it,n_diag_mesh)==0 ) then
+      ! this block is not executed when MPI_IO_format=.true.
+      if (myid==0 .and. .not.MPI_IO_format) then
+        call open_files
+      endif 
+      ! calculate par & perp temperatures (needed only for diagnostics)
+      if (ndim /= 1) then
+        call cal_temp
+      else
+        call cal_temp_2d
+      endif
+      ! write data
+      call write_mesh
+      ! this block is not executed when MPI_IO_format=.true.
+      if (myid==0 .and. .not.MPI_IO_format) then
+        do i = 1, 25
+          close(file_unit(i))
+        enddo
+      endif
+    endif 
+  end subroutine diag_mesh
+
+
+  !---------------------------------------------------------------------
   ! write energy history data
   !---------------------------------------------------------------------
   subroutine diag_energy
-    write(11,*) it, efld, bfld, efluid, ethermal, eptcl ! energy.dat
-    ! write(14,*) it, time_elapsed(1:40)  ! time.dat 
+    if (it==itstart) call open_hist_files  ! open files at the first step
+    if ( n_diag_energy>0 .and. mod(it,n_diag_energy)==0 ) then
+      call energy 
+      if (myid==0) then
+        write(11,*) it, efld, bfld, efluid, ethermal, eptcl ! energy.dat
+        ! write(14,*) it, time_elapsed(1:40)  ! time.dat 
+      endif 
+    endif 
   end subroutine diag_energy
+
+
+  !---------------------------------------------------------------------
+  ! diagnose particles within a volume
+  !---------------------------------------------------------------------
+  subroutine diag_particle 
+    if (n_diag_particle>0 .and. mod(it,n_diag_particle)==0) then
+      call write_particle
+    endif
+  end subroutine diag_particle
 
 
   !---------------------------------------------------------------------

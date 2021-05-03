@@ -399,7 +399,7 @@ module m_io
 
     irec_num = irec_num + irec_del
 
-  end subroutine diag_mesh
+  end subroutine write_mesh
 
 
   !---------------------------------------------------------------------
@@ -407,7 +407,7 @@ module m_io
   ! rw = +1.0: write 
   ! rw = -1.0: read
   !---------------------------------------------------------------------
-  subroutine wr_restart(rw)
+  subroutine rw_restart(rw)
     use m_particle
 
     integer*8 :: f_unit, np_count, is, ixe, iye, ize, noresete
@@ -786,14 +786,14 @@ module m_io
     call sortit  ! see 'utils.f90'
 
     return
-  end subroutine wr_restart
+  end subroutine rw_restart
 
 
   !---------------------------------------------------------------------
   ! write restart
   !---------------------------------------------------------------------
   subroutine write_restart
-    call wr_restart(1.0)
+    call rw_restart(1.0)
   end subroutine write_restart
 
 
@@ -801,14 +801,14 @@ module m_io
   ! read restart
   !---------------------------------------------------------------------
   subroutine read_restart
-    call wr_restart(-1.0)
+    call rw_restart(-1.0)
   end subroutine read_restart
 
 
   !---------------------------------------------------------------------
   ! write particles within a volume
   !---------------------------------------------------------------------
-  subroutine diag_particle
+  subroutine write_particle
     use m_mesh
         
     real*8 :: fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8
@@ -1037,7 +1037,7 @@ module m_io
     deallocate (XW,YW,ZW,VXW,VYW,VZW,QW,VWPAR,VWPERP1,VWPERP2)
 
   return
-  end subroutine diag_particle
+  end subroutine write_particle
 
 
   !---------------------------------------------------------------------

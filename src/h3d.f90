@@ -63,7 +63,7 @@ program h3d
     n_print, n_diag_mesh, n_diag_energy, n_diag_probe, & ! diagnostics
     n_diag_tracking, n_write_restart, n_diag_particle, &  
     tracking_binary, tracking_mpi, &
-    xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
+    xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r
 
     ! Initialize MPI
     call MPI_INIT(IERR)
@@ -207,26 +207,6 @@ program h3d
         print*, "*** New run ***"
       endif 
       write(6, datum)
-      ! print*, " "
-      ! print*, "--- global simulation info ---"
-      ! print*, "tmax, dtwci = ", tmax, dtwci
-      ! print*, "node_conf   = ", node_conf
-      ! print*
-      ! print*, "--- mesh info ---"
-      ! print*, "xmax, ymax, zmax = ", xmax, ymax, zmax
-      ! print*, "nx,   ny,   nz   = ", nx, ny, nz
-      ! print*, "xaa, xbb = ", xaa, xbb
-      ! print*, "nax, nbx = ", nax, nbx 
-      ! print*, "yaa, ybb = ", yaa, ybb
-      ! print*, "nay, nby = ", nay, nby 
-      ! print*, "zaa, zbb = ", zaa, zbb
-      ! print*, "naz, nbz = ", naz, nbz 
-      ! print*
-      ! print*, "--- plasma info ---"
-      ! print*, "nspec = ", nspec
-      ! print*, "npx   = ", npx
-      ! print*, "npy   = ", npy
-      ! print*, "npz   = ", npz
     endif  
 
     ! initialize MPI domain decomposition
