@@ -281,7 +281,7 @@ module m_mesh
   subroutine init_mesh
     use m_parameter
 
-    integer :: i
+    integer :: is, ixe, iye, ize
 
     if (myid==0) then
       print*, " "

@@ -3,10 +3,14 @@ module m_particle
   use m_mesh
   implicit none
 
-  real*8 :: h, hh, dth 
+  real*8, dimension(5), private :: hh 
+  real*8, private :: dth 
+  integer, private :: is, i, j, k
 
-  h   = dt*qspec(is)/wspec(is)
-  hh  = 0.5*h
+  do is = 1, nspec
+    hh(is)   = 0.5 * dt * qspec(is)/wspec(is)
+  enddo 
+
   dth = dt/2
 
   contains 
@@ -16,7 +20,7 @@ module m_particle
   ! (computes velocities? what is the difference between vxs and vix?)
   !-----------------------------------------------------------------
   subroutine update_particles        
-    integer*8 :: is, i, j, k, jbmin, jbmax, kbmin, kbmax
+    integer*8 :: jbmin, jbmax, kbmin, kbmax
     real*8 :: dns_tmp
 
     ! initialize density, velocity
@@ -149,8 +153,8 @@ module m_particle
     real*8 :: vex,vey,vez,vmag,vx_tmp,vy_tmp,vz_tmp
     real*8 :: p2xs,p2ys,p2zs,q_p,th
 
-    integer*8 i,ii,iix,iixe, iiy,iiye,iiz,iize,irepeat,irepeatp,is,itmp
-    integer*8 iv,iye_cc,ize_cc,j,jv,k,npleavingp,nprecv,nprecvtmp
+    integer*8 ii,iix,iixe, iiy,iiye,iiz,iize,irepeat,irepeatp,itmp
+    integer*8 iv,iye_cc,ize_cc,jv,npleavingp,nprecv,nprecvtmp
     integer*8 Storage_Error_p,Storage_Error
     integer*8:: nsendactual, nsendactualp, nrecvactual, nrecvactualp, &
                 jj,kk,ix,iy,iz,ixe,iye,ize, &
@@ -517,7 +521,7 @@ module m_particle
   ! This subourtine pushes particles for half a step
   !---------------------------------------------------------------------
   subroutine push
-    integer*8 :: is,iixe,iiye,iize,l
+    integer*8 :: iixe,iiye,iize,l
     integer*8 :: ix,iy,iz,ixe,iye,ize,ixep1,iyep1,izep1,ixp1,iyp1,izp1
     real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8, &
               by1,by2,by3,by4,by5,by6,by7,by8, &
@@ -672,16 +676,16 @@ module m_particle
               bza=w1e*bz1+w2e*bz2+w3e*bz3+w4e*bz4      &
                   +w5e*bz5+w6e*bz6+w7e*bz7+w8e*bz8
 
-              ff=2./(1.+hh*hh*(bxa**2+bya**2+bza**2))
-              vex=vx(l)+exa*hh
-              vey=vy(l)+eya*hh
-              vez=vz(l)+eza*hh
-              p2xs=vex+(vey*bza-vez*bya)*hh
-              p2ys=vey+(vez*bxa-vex*bza)*hh
-              p2zs=vez+(vex*bya-vey*bxa)*hh
-              vx(l)=vex+ff*(p2ys*bza-p2zs*bya)*hh+exa*hh
-              vy(l)=vey+ff*(p2zs*bxa-p2xs*bza)*hh+eya*hh
-              vz(l)=vez+ff*(p2xs*bya-p2ys*bxa)*hh+eza*hh
+              ff=2./(1.+hh(is)*hh(is)*(bxa**2+bya**2+bza**2))
+              vex=vx(l)+exa*hh(is)
+              vey=vy(l)+eya*hh(is)
+              vez=vz(l)+eza*hh(is)
+              p2xs=vex+(vey*bza-vez*bya)*hh(is)
+              p2ys=vey+(vez*bxa-vex*bza)*hh(is)
+              p2zs=vez+(vex*bya-vey*bxa)*hh(is)
+              vx(l)=vex+ff*(p2ys*bza-p2zs*bya)*hh(is)+exa*hh(is)
+              vy(l)=vey+ff*(p2zs*bxa-p2xs*bza)*hh(is)+eya*hh(is)
+              vz(l)=vez+ff*(p2xs*bya-p2ys*bxa)*hh(is)+eza*hh(is)
 
               ! advance particles for a half step to calcualte Vi
               x_disp = dth*vx(l)
@@ -770,10 +774,10 @@ module m_particle
       real*8, dimension(:,:),allocatable,target :: packed_pdata_recv
       real*8, pointer :: pp(:,:)
       integer :: exchange_send_request(8)
-      integer*8 :: iv,iye_cc,ize_cc,j,jv,k,npleavingp,nprecv,nprecvtmp
+      integer*8 :: iv,iye_cc,ize_cc,jv,npleavingp,nprecv,nprecvtmp
       real*8 :: v_limit
       integer*8 :: n_fast_removed,n_fast_removed_local,Field_Diverge,Field_Diverge_p
-      integer*8 :: i,ii,iix,iixe,iiy,iiye,iiz,iize,irepeat,irepeatp,is,itmp
+      integer*8 :: ii,iix,iixe,iiy,iiye,iiz,iize,irepeat,irepeatp,itmp
       real*8 :: hxmin,hxmax,hymin,hymax,hzmin,hzmax,cell_size_min
       Storage_Error_p = 0
       Field_Diverge_p = 0
@@ -1259,7 +1263,7 @@ module m_particle
   subroutine sort
     real*8 :: pstore(nplmax)
     integer :: pstore2(nplmax)
-    integer*8 :: id, kb1, is, ix, iy, iz, ixe ,iye, ize, l, nttot, nplist
+    integer*8 :: id, kb1, ix, iy, iz, ixe ,iye, ize, l, nttot, nplist
     real*8 :: rxe,rye,rze,fxe,fye,fze
 
     id = 0
@@ -1411,7 +1415,7 @@ module m_particle
   subroutine cal_temp
 
     real*8 :: rx,ry,rz,fx,fy,fz, xx,xy,xz,yy,yz,zz
-    integer*8 :: ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,is,l,iix,iixe
+    integer*8 :: ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,l,iix,iixe
     real*8 :: vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
               ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar
     real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,dns1,dns2,bxa,bya,bza,btota,dnst
@@ -1647,12 +1651,11 @@ module m_particle
   !-----------------------------------------------------------------
   subroutine cal_energy
     real*8 :: rx,ry,rz,fx,fy,fz,xx,xy,xz,yy,yz,zz
-    integer*8 ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,is,l,iix,iixe
+    integer*8 ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,l,iix,iixe
     real*8 :: vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
           ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar
     real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,dns1,dns2,bxa,bya,bza,btota,dnst
     real*8 :: bfld_p, efld_p, efluid_p, ethermal_p, v2
-    integer*8 :: i, j, k
     
     efld_p=0.; bfld_p=0.; efluid_p=0.; ethermal_p=0.; v2=0.
 
@@ -1824,7 +1827,6 @@ module m_particle
   ! i.e. 27 points are involved
   !---------------------------------------------------------------------
   subroutine nsmooth (a)
-    integer*8 :: i,j,k
     real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
 
     ! copy input array "a" to "temp" including ghost cells
@@ -1866,7 +1868,7 @@ module m_particle
   !---------------------------------------------------------------------
   subroutine cal_temp_2d
     real*8 :: rx,ry,rz,fx,fy,fz,xx,xy,xz,yy,yz,zz
-    integer*8 ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,is,l,iix,iixe
+    integer*8 ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,l,iix,iixe
     real*8 :: vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
           ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar
     real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,dns1,dns2,bxa,bya,bza,btota,dnst
@@ -2074,8 +2076,8 @@ module m_particle
     real*8 :: vex,vey,vez,vmag,vx_tmp,vy_tmp,vz_tmp
     real*8 :: p2xs,p2ys,p2zs,q_p,th
 
-    integer*8 :: i,ii,iix,iixe,iiy,iiye,iiz,iize,irepeat,irepeatp,is,itmp
-    integer*8 :: iv,iye_cc,ize_cc,j,jv,k,kspc,npleavingp,nprecv,nprecvtmp
+    integer*8 :: ii,iix,iixe,iiy,iiye,iiz,iize,irepeat,irepeatp,itmp
+    integer*8 :: iv,iye_cc,ize_cc,jv,kspc,npleavingp,nprecv,nprecvtmp
     integer*8 :: icount
     integer*8 :: count_kbq
     integer*8 nptotp_kbq,npart_kbq(2),np_ijk,Storage_Error_p,Storage_Error
@@ -2355,16 +2357,16 @@ module m_particle
                 bya=w1e*by1+w2e*by2+w3e*by3+w4e*by4      
                 bza=w1e*bz1+w2e*bz2+w3e*bz3+w4e*bz4      
               
-                ff=2./(1.+hh*hh*(bxa**2+bya**2+bza**2))
-                vex=vx(l)+exa*hh
-                vey=vy(l)+eya*hh
-                vez=vz(l)+eza*hh
-                p2xs=vex+(vey*bza-vez*bya)*hh
-                p2ys=vey+(vez*bxa-vex*bza)*hh
-                p2zs=vez+(vex*bya-vey*bxa)*hh
-                vx(l)=vex+ff*(p2ys*bza-p2zs*bya)*hh+exa*hh
-                vy(l)=vey+ff*(p2zs*bxa-p2xs*bza)*hh+eya*hh
-                vz(l)=vez+ff*(p2xs*bya-p2ys*bxa)*hh+eza*hh
+                ff=2./(1.+hh(is)*hh(is)*(bxa**2+bya**2+bza**2))
+                vex=vx(l)+exa*hh(is)
+                vey=vy(l)+eya*hh(is)
+                vez=vz(l)+eza*hh(is)
+                p2xs=vex+(vey*bza-vez*bya)*hh(is)
+                p2ys=vey+(vez*bxa-vex*bza)*hh(is)
+                p2zs=vez+(vex*bya-vey*bxa)*hh(is)
+                vx(l)=vex+ff*(p2ys*bza-p2zs*bya)*hh(is)+exa*hh(is)
+                vy(l)=vey+ff*(p2zs*bxa-p2xs*bza)*hh(is)+eya*hh(is)
+                vz(l)=vez+ff*(p2xs*bya-p2ys*bxa)*hh(is)+eza*hh(is)
               
                 x_disp = dt*vx(l)
                 y_disp = dt*vy(l)
@@ -2978,7 +2980,6 @@ module m_particle
 
 !---------------------------------------------------------------------
 subroutine nsmooth_2d (a,nx2m,ny2m,nz2m)
-  integer*8 :: i,j,k
   integer*8 :: nx2m, ny2m, nz2m
   real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
 
