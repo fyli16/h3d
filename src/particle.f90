@@ -6,8 +6,6 @@ module m_particle
   real*8, private :: hh, dth
   integer, private :: is, i, j, k
 
-  dth = dt/2
-
   contains 
 
   !-----------------------------------------------------------------
@@ -157,7 +155,6 @@ module m_particle
     real*8 :: pdata(7),rx,ry,rz,fx,fy,fz,w1,w2,w3,w4,w5,w6,w7,w8,xpart,ypart,zpart
     real*8 :: rxe, rye, rze, fxe, fye, fze
     real*8 :: x_disp,y_disp,z_disp 
-    real*8 :: dth
     real*8 :: myranf,fluxran,vxa,vyz,vza
     integer*8:: L, EXIT_CODE_P, EXIT_CODE
     integer*8:: n_fast_removed, n_fast_removed_local,Field_Diverge,Field_Diverge_p
