@@ -19,7 +19,7 @@ module m_parameter
             nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot, &      
             nbrleft, nbrrite, ipe, stridery, striderz, iseed(1), coords(2)
 
-  real*8 :: zb, ze, yb, ye, teti, volume_fraction, cell_volume_ratio, &
+  real*8 :: zb, ze, yb, ye, volume_fraction, cell_volume_ratio, &
             zb_logical, ze_logical, yb_logical, ye_logical, &
             xb_logical, xe_logical, xb, xe
 
@@ -61,19 +61,17 @@ module m_parameter
                                         ,nescape_xz_global,nescape_zx_global
 
   real*8, dimension(:), allocatable:: x0,x1,tx0,vpar,vper
-  real*8, dimension(5) :: rcorr
-  integer*8, dimension(5) :: ishape
 
   real*8, dimension(5) :: beta_spec, qspec, wspec, frac, anisot
 
-  real*8 :: denmin, resis, wpiwci, beta_e, fxsho,ave1,ave2,phib,demin2, &
+  real*8 :: denmin, resis, wpiwci, beta_e, ave1, ave2, phib, demin2, &
             xmax, ymax, zmax, dt, gamma, dtwci, wall_clock_elapsed, tmax,  &
             xaa, xbb, yaa, ybb, zaa, zbb, t_stopped=0.
 
   integer*8 :: nax, nbx, nay, nby, naz, nbz
   integer*8, dimension(8) :: wall_clock_begin,wall_clock_end
   integer*8, dimension(5) :: npx, npy, npz
-  integer*8 :: iterb, nxcel, nspec, n_sort, nx, ny, nz, n_print, &
+  integer*8 :: iterb, nspec, n_sort, nx, ny, nz, n_print, &
             n_diag_mesh, n_diag_energy, n_diag_probe, n_diag_tracking, &
             n_diag_particle, n_write_restart, nskipx,nskipy,nskipz
 

@@ -52,7 +52,7 @@ ieta = 6,  ! other models ieta=1,2,3,4,5,6; see 'etacal.f90'
 resis = 1.e-3,  ! ieta=0 model; constant resisitivity, i.e., eta=resis
 netax = 10, netay = 2 ! used in ieta=1 model
 etamin = 1.0e-6, etamax = 5.0e-5,  ! used in ieta>1 models
-eta_zs = 280, ! scale length of resistive layer along z (in unit of cell size)
+eta_zs = 280, ! length of resistive layer along z (in unit of cell size); used when ieta=6
 
 ! anisotropy in velocity
 anisot(1:5) = 1.0, ! anisotropy of velocity for each species, used in 'init waves'
@@ -61,7 +61,7 @@ gamma = 1.66667, ! gamma factor in EoS
 ave1 = 100.0, ave2 = 50.,
 phib = 180.0,
 
-! performing density/velocity smoothing
+! density/velocity smoothing
 smoothing = .true., 
 smooth_pass = 1, 
 
@@ -87,10 +87,5 @@ tracking_mpi = .true. ! write tracking data by mpi rank
 xbox_l = 0., xbox_r = 1.0,
 ybox_l = 0., ybox_r = 1.0, 
 zbox_l = 0., zbox_r = 2.24,
-
-! ------------------------- others ---------------------!
-! sth used in 'io.f90'
-fxsho = 1.0,  ! seems not implemented
-nxcel = 4,  ! seems not implemented
 
 /

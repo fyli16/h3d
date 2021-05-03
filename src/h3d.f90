@@ -62,8 +62,8 @@ program h3d
     dB_B0, num_wave_cycles, &  ! init waves
     n_print, n_diag_mesh, n_diag_energy, n_diag_probe, & ! diagnostics
     n_diag_tracking, n_write_restart, n_diag_particle, &  
-    tracking_binary, tracking_mpi, xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
-    fxsho, nxcel, rcorr, ishape, teti  ! others
+    tracking_binary, tracking_mpi, &
+    xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r, &
 
     ! Initialize MPI
     call MPI_INIT(IERR)
@@ -179,12 +179,6 @@ program h3d
     call MPI_BCAST(ybox_r                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(zbox_l                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(zbox_r                 ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
-    ! others 
-    call MPI_BCAST(fxsho                  ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(nxcel                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(rcorr                  ,5     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(ishape                 ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(teti                   ,1     ,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IERR)
 
     ! The unit of dt is 1/wci in input file, 
     ! but now converted to 1/wpi inside the code
@@ -212,7 +206,7 @@ program h3d
       else 
         print*, "*** New run ***"
       endif 
-      print*, datum
+      write(6, datum)
       ! print*, " "
       ! print*, "--- global simulation info ---"
       ! print*, "tmax, dtwci = ", tmax, dtwci

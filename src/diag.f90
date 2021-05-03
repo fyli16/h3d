@@ -55,8 +55,9 @@ module m_diag
     ! write energy history data: energy.dat
     call date_and_time(values=time_begin(:,62))
     if (it==itstart) call open_hist_files  ! open files at the first step
-    if ( myid==0 .and. n_diag_energy>0 .and. mod(it,n_diag_energy)==0 ) then
-      call diag_energy
+    if ( n_diag_energy>0 .and. mod(it,n_diag_energy)==0 ) then
+      call energy 
+      if (myid==0) call diag_energy
     endif 
     call date_and_time(values=time_end(:,62))
     call add_time(time_begin(1,62),time_end(1,62),time_elapsed(62))
