@@ -176,7 +176,7 @@ module m_field
           ex(i,j,k) = (viza*byav-viya*bzav) + (curlby_scalar*bzav-curlbz_scalar*byav) - dpedx(i,j,k) + tenx/a
           ey(i,j,k) = (vixa*bzav-viza*bxav) + (curlbz_scalar*bxav-curlbx_scalar*bzav) - dpedy(i,j,k) + teny/a
           ez(i,j,k) = (viya*bxav-vixa*byav) + (curlbx_scalar*byav-curlby_scalar*bxav) - dpedz(i,j,k) + tenz/a 
-
+          
         enddo
       enddo
     enddo
@@ -736,7 +736,7 @@ module m_field
           bxav=.25*(bx1+bx2+bx3+bx4)
           byav=.25*(by1+by2+by3+by4)
           bzav=.25*(bz1+bz2+bz3+bz4)
-          
+
           xj = curlbx_scalar
           yj = curlby_scalar
           zj = curlbz_scalar

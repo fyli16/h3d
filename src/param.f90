@@ -340,8 +340,8 @@ module m_parameter
 
     call MPI_TYPE_VECTOR(int(nzlmax+2,4), int(nx+2,4), int((nx+2)*(nylmax+2),4), MPI_DOUBLE_PRECISION, stridery, IERR)
     call MPI_TYPE_COMMIT(stridery, IERR)
-    call MPI_TYPE_VECTOR(int(nylmax+2,4), int(nx+2,4), int(nx+2,4), MPI_DOUBLE_PRECISION, STRIDERZ, IERR)
-    call MPI_TYPE_COMMIT(STRIDERZ, IERR)
+    call MPI_TYPE_VECTOR(int(nylmax+2,4), int(nx+2,4), int(nx+2,4), MPI_DOUBLE_PRECISION, striderz, IERR)
+    call MPI_TYPE_COMMIT(striderz, IERR)
 
     ! allocate arrays for local ranks
     allocate ( uniform_mesh(nxmax,jb-1:je+1,kb-1:ke+1), &

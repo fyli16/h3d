@@ -21,9 +21,6 @@ program h3d
   ! read input deck
   call init_input
 
-  ! MPI domain decomposition 
-  call init_decomp
-
   ! allocate global arrays
   call init_arrays
 
@@ -50,6 +47,8 @@ program h3d
   ! read in input file/parameters
   !---------------------------------------------------------------------
   subroutine init_input
+    integer :: i 
+
     namelist /datum/ &
     tmax, dtwci, restart, &   ! global info
     MPI_IO_format, &
@@ -207,47 +206,36 @@ program h3d
 
     ! print some simulation info
     if (myid==0) then
-      print*, " "
+      print*
       if (restart) then 
         print*, "*** Restart run ***"
       else 
         print*, "*** New run ***"
       endif 
-
-      print*, " "
-      print*, "--- global simulation info ---"
-      print*, "tmax, dtwci = ", tmax, dtwci
-      print*, "node_conf   = ", node_conf
-      print*
-      print*, "--- mesh info ---"
-      print*, "xmax, ymax, zmax = ", xmax, ymax, zmax
-      print*, "nx,   ny,   nz   = ", nx, ny, nz
-      print*, "xaa, xbb = ", xaa, xbb
-      print*, "nax, nbx = ", nax, nbx 
-      print*, "yaa, ybb = ", yaa, ybb
-      print*, "nay, nby = ", nay, nby 
-      print*, "zaa, zbb = ", zaa, zbb
-      print*, "naz, nbz = ", naz, nbz 
-      print*
-      print*, "--- plasma info ---"
-      print*, "nspec = ", nspec
-      print*, "npx   = ", npx
-      print*, "npy   = ", npy
-      print*, "npz   = ", npz
-      
-      
-
+      print*, datum
+      ! print*, " "
+      ! print*, "--- global simulation info ---"
+      ! print*, "tmax, dtwci = ", tmax, dtwci
+      ! print*, "node_conf   = ", node_conf
+      ! print*
+      ! print*, "--- mesh info ---"
+      ! print*, "xmax, ymax, zmax = ", xmax, ymax, zmax
+      ! print*, "nx,   ny,   nz   = ", nx, ny, nz
+      ! print*, "xaa, xbb = ", xaa, xbb
+      ! print*, "nax, nbx = ", nax, nbx 
+      ! print*, "yaa, ybb = ", yaa, ybb
+      ! print*, "nay, nby = ", nay, nby 
+      ! print*, "zaa, zbb = ", zaa, zbb
+      ! print*, "naz, nbz = ", naz, nbz 
+      ! print*
+      ! print*, "--- plasma info ---"
+      ! print*, "nspec = ", nspec
+      ! print*, "npx   = ", npx
+      ! print*, "npy   = ", npy
+      ! print*, "npz   = ", npz
     endif  
 
-  end subroutine init_input
-
-
-  !---------------------------------------------------------------------
-  ! initialize MPI domain decomposition
-  !---------------------------------------------------------------------
-  subroutine init_decomp
-    integer :: i
-
+    ! initialize MPI domain decomposition
     if (myid==0) then
       print*, " "
       print*, "MPI decompsition"
@@ -297,7 +285,8 @@ program h3d
       print*, "Local array size in z-direction = ", nzlmax
     endif
 
-  end subroutine init_decomp
+    return
+  end subroutine init_input
 
   !---------------------------------------------------------------------
   ! main simulation loops
