@@ -3,8 +3,7 @@ module m_particle
   use m_mesh
   implicit none
 
-  real*8, private :: hh, dth 
-  real*8, private :: dth 
+  real*8, private :: hh, dth
   integer, private :: is, i, j, k
 
   dth = dt/2
