@@ -4,16 +4,19 @@ module m_init
   use m_mesh
   implicit none
 
+  integer, private :: i, j, k
+  real*8, private :: dvx_, dvy_, dvz_
+
   contains 
 
   !---------------------------------------------------------------------
   ! init waves
   !---------------------------------------------------------------------
   subroutine init_waves 
-    integer :: i, j, k
+    
     real*8 :: B0, VA, mi
     real*8 :: kx, ky, kz, kxmin, kymin, kzmin, x_pos, y_pos, z_pos
-    real*8 :: bx_, by_, bz_, ex_, ey_, ez_, dvx_, dvy_, dvz_
+    real*8 :: bx_, by_, bz_, ex_, ey_, ez_
 
     if (myid==0) then
       print*, " "
