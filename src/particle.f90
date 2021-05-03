@@ -3,6 +3,12 @@ module m_particle
   use m_mesh
   implicit none
 
+  real*8 :: h, hh, dth 
+
+  h   = dt*qspec(is)/wspec(is)
+  hh  = 0.5*h
+  dth = dt/2
+
   contains 
 
   !-----------------------------------------------------------------
@@ -13,7 +19,7 @@ module m_particle
     integer*8 :: is, i, j, k, jbmin, jbmax, kbmin, kbmax
     real*8 :: dns_tmp
 
-    ! initialize sth
+    ! initialize density, velocity
     do is = 1, nspec
       do k = kb-1, ke+1
         do j = jb-1, je+1
@@ -39,9 +45,9 @@ module m_particle
     ! push particles
     call date_and_time(values=time_begin(:,31))
     if (ndim /= 1) then
-      call parmov
+      call parmove
     else
-      call parmov_2d
+      call parmove_2d
     endif
     call date_and_time(values=time_end(:,31))
     call add_time(time_begin(1,31),time_end(1,31),time_elapsed(31))
@@ -80,18 +86,18 @@ module m_particle
     if (smoothing) then
       if (ndim /=1) then
         do i = 1, smooth_pass
-          call nsmth(den)
-          call nsmth(denh)
-          call nsmth(vix)
-          call nsmth(viy)
-          call nsmth(viz)
+          call nsmooth(den)
+          call nsmooth(denh)
+          call nsmooth(vix)
+          call nsmooth(viy)
+          call nsmooth(viz)
         enddo
       else
-        call nsmth_2d(den, nx2, ny2, nz2)
-        call nsmth_2d(denh, nx2, ny2, nz2)
-        call nsmth_2d(vix, nx2, ny2, nz2)
-        call nsmth_2d(viy, nx2, ny2, nz2)
-        call nsmth_2d(viz, nx2, ny2, nz2)
+        call nsmooth_2d(den, nx2, ny2, nz2)
+        call nsmooth_2d(denh, nx2, ny2, nz2)
+        call nsmooth_2d(vix, nx2, ny2, nz2)
+        call nsmooth_2d(viy, nx2, ny2, nz2)
+        call nsmooth_2d(viz, nx2, ny2, nz2)
       endif
     endif
 
@@ -125,12 +131,394 @@ module m_particle
 
 
   !---------------------------------------------------------------------
+  ! particle move?  
+  !---------------------------------------------------------------------
+  subroutine parmove     
+    real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8, &
+              by1,by2,by3,by4,by5,by6,by7,by8, &
+              bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8, &
+              bxa,bya,bza
+    real*8 :: ex1,ex2,ex3,ex4,ex5,ex6,ex7,ex8, &
+              ey1,ey2,ey3,ey4,ey5,ey6,ey7,ey8, &
+              ez1,ez2,ez3,ez4,ez5,ez6,ez7,ez8
+    real*8 :: deltime1,deltime2,ff
+    real*8 :: fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8,foxa
+    real*8 :: foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8,foya
+    real*8 :: foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8,foza
+    real*8 :: w1e,w2e,w3e,w4e,w5e,w6e,w7e,w8e
+    real*8 :: vex,vey,vez,vmag,vx_tmp,vy_tmp,vz_tmp
+    real*8 :: p2xs,p2ys,p2zs,q_p,th
+
+    integer*8 i,ii,iix,iixe, iiy,iiye,iiz,iize,irepeat,irepeatp,is,itmp
+    integer*8 iv,iye_cc,ize_cc,j,jv,k,npleavingp,nprecv,nprecvtmp
+    integer*8 Storage_Error_p,Storage_Error
+    integer*8:: nsendactual, nsendactualp, nrecvactual, nrecvactualp, &
+                jj,kk,ix,iy,iz,ixe,iye,ize, &
+                ixep1,iyep1,izep1,ixp1,iyp1,izp1
+    real*8 :: pdata(7),rx,ry,rz,fx,fy,fz,w1,w2,w3,w4,w5,w6,w7,w8,xpart,ypart,zpart
+    real*8 :: rxe, rye, rze, fxe, fye, fze
+    real*8 :: x_disp,y_disp,z_disp 
+    real*8 :: dth
+    real*8 :: myranf,fluxran,vxa,vyz,vza
+    integer*8:: L, EXIT_CODE_P, EXIT_CODE
+    integer*8:: n_fast_removed, n_fast_removed_local,Field_Diverge,Field_Diverge_p
+    real*8 :: tx,ty,tz,v_x,v_y,v_z  
+    integer*4 :: nescapearr(8),nescapearr_global(8)
+    integer*4 :: ppacket(3), ppacketg(3), dpacket(4), dpacketg(4)
+    integer*8 :: epacket(2),epacketg(2),loop
+    real*8, dimension(3,nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax) :: bxyz_av
+    real*8 :: TEX1,TEX2,TEX3,TEX4,TEX5,TEX6,TEX7,TEX8  
+    real*8 :: TEY1,TEY2,TEY3,TEY4,TEY5,TEY6,TEY7,TEY8  
+    real*8 :: TEZ1,TEZ2,TEZ3,TEZ4,TEZ5,TEZ6,TEZ7,TEZ8  
+    real*8 :: mX_xa,mX_ta,mX_ca1,mX_ca2,mX_xb,mX_dtdx,mX_tb,mX_cb1,mX_cb2
+    real*8 :: mY_xa,mY_ta,mY_ca1,mY_ca2,mY_xb,mY_dtdx,mY_tb,mY_cb1,mY_cb2
+    real*8 :: mZ_xa,mZ_ta,mZ_ca1,mZ_ca2,mZ_xb,mZ_dtdx,mZ_tb,mZ_cb1,mZ_cb2
+
+    integer,dimension(8) :: nsend_to_nbr, nbrs
+    integer :: idest, max_nsend, max_nrecv
+    real*8,dimension(:,:,:),allocatable,target :: packed_pdata_send
+    real*8,dimension(:,:),allocatable,target :: packed_pdata_recv
+    real*8,pointer :: pp(:,:)
+    integer exchange_send_request(8)
+
+    data fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8/0,0,0,0,0,0,0,0/
+    data foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8/0,0,0,0,0,0,0,0/
+    data foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8/0,0,0,0,0,0,0,0/
+
+    dth = dt/2
+
+    ! obtain spatial average of bx, by, bz
+    bx_av=0.; by_av=0.; bz_av=0.
+    do k = kb-1, ke
+      do j = jb-1, je
+        do i = 1, nx1
+          bx_av(i,j,k)=0.125*( bx(i  ,j  ,k  )             &
+                              +bx(i+1,j  ,k  )             &
+                              +bx(i  ,j+1,k  )             &
+                              +bx(i+1,j+1,k  )             &
+                              +bx(i  ,j  ,k+1)             &
+                              +bx(i+1,j  ,k+1)             &
+                              +bx(i  ,j+1,k+1)             &
+                              +bx(i+1,j+1,k+1)             &
+                              )
+          by_av(i,j,k)=0.125*( by(i  ,j  ,k  )             &
+                              +by(i+1,j  ,k  )             &
+                              +by(i  ,j+1,k  )             &
+                              +by(i+1,j+1,k  )             &
+                              +by(i  ,j  ,k+1)             &
+                              +by(i+1,j  ,k+1)             &
+                              +by(i  ,j+1,k+1)             &
+                              +by(i+1,j+1,k+1)             &
+                              )
+          bz_av(i,j,k)=0.125*( bz(i  ,j  ,k  )             &
+                              +bz(i+1,j  ,k  )             &
+                              +bz(i  ,j+1,k  )             &
+                              +bz(i+1,j+1,k  )             &
+                              +bz(i  ,j  ,k+1)             &
+                              +bz(i+1,j  ,k+1)             &
+                              +bz(i  ,j+1,k+1)             &
+                              +bz(i+1,j+1,k+1)             &
+                              )
+        enddo
+      enddo
+    enddo
+    
+    call xrealbcc_pack_b(bx_av,by_av,bz_av,1_8,nx,ny,nz)
+
+    ! init diagnostic variables that keep track of particle number, injection, and escape
+    deltime1 = 0.; deltime2 = 0.; npleavingp = 0
+
+    ! if dt==0, no actual particle push is done
+    if (dt>0) then 
+      ! push particles for a half step
+      call date_and_time(values=time_begin(:,33))
+      call push
+      call date_and_time(values=time_end(:,33))
+      call add_time(time_begin(1,33),time_end(1,33),time_elapsed(33))
+
+      ! check particles
+      call date_and_time(values=time_begin(:,34))
+      call parbound
+      call date_and_time(values=time_end(:,34))
+      call add_time(time_begin(1,34),time_end(1,34),time_elapsed(34))
+
+      ! collect vi, ni at half step
+      call date_and_time(values=time_begin(:,35))
+      do is = 1, nspec
+        nptotp = 0
+        npart(is) = 0
+        do iiz = kb-1, ke
+          do iiy = jb-1, je
+            do iix = 1, nx1
+              np=iphead(iix,iiy,iiz,is)
+              do while (np.ne.0)
+                nptotp = nptotp+1           !count particles
+                npart(is) = npart(is) + 1 !count particles in each species
+                L=np
+
+                q_p = qp(l)
+
+                ! Nonuniform mesh - using mesh_unmap
+                rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
+                ry=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
+                rz=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
+                ix=rx
+                iy=ry
+                iz=rz
+                fx=rx-ix
+                fy=ry-iy
+                fz=rz-iz
+                iy=iy-1             ! integer index in y direction starts at 0
+                iz=iz-1             ! integer index in z direction starts at 0
+  
+                ixp1 = ix+1
+                iyp1 = iy+1
+                izp1 = iz+1
+
+                w1=q_p*(1.-fx)*(1.-fy)*(1.-fz)
+                w2=q_p*fx     *(1.-fy)*(1.-fz)
+                w3=q_p*(1.-fx)*fy     *(1.-fz)
+                w4=q_p*fx     *fy     *(1.-fz)
+                w5=q_p*(1.-fx)*(1.-fy)*fz
+                w6=q_p*fx     *(1.-fy)*fz
+                w7=q_p*(1.-fx)*fy     *fz
+                w8=q_p*fx     *fy     *fz
+  
+                dnsh(ix  ,iy  ,iz  ,is)=dnsh(ix  ,iy  ,iz  ,is)+w1
+                dnsh(ixp1,iy  ,iz  ,is)=dnsh(ixp1,iy  ,iz  ,is)+w2
+                dnsh(ix  ,iyp1,iz  ,is)=dnsh(ix  ,iyp1,iz  ,is)+w3
+                dnsh(ixp1,iyp1,iz  ,is)=dnsh(ixp1,iyp1,iz  ,is)+w4
+                dnsh(ix  ,iy  ,izp1,is)=dnsh(ix  ,iy  ,izp1,is)+w5
+                dnsh(ixp1,iy  ,izp1,is)=dnsh(ixp1,iy  ,izp1,is)+w6
+                dnsh(ix  ,iyp1,izp1,is)=dnsh(ix  ,iyp1,izp1,is)+w7
+                dnsh(ixp1,iyp1,izp1,is)=dnsh(ixp1,iyp1,izp1,is)+w8
+
+                vxs(ix  ,iy  ,iz  ,is)=vxs(ix  ,iy  ,iz  ,is)+w1*vx(l)
+                vxs(ixp1,iy  ,iz  ,is)=vxs(ixp1,iy  ,iz  ,is)+w2*vx(l)
+                vxs(ix  ,iyp1,iz  ,is)=vxs(ix  ,iyp1,iz  ,is)+w3*vx(l)
+                vxs(ixp1,iyp1,iz  ,is)=vxs(ixp1,iyp1,iz  ,is)+w4*vx(l)
+                vxs(ix  ,iy  ,izp1,is)=vxs(ix  ,iy  ,izp1,is)+w5*vx(l)
+                vxs(ixp1,iy  ,izp1,is)=vxs(ixp1,iy  ,izp1,is)+w6*vx(l)
+                vxs(ix  ,iyp1,izp1,is)=vxs(ix  ,iyp1,izp1,is)+w7*vx(l)
+                vxs(ixp1,iyp1,izp1,is)=vxs(ixp1,iyp1,izp1,is)+w8*vx(l)
+
+                vys(ix  ,iy  ,iz  ,is)=vys(ix  ,iy  ,iz  ,is)+w1*vy(l)
+                vys(ixp1,iy  ,iz  ,is)=vys(ixp1,iy  ,iz  ,is)+w2*vy(l)
+                vys(ix  ,iyp1,iz  ,is)=vys(ix  ,iyp1,iz  ,is)+w3*vy(l)
+                vys(ixp1,iyp1,iz  ,is)=vys(ixp1,iyp1,iz  ,is)+w4*vy(l)
+                vys(ix  ,iy  ,izp1,is)=vys(ix  ,iy  ,izp1,is)+w5*vy(l)
+                vys(ixp1,iy  ,izp1,is)=vys(ixp1,iy  ,izp1,is)+w6*vy(l)
+                vys(ix  ,iyp1,izp1,is)=vys(ix  ,iyp1,izp1,is)+w7*vy(l)
+                vys(ixp1,iyp1,izp1,is)=vys(ixp1,iyp1,izp1,is)+w8*vy(l)
+
+                vzs(ix  ,iy  ,iz  ,is)=vzs(ix  ,iy  ,iz  ,is)+w1*vz(l)
+                vzs(ixp1,iy  ,iz  ,is)=vzs(ixp1,iy  ,iz  ,is)+w2*vz(l)
+                vzs(ix  ,iyp1,iz  ,is)=vzs(ix  ,iyp1,iz  ,is)+w3*vz(l)
+                vzs(ixp1,iyp1,iz  ,is)=vzs(ixp1,iyp1,iz  ,is)+w4*vz(l)
+                vzs(ix  ,iy  ,izp1,is)=vzs(ix  ,iy  ,izp1,is)+w5*vz(l)
+                vzs(ixp1,iy  ,izp1,is)=vzs(ixp1,iy  ,izp1,is)+w6*vz(l)
+                vzs(ix  ,iyp1,izp1,is)=vzs(ix  ,iyp1,izp1,is)+w7*vz(l)
+                vzs(ixp1,iyp1,izp1,is)=vzs(ixp1,iyp1,izp1,is)+w8*vz(l)
+  
+                np=link(np)
+              enddo ! while
+            enddo !for iix
+          enddo !for iiy
+        enddo !for iiz
+
+        call xreal(DNSH(1,jb-1,kb-1,is),nx,ny,nz)
+        call xreal(VXS(1,jb-1,kb-1,is),nx,ny,nz)
+        call xreal(VYS(1,jb-1,kb-1,is),nx,ny,nz)
+        call xreal(VZS(1,jb-1,kb-1,is),nx,ny,nz)
+        call xrealbcc(DNSH(1,jb-1,kb-1,is),1_8,nx,ny,nz)
+        call xrealbcc(VXS(1,jb-1,kb-1,is),1_8,nx,ny,nz)
+        call xrealbcc(VYS(1,jb-1,kb-1,is),1_8,nx,ny,nz)
+        call xrealbcc(VZS(1,jb-1,kb-1,is),1_8,nx,ny,nz)
+
+        do iiz = kb-1, ke+1
+          do iiy = jb-1, je+1
+            do iix = 1, nx2
+              dnsh(iix,iiy,iiz,is)= dnsh(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+              vxs(iix,iiy,iiz,is) = vxs(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+              vys(iix,iiy,iiz,is) = vys(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+              vzs(iix,iiy,iiz,is) = vzs(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+            enddo
+          enddo
+        enddo
+      enddo ! for is
+      call date_and_time(values=time_end(:,35))
+      call add_time(time_begin(1,35),time_end(1,35),time_elapsed(35))
+
+      ! advance particles for second half step
+      call date_and_time(values=time_begin(:,33))
+      do is = 1, nspec
+        do iize = kb-1, ke
+          do iiye = jb-1, je
+            do iixe = 1, nx1
+              np = iphead(iixe,iiye,iize,is)
+              do while (np.ne.0)
+                L=np
+                x_disp = dth*vx(l)
+                y_disp = dth*vy(l)
+                z_disp = dth*vz(l)
+
+                x(l)=x(l)+ x_disp
+                y(l)=y(l)+ y_disp
+                z(l)=z(l)+ z_disp
+
+                np=link(np)
+              enddo ! while
+            enddo ! for iixe
+          enddo ! for iiye
+        enddo ! for iize
+      enddo ! for is
+      call date_and_time(values=time_end(:,33))
+      call add_time(time_begin(1,33),time_end(1,33),time_elapsed(33))
+
+    endif ! dt>0
+
+    ! check particles
+    call date_and_time(values=time_begin(:,34))
+    call parbound
+    call date_and_time(values=time_end(:,34))
+    call add_time(time_begin(1,34),time_end(1,34),time_elapsed(34))
+
+    ! collect density
+    call date_and_time(values=time_begin(:,35))
+    do is = 1, nspec
+      nptotp = 0
+      npart(is) = 0
+      do iiz=kb-1,ke
+        do iiy=jb-1,je
+          do iix=1,NX1
+            np=iphead(iix,iiy,iiz,is)
+            do while (np.ne.0)
+              nptotp=nptotp+1           !count particles
+              npart(is) = npart(is) + 1 !count particles in each species
+              L = np
+
+              q_p = qp(l)
+
+              ! Nonuniform mesh - using mesh_unmap
+              rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
+              ry=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
+              rz=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
+              ix=rx
+              iy=ry
+              iz=rz
+              fx=rx-ix
+              fy=ry-iy
+              fz=rz-iz
+              iy=iy-1             ! integer index in y direction starts at 0
+              iz=iz-1             ! integer index in z direction starts at 0
+
+              ixp1 = ix+1
+              iyp1 = iy+1
+              izp1 = iz+1
+
+              w1=q_p*(1.-fx)*(1.-fy)*(1.-fz)
+              w2=q_p*fx     *(1.-fy)*(1.-fz)
+              w3=q_p*(1.-fx)*fy     *(1.-fz)
+              w4=q_p*fx     *fy     *(1.-fz)
+              w5=q_p*(1.-fx)*(1.-fy)*fz
+              w6=q_p*fx     *(1.-fy)*fz
+              w7=q_p*(1.-fx)*fy     *fz
+              w8=q_p*fx     *fy     *fz
+
+              dns(ix  ,iy  ,iz  ,is)=dns(ix  ,iy  ,iz  ,is)+w1
+              dns(ixp1,iy  ,iz  ,is)=dns(ixp1,iy  ,iz  ,is)+w2
+              dns(ix  ,iyp1,iz  ,is)=dns(ix  ,iyp1,iz  ,is)+w3
+              dns(ixp1,iyp1,iz  ,is)=dns(ixp1,iyp1,iz  ,is)+w4
+              dns(ix  ,iy  ,izp1,is)=dns(ix  ,iy  ,izp1,is)+w5
+              dns(ixp1,iy  ,izp1,is)=dns(ixp1,iy  ,izp1,is)+w6
+              dns(ix  ,iyp1,izp1,is)=dns(ix  ,iyp1,izp1,is)+w7
+              dns(ixp1,iyp1,izp1,is)=dns(ixp1,iyp1,izp1,is)+w8
+
+              np=link(np)
+            enddo
+          enddo
+        enddo
+      enddo
+
+      nescapearr(1) = nescape(is)
+      nescapearr(2) = nescape_yz(is)
+      nescapearr(3) = nescape_zy(is)
+      nescapearr(4) = nescape_xy(is)
+      nescapearr(5) = nescape_yx(is)
+      nescapearr(6) = nescape_zx(is)
+      nescapearr(7) = nescape_xz(is)
+      nescapearr(8) = npart(is)
+
+      call MPI_ALLREDUCE(nescapearr,nescapearr_global,8,MPI_INTEGER4,MPI_SUM,COMM2D,IERR)
+      nescape_global(is)    = nescapearr_global(1)
+      nescape_yz_global(is) = nescapearr_global(2)
+      nescape_zy_global(is) = nescapearr_global(3)
+      nescape_xy_global(is) = nescapearr_global(4)
+      nescape_yx_global(is) = nescapearr_global(5)
+      nescape_zx_global(is) = nescapearr_global(6)
+      nescape_xz_global(is) = nescapearr_global(7)
+      npart_global(is)      = nescapearr_global(8)
+
+      deltime2 = deltime2 + real(clock_time1-clock_now)
+
+      call xreal(dns(1,jb-1,kb-1,is),nx,ny,nz)
+      call xrealbcc(dns(1,jb-1,kb-1,is),1_8,nx,ny,nz)
+
+      do iiz = kb-1, ke+1
+        do iiy = jb-1, je+1
+          do iix = 1, nx2
+            dns(iix,iiy,iiz,is) = dns(iix,iiy,iiz,is)/(meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+          enddo
+        enddo
+      enddo
+    enddo ! for is
+    call date_and_time(values=time_end(:,35))
+    call add_time(time_begin(1,35),time_end(1,35),time_elapsed(35))
+
+    ! diagnostic info
+    epacket(1) = nptotp
+    epacket(2) = npleavingp
+    call MPI_ALLREDUCE(epacket,epacketg,2,MPI_INTEGER8,MPI_SUM,MPI_COMM_WORLD,IERR)
+    nptot      = epacketg(1)
+    npleaving  = epacketg(2)
+
+    ! if (myid == 0.and.mod(it,n_print)==0) then
+    !   do is=1,nspec
+    !     if (is == 1) then
+    !       print*,
+    !       print*, "it = ", it
+    !       print*, "species #    ninj     nescape     ntot  "
+    !     endif
+    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_global(is), npart_global(is)
+    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_yz_global(is), npart_global(is)
+    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_zy_global(is), npart_global(is)
+    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_xy_global(is), npart_global(is)
+    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_yx_global(is), npart_global(is)
+    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_xz_global(is), npart_global(is)
+    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_zx_global(is), npart_global(is)
+    !   enddo
+
+    !   if (nspec >= 2) then
+    !     write(6,"(5x,'sum',4x,i8,2x,i8,2x,i10)") ninj_global(1)+ninj_global(2), &
+    !               nescape_global(1)+nescape_global(2), npart_global(1)+npart_global(2)
+    !   else
+    !     write(6,"(5x,'sum',4x,i8,2x,i8,2x,i10)") ninj_global(1), nescape_global(1), npart_global(1)
+    !   endif
+    ! endif
+
+    ninj        = 0
+    ninj_global = 0
+
+    return
+  end subroutine parmove
+
+
+  !---------------------------------------------------------------------
   ! This subourtine pushes particles for half a step
   !---------------------------------------------------------------------
   subroutine push
     integer*8 :: is,iixe,iiye,iize,l
-    integer*8:: ix,iy,iz,ixe,iye,ize,ixep1,iyep1,izep1,ixp1,iyp1,izp1
-    real*8 :: wmult, h, hh, dth
+    integer*8 :: ix,iy,iz,ixe,iye,ize,ixep1,iyep1,izep1,ixp1,iyp1,izp1
     real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8, &
               by1,by2,by3,by4,by5,by6,by7,by8, &
               bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8, & 
@@ -144,35 +532,25 @@ module m_particle
     real*8 :: foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8,foza
     real*8 :: w1e,w2e,w3e,w4e,w5e,w6e,w7e,w8e
     real*8 :: vex,vey,vez
-    real*8:: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
+    real*8:: rxe,rye,rze,fxe,fye,fze
     real*8 :: p2xs,p2ys,p2zs,ff
     real*8:: x_disp,y_disp,z_disp,disp_max_p(3),disp_max(3), &
             y_disp_max_p, x_disp_max_p, z_disp_max_p, &
             y_disp_max, x_disp_max, z_disp_max
     integer*8 :: Courant_Violation, Courant_Violation_p 
 
-    dtxi = 1./meshX%dt
-    dtyi = 1./meshY%dt
-    dtzi = 1./meshZ%dt
-
     do is = 1, nspec
       Courant_Violation_p = 0
       x_disp_max_p        = 0
       y_disp_max_p        = 0
       z_disp_max_p        = 0
-
-      wmult = wspec(is)
-      h = dt*qspec(is)/wmult
-      hh = .5*h
-      dth = dt/2
   
       do iize = kb-1,ke
         do iiye = jb-1,je
-          do iixe = 1, NX1
-            np=iphead(iixe,iiye,iize,is)
+          do iixe = 1, nx1
+            np = iphead(iixe,iiye,iize,is)
             do while (np.ne.0)
-              L=np
-
+              l = np
               ! Nonuniform mesh - using mesh_unmap
               rxe=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
               rye=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
@@ -377,11 +755,11 @@ module m_particle
 
 
   !---------------------------------------------------------------------
-  subroutine particle_boundary
+  subroutine parbound
       integer*4 :: ppacket(3),ppacketg(3),dpacket(4),dpacketg(4)
       integer*8 :: epacket(2),epacketg(2),loop
       real*8 :: xpart,ypart,zpart
-      real*8 :: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
+      real*8 :: rxe,rye,rze,fxe,fye,fze
       integer*8 :: nsendactual,nsendactualp,nrecvactualp,nrecvactual,jj,kk,ix,iy,iz,ixe,iye,ize           &
                   ,ixep1,iyep1,izep1,ixp1,iyp1,izp1
       integer*8 :: Storage_Error_p,Storage_Error
@@ -399,9 +777,6 @@ module m_particle
       real*8 :: hxmin,hxmax,hymin,hymax,hzmin,hzmax,cell_size_min
       Storage_Error_p = 0
       Field_Diverge_p = 0
-      dtxi = 1./meshX%dt
-      dtyi = 1./meshY%dt
-      dtzi = 1./meshZ%dt
 
       ! determine the velocity limit based on CFL condition
 
@@ -875,393 +1250,7 @@ module m_particle
           ! endif
 
         enddo ! for is
-  end subroutine particle_boundary
-
-
-  !---------------------------------------------------------------------
-  subroutine parmov   ! particle move?    
-    real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8, &
-              by1,by2,by3,by4,by5,by6,by7,by8, &
-              bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8, &
-              bxa,bya,bza
-    real*8 :: ex1,ex2,ex3,ex4,ex5,ex6,ex7,ex8, &
-              ey1,ey2,ey3,ey4,ey5,ey6,ey7,ey8, &
-              ez1,ez2,ez3,ez4,ez5,ez6,ez7,ez8
-    real*8 :: deltime1,deltime2,ff,h,hh
-    real*8 :: fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8,foxa
-    real*8 :: foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8,foya
-    real*8 :: foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8,foza
-    real*8 :: w1e,w2e,w3e,w4e,w5e,w6e,w7e,w8e
-    real*8 :: vex,vey,vez,vmag,vx_tmp,vy_tmp,vz_tmp
-    real*8 :: p2xs,p2ys,p2zs,q_p,th
-    real*8 :: wmult
-
-    integer*8 i,ii,iix,iixe, iiy,iiye,iiz,iize,irepeat,irepeatp,is,itmp
-    integer*8 iv,iye_cc,ize_cc,j,jv,k,npleavingp,nprecv,nprecvtmp
-    integer*8 Storage_Error_p,Storage_Error
-    integer*8:: nsendactual, nsendactualp, nrecvactual, nrecvactualp, &
-                jj,kk,ix,iy,iz,ixe,iye,ize, &
-                ixep1,iyep1,izep1,ixp1,iyp1,izp1
-    real*8 :: pdata(7),rx,ry,rz,fx,fy,fz,w1,w2,w3,w4,w5,w6,w7,w8,xpart,ypart,zpart
-    real*8 :: rxe, rye, rze, fxe, fye, fze, dtxi, dtyi, dtzi
-    real*8 :: x_disp,y_disp,z_disp 
-    real*8 :: dth
-    real*8 :: myranf,fluxran,vxa,vyz,vza
-    integer*8:: L, EXIT_CODE_P, EXIT_CODE
-    integer*8:: n_fast_removed, n_fast_removed_local,Field_Diverge,Field_Diverge_p
-    real*8 :: tx,ty,tz,v_x,v_y,v_z  
-    integer*4 :: nescapearr(8),nescapearr_global(8)
-    integer*4 :: ppacket(3), ppacketg(3), dpacket(4), dpacketg(4)
-    integer*8 :: epacket(2),epacketg(2),loop
-    real*8, dimension(3,nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax) :: bxyz_av
-    real*8 :: TEX1,TEX2,TEX3,TEX4,TEX5,TEX6,TEX7,TEX8  
-    real*8 :: TEY1,TEY2,TEY3,TEY4,TEY5,TEY6,TEY7,TEY8  
-    real*8 :: TEZ1,TEZ2,TEZ3,TEZ4,TEZ5,TEZ6,TEZ7,TEZ8  
-    real*8 :: mX_xa,mX_ta,mX_ca1,mX_ca2,mX_xb,mX_dtdx,mX_tb,mX_cb1,mX_cb2
-    real*8 :: mY_xa,mY_ta,mY_ca1,mY_ca2,mY_xb,mY_dtdx,mY_tb,mY_cb1,mY_cb2
-    real*8 :: mZ_xa,mZ_ta,mZ_ca1,mZ_ca2,mZ_xb,mZ_dtdx,mZ_tb,mZ_cb1,mZ_cb2
-
-    integer,dimension(8) :: nsend_to_nbr, nbrs
-    integer :: idest, max_nsend, max_nrecv
-    real*8,dimension(:,:,:),allocatable,target :: packed_pdata_send
-    real*8,dimension(:,:),allocatable,target :: packed_pdata_recv
-    real*8,pointer :: pp(:,:)
-    integer exchange_send_request(8)
-    ! real*8 :: mp_elapsed
-
-    data fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8/0,0,0,0,0,0,0,0/
-    data foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8/0,0,0,0,0,0,0,0/
-    data foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8/0,0,0,0,0,0,0,0/
-
-    dtxi = one/meshX%dt
-    dtyi = one/meshY%dt
-    dtzi = one/meshZ%dt
-    dth = dt/2
-
-    ! obtain spatial average of bx, by, bz
-    bx_av=0.; by_av=0.; bz_av=0.
-    do k = kb-1, ke
-      do j = jb-1, je
-        do i = 1, nx1
-          bx_av(i,j,k)=0.125*( bx(i  ,j  ,k  )             &
-                              +bx(i+1,j  ,k  )             &
-                              +bx(i  ,j+1,k  )             &
-                              +bx(i+1,j+1,k  )             &
-                              +bx(i  ,j  ,k+1)             &
-                              +bx(i+1,j  ,k+1)             &
-                              +bx(i  ,j+1,k+1)             &
-                              +bx(i+1,j+1,k+1)             &
-                              )
-          by_av(i,j,k)=0.125*( by(i  ,j  ,k  )             &
-                              +by(i+1,j  ,k  )             &
-                              +by(i  ,j+1,k  )             &
-                              +by(i+1,j+1,k  )             &
-                              +by(i  ,j  ,k+1)             &
-                              +by(i+1,j  ,k+1)             &
-                              +by(i  ,j+1,k+1)             &
-                              +by(i+1,j+1,k+1)             &
-                              )
-          bz_av(i,j,k)=0.125*( bz(i  ,j  ,k  )             &
-                              +bz(i+1,j  ,k  )             &
-                              +bz(i  ,j+1,k  )             &
-                              +bz(i+1,j+1,k  )             &
-                              +bz(i  ,j  ,k+1)             &
-                              +bz(i+1,j  ,k+1)             &
-                              +bz(i  ,j+1,k+1)             &
-                              +bz(i+1,j+1,k+1)             &
-                              )
-        enddo
-      enddo
-    enddo
-    
-    call xrealbcc_pack_b(bx_av,by_av,bz_av,1_8,nx,ny,nz)
-
-    ! initalize diagnostic variables that keep track of particle number, injection, and escape
-    deltime1 = 0.; deltime2 = 0.; npleavingp = 0
-
-    ! if dt==0, no actual particle push is done
-    if (dt .ne. 0) then 
-      ! advance particles for a first half step
-      call date_and_time(values=time_begin(:,33))
-      call push
-      call date_and_time(values=time_end(:,33))
-      call add_time(time_begin(1,33),time_end(1,33),time_elapsed(33))
-
-      ! check particles
-      call date_and_time(values=time_begin(:,34))
-      call particle_boundary
-      call date_and_time(values=time_end(:,34))
-      call add_time(time_begin(1,34),time_end(1,34),time_elapsed(34))
-
-      ! collect Vi, ni at half step
-      call date_and_time(values=time_begin(:,35))
-      do is = 1, nspec
-        nptotp = 0
-        npart(is) = 0
-        do iiz = kb-1, ke
-          do iiy = jb-1, je
-            do iix = 1, nx1
-              np=iphead(iix,iiy,iiz,is)
-              do while (np.ne.0)
-                nptotp = nptotp+1           !count particles
-                npart(is) = npart(is) + 1 !count particles in each species
-                L=np
-
-                q_p = qp(l)
-
-                ! Nonuniform mesh - using mesh_unmap
-                rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
-                ry=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
-                rz=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
-                ix=rx
-                iy=ry
-                iz=rz
-                fx=rx-ix
-                fy=ry-iy
-                fz=rz-iz
-                iy=iy-1             ! integer index in y direction starts at 0
-                iz=iz-1             ! integer index in z direction starts at 0
-  
-                ixp1 = ix+1
-                iyp1 = iy+1
-                izp1 = iz+1
-
-                w1=q_p*(1.-fx)*(1.-fy)*(1.-fz)
-                w2=q_p*fx     *(1.-fy)*(1.-fz)
-                w3=q_p*(1.-fx)*fy     *(1.-fz)
-                w4=q_p*fx     *fy     *(1.-fz)
-                w5=q_p*(1.-fx)*(1.-fy)*fz
-                w6=q_p*fx     *(1.-fy)*fz
-                w7=q_p*(1.-fx)*fy     *fz
-                w8=q_p*fx     *fy     *fz
-  
-                dnsh(ix  ,iy  ,iz  ,is)=dnsh(ix  ,iy  ,iz  ,is)+w1
-                dnsh(ixp1,iy  ,iz  ,is)=dnsh(ixp1,iy  ,iz  ,is)+w2
-                dnsh(ix  ,iyp1,iz  ,is)=dnsh(ix  ,iyp1,iz  ,is)+w3
-                dnsh(ixp1,iyp1,iz  ,is)=dnsh(ixp1,iyp1,iz  ,is)+w4
-                dnsh(ix  ,iy  ,izp1,is)=dnsh(ix  ,iy  ,izp1,is)+w5
-                dnsh(ixp1,iy  ,izp1,is)=dnsh(ixp1,iy  ,izp1,is)+w6
-                dnsh(ix  ,iyp1,izp1,is)=dnsh(ix  ,iyp1,izp1,is)+w7
-                dnsh(ixp1,iyp1,izp1,is)=dnsh(ixp1,iyp1,izp1,is)+w8
-
-                vxs(ix  ,iy  ,iz  ,is)=vxs(ix  ,iy  ,iz  ,is)+w1*vx(l)
-                vxs(ixp1,iy  ,iz  ,is)=vxs(ixp1,iy  ,iz  ,is)+w2*vx(l)
-                vxs(ix  ,iyp1,iz  ,is)=vxs(ix  ,iyp1,iz  ,is)+w3*vx(l)
-                vxs(ixp1,iyp1,iz  ,is)=vxs(ixp1,iyp1,iz  ,is)+w4*vx(l)
-                vxs(ix  ,iy  ,izp1,is)=vxs(ix  ,iy  ,izp1,is)+w5*vx(l)
-                vxs(ixp1,iy  ,izp1,is)=vxs(ixp1,iy  ,izp1,is)+w6*vx(l)
-                vxs(ix  ,iyp1,izp1,is)=vxs(ix  ,iyp1,izp1,is)+w7*vx(l)
-                vxs(ixp1,iyp1,izp1,is)=vxs(ixp1,iyp1,izp1,is)+w8*vx(l)
-
-                vys(ix  ,iy  ,iz  ,is)=vys(ix  ,iy  ,iz  ,is)+w1*vy(l)
-                vys(ixp1,iy  ,iz  ,is)=vys(ixp1,iy  ,iz  ,is)+w2*vy(l)
-                vys(ix  ,iyp1,iz  ,is)=vys(ix  ,iyp1,iz  ,is)+w3*vy(l)
-                vys(ixp1,iyp1,iz  ,is)=vys(ixp1,iyp1,iz  ,is)+w4*vy(l)
-                vys(ix  ,iy  ,izp1,is)=vys(ix  ,iy  ,izp1,is)+w5*vy(l)
-                vys(ixp1,iy  ,izp1,is)=vys(ixp1,iy  ,izp1,is)+w6*vy(l)
-                vys(ix  ,iyp1,izp1,is)=vys(ix  ,iyp1,izp1,is)+w7*vy(l)
-                vys(ixp1,iyp1,izp1,is)=vys(ixp1,iyp1,izp1,is)+w8*vy(l)
-
-                vzs(ix  ,iy  ,iz  ,is)=vzs(ix  ,iy  ,iz  ,is)+w1*vz(l)
-                vzs(ixp1,iy  ,iz  ,is)=vzs(ixp1,iy  ,iz  ,is)+w2*vz(l)
-                vzs(ix  ,iyp1,iz  ,is)=vzs(ix  ,iyp1,iz  ,is)+w3*vz(l)
-                vzs(ixp1,iyp1,iz  ,is)=vzs(ixp1,iyp1,iz  ,is)+w4*vz(l)
-                vzs(ix  ,iy  ,izp1,is)=vzs(ix  ,iy  ,izp1,is)+w5*vz(l)
-                vzs(ixp1,iy  ,izp1,is)=vzs(ixp1,iy  ,izp1,is)+w6*vz(l)
-                vzs(ix  ,iyp1,izp1,is)=vzs(ix  ,iyp1,izp1,is)+w7*vz(l)
-                vzs(ixp1,iyp1,izp1,is)=vzs(ixp1,iyp1,izp1,is)+w8*vz(l)
-  
-                np=link(np)
-              enddo ! while
-            enddo !for iix
-          enddo !for iiy
-        enddo !for iiz
-
-        call xreal(DNSH(1,jb-1,kb-1,is),nx,ny,nz)
-        call xreal(VXS(1,jb-1,kb-1,is),nx,ny,nz)
-        call xreal(VYS(1,jb-1,kb-1,is),nx,ny,nz)
-        call xreal(VZS(1,jb-1,kb-1,is),nx,ny,nz)
-        call xrealbcc(DNSH(1,jb-1,kb-1,is),1_8,nx,ny,nz)
-        call xrealbcc(VXS(1,jb-1,kb-1,is),1_8,nx,ny,nz)
-        call xrealbcc(VYS(1,jb-1,kb-1,is),1_8,nx,ny,nz)
-        call xrealbcc(VZS(1,jb-1,kb-1,is),1_8,nx,ny,nz)
-
-        do iiz = kb-1, ke+1
-          do iiy = jb-1, je+1
-            do iix = 1, nx2
-              dnsh(iix,iiy,iiz,is)= dnsh(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
-              vxs(iix,iiy,iiz,is) = vxs(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
-              vys(iix,iiy,iiz,is) = vys(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
-              vzs(iix,iiy,iiz,is) = vzs(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
-            enddo
-          enddo
-        enddo
-      enddo ! for is
-      call date_and_time(values=time_end(:,35))
-      call add_time(time_begin(1,35),time_end(1,35),time_elapsed(35))
-
-      ! advance particles for second half step
-      call date_and_time(values=time_begin(:,33))
-      do is = 1, nspec
-        do iize = kb-1, ke
-          do iiye = jb-1, je
-            do iixe = 1, nx1
-              np = iphead(iixe,iiye,iize,is)
-              do while (np.ne.0)
-                L=np
-                x_disp = dth*vx(l)
-                y_disp = dth*vy(l)
-                z_disp = dth*vz(l)
-
-                x(l)=x(l)+ x_disp
-                y(l)=y(l)+ y_disp
-                z(l)=z(l)+ z_disp
-
-                np=link(np)
-              enddo ! while
-            enddo ! for iixe
-          enddo ! for iiye
-        enddo ! for iize
-      enddo ! for is
-      call date_and_time(values=time_end(:,33))
-      call add_time(time_begin(1,33),time_end(1,33),time_elapsed(33))
-
-    endif ! dt>0
-
-    ! check particles
-    call date_and_time(values=time_begin(:,34))
-    call particle_boundary
-    call date_and_time(values=time_end(:,34))
-    call add_time(time_begin(1,34),time_end(1,34),time_elapsed(34))
-
-    ! collect density
-    call date_and_time(values=time_begin(:,35))
-    do is = 1, nspec
-      nptotp = 0
-      npart(is) = 0
-      do iiz=kb-1,ke
-        do iiy=jb-1,je
-          do iix=1,NX1
-            np=iphead(iix,iiy,iiz,is)
-            do while (np.ne.0)
-              nptotp=nptotp+1           !count particles
-              npart(is) = npart(is) + 1 !count particles in each species
-              L = np
-
-              q_p = qp(l)
-
-              ! Nonuniform mesh - using mesh_unmap
-              rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
-              ry=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
-              rz=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
-              ix=rx
-              iy=ry
-              iz=rz
-              fx=rx-ix
-              fy=ry-iy
-              fz=rz-iz
-              iy=iy-1             ! integer index in y direction starts at 0
-              iz=iz-1             ! integer index in z direction starts at 0
-
-              ixp1 = ix+1
-              iyp1 = iy+1
-              izp1 = iz+1
-
-              w1=q_p*(1.-fx)*(1.-fy)*(1.-fz)
-              w2=q_p*fx     *(1.-fy)*(1.-fz)
-              w3=q_p*(1.-fx)*fy     *(1.-fz)
-              w4=q_p*fx     *fy     *(1.-fz)
-              w5=q_p*(1.-fx)*(1.-fy)*fz
-              w6=q_p*fx     *(1.-fy)*fz
-              w7=q_p*(1.-fx)*fy     *fz
-              w8=q_p*fx     *fy     *fz
-
-              dns(ix  ,iy  ,iz  ,is)=dns(ix  ,iy  ,iz  ,is)+w1
-              dns(ixp1,iy  ,iz  ,is)=dns(ixp1,iy  ,iz  ,is)+w2
-              dns(ix  ,iyp1,iz  ,is)=dns(ix  ,iyp1,iz  ,is)+w3
-              dns(ixp1,iyp1,iz  ,is)=dns(ixp1,iyp1,iz  ,is)+w4
-              dns(ix  ,iy  ,izp1,is)=dns(ix  ,iy  ,izp1,is)+w5
-              dns(ixp1,iy  ,izp1,is)=dns(ixp1,iy  ,izp1,is)+w6
-              dns(ix  ,iyp1,izp1,is)=dns(ix  ,iyp1,izp1,is)+w7
-              dns(ixp1,iyp1,izp1,is)=dns(ixp1,iyp1,izp1,is)+w8
-
-              np=link(np)
-            enddo
-          enddo
-        enddo
-      enddo
-
-      nescapearr(1) = nescape(is)
-      nescapearr(2) = nescape_yz(is)
-      nescapearr(3) = nescape_zy(is)
-      nescapearr(4) = nescape_xy(is)
-      nescapearr(5) = nescape_yx(is)
-      nescapearr(6) = nescape_zx(is)
-      nescapearr(7) = nescape_xz(is)
-      nescapearr(8) = npart(is)
-
-      call MPI_ALLREDUCE(nescapearr,nescapearr_global,8,MPI_INTEGER4,MPI_SUM,COMM2D,IERR)
-      nescape_global(is)    = nescapearr_global(1)
-      nescape_yz_global(is) = nescapearr_global(2)
-      nescape_zy_global(is) = nescapearr_global(3)
-      nescape_xy_global(is) = nescapearr_global(4)
-      nescape_yx_global(is) = nescapearr_global(5)
-      nescape_zx_global(is) = nescapearr_global(6)
-      nescape_xz_global(is) = nescapearr_global(7)
-      npart_global(is)      = nescapearr_global(8)
-
-      deltime2 = deltime2 + real(clock_time1-clock_now)
-
-      call xreal(dns(1,jb-1,kb-1,is),nx,ny,nz)
-      call xrealbcc(dns(1,jb-1,kb-1,is),1_8,nx,ny,nz)
-
-      do iiz = kb-1, ke+1
-        do iiy = jb-1, je+1
-          do iix = 1, nx2
-            dns(iix,iiy,iiz,is) = dns(iix,iiy,iiz,is)/(meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
-          enddo
-        enddo
-      enddo
-    enddo ! for is
-    call date_and_time(values=time_end(:,35))
-    call add_time(time_begin(1,35),time_end(1,35),time_elapsed(35))
-
-    ! diagnostic info
-    epacket(1) = nptotp
-    epacket(2) = npleavingp
-    call MPI_ALLREDUCE(epacket,epacketg,2,MPI_INTEGER8,MPI_SUM,MPI_COMM_WORLD,IERR)
-    nptot      = epacketg(1)
-    npleaving  = epacketg(2)
-
-    ! if (myid == 0.and.mod(it,n_print)==0) then
-    !   do is=1,nspec
-    !     if (is == 1) then
-    !       print*,
-    !       print*, "it = ", it
-    !       print*, "species #    ninj     nescape     ntot  "
-    !     endif
-    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_global(is), npart_global(is)
-    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_yz_global(is), npart_global(is)
-    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_zy_global(is), npart_global(is)
-    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_xy_global(is), npart_global(is)
-    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_yx_global(is), npart_global(is)
-    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_xz_global(is), npart_global(is)
-    !     write(6,"(5x,i2,5x,i8,2x,i8,2x,i10)") is, ninj_global(is), nescape_zx_global(is), npart_global(is)
-    !   enddo
-
-    !   if (nspec >= 2) then
-    !     write(6,"(5x,'sum',4x,i8,2x,i8,2x,i10)") ninj_global(1)+ninj_global(2), &
-    !               nescape_global(1)+nescape_global(2), npart_global(1)+npart_global(2)
-    !   else
-    !     write(6,"(5x,'sum',4x,i8,2x,i8,2x,i10)") ninj_global(1), nescape_global(1), npart_global(1)
-    !   endif
-    ! endif
-
-    ninj        = 0
-    ninj_global = 0
-
-    return
-  end subroutine parmov
+  end subroutine parbound
 
 
   !---------------------------------------------------------------------
@@ -1271,11 +1260,7 @@ module m_particle
     real*8 :: pstore(nplmax)
     integer :: pstore2(nplmax)
     integer*8 :: id, kb1, is, ix, iy, iz, ixe ,iye, ize, l, nttot, nplist
-    real*8 :: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
-    
-    dtxi = 1./meshX%dt
-    dtyi = 1./meshY%dt
-    dtzi = 1./meshZ%dt
+    real*8 :: rxe,rye,rze,fxe,fye,fze
 
     id = 0
     kb1 = kb-1
@@ -1425,15 +1410,11 @@ module m_particle
   !-----------------------------------------------------------------
   subroutine cal_temp
 
-    real*8 :: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,xx,xy,xz,yy,yz,zz
+    real*8 :: rx,ry,rz,fx,fy,fz, xx,xy,xz,yy,yz,zz
     integer*8 :: ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,is,l,iix,iixe
     real*8 :: vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
-              ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar,wmult
-    real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,h,hh,dns1,dns2,bxa,bya,bza,btota,dnst
-
-    dtxi = 1./meshX%dt
-    dtyi = 1./meshY%dt
-    dtzi = 1./meshZ%dt
+              ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar
+    real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,dns1,dns2,bxa,bya,bza,btota,dnst
 
     tpar=0.; tperp=0.
     p_xx=0.; p_xy=0.; p_xz=0.
@@ -1446,9 +1427,6 @@ module m_particle
     endif
 
     do is=1,nspec
-      wmult=wspec(is)
-      h=dt*qspec(is)/wmult
-      hh=.5*h
       dpedx = 0.
       do iize = kb-1,ke
         do iiye = jb-1,je
@@ -1663,17 +1641,235 @@ module m_particle
   end subroutine cal_temp
 
 
-  !---------------------------------------------------------------------
-  subroutine cal_temp_2d
-    real*8 :: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,xx,xy,xz,yy,yz,zz
+  !-----------------------------------------------------------------
+  ! computes field energy ex^2+ey^2+ez^2 and bx^2+by^2+bz^2
+  ! and particle energies
+  !-----------------------------------------------------------------
+  subroutine cal_energy
+    real*8 :: rx,ry,rz,fx,fy,fz,xx,xy,xz,yy,yz,zz
     integer*8 ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,is,l,iix,iixe
     real*8 :: vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
-          ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar,wmult
-    real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,h,hh,dns1,dns2,bxa,bya,bza,btota,dnst
-  
-    dtxi = 1./meshX%dt
-    dtyi = 1./meshY%dt
-    dtzi = 1./meshZ%dt
+          ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar
+    real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,dns1,dns2,bxa,bya,bza,btota,dnst
+    real*8 :: bfld_p, efld_p, efluid_p, ethermal_p, v2
+    integer*8 :: i, j, k
+    
+    efld_p=0.; bfld_p=0.; efluid_p=0.; ethermal_p=0.; v2=0.
+
+    ! particle energy calculation -- works for 3D only !!!
+    p_xx=0.; p_yy=0.; p_zz=0.
+
+    do is = 1, 1 ! ??
+      do iize = kb-1,ke
+        do iiye = jb-1,je
+          do iixe = 1, NX1
+            np = iphead(iixe,iiye,iize,is)
+            do while (np.ne.0)
+              L=np
+
+              ! Nonuniform mesh - using mesh_unmap
+              rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
+              ry=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
+              rz=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
+              ix=rx
+              iy=ry
+              iz=rz
+              fx=rx-ix
+              fy=ry-iy
+              fz=rz-iz
+              iy=iy-1  ! integer index in y direction starts at 0
+              iz=iz-1  ! integer index in z direction starts at 0
+
+              ixp1 = ix+1
+              iyp1 = iy+1
+              izp1 = iz+1
+
+              w1=(1.-fx)*(1.-fy)*(1.-fz)
+              w2=    fx *(1.-fy)*(1.-fz)
+              w3=(1.-fx)*    fy *(1.-fz)
+              w4=    fx*     fy *(1.-fz)
+              w5=(1.-fx)*(1.-fy)*    fz
+              w6=    fx *(1.-fy)*    fz
+              w7=(1.-fx)*    fy*     fz
+              w8=    fx*     fy*     fz
+
+              dns1= dns(ix  ,iy  ,iz  ,1)*w1+dns(ixp1,iy  ,iz  ,1)*w2  &
+              +     dns(ix  ,iyp1,iz  ,1)*w3+dns(ixp1,iyp1,iz  ,1)*w4  &
+              +     dns(ix  ,iy  ,izp1,1)*w5+dns(ixp1,iy  ,izp1,1)*w6  &
+              +     dns(ix  ,iyp1,izp1,1)*w7+dns(ixp1,iyp1,izp1,1)*w8
+
+              dns2= 0.
+
+              dnst = dns1 + dns2
+    
+              vxavg1=vxs(ix  ,iy  ,iz  ,1)*w1+vxs(ixp1,iy  ,iz  ,1)*w2  &
+              +      vxs(ix  ,iyp1,iz  ,1)*w3+vxs(ixp1,iyp1,iz  ,1)*w4  &
+              +      vxs(ix  ,iy  ,izp1,1)*w5+vxs(ixp1,iy  ,izp1,1)*w6  &
+              +      vxs(ix  ,iyp1,izp1,1)*w7+vxs(ixp1,iyp1,izp1,1)*w8
+
+              vxavg2= 0.
+
+              vxavg = (dns1*vxavg1 + dns2*vxavg2)/dnst
+
+              vyavg1=vys(ix  ,iy  ,iz  ,1)*w1+vys(ixp1,iy  ,iz  ,1)*w2  &
+              +      vys(ix  ,iyp1,iz  ,1)*w3+vys(ixp1,iyp1,iz  ,1)*w4  &
+              +      vys(ix  ,iy  ,izp1,1)*w5+vys(ixp1,iy  ,izp1,1)*w6  &
+              +      vys(ix  ,iyp1,izp1,1)*w7+vys(ixp1,iyp1,izp1,1)*w8
+
+              vyavg2=0.
+
+              vyavg = (dns1*vyavg1 + dns2*vyavg2)/dnst
+
+              vzavg1=vzs(ix  ,iy  ,iz  ,1)*w1+vzs(ixp1,iy  ,iz  ,1)*w2  &
+              +      vzs(ix  ,iyp1,iz  ,1)*w3+vzs(ixp1,iyp1,iz  ,1)*w4  &
+              +      vzs(ix  ,iy  ,izp1,1)*w5+vzs(ixp1,iy  ,izp1,1)*w6  &
+              +      vzs(ix  ,iyp1,izp1,1)*w7+vzs(ixp1,iyp1,izp1,1)*w8
+
+              vzavg2=0.
+
+              vzavg = (dns1*vzavg1 + dns2*vzavg2)/dnst
+
+              vxa=vx(l)-vxavg
+              vya=vy(l)-vyavg
+              vza=vz(l)-vzavg
+
+              xx=vxa*vxa
+              yy=vya*vya
+              zz=vza*vza
+
+              p_xx (ix  ,iy  ,iz  ,is)=p_xx (ix  ,iy  ,iz  ,is)+qp(np)*w1*xx
+              p_xx (ixp1,iy  ,iz  ,is)=p_xx (ixp1,iy  ,iz  ,is)+qp(np)*w2*xx 
+              p_xx (ix  ,iyp1,iz  ,is)=p_xx (ix  ,iyp1,iz  ,is)+qp(np)*w3*xx 
+              p_xx (ixp1,iyp1,iz  ,is)=p_xx (ixp1,iyp1,iz  ,is)+qp(np)*w4*xx 
+              p_xx (ix  ,iy  ,izp1,is)=p_xx (ix  ,iy  ,izp1,is)+qp(np)*w5*xx 
+              p_xx (ixp1,iy  ,izp1,is)=p_xx (ixp1,iy  ,izp1,is)+qp(np)*w6*xx 
+              p_xx (ix  ,iyp1,izp1,is)=p_xx (ix  ,iyp1,izp1,is)+qp(np)*w7*xx 
+              p_xx (ixp1,iyp1,izp1,is)=p_xx (ixp1,iyp1,izp1,is)+qp(np)*w8*xx 
+
+              p_yy (ix  ,iy  ,iz  ,is)=p_yy (ix  ,iy  ,iz  ,is)+qp(np)*w1*yy
+              p_yy (ixp1,iy  ,iz  ,is)=p_yy (ixp1,iy  ,iz  ,is)+qp(np)*w2*yy 
+              p_yy (ix  ,iyp1,iz  ,is)=p_yy (ix  ,iyp1,iz  ,is)+qp(np)*w3*yy 
+              p_yy (ixp1,iyp1,iz  ,is)=p_yy (ixp1,iyp1,iz  ,is)+qp(np)*w4*yy 
+              p_yy (ix  ,iy  ,izp1,is)=p_yy (ix  ,iy  ,izp1,is)+qp(np)*w5*yy 
+              p_yy (ixp1,iy  ,izp1,is)=p_yy (ixp1,iy  ,izp1,is)+qp(np)*w6*yy 
+              p_yy (ix  ,iyp1,izp1,is)=p_yy (ix  ,iyp1,izp1,is)+qp(np)*w7*yy 
+              p_yy (ixp1,iyp1,izp1,is)=p_yy (ixp1,iyp1,izp1,is)+qp(np)*w8*yy 
+
+              p_zz (ix  ,iy  ,iz  ,is)=p_zz (ix  ,iy  ,iz  ,is)+qp(np)*w1*zz
+              p_zz (ixp1,iy  ,iz  ,is)=p_zz (ixp1,iy  ,iz  ,is)+qp(np)*w2*zz 
+              p_zz (ix  ,iyp1,iz  ,is)=p_zz (ix  ,iyp1,iz  ,is)+qp(np)*w3*zz 
+              p_zz (ixp1,iyp1,iz  ,is)=p_zz (ixp1,iyp1,iz  ,is)+qp(np)*w4*zz 
+              p_zz (ix  ,iy  ,izp1,is)=p_zz (ix  ,iy  ,izp1,is)+qp(np)*w5*zz 
+              p_zz (ixp1,iy  ,izp1,is)=p_zz (ixp1,iy  ,izp1,is)+qp(np)*w6*zz 
+              p_zz (ix  ,iyp1,izp1,is)=p_zz (ix  ,iyp1,izp1,is)+qp(np)*w7*zz 
+              p_zz (ixp1,iyp1,izp1,is)=p_zz (ixp1,iyp1,izp1,is)+qp(np)*w8*zz 
+
+              v2 = v2 + qp(l)*( vx(l)**2 + vy(l)**2 + vz(l)**2 )
+
+              np=link(np)
+            enddo
+          enddo
+        enddo
+      enddo
+
+
+      call xreal(p_xx (1,jb-1,kb-1,is),nx,ny,nz)
+      call xreal(p_yy (1,jb-1,kb-1,is),nx,ny,nz)
+      call xreal(p_zz (1,jb-1,kb-1,is),nx,ny,nz)
+
+      do iiz = kb-1, ke+1
+        do iiy = jb-1, je+1
+          do iix = 1, nx2
+            p_xx(iix,iiy,iiz,is) = p_xx(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+            p_yy(iix,iiy,iiz,is) = p_yy(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+            p_zz(iix,iiy,iiz,is) = p_zz(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+          enddo
+        enddo
+      enddo
+
+    enddo
+
+    ! field energy calculation
+    do k=kb,ke
+        do j=jb,je
+          do i=2,nx1
+              efld_p = efld_p + ex(i,j,k)**2+ey(i,j,k)**2+ez(i,j,k)**2
+              bfld_p = bfld_p + bx(i,j,k)**2+by(i,j,k)**2+bz(i,j,k)**2
+              ! particle energy for species 1 only
+              efluid_p = efluid_p + dns(i,j,k,1)*( vxs(i,j,k,1)**2 + vys(i,j,k,1)**2 + vzs(i,j,k,1)**2 )
+              ethermal_p = ethermal_p + p_xx(i,j,k,1) + p_yy(i,j,k,1) + p_yy(i,j,k,1)
+          enddo
+        enddo
+    enddo
+    efld_p = efld_p*hx*hy*hz*0.5 ! assuming uniform grids
+    bfld_p = bfld_p*hx*hy*hz*0.5
+    efluid_p = efluid_p*hx*hy*hz*0.5
+    ethermal_p = ethermal_p*hx*hy*hz*0.5
+    v2 = v2*0.5
+
+    ! collect energies
+    call MPI_ALLREDUCE(efld_p,efld,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+    call MPI_ALLREDUCE(bfld_p,bfld,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+    call MPI_ALLREDUCE(efluid_p,efluid,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+    call MPI_ALLREDUCE(ethermal_p,ethermal,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+    call MPI_ALLREDUCE(v2,eptcl,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+    
+  end subroutine cal_energy
+
+
+  !---------------------------------------------------------------------
+  ! smoothing routine for periodic B.C.
+  ! 3D version of 3-point binomial smoothing
+  !            y(i)=(x(i-1)+2*x(i)+x(i+1))/4
+  ! i.e. 27 points are involved
+  !---------------------------------------------------------------------
+  subroutine nsmooth (a)
+    integer*8 :: i,j,k
+    real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
+
+    ! copy input array "a" to "temp" including ghost cells
+    do k=kb-1,ke+1
+        do j = jb-1,je+1
+          do i=1,nx2
+              temp(i,j,k)=a(i,j,k)
+          enddo
+        enddo
+    enddo
+
+    ! smoothing only for inner cells (exclude ghost cells)
+    do k = kb, ke
+        do j = jb, je
+          do i = 2, nx1
+            a(i,j,k)=temp(i,j,k)/8. &
+              + ( temp(i-1,j,k)+temp(i+1,j,k)+temp(i,j+1,k)+temp(i,j-1,k) &
+              + temp(i,j,k+1)+temp(i,j,k-1))/16. &
+              + ( temp(i+1,j+1,k)+temp(i+1,j-1,k)+temp(i-1,j+1,k) &
+              + temp(i-1,j-1,k)+temp(i,j+1,k+1)+temp(i,j-1,k+1) &
+              + temp(i,j+1,k-1)+temp(i,j-1,k-1) &
+              + temp(i+1,j,k+1)+temp(i-1,j,k+1)+temp(i+1,j,k-1) &
+              + temp(i-1,j,k-1))/32. &
+              +( temp(i+1,j+1,k+1)+temp(i-1,j+1,k+1) &
+              + temp(i+1,j-1,k+1)+temp(i-1,j-1,k+1) &
+              + temp(i+1,j+1,k-1)+temp(i-1,j+1,k-1) &
+              + temp(i+1,j-1,k-1)+temp(i-1,j-1,k-1)) / 64.
+          enddo
+        enddo
+    enddo
+
+    ! apply periodic BCs 
+    call XREALBCC(a,0_8,NX,NY,NZ)
+
+    return
+  end subroutine nsmooth
+
+
+  !---------------------------------------------------------------------
+  subroutine cal_temp_2d
+    real*8 :: rx,ry,rz,fx,fy,fz,xx,xy,xz,yy,yz,zz
+    integer*8 ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,is,l,iix,iixe
+    real*8 :: vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
+          ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar
+    real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,dns1,dns2,bxa,bya,bza,btota,dnst
 
     tpar  = 0.
     tperp = 0.
@@ -1684,9 +1880,6 @@ module m_particle
     if (nspec >= 2) rfrac = frac(2)/frac(1)
 
     do IS=1,NSPEC
-      wmult=wspec(is)
-      h=dt*qspec(is)/wmult
-      hh=.5*h
       dpedx = 0.
 
       do IIZE = KB-1,KE
@@ -1696,10 +1889,10 @@ module m_particle
             do while (NP.NE.0)
               L=NP
 
-              ! Nonuniform mesh - using MESH_UNMAP
-              rx=dtxi*MESH_UNMAP(meshX,x(l))+1.50000000000d+00
-              ry=dtyi*MESH_UNMAP(meshY,y(l))+1.50000000000d+00
-              rz=dtzi*MESH_UNMAP(meshZ,z(l))+1.50000000000d+00
+              ! Nonuniform mesh - using mesh_unmap
+              rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
+              ry=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
+              rz=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
               ix=rx
               iy=ry
               iz=rz
@@ -1866,200 +2059,20 @@ module m_particle
   end subroutine cal_temp_2d
 
 
-  !-----------------------------------------------------------------
-  ! computes field energy ex^2+ey^2+ez^2 and bx^2+by^2+bz^2
-  ! and particle energies
-  !-----------------------------------------------------------------
-  subroutine energy
-    real*8 :: rx,ry,rz,fx,fy,fz,dtxi,dtyi,dtzi,xx,xy,xz,yy,yz,zz
-    integer*8 ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,is,l,iix,iixe
-    real*8 :: vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
-          ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar,wmult
-    real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,h,hh,dns1,dns2,bxa,bya,bza,btota,dnst
-    real*8 :: bfld_p, efld_p, efluid_p, ethermal_p, v2
-    integer*8 :: i, j, k
-    
-    efld_p=0.; bfld_p=0.; efluid_p=0.; ethermal_p=0.; v2=0.
-
-    ! particle energy calculation -- works for 3D only !!!
-    dtxi = 1./meshX%dt
-    dtyi = 1./meshY%dt
-    dtzi = 1./meshZ%dt
-    p_xx=0.; p_yy=0.; p_zz=0.
-
-    do is = 1, 1 ! ??
-      do iize = kb-1,ke
-        do iiye = jb-1,je
-          do iixe = 1, NX1
-            np = iphead(iixe,iiye,iize,is)
-            do while (np.ne.0)
-              L=np
-
-              ! Nonuniform mesh - using mesh_unmap
-              rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
-              ry=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
-              rz=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
-              ix=rx
-              iy=ry
-              iz=rz
-              fx=rx-ix
-              fy=ry-iy
-              fz=rz-iz
-              iy=iy-1  ! integer index in y direction starts at 0
-              iz=iz-1  ! integer index in z direction starts at 0
-
-              ixp1 = ix+1
-              iyp1 = iy+1
-              izp1 = iz+1
-
-              w1=(1.-fx)*(1.-fy)*(1.-fz)
-              w2=    fx *(1.-fy)*(1.-fz)
-              w3=(1.-fx)*    fy *(1.-fz)
-              w4=    fx*     fy *(1.-fz)
-              w5=(1.-fx)*(1.-fy)*    fz
-              w6=    fx *(1.-fy)*    fz
-              w7=(1.-fx)*    fy*     fz
-              w8=    fx*     fy*     fz
-
-              dns1= dns(ix  ,iy  ,iz  ,1)*w1+dns(ixp1,iy  ,iz  ,1)*w2  &
-              +     dns(ix  ,iyp1,iz  ,1)*w3+dns(ixp1,iyp1,iz  ,1)*w4  &
-              +     dns(ix  ,iy  ,izp1,1)*w5+dns(ixp1,iy  ,izp1,1)*w6  &
-              +     dns(ix  ,iyp1,izp1,1)*w7+dns(ixp1,iyp1,izp1,1)*w8
-
-              dns2= 0.
-
-              dnst = dns1 + dns2
-    
-              vxavg1=vxs(ix  ,iy  ,iz  ,1)*w1+vxs(ixp1,iy  ,iz  ,1)*w2  &
-              +      vxs(ix  ,iyp1,iz  ,1)*w3+vxs(ixp1,iyp1,iz  ,1)*w4  &
-              +      vxs(ix  ,iy  ,izp1,1)*w5+vxs(ixp1,iy  ,izp1,1)*w6  &
-              +      vxs(ix  ,iyp1,izp1,1)*w7+vxs(ixp1,iyp1,izp1,1)*w8
-
-              vxavg2= 0.
-
-              vxavg = (dns1*vxavg1 + dns2*vxavg2)/dnst
-
-              vyavg1=vys(ix  ,iy  ,iz  ,1)*w1+vys(ixp1,iy  ,iz  ,1)*w2  &
-              +      vys(ix  ,iyp1,iz  ,1)*w3+vys(ixp1,iyp1,iz  ,1)*w4  &
-              +      vys(ix  ,iy  ,izp1,1)*w5+vys(ixp1,iy  ,izp1,1)*w6  &
-              +      vys(ix  ,iyp1,izp1,1)*w7+vys(ixp1,iyp1,izp1,1)*w8
-
-              vyavg2=0.
-
-              vyavg = (dns1*vyavg1 + dns2*vyavg2)/dnst
-
-              vzavg1=vzs(ix  ,iy  ,iz  ,1)*w1+vzs(ixp1,iy  ,iz  ,1)*w2  &
-              +      vzs(ix  ,iyp1,iz  ,1)*w3+vzs(ixp1,iyp1,iz  ,1)*w4  &
-              +      vzs(ix  ,iy  ,izp1,1)*w5+vzs(ixp1,iy  ,izp1,1)*w6  &
-              +      vzs(ix  ,iyp1,izp1,1)*w7+vzs(ixp1,iyp1,izp1,1)*w8
-
-              vzavg2=0.
-
-              vzavg = (dns1*vzavg1 + dns2*vzavg2)/dnst
-
-              vxa=vx(l)-vxavg
-              vya=vy(l)-vyavg
-              vza=vz(l)-vzavg
-
-              xx=vxa*vxa
-              yy=vya*vya
-              zz=vza*vza
-
-              p_xx (ix  ,iy  ,iz  ,is)=p_xx (ix  ,iy  ,iz  ,is)+qp(np)*w1*xx
-              p_xx (ixp1,iy  ,iz  ,is)=p_xx (ixp1,iy  ,iz  ,is)+qp(np)*w2*xx 
-              p_xx (ix  ,iyp1,iz  ,is)=p_xx (ix  ,iyp1,iz  ,is)+qp(np)*w3*xx 
-              p_xx (ixp1,iyp1,iz  ,is)=p_xx (ixp1,iyp1,iz  ,is)+qp(np)*w4*xx 
-              p_xx (ix  ,iy  ,izp1,is)=p_xx (ix  ,iy  ,izp1,is)+qp(np)*w5*xx 
-              p_xx (ixp1,iy  ,izp1,is)=p_xx (ixp1,iy  ,izp1,is)+qp(np)*w6*xx 
-              p_xx (ix  ,iyp1,izp1,is)=p_xx (ix  ,iyp1,izp1,is)+qp(np)*w7*xx 
-              p_xx (ixp1,iyp1,izp1,is)=p_xx (ixp1,iyp1,izp1,is)+qp(np)*w8*xx 
-
-              p_yy (ix  ,iy  ,iz  ,is)=p_yy (ix  ,iy  ,iz  ,is)+qp(np)*w1*yy
-              p_yy (ixp1,iy  ,iz  ,is)=p_yy (ixp1,iy  ,iz  ,is)+qp(np)*w2*yy 
-              p_yy (ix  ,iyp1,iz  ,is)=p_yy (ix  ,iyp1,iz  ,is)+qp(np)*w3*yy 
-              p_yy (ixp1,iyp1,iz  ,is)=p_yy (ixp1,iyp1,iz  ,is)+qp(np)*w4*yy 
-              p_yy (ix  ,iy  ,izp1,is)=p_yy (ix  ,iy  ,izp1,is)+qp(np)*w5*yy 
-              p_yy (ixp1,iy  ,izp1,is)=p_yy (ixp1,iy  ,izp1,is)+qp(np)*w6*yy 
-              p_yy (ix  ,iyp1,izp1,is)=p_yy (ix  ,iyp1,izp1,is)+qp(np)*w7*yy 
-              p_yy (ixp1,iyp1,izp1,is)=p_yy (ixp1,iyp1,izp1,is)+qp(np)*w8*yy 
-
-              p_zz (ix  ,iy  ,iz  ,is)=p_zz (ix  ,iy  ,iz  ,is)+qp(np)*w1*zz
-              p_zz (ixp1,iy  ,iz  ,is)=p_zz (ixp1,iy  ,iz  ,is)+qp(np)*w2*zz 
-              p_zz (ix  ,iyp1,iz  ,is)=p_zz (ix  ,iyp1,iz  ,is)+qp(np)*w3*zz 
-              p_zz (ixp1,iyp1,iz  ,is)=p_zz (ixp1,iyp1,iz  ,is)+qp(np)*w4*zz 
-              p_zz (ix  ,iy  ,izp1,is)=p_zz (ix  ,iy  ,izp1,is)+qp(np)*w5*zz 
-              p_zz (ixp1,iy  ,izp1,is)=p_zz (ixp1,iy  ,izp1,is)+qp(np)*w6*zz 
-              p_zz (ix  ,iyp1,izp1,is)=p_zz (ix  ,iyp1,izp1,is)+qp(np)*w7*zz 
-              p_zz (ixp1,iyp1,izp1,is)=p_zz (ixp1,iyp1,izp1,is)+qp(np)*w8*zz 
-
-              v2 = v2 + qp(l)*( vx(l)**2 + vy(l)**2 + vz(l)**2 )
-
-              np=link(np)
-            enddo
-          enddo
-        enddo
-      enddo
-
-
-      call xreal(p_xx (1,jb-1,kb-1,is),nx,ny,nz)
-      call xreal(p_yy (1,jb-1,kb-1,is),nx,ny,nz)
-      call xreal(p_zz (1,jb-1,kb-1,is),nx,ny,nz)
-
-      do iiz = kb-1, ke+1
-        do iiy = jb-1, je+1
-          do iix = 1, nx2
-            p_xx(iix,iiy,iiz,is) = p_xx(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
-            p_yy(iix,iiy,iiz,is) = p_yy(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
-            p_zz(iix,iiy,iiz,is) = p_zz(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
-          enddo
-        enddo
-      enddo
-
-    enddo
-
-    ! field energy calculation
-    do k=kb,ke
-        do j=jb,je
-          do i=2,nx1
-              efld_p = efld_p + ex(i,j,k)**2+ey(i,j,k)**2+ez(i,j,k)**2
-              bfld_p = bfld_p + bx(i,j,k)**2+by(i,j,k)**2+bz(i,j,k)**2
-              ! particle energy for species 1 only
-              efluid_p = efluid_p + dns(i,j,k,1)*( vxs(i,j,k,1)**2 + vys(i,j,k,1)**2 + vzs(i,j,k,1)**2 )
-              ethermal_p = ethermal_p + p_xx(i,j,k,1) + p_yy(i,j,k,1) + p_yy(i,j,k,1)
-          enddo
-        enddo
-    enddo
-    efld_p = efld_p*hx*hy*hz*0.5 ! assuming uniform grids
-    bfld_p = bfld_p*hx*hy*hz*0.5
-    efluid_p = efluid_p*hx*hy*hz*0.5
-    ethermal_p = ethermal_p*hx*hy*hz*0.5
-    v2 = v2*0.5
-
-    ! collect energies
-    call MPI_ALLREDUCE(efld_p,efld,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
-    call MPI_ALLREDUCE(bfld_p,bfld,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
-    call MPI_ALLREDUCE(efluid_p,efluid,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
-    call MPI_ALLREDUCE(ethermal_p,ethermal,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
-    call MPI_ALLREDUCE(v2,eptcl,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
-    
-  end subroutine energy
-
-
   !---------------------------------------------------------------------
-  subroutine parmov_2d
+  subroutine parmove_2d
     real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8,by1,by2,by3,by4,by5,by6,by7,by8, &
               bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8,bxa,bya,bza
     real*8 :: ex1,ex2,ex3,ex4,ex5,ex6,ex7,ex8,ey1,ey2,ey3,ey4,ey5,ey6,ey7,ey8, &
               ez1,ez2,ez3,ez4,ez5,ez6,ez7,ez8,exa,eya,eza
 
-    real*8 :: d_ranf,deltime1,deltime2,ff,h,hh
+    real*8 :: d_ranf,deltime1,deltime2,ff
     real*8 :: fox1,fox2,fox3,fox4,fox5,fox6,fox7,fox8,foxa
     real*8 :: foy1,foy2,foy3,foy4,foy5,foy6,foy7,foy8,foya
     real*8 :: foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8,foza
     real*8 :: w1e,w2e,w3e,w4e,w5e,w6e,w7e,w8e
     real*8 :: vex,vey,vez,vmag,vx_tmp,vy_tmp,vz_tmp
     real*8 :: p2xs,p2ys,p2zs,q_p,th
-    real*8 :: wmult
 
     integer*8 :: i,ii,iix,iixe,iiy,iiye,iiz,iize,irepeat,irepeatp,is,itmp
     integer*8 :: iv,iye_cc,ize_cc,j,jv,k,kspc,npleavingp,nprecv,nprecvtmp
@@ -2072,7 +2085,7 @@ module m_particle
     integer*8:: nsendactual,nsendactualp,nrecvactualp,nrecvactual,jj,kk,ix,iy,iz,ixe,iye,ize           &
                 ,ixep1,iyep1,izep1,ixp1,iyp1,izp1
     real*8 :: pdata(7),rx,ry,rz,fx,fy,fz,w1,w2,w3,w4,w5,w6,w7,w8,xpart,ypart,zpart
-    real*8 :: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
+    real*8 :: rxe,rye,rze,fxe,fye,fze
     real*8 :: v_limit,eps2,myranf,fluxran,vxa,vyz,vza
     INTEGER*8:: L, EXIT_CODE_P, EXIT_CODE
     integer*8:: n_fast_removed,n_fast_removed_local,Courant_Violation,Courant_Violation_p,Field_Diverge,Field_Diverge_p
@@ -2100,10 +2113,6 @@ module m_particle
     x_disp_max_p        = 0
     y_disp_max_p        = 0
     z_disp_max_p        = 0
-
-    dtxi = 1./meshX%dt
-    dtyi = 1./meshY%dt
-    dtzi = 1./meshZ%dt
 
     d_ranf=1./1001.
     eps2=1.d-25
@@ -2166,7 +2175,7 @@ module m_particle
     call XREALBCC_PACK_B(BX_AV,BY_AV,BZ_AV,1_8,NX,NY,NZ)
     call XREALBCC_PACK_B(BX   ,BY   ,BZ   ,1_8,NX,NY,NZ)
 
-    if ((myid == 0).and.mod(it,n_print)==0) write(6,*) " Calling parmov, nspec = ", nspec
+    if ((myid == 0).and.mod(it,n_print)==0) write(6,*) " Calling parmove, nspec = ", nspec
 
     ! initalize diagnostic variables that keep track of
     ! particle number, injection, and escape
@@ -2195,12 +2204,8 @@ module m_particle
       call MPI_ALLREDUCE(nptotp,nptot,1,MPI_INTEGER8,MPI_SUM,MPI_COMM_WORLD,IERR)
       if ((MYID.EQ.0).and.mod(it,n_print)==0) then
         write(6,*) " IS = ",IS
-        write(6,*) " TOTAL # OF PARTICLES BEFORE PARMOV = ",NPTOT
+        write(6,*) " TOTAL # OF PARTICLES BEFORE parmove = ",NPTOT
       endif
-
-      wmult=wspec(is)
-      h=dt*qspec(is)/wmult
-      hh=.5*h
 
       call get_time(clock_time1)
       if (DT.NE.0) then
@@ -2235,7 +2240,7 @@ module m_particle
                 ! fye=rye-iye
                 ! fze=rze-ize
 
-                ! Nonuniform mesh - without using MESH_UNMAP
+                ! Nonuniform mesh - without using mesh_unmap
                 ! rxe=hxi*x(l)+1.500000000000000d+00
                 ! rye=hyi*y(l)+1.500000000000000d+00
                 ! rze=hzi*z(l)+1.500000000000000d+00
@@ -2249,10 +2254,10 @@ module m_particle
                 ! fye=(y(l)-meshY%xc(iye))/meshY%dxn(iyep1)
                 ! fze=(z(l)-meshZ%xc(ize))/meshZ%dxn(izep1)
 
-                ! Nonuniform mesh - using MESH_UNMAP
-                rxe=dtxi*MESH_UNMAP(meshX,x(l))+1.50000000000d+00
-                rye=dtyi*MESH_UNMAP(meshY,y(l))+1.50000000000d+00
-                rze=dtzi*MESH_UNMAP(meshZ,z(l))+1.50000000000d+00
+                ! Nonuniform mesh - using mesh_unmap
+                rxe=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
+                rye=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
+                rze=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
                 ixe=rxe
                 iye=rye
                 ize=rze
@@ -2312,7 +2317,7 @@ module m_particle
                 ! bz3=bz(ixe  ,iyep1,ize  )+bdipole_z(ixe  ,iyep1,ize  )
                 ! bz4=bz(ixep1,iyep1,ize  )+bdipole_z(ixep1,iyep1,ize  )
 
-                ! New code that fixes problems with density holes - consistent with 3D parmov
+                ! New code that fixes problems with density holes - consistent with 3D parmove
                 bx1=bx_av(ixe  ,iye  ,ize  )
                 bx2=bx_av(ixep1,iye  ,ize  )
                 bx3=bx_av(ixe  ,iyep1,ize  )
@@ -2593,10 +2598,10 @@ module m_particle
             ! iye=hyi*y(np)   +0.5000000000000001d+00
             ! ize=hzi*z(np)   +0.5000000000000001d+00
 
-            ! Nonuniform mesh - using MESH_UNMAP
-            rxe=dtxi*MESH_UNMAP(meshX,x(np))+1.50000000000d+00
-            rye=dtyi*MESH_UNMAP(meshY,y(np))+1.50000000000d+00
-            rze=dtzi*MESH_UNMAP(meshZ,z(np))+1.50000000000d+00
+            ! Nonuniform mesh - using mesh_unmap
+            rxe=dtxi*mesh_unmap(meshX,x(np))+1.50000000000d+00
+            rye=dtyi*mesh_unmap(meshY,y(np))+1.50000000000d+00
+            rze=dtzi*mesh_unmap(meshZ,z(np))+1.50000000000d+00
             ixe=rxe
             iye=rye
             ize=rze
@@ -2680,10 +2685,10 @@ module m_particle
               ! iye=hyi*y(nprecv)+0.5000000000000001d+00
               ! ize=hzi*z(nprecv)+0.5000000000000001d+00
 
-              ! Nonuniform mesh - using MESH_UNMAP
-              rxe=dtxi*MESH_UNMAP(meshX,x(nprecv))+1.50000000000d+00
-              rye=dtyi*MESH_UNMAP(meshY,y(nprecv))+1.50000000000d+00
-              rze=dtzi*MESH_UNMAP(meshZ,z(nprecv))+1.50000000000d+00
+              ! Nonuniform mesh - using mesh_unmap
+              rxe=dtxi*mesh_unmap(meshX,x(nprecv))+1.50000000000d+00
+              rye=dtyi*mesh_unmap(meshY,y(nprecv))+1.50000000000d+00
+              rze=dtzi*mesh_unmap(meshZ,z(nprecv))+1.50000000000d+00
               ixe=rxe
               iye=rye
               ize=rze
@@ -2761,7 +2766,7 @@ module m_particle
                           MPI_COMM_WORLD,IERR)
       IF ((myid.eq.0).and.mod(it,n_print)==0) THEN
         write(6,*) " IS = ",IS
-        write(6,*) " TOTAL # OF PARTICLES AFTER  PARMOV = ",NPTOT
+        write(6,*) " TOTAL # OF PARTICLES AFTER  parmove = ",NPTOT
       endif
   999   continue
 
@@ -2797,7 +2802,7 @@ module m_particle
               ! fy=ry-iy
               ! fz=rz-iz
 
-              ! Nonuniform mesh - without using MESH_UNMAP
+              ! Nonuniform mesh - without using mesh_unmap
               ! rx=hxi*x(l)+1.500000000000000d+00
               ! ry=hyi*y(l)+1.500000000000000d+00
               ! rz=hzi*z(l)+1.500000000000000d+00
@@ -2811,10 +2816,10 @@ module m_particle
               ! fy=(y(l)-meshY%xc(iy))/meshY%dxn(iy+1)
               ! fz=(z(l)-meshZ%xc(iz))/meshZ%dxn(iz+1)
 
-              ! Nonuniform mesh - using MESH_UNMAP
-              rx=dtxi*MESH_UNMAP(meshX,x(l))+1.50000000000d+00
-              ry=dtyi*MESH_UNMAP(meshY,y(l))+1.50000000000d+00
-              rz=dtzi*MESH_UNMAP(meshZ,z(l))+1.50000000000d+00
+              ! Nonuniform mesh - using mesh_unmap
+              rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
+              ry=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
+              rz=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
               ix=rx
               iy=ry
               iz=rz
@@ -2968,57 +2973,11 @@ module m_particle
     call add_time(time_begin(1,19),time_end(1,19),time_elapsed(19))
 
     return
-  end subroutine parmov_2d
+  end subroutine parmove_2d
 
 
 !---------------------------------------------------------------------
-! smoothing routine for periodic B.C.
-! 3D version of 3-point binomial smoothing
-!            y(i)=(x(i-1)+2*x(i)+x(i+1))/4
-! i.e. 27 points are involved
-!---------------------------------------------------------------------
-subroutine nsmth (a)
-  integer*8 :: i,j,k
-  real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
-
-  ! copy input array "a" to "temp" including ghost cells
-  do k=kb-1,ke+1
-      do j = jb-1,je+1
-        do i=1,nx2
-            temp(i,j,k)=a(i,j,k)
-        enddo
-      enddo
-  enddo
-
-  ! smoothing only for inner cells (exclude ghost cells)
-  do k = kb, ke
-      do j = jb, je
-        do i = 2, nx1
-          a(i,j,k)=temp(i,j,k)/8. &
-            + ( temp(i-1,j,k)+temp(i+1,j,k)+temp(i,j+1,k)+temp(i,j-1,k) &
-            + temp(i,j,k+1)+temp(i,j,k-1))/16. &
-            + ( temp(i+1,j+1,k)+temp(i+1,j-1,k)+temp(i-1,j+1,k) &
-            + temp(i-1,j-1,k)+temp(i,j+1,k+1)+temp(i,j-1,k+1) &
-            + temp(i,j+1,k-1)+temp(i,j-1,k-1) &
-            + temp(i+1,j,k+1)+temp(i-1,j,k+1)+temp(i+1,j,k-1) &
-            + temp(i-1,j,k-1))/32. &
-            +( temp(i+1,j+1,k+1)+temp(i-1,j+1,k+1) &
-            + temp(i+1,j-1,k+1)+temp(i-1,j-1,k+1) &
-            + temp(i+1,j+1,k-1)+temp(i-1,j+1,k-1) &
-            + temp(i+1,j-1,k-1)+temp(i-1,j-1,k-1)) / 64.
-        enddo
-      enddo
-  enddo
-
-  ! apply periodic BCs 
-  call XREALBCC(a,0_8,NX,NY,NZ)
-
-  return
-end subroutine nsmth
-
-
-!---------------------------------------------------------------------
-subroutine nsmth_2d (a,nx2m,ny2m,nz2m)
+subroutine nsmooth_2d (a,nx2m,ny2m,nz2m)
   integer*8 :: i,j,k
   integer*8 :: nx2m, ny2m, nz2m
   real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
@@ -3049,6 +3008,6 @@ subroutine nsmth_2d (a,nx2m,ny2m,nz2m)
   call xrealbcc_2d(a,0_8,NX,NY,NZ)
 
   return
-end subroutine nsmth_2d
+end subroutine nsmooth_2d
 
 end module m_particle

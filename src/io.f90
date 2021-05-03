@@ -403,405 +403,6 @@ module m_io
 
 
   !---------------------------------------------------------------------
-  ! write or read restart files
-  ! rw = +1.0: write 
-  ! rw = -1.0: read
-  !---------------------------------------------------------------------
-  subroutine rw_restart(rw)
-    integer*8 :: f_unit, np_count, is, ixe, iye, ize, noresete
-    real :: rw
-    real*8, dimension(:), allocatable :: particle_tmp_array
-    integer, dimension(:), allocatable :: particle_tmp_array2 
-  
-    if (rw == +1.0) then  ! write restart data 
-      t_stopped = t_stopped + (it - itstart + 1) * dtwci
-      f_unit = 215 + myid
-      open(unit=f_unit, file=trim(restart_directory)//'restfld_'//trim(adjustl(myid_char))  &
-              //'.bin'//restart_index_suffix(restart_index), form='unformatted', status='unknown')
-    
-      ! Old restart format - dump all allocated particle memory
-      ! write(f_unit) x,y,z,vx,vy,vz,qp,link,porder
-
-      ! New restart format - dump only non-trivial particles
-      write(f_unit) nspec
-
-      do is = 1, nspec
-        nptotp=0
-        do ize = kb-1, ke
-          do iye = jb-1, je
-            do ixe = 1, nx1   
-                np = IPHEAD(ixe, iye, ize, is)
-                do while (np.ne.0)
-                  nptotp = nptotp + 1
-                  np = link(np)
-                enddo
-            enddo
-          enddo
-        enddo
-        write(f_unit) nptotp
-
-        allocate (particle_tmp_array(nptotp))
-        allocate (particle_tmp_array2(nptotp))
-
-        ! x
-        nptotp=0
-        do ize=kb-1,ke
-          do iye=jb-1,je
-            do ixe=1,nx1   
-                np=IPHEAD(ixe,iye,ize,is)
-                do while (np.ne.0)
-                  nptotp=nptotp+1
-                  particle_tmp_array(nptotp) = x(np)
-                  np=link(np)
-                enddo
-            enddo
-          enddo
-        enddo
-        write(f_unit) particle_tmp_array
-
-        ! y
-        nptotp=0
-        do ize=kb-1,ke
-          do iye=jb-1,je
-            do ixe=1,nx1   
-                np=IPHEAD(ixe,iye,ize,is)
-                do while (np.ne.0)
-                  nptotp=nptotp+1
-                  particle_tmp_array(nptotp) = y(np)
-                  np=link(np)
-                enddo
-            enddo
-          enddo
-        enddo
-        write(f_unit) particle_tmp_array
-
-        ! z
-        nptotp=0
-        do ize=kb-1,ke
-          do iye=jb-1,je
-            do ixe=1,nx1   
-                np=IPHEAD(ixe,iye,ize,is)
-                do while (np.ne.0)
-                  nptotp=nptotp+1
-                  particle_tmp_array(nptotp) = z(np)
-                  np=link(np)
-                enddo
-            enddo
-          enddo
-        enddo
-        write(f_unit) particle_tmp_array
-
-        ! vx
-        nptotp=0
-        do ize=kb-1,ke
-          do iye=jb-1,je
-            do ixe=1,nx1   
-                np=IPHEAD(ixe,iye,ize,is)
-                do while (np.ne.0)
-                  nptotp=nptotp+1
-                  particle_tmp_array(nptotp) = vx(np)
-                  np=link(np)
-                enddo
-            enddo
-          enddo
-        enddo
-        write(f_unit) particle_tmp_array
-
-        ! vy
-        nptotp=0
-        do ize=kb-1,ke
-          do iye=jb-1,je
-            do ixe=1,nx1   
-                np=IPHEAD(ixe,iye,ize,is)
-                do while (np.ne.0)
-                  nptotp=nptotp+1
-                  particle_tmp_array(nptotp) = vy(np)
-                  np=link(np)
-                enddo
-            enddo
-          enddo
-        enddo
-        write(f_unit) particle_tmp_array
-
-        ! vz
-        nptotp=0
-        do ize=kb-1,ke
-          do iye=jb-1,je
-            do ixe=1,nx1   
-                np=IPHEAD(ixe,iye,ize,is)
-                do while (np.ne.0)
-                  nptotp=nptotp+1
-                  particle_tmp_array(nptotp) = vz(np)
-                  np=link(np)
-                enddo
-            enddo
-          enddo
-        enddo
-        write(f_unit) particle_tmp_array
-
-        ! qp
-        nptotp=0
-        do ize=kb-1,ke
-          do iye=jb-1,je
-            do ixe=1,nx1   
-                np=IPHEAD(ixe,iye,ize,is)
-                do while (np.ne.0)
-                  nptotp=nptotp+1
-                  particle_tmp_array(nptotp) = qp(np)
-                  np=link(np)
-                enddo
-            enddo
-          enddo
-        enddo
-        write(f_unit) particle_tmp_array
-
-        ! ptag
-        nptotp=0
-        do ize=kb-1,ke
-          do iye=jb-1,je
-            do ixe=1,nx1   
-                np=IPHEAD(ixe,iye,ize,is)
-                do while (np.ne.0)
-                  nptotp=nptotp+1
-                  particle_tmp_array2(nptotp) = ptag(np)
-                  np=link(np)
-                enddo
-            enddo
-          enddo
-        enddo
-        write(f_unit) particle_tmp_array2
-
-        deallocate (particle_tmp_array)
-        deallocate (particle_tmp_array2)
-
-      enddo
-
-      write(f_unit) ninj,ninj_global,nescape,nescape_global,npart, &
-      npart_global,t_stopped
-
-      write(f_unit) x0,x1,tx0,vpar,vper
-
-      write(f_unit) beta_spec, qspec, wspec, frac,                    &
-      anisot, denmin, resis, wpiwci, beta_e,ave1,             &
-      ave2,phib, xmax,ymax,zmax,gamma,                              &
-      npx, npy, npz,                                               &
-      iterb,netax,netay,nspec,   &
-      nx,ny,nz,nskipx,nskipy,                                      &
-      nskipz, restart, etamin, etamax, ieta, eta_par
-
-      write(f_unit) hx,hy,hz,hxi,hyi,hzi                           &
-      ,pi,efld,bfld,efluid,ethermal,eptcl,time,te0                &
-      ,itrestart,iwt                                   &
-      ,nx1,nx2,ny1,ny2,nz1,nz2,it                                  &
-      ! ,ipstore,nptot,npleaving,npentering                &
-      ,nptot,npleaving,npentering                        &
-      ,iclock_speed,iopen,iseed, file_unit,file_unit_read          &
-      ,clock_init,clock_old,clock_now                   &
-      ,clock_time1
-
-      write(f_unit) dfac,nskip,ipleft,iprite,ipsendleft,ipsendrite &
-      ,iprecv,ipsendtop,ipsendbot,ipsendlefttop,ipsendleftbot      &
-      ,ipsendritetop,ipsendritebot,ipsend
-
-      write(f_unit) bx,by,bz,den,pe,eta,ex,ey,ez,fox,foy,foz       &
-      ,eta_times_b_dot_j
-
-      write(f_unit) vix, viy, viz, vixo, viyo, vizo
-
-      ! write(f_unit) tpar,tperp,dns,vxs,vys,vzs,iphead,iptemp
-      write(f_unit) tpar,tperp,dns,vxs,vys,vzs
-
-      ! save user data
-      ! call user_data_write_restart(f_unit)
-      
-      close(unit=f_unit)
-
-    else if (rw == -1.0) then ! read restart data
-
-      f_unit = 215 + myid
-      open(unit=f_unit, file=trim(restart_directory)//'restfld_'//trim(adjustl(myid_char))  &
-              //'.bin'//restart_index_suffix(restart_index), form='unformatted', status='unknown')
-        
-      ! Old restart format - dump all allocated particle memory
-      ! read(f_unit) x,y,z,vx,vy,vz,qp,link,porder
-
-      ! New restart format - dump only non-trivial particles
-      read(f_unit) nspec
-
-      do is = 1, nspec
-        read(f_unit) nptotp
-        allocate (particle_tmp_array(nptotp))
-        allocate (particle_tmp_array2(nptotp))
-
-        ! x
-        read(f_unit) particle_tmp_array
-        ixe=2
-        iye=jb
-        ize=kb
-        do np_count = 1, nptotp
-          np = ipstore
-          x(np)=particle_tmp_array(np_count)
-          ipstore=link(np)
-          link(np)=iphead(ixe,iye,ize,is)
-          iphead(ixe,iye,ize,is)=np
-        enddo
-        iptemp(ixe,iye,ize,is)=0
-        np=iphead(ixe,iye,ize,is)
-        do while (np.ne.0)
-          iphead(ixe,iye,ize,is)=link(np)
-          link(np)=iptemp(ixe,iye,ize,is)
-          iptemp(ixe,iye,ize,is)=np
-          np=iphead(ixe,iye,ize,is)
-        enddo
-        iphead(ixe,iye,ize,is)=iptemp(ixe,iye,ize,is)
-        iptemp(ixe,iye,ize,is)=0
-
-        ! y
-        read(f_unit) particle_tmp_array
-        np_count=0
-        np=iphead(ixe,iye,ize,is)
-        do while (np.ne.0)
-          np_count=np_count+1
-          y(np)=particle_tmp_array(np_count)
-          np=link(np)
-        enddo
-
-        ! z
-        read(f_unit) particle_tmp_array
-        np_count=0
-        np=iphead(ixe,iye,ize,is)
-        do while (np.ne.0)
-          np_count=np_count+1
-          z(np)=particle_tmp_array(np_count)
-          np=link(np)
-        enddo
-
-        ! vx
-        read(f_unit) particle_tmp_array
-        np_count=0
-        np=iphead(ixe,iye,ize,is)
-        do while (np.ne.0)
-          np_count=np_count+1
-          vx(np)=particle_tmp_array(np_count)
-          np=link(np)
-        enddo
-
-        ! vy
-        read(f_unit) particle_tmp_array
-        np_count=0
-        np=iphead(ixe,iye,ize,is)
-        do while (np.ne.0)
-          np_count=np_count+1
-          vy(np)=particle_tmp_array(np_count)
-          np=link(np)
-        enddo
-    
-        ! vz
-        read(f_unit) particle_tmp_array
-        np_count=0
-        np=iphead(ixe,iye,ize,is)
-        do while (np.ne.0)
-          np_count=np_count+1
-          vz(np)=particle_tmp_array(np_count)
-          np=link(np)
-        enddo
-
-        ! qp
-        read(f_unit) particle_tmp_array
-        np_count=0
-        np=iphead(ixe,iye,ize,is)
-        do while (np.ne.0)
-          np_count=np_count+1
-          qp(np)=particle_tmp_array(np_count)
-          np=link(np)
-        enddo
-
-        ! ptag
-        read(f_unit) particle_tmp_array2
-        np_count=0
-        np=iphead(ixe,iye,ize,is)
-        do while (np.ne.0)
-          np_count=np_count+1
-          ptag(np)=particle_tmp_array2(np_count)
-          np=link(np)
-        enddo
-
-        deallocate (particle_tmp_array)
-        deallocate (particle_tmp_array2)
-
-      enddo
-
-      read(f_unit) ninj,ninj_global,nescape,nescape_global,npart,  &
-      npart_global,t_stopped
-
-      read(f_unit) x0,x1,tx0,vpar,vper
-
-      read(f_unit) beta_spec, qspec, wspec, frac,       &
-      anisot, denmin, resis, wpiwci, beta_e,ave1,      &
-      ave2,phib, xmax,ymax,zmax,gamma,                  &
-      npx, npy, npz,                                               &
-      iterb,netax,netay,nspec,   &
-      nx,ny,nz,nskipx,nskipy,                                      &
-      nskipz, restart,etamin,etamax,ieta,eta_par
-
-      read(f_unit) hx,hy,hz,hxi,hyi,hzi                            &
-      ,efld,bfld,efluid,ethermal,eptcl,time,te0                                        &
-      ,itrestart,iwt                     &
-      ,nx1,nx2,ny1,ny2,nz1,nz2,it                                   &
-      ! ,ipstore,nptot,npleaving,npentering                 &
-      ,nptot,npleaving,npentering                 &
-      ,iclock_speed,iopen,iseed, file_unit,file_unit_read           &
-      ,clock_init,clock_old,clock_now                    &
-      ,clock_time1
-
-      read(f_unit) dfac,nskip,ipleft,iprite,ipsendleft,ipsendrite  &
-      ,iprecv,ipsendtop,ipsendbot,ipsendlefttop,ipsendleftbot      &
-      ,ipsendritetop,ipsendritebot,ipsend
-
-      read(f_unit) bx,by,bz,den,pe,eta,ex,ey,ez,fox,foy,foz        &
-      ,eta_times_b_dot_j
-
-      read(f_unit) vix, viy, viz, vixo, viyo, vizo
-
-      ! read(f_unit) tpar,tperp,dns,vxs,vys,vzs,iphead,iptemp
-      read(f_unit) tpar,tperp,dns,vxs,vys,vzs
-
-      ! save user data
-      ! call user_diagnostics_restart(f_unit)        
-
-      close(unit=f_unit)
-
-      ! Reset electic field and fox,y,z 
-      noresete = 1
-      if (noresete == 0) then
-        deno=den; vixo=vix; viyo=viy; vizo=viz
-        call ecalc( 1 )
-        call focalc
-      endif
-
-    endif
-
-    return
-  end subroutine rw_restart
-
-
-  !---------------------------------------------------------------------
-  ! write restart
-  !---------------------------------------------------------------------
-  subroutine write_restart
-    call rw_restart(1.0)
-  end subroutine write_restart
-
-
-  !---------------------------------------------------------------------
-  ! read restart
-  !---------------------------------------------------------------------
-  subroutine read_restart
-    call rw_restart(-1.0)
-  end subroutine read_restart
-
-
-  !---------------------------------------------------------------------
   ! write particles within a volume
   !---------------------------------------------------------------------
   subroutine write_particle
@@ -823,7 +424,7 @@ module m_io
     integer*8 :: nsendactual,nsendactualp,nrecvactualp,nrecvactual,jj,kk,ix,iy,iz,ixe,iye,ize           &
                 ,ixep1,iyep1,izep1,ixp1,iyp1,izp1,is
     real*8 :: pdata(7),rx,ry,rz,fx,fy,fz,w1,w2,w3,w4,w5,w6,w7,w8,xpart,ypart,zpart,r_particle
-    real*8 :: rxe,rye,rze,fxe,fye,fze,dtxi,dtyi,dtzi
+    real*8 :: rxe,rye,rze,fxe,fye,fze
     real*8 :: v_limit,eps2,rx0,ry0,rz0,rrat,sqrr,outer_radius,myranf,fluxran,vxa,vya,vza
     INTEGER*8 :: L, EXIT_CODE_P, EXIT_CODE
     integer*8 :: n_fast_removed,n_fast_removed_local,Courant_Violation,Courant_Violation_p,Field_Diverge,Field_Diverge_p
@@ -842,17 +443,13 @@ module m_io
     real*8 :: mY_xa,mY_ta,mY_ca1,mY_ca2,mY_xb,mY_dtdx,mY_tb,mY_cb1,mY_cb2
     real*8 :: mZ_xa,mZ_ta,mZ_ca1,mZ_ca2,mZ_xb,mZ_dtdx,mZ_tb,mZ_cb1,mZ_cb2
     character(len=160) :: filename
-    integer :: N_IN_VOLUME
+    integer :: n_in_volume
     integer :: iErr1,iErr2,file,eStrLen,subArray,stat(MPI_STATUS_SIZE),mode
     character :: eStr*(1024)
     integer :: N_TOTAL,N_MAX,RECNUM,LENREC,FILENUM,IP
     real*4, dimension(:), allocatable :: xw,yw,zw,vxw,vyw,vzw,qw,vwpar,vwperp1,vwperp2
-
-    dtxi = 1./meshX%dt
-    dtyi = 1./meshY%dt
-    dtzi = 1./meshZ%dt
   
-    N_IN_VOLUME = 0
+    n_in_volume = 0
     do IS=1,NSPEC
       nptotp=0
       do ize=kb-1,ke
@@ -863,7 +460,7 @@ module m_io
                 nptotp=nptotp+1
                 if ( X(np) <= XBOX_R .and. X(np) >= XBOX_L .and.         &
                       Y(np) <= YBOX_R .and. Y(np) >= YBOX_L .and.         &
-                      Z(np) <= ZBOX_R .and. Z(np) >= ZBOX_L                 ) N_IN_VOLUME = N_IN_VOLUME + 1
+                      Z(np) <= ZBOX_R .and. Z(np) >= ZBOX_L                 ) n_in_volume = n_in_volume + 1
                 np=link(np)
               enddo
           enddo
@@ -871,12 +468,12 @@ module m_io
       enddo
     enddo
 
-    call MPI_ALLREDUCE(N_IN_VOLUME,N_TOTAL,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,IERR)
-    call MPI_ALLREDUCE(N_IN_VOLUME,N_MAX  ,1,MPI_INTEGER,MPI_MAX,MPI_COMM_WORLD,IERR)
+    call MPI_ALLREDUCE(n_in_volume,N_TOTAL,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,IERR)
+    call MPI_ALLREDUCE(n_in_volume,N_MAX  ,1,MPI_INTEGER,MPI_MAX,MPI_COMM_WORLD,IERR)
     allocate ( XW(N_MAX), YW(N_MAX), ZW(N_MAX), VXW(N_MAX), VYW(N_MAX), VZW(N_MAX), QW(N_MAX)       &
               ,VWPAR(N_MAX),VWPERP1(N_MAX),VWPERP2(N_MAX))
 
-    N_IN_VOLUME = 0
+    n_in_volume = 0
     do IS=1,NSPEC
       nptotp=0
       do ize=kb-1,ke
@@ -889,14 +486,14 @@ module m_io
               if ( X(np) <= XBOX_R .and. X(np) >= XBOX_L .and.         &
                     Y(np) <= YBOX_R .and. Y(np) >= YBOX_L .and.         &
                     Z(np) <= ZBOX_R .and. Z(np) >= ZBOX_L                 ) then
-                N_IN_VOLUME = N_IN_VOLUME + 1
-                XW(N_IN_VOLUME)  = X(np)
-                YW(N_IN_VOLUME)  = Y(np)
-                ZW(N_IN_VOLUME)  = Z(np)
-                VXW(N_IN_VOLUME) = VX(np)
-                VYW(N_IN_VOLUME) = VY(np)
-                VZW(N_IN_VOLUME) = VZ(np)
-                QW(N_IN_VOLUME)  = QP(np)
+                n_in_volume = n_in_volume + 1
+                XW(n_in_volume)  = X(np)
+                YW(n_in_volume)  = Y(np)
+                ZW(n_in_volume)  = Z(np)
+                VXW(n_in_volume) = VX(np)
+                VYW(n_in_volume) = VY(np)
+                VZW(n_in_volume) = VZ(np)
+                QW(n_in_volume)  = QP(np)
 
                 ! Nonuniform mesh - using MESH_UNMAP
                 rx=dtxi*MESH_UNMAP(meshX,x(l))+1.50000000000d+00
@@ -959,9 +556,9 @@ module m_io
                 perp2_y = perp1_z*par_x - perp1_x*par_z
                 perp2_z = perp1_x*par_y - perp1_y*par_x
 
-                vwpar  (N_IN_VOLUME)  = vxa*par_x   + vya*par_y   + vza*par_z
-                vwperp1(N_IN_VOLUME)  = vxa*perp1_x + vya*perp1_y + vza*perp1_z
-                vwperp2(N_IN_VOLUME)  = vxa*perp2_x + vya*perp2_y + vza*perp2_z
+                vwpar  (n_in_volume)  = vxa*par_x   + vya*par_y   + vza*par_z
+                vwperp1(n_in_volume)  = vxa*perp1_x + vya*perp1_y + vza*perp1_z
+                vwperp2(n_in_volume)  = vxa*perp2_x + vya*perp2_y + vza*perp2_z
               endif
             np=link(np)
             enddo
@@ -979,10 +576,10 @@ module m_io
         recnum = 1
         write(filenum,rec=recnum) N_TOTAL
         recnum = recnum + 1
-        if (N_IN_VOLUME /= 0) then
-          write(filenum,rec=recnum) N_IN_VOLUME
+        if (n_in_volume /= 0) then
+          write(filenum,rec=recnum) n_in_volume
           recnum = recnum + 1
-          do IP=1,N_IN_VOLUME
+          do IP=1,n_in_volume
             write(filenum,rec=recnum) XW(IP),YW(IP),ZW(IP),VXW(IP),VYW(IP),VZW(IP),QW(IP)                &
                                       ,VWPAR(IP),VWPERP1(IP),VWPERP2(IP)
             recnum = recnum + 1
@@ -992,21 +589,21 @@ module m_io
 
     if (myid == 0) then
       do ipe=1,nprocs-1
-          call MPI_RECV(N_IN_VOLUME,1,MPI_INTEGER,ipe,ipe,MPI_COMM_WORLD,status,ierror)
-          if (N_IN_VOLUME /= 0) then
-            call MPI_RECV(XW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
-            call MPI_RECV(YW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
-            call MPI_RECV(ZW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
-            call MPI_RECV(VXW    ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
-            call MPI_RECV(VYW    ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
-            call MPI_RECV(VZW    ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
-            call MPI_RECV(QW     ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
-            call MPI_RECV(VWPAR  ,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
-            call MPI_RECV(VWPERP1,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
-            call MPI_RECV(VWPERP2,N_IN_VOLUME,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
-            write(filenum,rec=recnum) N_IN_VOLUME
+          call MPI_RECV(n_in_volume,1,MPI_INTEGER,ipe,ipe,MPI_COMM_WORLD,status,ierror)
+          if (n_in_volume /= 0) then
+            call MPI_RECV(XW     ,n_in_volume,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+            call MPI_RECV(YW     ,n_in_volume,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+            call MPI_RECV(ZW     ,n_in_volume,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+            call MPI_RECV(VXW    ,n_in_volume,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+            call MPI_RECV(VYW    ,n_in_volume,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+            call MPI_RECV(VZW    ,n_in_volume,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+            call MPI_RECV(QW     ,n_in_volume,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+            call MPI_RECV(VWPAR  ,n_in_volume,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+            call MPI_RECV(VWPERP1,n_in_volume,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+            call MPI_RECV(VWPERP2,n_in_volume,MPI_REAL4,ipe,ipe+nprocs,MPI_COMM_WORLD,status,ierror)
+            write(filenum,rec=recnum) n_in_volume
             recnum = recnum + 1
-            do IP=1,N_IN_VOLUME
+            do IP=1,n_in_volume
               write(filenum,rec=recnum) XW(IP),YW(IP),ZW(IP),VXW(IP),VYW(IP),VZW(IP),QW(IP)                &
                                       ,VWPAR(IP),VWPERP1(IP),VWPERP2(IP)
               recnum = recnum + 1
@@ -1015,18 +612,18 @@ module m_io
       enddo
       CLOSE(UNIT=FILENUM)
     else
-        call MPI_SEND(N_IN_VOLUME,1,MPI_INTEGER,0,MYID,MPI_COMM_WORLD,ierror)
-        if (N_IN_VOLUME /= 0) then
-          call MPI_SEND(XW     ,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
-          call MPI_SEND(YW     ,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
-          call MPI_SEND(ZW     ,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
-          call MPI_SEND(VXW    ,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
-          call MPI_SEND(VYW    ,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
-          call MPI_SEND(VZW    ,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
-          call MPI_SEND(QW     ,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
-          call MPI_SEND(VWPAR  ,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
-          call MPI_SEND(VWPERP1,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
-          call MPI_SEND(VWPERP2,N_IN_VOLUME,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+        call MPI_SEND(n_in_volume,1,MPI_INTEGER,0,MYID,MPI_COMM_WORLD,ierror)
+        if (n_in_volume /= 0) then
+          call MPI_SEND(XW     ,n_in_volume,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+          call MPI_SEND(YW     ,n_in_volume,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+          call MPI_SEND(ZW     ,n_in_volume,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+          call MPI_SEND(VXW    ,n_in_volume,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+          call MPI_SEND(VYW    ,n_in_volume,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+          call MPI_SEND(VZW    ,n_in_volume,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+          call MPI_SEND(QW     ,n_in_volume,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+          call MPI_SEND(VWPAR  ,n_in_volume,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+          call MPI_SEND(VWPERP1,n_in_volume,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
+          call MPI_SEND(VWPERP2,n_in_volume,MPI_REAL4,0,myid+nprocs,MPI_COMM_WORLD,ierror)
         endif
     endif
 

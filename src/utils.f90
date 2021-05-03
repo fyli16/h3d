@@ -58,15 +58,15 @@ subroutine mpe_decomp1d(n, nprocs, myid, b, e)
   integer ::   nprocs, myid
   integer*8 :: n, b, e, nlocal, deficit
 
-  nlocal  = n / nprocs
-  b       = myid * nlocal + 1
+  nlocal  = n/nprocs
+  b       = myid*nlocal + 1
   deficit = mod(n, int(nprocs,8) )
-  b       = b + min( int(myid,8) ,deficit)
-  if (myid  <  deficit) then
+  b       = b + min( int(myid,8), deficit )
+  if (myid<deficit) then
       nlocal = nlocal + 1
   endif
   e = b + nlocal - 1
-  if (e > n .or. myid == nprocs-1) e = n
+  if (e>n .or. myid==nprocs-1) e = n
 
   return
 end subroutine mpe_decomp1d

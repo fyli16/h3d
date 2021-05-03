@@ -10,6 +10,7 @@ module m_diag
   use m_parameter
   use m_io
   use m_particle
+  use m_restart
   implicit none 
 
   contains 
@@ -126,7 +127,7 @@ module m_diag
   subroutine diag_energy
     if (it==itstart) call open_hist_files  ! open files at the first step
     if ( n_diag_energy>0 .and. mod(it,n_diag_energy)==0 ) then
-      call energy 
+      call cal_energy 
       if (myid==0) then
         write(11,*) it, efld, bfld, efluid, ethermal, eptcl ! energy.dat
         ! write(14,*) it, time_elapsed(1:40)  ! time.dat 

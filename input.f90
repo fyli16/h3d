@@ -29,9 +29,6 @@ zaa = 0., zbb = 2240., naz = 0, nbz = 2240
 uniform_load_logical = .false., 
 
 ! ------------------ field solver ----------------!
-n_subcycles = 0
-nskipx = 1,  nskipy = 1,  nskipz = 1, ! not implemented?
-
 iterb = 5,  ! ion push can use a larger step than field advance
 eta_par = 0, ! parallel resisitivity? options: 0, 1, 2
 
