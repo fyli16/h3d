@@ -122,12 +122,15 @@ module m_field
           viza = (1.-iflag)*(1.5*viz(i,j,k)-0.5*vizo(i,j,k)) + iflag*viz(i,j,k)
 
           ! dena=iflag*den(i,j,k) + (1-iflag)*denh(i,j,k)
-          dena = iflag*0.5*(den(i,j,k)+deno(i,j,k)) + (1.-iflag)*den(i,j,k)
-          a = one/dena
+          ! dena = iflag*0.5*(den(i,j,k)+deno(i,j,k)) + (1.-iflag)*den(i,j,k)
+          ! a = one/dena
 
-          dxa = a/(4.*meshX%dxc(i))
-          dya = a/(4.*meshY%dxc(j+1)) ! integer index in y direction starts at 0
-          dza = a/(4.*meshZ%dxc(k+1)) ! integer index in z direction starts at 0
+          ! dxa = a/(4.*meshX%dxc(i))
+          ! dya = a/(4.*meshY%dxc(j+1)) ! integer index in y direction starts at 0
+          ! dza = a/(4.*meshZ%dxc(k+1)) ! integer index in z direction starts at 0
+          dxa = one/(4.*meshX%dxc(i))
+          dya = one/(4.*meshY%dxc(j+1)) ! integer index in y direction starts at 0
+          dza = one/(4.*meshZ%dxc(k+1)) ! integer index in z direction starts at 0
 
           dbxdy = bx(i+1,j+1,k+1) + bx(i,j+1,k+1) + bx(i,j+1,k) + bx(i+1,j+1,k) &
                 - bx(i+1,j,k+1) - bx(i,j,k+1) - bx(i,j,k) - bx(i+1,j,k)
@@ -185,10 +188,13 @@ module m_field
             endif 
           endif 
 
-          ex(i,j,k) = (viza*byav-viya*bzav) + (curlby_scalar*bzav-curlbz_scalar*byav) - dpedx(i,j,k) + tenx/a
-          ey(i,j,k) = (vixa*bzav-viza*bxav) + (curlbz_scalar*bxav-curlbx_scalar*bzav) - dpedy(i,j,k) + teny/a
-          ez(i,j,k) = (viya*bxav-vixa*byav) + (curlbx_scalar*byav-curlby_scalar*bxav) - dpedz(i,j,k) + tenz/a 
-          
+          ! ex(i,j,k) = (viza*byav-viya*bzav) + (curlby_scalar*bzav-curlbz_scalar*byav) - dpedx(i,j,k) + tenx/a
+          ! ey(i,j,k) = (vixa*bzav-viza*bxav) + (curlbz_scalar*bxav-curlbx_scalar*bzav) - dpedy(i,j,k) + teny/a
+          ! ez(i,j,k) = (viya*bxav-vixa*byav) + (curlbx_scalar*byav-curlby_scalar*bxav) - dpedz(i,j,k) + tenz/a 
+          ex(i,j,k) = (viza*byav-viya*bzav) + (curlby_scalar*bzav-curlbz_scalar*byav) - dpedx(i,j,k) + tenx
+          ey(i,j,k) = (vixa*bzav-viza*bxav) + (curlbz_scalar*bxav-curlbx_scalar*bzav) - dpedy(i,j,k) + teny
+          ez(i,j,k) = (viya*bxav-vixa*byav) + (curlbx_scalar*byav-curlby_scalar*bxav) - dpedz(i,j,k) + tenz 
+
           ! if (myid == 0) then
           !   print*, 'viya*bxav-vixa*byav = ', viya*bxav-vixa*byav
           !   print*, 'urlbx_scalar*byav-curlby_scalar*bxav = ', curlbx_scalar*byav-curlby_scalar*bxav
