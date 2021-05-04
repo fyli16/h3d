@@ -53,8 +53,9 @@ module m_io
 
 
   !---------------------------------------------------------------------
+  ! open files
+  !---------------------------------------------------------------------
   subroutine open_files
-    
     integer*8 :: i, lenrec
   
     lenrec = (nxmax-2)*recl_for_single
@@ -634,6 +635,8 @@ module m_io
 
 
   !---------------------------------------------------------------------
+  ! write file
+  !---------------------------------------------------------------------
   subroutine write_file(dat,rnorm,fileName,irec_start,ny1m,nz1m)
 
     integer :: num_sdat
@@ -737,6 +740,8 @@ module m_io
   end subroutine write_file
 
 
+  !---------------------------------------------------------------------
+  ! write file (non MPI-IO)
   !---------------------------------------------------------------------
   subroutine write_file_non_mpio(dat,rnorm,filenum,irec_start,ny1m,nz1m)
 

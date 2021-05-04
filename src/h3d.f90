@@ -3,7 +3,7 @@
 !                           YURI'S NONUNIFORM MESH                         
 !                           3D IMPLEMENTATION ONLY                         
 !                      UNIFORM LOADING IN PHYSICAL SPACE                   
-!               UNIFORM LOADING IN LOGICAL SPACE NOT YET IMPLEMENTED       
+!             (UNIFORM LOADING IN LOGICAL SPACE NOT YET IMPLEMENTED)       
 !---------------------------------------------------------------------
 
 program h3d 
@@ -71,7 +71,8 @@ program h3d
       ! print time & step info
       if (myid==0 .and. mod(it,n_print)==0) then
         call get_time(clock_now)
-        write(6,"(A5,I7,A2,I7,A11,F8.3,A14,F8.3,A12,F8.3)") 'it = ', it, '/', itfinish, &
+        write(6,"(A7,I7,A2,I7,A11,F8.3,A14,F8.3,A12,F8.3)") &
+                      '  it = ', it, '/', itfinish, &
                       ',   time = ', time, &
                       ',   delta_t = ', real(clock_now - clock_old), &
                       ',   tot_t = ', real(clock_now - clock_init)

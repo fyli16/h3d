@@ -52,7 +52,7 @@ etamin = 1.0e-6, etamax = 5.0e-5,  ! used in ieta>1 models
 eta_zs = 280, ! length of resistive layer along z (in unit of cell size); used when ieta=6
 
 ! anisotropy in velocity
-anisot(1:5) = 1.0, ! anisotropy of velocity for each species, used in 'init waves'
+anisot(1:5) = 1.0, ! anisotropy of velocity for each species
 gamma = 1.66667, ! gamma factor in EoS
 
 ave1 = 100.0, ave2 = 50.,

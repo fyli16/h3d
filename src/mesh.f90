@@ -253,19 +253,19 @@ module m_mesh
   ! transform physical coordinate to logical space 
   ! mesh_init_1d() must be called prior to this call
   !---------------------------------------------------------------------
-  double precision function mesh_unmap(m,x) 
-
+  double precision function mesh_unmap(m, x) 
     type(mesh), intent(in) :: m
     real*8, intent(in) :: x 
     real*8 :: t
 
-    if(x.lt.m%xa) then
+    if(x < m%xa) then
       t = m%ta - m%ca2*log( m%ca1*(m%xa-x)+1. )
-    else if(x.le.m%xb) then
+    else if(x <= m%xb) then
       t = m%ta + (x-m%xa)*m%dtdx 
     else 
       t = m%tb + m%cb2*log( m%cb1*(x-m%xb)+1. ) 
     endif
+    
     ! prevent mapping outiside of logical interval [0,1]
     if(t >= 1.) t = 1.-epsilon(real(1)) 
     if(t <= 0.) t = epsilon(real(1)) 
