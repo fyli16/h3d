@@ -26,7 +26,7 @@ zaa = 0., zbb = 2240., naz = 0, nbz = 2240
 
 ! uniform loading in logical space
 ! used in loading particles? see 'init waves'
-uniform_load_logical = .false., 
+uniform_load_logical = .false. 
 
 ! ------------------ field solver ----------------!
 iterb = 5,  ! ion push can use a larger step than field advance
