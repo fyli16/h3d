@@ -16,7 +16,7 @@ module m_particle
     integer*8 :: jbmin, jbmax, kbmin, kbmax
     real*8 :: dns_tmp
 
-    ! initialize density, velocity
+    ! init density, velocity
     do is = 1, nspec
       do k = kb-1, ke+1
         do j = jb-1, je+1
@@ -24,12 +24,12 @@ module m_particle
             dns(i,j,k,is)=1.e-10; dnsh(i,j,k,is)=1.e-10
             vxs(i,j,k,is)=0.; vys(i,j,k,is)=0.; vzs(i,j,k,is)=0.
             if (is==1) then
-              deno(i,j,k)=den(i,j,k)
-              vixo(i,j,k)=vix(i,j,k)
+              deno(i,j,k)=den(i,j,k) ! where was den intialized?
+              vixo(i,j,k)=vix(i,j,k) ! vix (value of v on gids) --> vixo
               viyo(i,j,k)=viy(i,j,k)
-              vizo(i,j,k)=viz(i,j,k)
+              vizo(i,j,k)=viz(i,j,k)             
               den(i,j,k)=0.
-              denh(i,j,k)=0.
+              denh(i,j,k)=0. ! density at half step
               vix(i,j,k)=0.
               viy(i,j,k)=0.
               viz(i,j,k)=0.
@@ -39,7 +39,14 @@ module m_particle
       enddo
     enddo
 
-    ! push particles
+    ! move particles, which includes
+    ! - if dt>0
+    ! ---- push particles for a half step; time 33
+    ! ---- check particle boundary; time 34
+    ! ---- collect v, n at half step; time 35
+    ! ---- push particle for second half step; time 33
+    ! - check particle boundary; time 34
+    ! - collect density at full step; time 35
     call date_and_time(values=time_begin(:,31))
     if (ndim /= 1) then
       call parmove
@@ -98,30 +105,32 @@ module m_particle
       endif
     endif
 
+    ! divide v by n?
     do k = kb-1, ke+1
       do j = jb-1, je+1
         do i = 1, nx2
-          den(i,j,k)=max(denmin,den(i,j,k))
-          vix(i,j,k)=vix(i,j,k)/denh(i,j,k)
-          viy(i,j,k)=viy(i,j,k)/denh(i,j,k)
-          viz(i,j,k)=viz(i,j,k)/denh(i,j,k)
+          den(i,j,k) = max(denmin,den(i,j,k)) ! make sure den > denmin
+          vix(i,j,k) = vix(i,j,k)/denh(i,j,k)
+          viy(i,j,k) = viy(i,j,k)/denh(i,j,k)
+          viz(i,j,k) = viz(i,j,k)/denh(i,j,k)
         enddo
       enddo
     enddo
 
     ! for 1st step?
     if (it == 0) then
-      deno=den; vixo=vix; viyo=viy; vizo=viz
+      deno = den; vixo = vix; viyo = viy; vizo = viz
     endif
 
+    ! ?
     kbmin = kb-1; kbmax = ke+1
     jbmin = jb-1; jbmax = je+1
 
     ! sort particles
-    call date_and_time(values=time_begin(:,4))
+    call date_and_time(values=time_begin(:,36))
     if (mod(it,n_sort) == 0) call sort  
-    call date_and_time(values=time_end(:,4))
-    call add_time(time_begin(1,4),time_end(1,4),time_elapsed(4))
+    call date_and_time(values=time_end(:,36))
+    call add_time(time_begin(1,4),time_end(1,4),time_elapsed(36))
 
     return
   end subroutine update_particles
@@ -161,7 +170,7 @@ module m_particle
     real*8 :: tx,ty,tz,v_x,v_y,v_z  
     integer*4 :: nescapearr(8),nescapearr_global(8)
     integer*4 :: ppacket(3), ppacketg(3), dpacket(4), dpacketg(4)
-    integer*8 :: epacket(2),epacketg(2),loop
+    integer*8 :: epacket(2), epacketg(2), loop
     real*8, dimension(3,nxmax,jb-1:jb+nylmax,kb-1:kb+nzlmax) :: bxyz_av
     real*8 :: TEX1,TEX2,TEX3,TEX4,TEX5,TEX6,TEX7,TEX8  
     real*8 :: TEY1,TEY2,TEY3,TEY4,TEY5,TEY6,TEY7,TEY8  
@@ -221,11 +230,13 @@ module m_particle
     
     call xrealbcc_pack_b(bx_av,by_av,bz_av,1_8,nx,ny,nz)
 
-    ! init diagnostic variables that keep track of particle number, injection, and escape
+    ! init diagnostic variables that keep track of 
+    ! particle number, injection, and escape
     deltime1 = 0.; deltime2 = 0.; npleavingp = 0
 
     ! if dt==0, no actual particle push is done
     if (dt>0) then 
+
       ! push particles for a half step
       call date_and_time(values=time_begin(:,33))
       call push
@@ -238,98 +249,93 @@ module m_particle
       call date_and_time(values=time_end(:,34))
       call add_time(time_begin(1,34),time_end(1,34),time_elapsed(34))
 
-      ! collect vi, ni at half step
+      ! collect v, n at half step
       call date_and_time(values=time_begin(:,35))
+
       do is = 1, nspec
         nptotp = 0
         npart(is) = 0
         do iiz = kb-1, ke
           do iiy = jb-1, je
             do iix = 1, nx1
-              np=iphead(iix,iiy,iiz,is)
-              do while (np.ne.0)
-                nptotp = nptotp+1           !count particles
-                npart(is) = npart(is) + 1 !count particles in each species
-                L=np
-
+              np = iphead(iix,iiy,iiz,is)
+              do while (np /= 0)
+                nptotp = nptotp + 1 !count particles
+                npart(is) = npart(is) + 1 ! count particles in each species
+                l = np
                 q_p = qp(l)
-
-                ! Nonuniform mesh - using mesh_unmap
-                rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
-                ry=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
-                rz=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
-                ix=rx
-                iy=ry
-                iz=rz
-                fx=rx-ix
-                fy=ry-iy
-                fz=rz-iz
-                iy=iy-1             ! integer index in y direction starts at 0
-                iz=iz-1             ! integer index in z direction starts at 0
+                ! 
+                rx = dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
+                ry = dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
+                rz = dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
+                ix = rx; iy = ry; iz = rz
+                fx = rx - ix; fy = ry - iy; fz = rz - iz
+                iy = iy-1             ! integer index in y direction starts at 0
+                iz = iz-1             ! integer index in z direction starts at 0
   
                 ixp1 = ix+1
                 iyp1 = iy+1
                 izp1 = iz+1
 
-                w1=q_p*(1.-fx)*(1.-fy)*(1.-fz)
-                w2=q_p*fx     *(1.-fy)*(1.-fz)
-                w3=q_p*(1.-fx)*fy     *(1.-fz)
-                w4=q_p*fx     *fy     *(1.-fz)
-                w5=q_p*(1.-fx)*(1.-fy)*fz
-                w6=q_p*fx     *(1.-fy)*fz
-                w7=q_p*(1.-fx)*fy     *fz
-                w8=q_p*fx     *fy     *fz
+                w1 = q_p*(1.-fx)*(1.-fy)*(1.-fz)
+                w2 = q_p*fx     *(1.-fy)*(1.-fz)
+                w3 = q_p*(1.-fx)*fy     *(1.-fz)
+                w4 = q_p*fx     *fy     *(1.-fz)
+                w5 = q_p*(1.-fx)*(1.-fy)*fz
+                w6 = q_p*fx     *(1.-fy)*fz
+                w7 = q_p*(1.-fx)*fy     *fz
+                w8 = q_p*fx     *fy     *fz
   
-                dnsh(ix  ,iy  ,iz  ,is)=dnsh(ix  ,iy  ,iz  ,is)+w1
-                dnsh(ixp1,iy  ,iz  ,is)=dnsh(ixp1,iy  ,iz  ,is)+w2
-                dnsh(ix  ,iyp1,iz  ,is)=dnsh(ix  ,iyp1,iz  ,is)+w3
-                dnsh(ixp1,iyp1,iz  ,is)=dnsh(ixp1,iyp1,iz  ,is)+w4
-                dnsh(ix  ,iy  ,izp1,is)=dnsh(ix  ,iy  ,izp1,is)+w5
-                dnsh(ixp1,iy  ,izp1,is)=dnsh(ixp1,iy  ,izp1,is)+w6
-                dnsh(ix  ,iyp1,izp1,is)=dnsh(ix  ,iyp1,izp1,is)+w7
-                dnsh(ixp1,iyp1,izp1,is)=dnsh(ixp1,iyp1,izp1,is)+w8
+                dnsh(ix  ,iy  ,iz  ,is) = dnsh(ix  ,iy  ,iz  ,is) + w1
+                dnsh(ixp1,iy  ,iz  ,is) = dnsh(ixp1,iy  ,iz  ,is) + w2
+                dnsh(ix  ,iyp1,iz  ,is) = dnsh(ix  ,iyp1,iz  ,is) + w3
+                dnsh(ixp1,iyp1,iz  ,is) = dnsh(ixp1,iyp1,iz  ,is) + w4
+                dnsh(ix  ,iy  ,izp1,is) = dnsh(ix  ,iy  ,izp1,is) + w5
+                dnsh(ixp1,iy  ,izp1,is) = dnsh(ixp1,iy  ,izp1,is) + w6
+                dnsh(ix  ,iyp1,izp1,is) = dnsh(ix  ,iyp1,izp1,is) + w7
+                dnsh(ixp1,iyp1,izp1,is) = dnsh(ixp1,iyp1,izp1,is) + w8
 
-                vxs(ix  ,iy  ,iz  ,is)=vxs(ix  ,iy  ,iz  ,is)+w1*vx(l)
-                vxs(ixp1,iy  ,iz  ,is)=vxs(ixp1,iy  ,iz  ,is)+w2*vx(l)
-                vxs(ix  ,iyp1,iz  ,is)=vxs(ix  ,iyp1,iz  ,is)+w3*vx(l)
-                vxs(ixp1,iyp1,iz  ,is)=vxs(ixp1,iyp1,iz  ,is)+w4*vx(l)
-                vxs(ix  ,iy  ,izp1,is)=vxs(ix  ,iy  ,izp1,is)+w5*vx(l)
-                vxs(ixp1,iy  ,izp1,is)=vxs(ixp1,iy  ,izp1,is)+w6*vx(l)
-                vxs(ix  ,iyp1,izp1,is)=vxs(ix  ,iyp1,izp1,is)+w7*vx(l)
-                vxs(ixp1,iyp1,izp1,is)=vxs(ixp1,iyp1,izp1,is)+w8*vx(l)
+                vxs(ix  ,iy  ,iz  ,is) = vxs(ix  ,iy  ,iz  ,is) + w1*vx(l)
+                vxs(ixp1,iy  ,iz  ,is) = vxs(ixp1,iy  ,iz  ,is) + w2*vx(l)
+                vxs(ix  ,iyp1,iz  ,is) = vxs(ix  ,iyp1,iz  ,is) + w3*vx(l)
+                vxs(ixp1,iyp1,iz  ,is) = vxs(ixp1,iyp1,iz  ,is) + w4*vx(l)
+                vxs(ix  ,iy  ,izp1,is) = vxs(ix  ,iy  ,izp1,is) + w5*vx(l)
+                vxs(ixp1,iy  ,izp1,is) = vxs(ixp1,iy  ,izp1,is) + w6*vx(l)
+                vxs(ix  ,iyp1,izp1,is) = vxs(ix  ,iyp1,izp1,is) + w7*vx(l)
+                vxs(ixp1,iyp1,izp1,is) = vxs(ixp1,iyp1,izp1,is) + w8*vx(l)
 
-                vys(ix  ,iy  ,iz  ,is)=vys(ix  ,iy  ,iz  ,is)+w1*vy(l)
-                vys(ixp1,iy  ,iz  ,is)=vys(ixp1,iy  ,iz  ,is)+w2*vy(l)
-                vys(ix  ,iyp1,iz  ,is)=vys(ix  ,iyp1,iz  ,is)+w3*vy(l)
-                vys(ixp1,iyp1,iz  ,is)=vys(ixp1,iyp1,iz  ,is)+w4*vy(l)
-                vys(ix  ,iy  ,izp1,is)=vys(ix  ,iy  ,izp1,is)+w5*vy(l)
-                vys(ixp1,iy  ,izp1,is)=vys(ixp1,iy  ,izp1,is)+w6*vy(l)
-                vys(ix  ,iyp1,izp1,is)=vys(ix  ,iyp1,izp1,is)+w7*vy(l)
-                vys(ixp1,iyp1,izp1,is)=vys(ixp1,iyp1,izp1,is)+w8*vy(l)
+                vys(ix  ,iy  ,iz  ,is) = vys(ix  ,iy  ,iz  ,is) + w1*vy(l)
+                vys(ixp1,iy  ,iz  ,is) = vys(ixp1,iy  ,iz  ,is) + w2*vy(l)
+                vys(ix  ,iyp1,iz  ,is) = vys(ix  ,iyp1,iz  ,is) + w3*vy(l)
+                vys(ixp1,iyp1,iz  ,is) = vys(ixp1,iyp1,iz  ,is) + w4*vy(l)
+                vys(ix  ,iy  ,izp1,is) = vys(ix  ,iy  ,izp1,is) + w5*vy(l)
+                vys(ixp1,iy  ,izp1,is) = vys(ixp1,iy  ,izp1,is) + w6*vy(l)
+                vys(ix  ,iyp1,izp1,is) = vys(ix  ,iyp1,izp1,is) + w7*vy(l)
+                vys(ixp1,iyp1,izp1,is) = vys(ixp1,iyp1,izp1,is) + w8*vy(l)
 
-                vzs(ix  ,iy  ,iz  ,is)=vzs(ix  ,iy  ,iz  ,is)+w1*vz(l)
-                vzs(ixp1,iy  ,iz  ,is)=vzs(ixp1,iy  ,iz  ,is)+w2*vz(l)
-                vzs(ix  ,iyp1,iz  ,is)=vzs(ix  ,iyp1,iz  ,is)+w3*vz(l)
-                vzs(ixp1,iyp1,iz  ,is)=vzs(ixp1,iyp1,iz  ,is)+w4*vz(l)
-                vzs(ix  ,iy  ,izp1,is)=vzs(ix  ,iy  ,izp1,is)+w5*vz(l)
-                vzs(ixp1,iy  ,izp1,is)=vzs(ixp1,iy  ,izp1,is)+w6*vz(l)
-                vzs(ix  ,iyp1,izp1,is)=vzs(ix  ,iyp1,izp1,is)+w7*vz(l)
-                vzs(ixp1,iyp1,izp1,is)=vzs(ixp1,iyp1,izp1,is)+w8*vz(l)
+                vzs(ix  ,iy  ,iz  ,is) = vzs(ix  ,iy  ,iz  ,is) + w1*vz(l)
+                vzs(ixp1,iy  ,iz  ,is) = vzs(ixp1,iy  ,iz  ,is) + w2*vz(l)
+                vzs(ix  ,iyp1,iz  ,is) = vzs(ix  ,iyp1,iz  ,is) + w3*vz(l)
+                vzs(ixp1,iyp1,iz  ,is) = vzs(ixp1,iyp1,iz  ,is) + w4*vz(l)
+                vzs(ix  ,iy  ,izp1,is) = vzs(ix  ,iy  ,izp1,is) + w5*vz(l)
+                vzs(ixp1,iy  ,izp1,is) = vzs(ixp1,iy  ,izp1,is) + w6*vz(l)
+                vzs(ix  ,iyp1,izp1,is) = vzs(ix  ,iyp1,izp1,is) + w7*vz(l)
+                vzs(ixp1,iyp1,izp1,is) = vzs(ixp1,iyp1,izp1,is) + w8*vz(l)
   
                 np=link(np)
               enddo ! while
-            enddo !for iix
-          enddo !for iiy
-        enddo !for iiz
+            enddo ! for iix
+          enddo ! for iiy
+        enddo ! for iiz
 
-        call xreal(DNSH(1,jb-1,kb-1,is),nx,ny,nz)
-        call xreal(VXS(1,jb-1,kb-1,is),nx,ny,nz)
-        call xreal(VYS(1,jb-1,kb-1,is),nx,ny,nz)
-        call xreal(VZS(1,jb-1,kb-1,is),nx,ny,nz)
-        call xrealbcc(DNSH(1,jb-1,kb-1,is),1_8,nx,ny,nz)
-        call xrealbcc(VXS(1,jb-1,kb-1,is),1_8,nx,ny,nz)
-        call xrealbcc(VYS(1,jb-1,kb-1,is),1_8,nx,ny,nz)
-        call xrealbcc(VZS(1,jb-1,kb-1,is),1_8,nx,ny,nz)
+        call xreal(dnsh(1,jb-1,kb-1,is),nx,ny,nz)
+        call xreal(vxs(1,jb-1,kb-1,is),nx,ny,nz)
+        call xreal(vys(1,jb-1,kb-1,is),nx,ny,nz)
+        call xreal(vzs(1,jb-1,kb-1,is),nx,ny,nz)
+        call xrealbcc(dnsh(1,jb-1,kb-1,is),1_8,nx,ny,nz)
+        call xrealbcc(vxs(1,jb-1,kb-1,is),1_8,nx,ny,nz)
+        call xrealbcc(vys(1,jb-1,kb-1,is),1_8,nx,ny,nz)
+        call xrealbcc(vzs(1,jb-1,kb-1,is),1_8,nx,ny,nz)
 
         do iiz = kb-1, ke+1
           do iiy = jb-1, je+1
@@ -342,6 +348,7 @@ module m_particle
           enddo
         enddo
       enddo ! for is
+
       call date_and_time(values=time_end(:,35))
       call add_time(time_begin(1,35),time_end(1,35),time_elapsed(35))
 
@@ -353,7 +360,7 @@ module m_particle
             do iixe = 1, nx1
               np = iphead(iixe,iiye,iize,is)
               do while (np.ne.0)
-                L=np
+                l = np
                 x_disp = dth*vx(l)
                 y_disp = dth*vy(l)
                 z_disp = dth*vz(l)
@@ -381,60 +388,57 @@ module m_particle
 
     ! collect density
     call date_and_time(values=time_begin(:,35))
+
     do is = 1, nspec
       nptotp = 0
       npart(is) = 0
-      do iiz=kb-1,ke
-        do iiy=jb-1,je
-          do iix=1,NX1
-            np=iphead(iix,iiy,iiz,is)
-            do while (np.ne.0)
-              nptotp=nptotp+1           !count particles
+      do iiz = kb-1, ke
+        do iiy = jb-1, je
+          do iix = 1, nx1
+            np = iphead(iix,iiy,iiz,is)
+            do while (np /= 0)
+              nptotp = nptotp + 1 !count particles
               npart(is) = npart(is) + 1 !count particles in each species
-              L = np
-
+              l = np
               q_p = qp(l)
-
-              ! Nonuniform mesh - using mesh_unmap
-              rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
-              ry=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
-              rz=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
-              ix=rx
-              iy=ry
-              iz=rz
-              fx=rx-ix
-              fy=ry-iy
-              fz=rz-iz
-              iy=iy-1             ! integer index in y direction starts at 0
-              iz=iz-1             ! integer index in z direction starts at 0
+              ! 
+              rx = dtxi*mesh_unmap(meshX,x(l)) + 1.50000000000d+00
+              ry = dtyi*mesh_unmap(meshY,y(l)) + 1.50000000000d+00
+              rz = dtzi*mesh_unmap(meshZ,z(l)) + 1.50000000000d+00
+              ix = rx; iy = ry; iz = rz
+              fx = rx - ix; fy = ry - iy; fz = rz - iz
+              iy=iy-1 ! index in y direction starts at 0
+              iz=iz-1 ! index in z direction starts at 0
 
               ixp1 = ix+1
               iyp1 = iy+1
               izp1 = iz+1
 
-              w1=q_p*(1.-fx)*(1.-fy)*(1.-fz)
-              w2=q_p*fx     *(1.-fy)*(1.-fz)
-              w3=q_p*(1.-fx)*fy     *(1.-fz)
-              w4=q_p*fx     *fy     *(1.-fz)
-              w5=q_p*(1.-fx)*(1.-fy)*fz
-              w6=q_p*fx     *(1.-fy)*fz
-              w7=q_p*(1.-fx)*fy     *fz
-              w8=q_p*fx     *fy     *fz
+              w1 = q_p* (1.-fx)*(1.-fy)*(1.-fz)
+              w2 = q_p* fx     *(1.-fy)*(1.-fz)
+              w3 = q_p* (1.-fx)*fy     *(1.-fz)
+              w4 = q_p* fx     *fy     *(1.-fz)
+              w5 = q_p* (1.-fx)*(1.-fy)*fz
+              w6 = q_p* fx     *(1.-fy)*fz
+              w7 = q_p* (1.-fx)*fy     *fz
+              w8 = q_p* fx     *fy     *fz
 
-              dns(ix  ,iy  ,iz  ,is)=dns(ix  ,iy  ,iz  ,is)+w1
-              dns(ixp1,iy  ,iz  ,is)=dns(ixp1,iy  ,iz  ,is)+w2
-              dns(ix  ,iyp1,iz  ,is)=dns(ix  ,iyp1,iz  ,is)+w3
-              dns(ixp1,iyp1,iz  ,is)=dns(ixp1,iyp1,iz  ,is)+w4
-              dns(ix  ,iy  ,izp1,is)=dns(ix  ,iy  ,izp1,is)+w5
-              dns(ixp1,iy  ,izp1,is)=dns(ixp1,iy  ,izp1,is)+w6
-              dns(ix  ,iyp1,izp1,is)=dns(ix  ,iyp1,izp1,is)+w7
-              dns(ixp1,iyp1,izp1,is)=dns(ixp1,iyp1,izp1,is)+w8
+              dns(ix  ,iy  ,iz  ,is) = dns(ix  ,iy  ,iz  ,is) + w1
+              dns(ixp1,iy  ,iz  ,is) = dns(ixp1,iy  ,iz  ,is) + w2
+              dns(ix  ,iyp1,iz  ,is) = dns(ix  ,iyp1,iz  ,is) + w3
+              dns(ixp1,iyp1,iz  ,is) = dns(ixp1,iyp1,iz  ,is) + w4
+              dns(ix  ,iy  ,izp1,is) = dns(ix  ,iy  ,izp1,is) + w5
+              dns(ixp1,iy  ,izp1,is) = dns(ixp1,iy  ,izp1,is) + w6
+              dns(ix  ,iyp1,izp1,is) = dns(ix  ,iyp1,izp1,is) + w7
+              dns(ixp1,iyp1,izp1,is) = dns(ixp1,iyp1,izp1,is) + w8
 
-              np=link(np)
-            enddo
-          enddo
-        enddo
-      enddo
+              ! point to next particle?
+              ! (notice link was modified in 'init')
+              np = link(np)
+            enddo ! while
+          enddo ! for iix
+        enddo ! for iiy
+      enddo ! for iiz
 
       nescapearr(1) = nescape(is)
       nescapearr(2) = nescape_yz(is)
@@ -455,11 +459,14 @@ module m_particle
       nescape_xz_global(is) = nescapearr_global(7)
       npart_global(is)      = nescapearr_global(8)
 
+      ! what for?
       deltime2 = deltime2 + real(clock_time1-clock_now)
 
+      ! particle boundary exchange?
       call xreal(dns(1,jb-1,kb-1,is),nx,ny,nz)
       call xrealbcc(dns(1,jb-1,kb-1,is),1_8,nx,ny,nz)
 
+      ! true density
       do iiz = kb-1, ke+1
         do iiy = jb-1, je+1
           do iix = 1, nx2
@@ -467,7 +474,9 @@ module m_particle
           enddo
         enddo
       enddo
+
     enddo ! for is
+
     call date_and_time(values=time_end(:,35))
     call add_time(time_begin(1,35),time_end(1,35),time_elapsed(35))
 
@@ -533,22 +542,22 @@ module m_particle
     real*8:: x_disp,y_disp,z_disp,disp_max_p(3),disp_max(3), &
             y_disp_max_p, x_disp_max_p, z_disp_max_p, &
             y_disp_max, x_disp_max, z_disp_max
-    integer*8 :: Courant_Violation, Courant_Violation_p 
+    integer*8 :: courant_violate, courant_violate_p 
 
     do is = 1, nspec
-      Courant_Violation_p = 0
+      courant_violate_p = 0
       x_disp_max_p        = 0
       y_disp_max_p        = 0
       z_disp_max_p        = 0
       hh = 0.5*dt*qspec(is)/wspec(is)
   
-      do iize = kb-1,ke
-        do iiye = jb-1,je
+      do iize = kb-1, ke
+        do iiye = jb-1, je
           do iixe = 1, nx1
             np = iphead(iixe,iiye,iize,is)
-            do while (np.ne.0)
+            do while (np /= 0)
               l = np
-              ! Nonuniform mesh - using mesh_unmap
+              ! 
               rxe=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
               rye=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
               rze=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
@@ -582,6 +591,7 @@ module m_particle
               ex6=ex(ixep1,iye  ,izep1)
               ex7=ex(ixe  ,iyep1,izep1)
               ex8=ex(ixep1,iyep1,izep1)
+
               ey1=ey(ixe  ,iye  ,ize  )
               ey2=ey(ixep1,iye  ,ize  )
               ey3=ey(ixe  ,iyep1,ize  )
@@ -590,6 +600,7 @@ module m_particle
               ey6=ey(ixep1,iye  ,izep1)
               ey7=ey(ixe  ,iyep1,izep1)
               ey8=ey(ixep1,iyep1,izep1)
+
               ez1=ez(ixe  ,iye  ,ize  )
               ez2=ez(ixep1,iye  ,ize  )
               ez3=ez(ixe  ,iyep1,ize  )
@@ -607,6 +618,7 @@ module m_particle
               bx6=bx_av(ixep1,iye  ,izep1)
               bx7=bx_av(ixe  ,iyep1,izep1)
               bx8=bx_av(ixep1,iyep1,izep1)
+
               by1=by_av(ixe  ,iye  ,ize  )
               by2=by_av(ixep1,iye  ,ize  )
               by3=by_av(ixe  ,iyep1,ize  )
@@ -615,6 +627,7 @@ module m_particle
               by6=by_av(ixep1,iye  ,izep1)
               by7=by_av(ixe  ,iyep1,izep1)
               by8=by_av(ixep1,iyep1,izep1)
+
               bz1=bz_av(ixe  ,iye  ,ize  )
               bz2=bz_av(ixep1,iye  ,ize  )
               bz3=bz_av(ixe  ,iyep1,ize  )
@@ -632,6 +645,7 @@ module m_particle
               fox6=fox(ixep1,iye  ,izep1)
               fox7=fox(ixe  ,iyep1,izep1)
               fox8=fox(ixep1,iyep1,izep1)
+
               foy1=foy(ixe  ,iye  ,ize  )
               foy2=foy(ixep1,iye  ,ize  )
               foy3=foy(ixe  ,iyep1,ize  )
@@ -640,6 +654,7 @@ module m_particle
               foy6=foy(ixep1,iye  ,izep1)
               foy7=foy(ixe  ,iyep1,izep1)
               foy8=foy(ixep1,iyep1,izep1)
+
               foz1=foz(ixe  ,iye  ,ize  )
               foz2=foz(ixep1,iye  ,ize  )
               foz3=foz(ixe  ,iyep1,ize  )
@@ -649,49 +664,54 @@ module m_particle
               foz7=foz(ixe  ,iyep1,izep1)
               foz8=foz(ixep1,iyep1,izep1)
 
-              exa=w1e*ex1+w2e*ex2+w3e*ex3+w4e*ex4      &
+              exa = w1e*ex1+w2e*ex2+w3e*ex3+w4e*ex4      &
                   +w5e*ex5+w6e*ex6+w7e*ex7+w8e*ex8      &
                   +w1e*fox1+w2e*fox2+w3e*fox3+w4e*fox4  &
                   +w5e*fox5+w6e*fox6+w7e*fox7+w8e*fox8
-              eya=w1e*ey1+w2e*ey2+w3e*ey3+w4e*ey4      &
+              eya = w1e*ey1+w2e*ey2+w3e*ey3+w4e*ey4      &
                   +w5e*ey5+w6e*ey6+w7e*ey7+w8e*ey8      &
                   +w1e*foy1+w2e*foy2+w3e*foy3+w4e*foy4  &
                   +w5e*foy5+w6e*foy6+w7e*foy7+w8e*foy8
-              eza=w1e*ez1+w2e*ez2+w3e*ez3+w4e*ez4      &
+              eza = w1e*ez1+w2e*ez2+w3e*ez3+w4e*ez4      &
                   +w5e*ez5+w6e*ez6+w7e*ez7+w8e*ez8      &
                   +w1e*foz1+w2e*foz2+w3e*foz3+w4e*foz4  &
                   +w5e*foz5+w6e*foz6+w7e*foz7+w8e*foz8
 
-              bxa=w1e*bx1+w2e*bx2+w3e*bx3+w4e*bx4      &
+              bxa = w1e*bx1+w2e*bx2+w3e*bx3+w4e*bx4      &
                   +w5e*bx5+w6e*bx6+w7e*bx7+w8e*bx8
-              bya=w1e*by1+w2e*by2+w3e*by3+w4e*by4      &
+              bya = w1e*by1+w2e*by2+w3e*by3+w4e*by4      &
                   +w5e*by5+w6e*by6+w7e*by7+w8e*by8
-              bza=w1e*bz1+w2e*bz2+w3e*bz3+w4e*bz4      &
+              bza = w1e*bz1+w2e*bz2+w3e*bz3+w4e*bz4      &
                   +w5e*bz5+w6e*bz6+w7e*bz7+w8e*bz8
 
-              ff=2./(1.+hh*hh*(bxa**2+bya**2+bza**2))
-              vex=vx(l)+exa*hh
-              vey=vy(l)+eya*hh
-              vez=vz(l)+eza*hh
-              p2xs=vex+(vey*bza-vez*bya)*hh
-              p2ys=vey+(vez*bxa-vex*bza)*hh
-              p2zs=vez+(vex*bya-vey*bxa)*hh
-              vx(l)=vex+ff*(p2ys*bza-p2zs*bya)*hh+exa*hh
-              vy(l)=vey+ff*(p2zs*bxa-p2xs*bza)*hh+eya*hh
-              vz(l)=vez+ff*(p2xs*bya-p2ys*bxa)*hh+eza*hh
+              ff = 2./(1.+hh*hh*(bxa**2+bya**2+bza**2))
 
-              ! advance particles for a half step to calcualte Vi
+              vex = vx(l)+exa*hh
+              vey = vy(l)+eya*hh
+              vez = vz(l)+eza*hh
+
+              p2xs = vex+(vey*bza-vez*bya)*hh
+              p2ys = vey+(vez*bxa-vex*bza)*hh
+              p2zs = vez+(vex*bya-vey*bxa)*hh
+
+              vx(l) = vex+ff*(p2ys*bza-p2zs*bya)*hh+exa*hh
+              vy(l) = vey+ff*(p2zs*bxa-p2xs*bza)*hh+eya*hh
+              vz(l) = vez+ff*(p2xs*bya-p2ys*bxa)*hh+eza*hh
+
+              ! advance particles for a half step
               x_disp = dth*vx(l)
               y_disp = dth*vy(l)
               z_disp = dth*vz(l)
 
-              x(l)=x(l)+ x_disp
-              y(l)=y(l)+ y_disp
-              z(l)=z(l)+ z_disp
+              x(l) = x(l) + x_disp
+              y(l) = y(l) + y_disp
+              z(l) = z(l) + z_disp
 
-              if ( abs(2*x_disp/meshX%dxn(ixep1)) > 1.0 .or.                                               &
-                    abs(2*y_disp/meshY%dxn(iyep1)) > 1.0 .or.                                               &
-                    abs(2*z_disp/meshZ%dxn(izep1)) > 1.0) Courant_Violation_p = Courant_Violation_p + 1
+              if (abs(2*x_disp/meshX%dxn(ixep1)) > 1.0 .or. &
+                  abs(2*y_disp/meshY%dxn(iyep1)) > 1.0 .or. &
+                  abs(2*z_disp/meshZ%dxn(izep1)) > 1.0) then
+                courant_violate_p = courant_violate_p + 1
+              endif 
 
               x_disp_max_p = max(x_disp_max_p,abs(x_disp)/meshX%dxn(ixep1))
               y_disp_max_p = max(y_disp_max_p,abs(y_disp)/meshY%dxn(iyep1))
@@ -699,7 +719,7 @@ module m_particle
 
               ! particle tracking
               ntot = 0 ! for particle tracking
-              if (ptag(np).ne.0) then
+              if (ptag(np) /= 0) then
                 ntot=ntot+1
                 buf_p1(1,ntot)=x(np)
                 buf_p1(2,ntot)=y(np)
@@ -720,14 +740,14 @@ module m_particle
               np=link(np)
 
             enddo ! while
-          enddo
-        enddo
-      enddo
+          enddo ! iixe
+        enddo ! iiye
+      enddo ! iize
 
       disp_max_p(1) = x_disp_max_p
       disp_max_p(2) = y_disp_max_p
       disp_max_p(3) = z_disp_max_p
-      call MPI_ALLREDUCE(disp_max_p,disp_max,3,MPI_DOUBLE_PRECISION,MPI_MAX,MPI_COMM_WORLD,IERR) !LAURA
+      call MPI_ALLREDUCE(disp_max_p,disp_max,3,MPI_DOUBLE_PRECISION,MPI_MAX,MPI_COMM_WORLD,IERR)
       x_disp_max = disp_max(1)
       y_disp_max = disp_max(2)
       z_disp_max = disp_max(3)
@@ -738,12 +758,11 @@ module m_particle
       !   print*, " maximum z-displacement/dz = ",z_disp_max
       ! endif
 
-      call MPI_ALLREDUCE(Courant_Violation_p,Courant_Violation,1,MPI_INTEGER8,MPI_SUM,MPI_COMM_WORLD,IERR)
-
-      if (Courant_Violation /= 0) then
-          if (myid == 0) print*, "Particle displacements exceed cell size ",Courant_Violation," times"
-          call MPI_FINALIZE(IERR)
-          STOP
+      call MPI_ALLREDUCE(courant_violate_p,courant_violate,1,MPI_INTEGER8,MPI_SUM,MPI_COMM_WORLD,IERR)
+      if (courant_violate /= 0) then
+          if (myid == 0) print*, "Particle displacements exceed cell size by",courant_violate," times"
+          call MPI_FINALIZE(ierr)
+          stop
       endif
 
     enddo ! is
@@ -751,6 +770,8 @@ module m_particle
   end subroutine push
 
 
+  !---------------------------------------------------------------------
+  ! particle boundary check
   !---------------------------------------------------------------------
   subroutine parbound
       integer*4 :: ppacket(3),ppacketg(3),dpacket(4),dpacketg(4)
@@ -763,8 +784,8 @@ module m_particle
       integer*8 :: l
       integer, dimension(8) :: nsend_to_nbr, nbrs
       integer :: idest,max_nsend,max_nrecv
-      real*8, dimension(:,:,:),allocatable,target :: packed_pdata_send
-      real*8, dimension(:,:),allocatable,target :: packed_pdata_recv
+      real*8, dimension(:,:,:), allocatable, target :: packed_pdata_send
+      real*8, dimension(:,:), allocatable, target :: packed_pdata_recv
       real*8, pointer :: pp(:,:)
       integer :: exchange_send_request(8)
       integer*8 :: iv,iye_cc,ize_cc,jv,npleavingp,nprecv,nprecvtmp
@@ -772,11 +793,11 @@ module m_particle
       integer*8 :: n_fast_removed,n_fast_removed_local,Field_Diverge,Field_Diverge_p
       integer*8 :: ii,iix,iixe,iiy,iiye,iiz,iize,irepeat,irepeatp,itmp
       real*8 :: hxmin,hxmax,hymin,hymax,hzmin,hzmax,cell_size_min
+      
       Storage_Error_p = 0
       Field_Diverge_p = 0
 
       ! determine the velocity limit based on CFL condition
-
       ! Uniform mesh - Same as in version 5.0
       ! if (dt /=0.) then
       !   if (ndim == 1) then
@@ -787,7 +808,6 @@ module m_particle
       ! else
       !   v_limit=1.d+10
       ! endif
-
 
       ! Nonuniform mesh
       hxmin=meshX%dxc(1)
@@ -883,13 +903,13 @@ module m_particle
                 if ((zpart <= ze.and.zpart >= zb).and.(ypart <= ye.and.ypart >= yb)) then
                     ! VR: particle inside local domain (in y and z)
                     ! VR: here we simply re-order the list:
-                  iphead(ixe,iye,ize,is)=link(np)      !VR: next particle to consider (tmp)
-                  link(np)=iptemp(ixe,iye,ize,is)      !VR: the next particle in the new list is the prev. part. in the old list
-                  iptemp(ixe,iye,ize,is)=np            !VR: imptemp becomes this particle (head of the new list)
-                  np=iphead(ixe,iye,ize,is)            !VR: next particle to consider is from link
-                                                        !VR: at the end of the list, the following happens:
-                                                        !VR: iphead(ixe,iye,ize,is)=iptemp(ixe,iye,ize,is)
-                                                        !VR: iptemp(ixe,iye,ize,is)=0
+                  iphead(ixe,iye,ize,is)=link(np)     !VR: next particle to consider (tmp)
+                  link(np)=iptemp(ixe,iye,ize,is)     !VR: the next particle in the new list is the prev. part. in the old list
+                  iptemp(ixe,iye,ize,is)=np           !VR: imptemp becomes this particle (head of the new list)
+                  np=iphead(ixe,iye,ize,is)           !VR: next particle to consider is from link
+                                                      !VR: at the end of the list, the following happens:
+                                                      !VR: iphead(ixe,iye,ize,is)=iptemp(ixe,iye,ize,is)
+                                                      !VR: iptemp(ixe,iye,ize,is)=0
                 else
                   ! VR: particle outside local domain
                   if (ypart <= ye.and.ypart >= yb) then
@@ -922,7 +942,7 @@ module m_particle
                   np=iphead(ixe,iye,ize,is) !VR: next particle to consider (from the old link list)
                 endif ! VR: check particle inside/outside domain
 
-  15            CONTINUE
+  15            continue
                 enddo !VR: loop over particles in the cell
                 iphead(ixe,iye,ize,is)=iptemp(ixe,iye,ize,is)    !VR: save the new head (re-ordered)
                 iptemp(ixe,iye,ize,is)=0                         !VR: reset the temp list
@@ -994,10 +1014,9 @@ module m_particle
           !   print*, " # of particles removed because V > Vlimit = ", n_fast_removed
           ! endif
 
-          if (nsendtot.ne.nrecvtot) THEN
+          if (nsendtot /= nrecvtot) then
             call MPI_FINALIZE(IERR)
-            print*, "Error: nsendtot /= nrecvtot. Terminating"
-            stop
+            call error_abort("Error: nsendtot /= nrecvtot. Terminating")
           endif
 
           ! VR it's convenient to have neighboring processes in an array
@@ -1024,13 +1043,13 @@ module m_particle
           nrecvactualp = 0
 
           ! VR: 4 stages of data exhcnage in a simple even->odd, odd->even 2D pattern
-          do irepeat=1,4
+          do irepeat = 1, 4
             if (isendid(irepeat) == 1) then
               nsend_to_nbr = 0
               np=IPSEND(is)
               
               ! loop over particles in the ipsend list
-              do while (np.ne.0)           
+              do while (np /= 0)           
                 nsendactualp = nsendactualp + 1
 
                 ! map this particle to the logical mesh
@@ -1259,16 +1278,13 @@ module m_particle
     integer*8 :: id, kb1, ix, iy, iz, ixe ,iye, ize, l, nttot, nplist
     real*8 :: rxe,rye,rze,fxe,fye,fze
 
-    id = 0
-    kb1 = kb-1
-    iptemp = 0
-    porder = 0
+    id = 0; kb1 = kb-1; iptemp = 0; porder = 0
     do is = 1,nspec
       do iz = kb-1,ke
         do iy = jb-1,je
           do ix = 1, nx1
             np = iphead(ix,iy,iz,is)
-            do while (np.ne.0)
+            do while (np /= 0)
               ! Nonuniform mesh - using mesh_unmap
               rxe=dtxi*mesh_unmap(meshX,x(np))+1.50000000000d+00
               rye=dtyi*mesh_unmap(meshY,y(np))+1.50000000000d+00
@@ -1276,11 +1292,11 @@ module m_particle
               ixe=rxe
               iye=rye
               ize=rze
-              iye=iye-1 ! integer index in y direction starts at 0
-              ize=ize-1 ! integer index in z direction starts at 0
+              iye=iye-1 ! index in y direction starts at 0
+              ize=ize-1 ! index in z direction starts at 0
 
-              porder(np)=iptemp(ixe,iye,ize,is)
-              iptemp(ixe,iye,ize,is)=np
+              porder(np) = iptemp(ixe,iye,ize,is)
+              iptemp(ixe,iye,ize,is) = np
               np = link(np)
             enddo
           enddo
@@ -1288,15 +1304,14 @@ module m_particle
       enddo
     enddo
 
-    l = 0
-    nttot = 0
-    do is = 1,nspec
-      do iz = kb-1,ke
-        do iy = jb-1,je
+    l = 0; nttot = 0
+    do is = 1, nspec
+      do iz = kb-1, ke
+        do iy = jb-1, je
           do ix = 1, nx1
             np = iptemp(ix,iy,iz,is)
             nplist = 0
-            do while (np.ne.0)
+            do while (np /= 0)
               nplist = nplist+1
               l = l+1
               link(l) = np
@@ -1309,71 +1324,70 @@ module m_particle
       enddo
     enddo
 
-    id = 0
-    kb1 = kb-1
-    do l = 1,nttot
+    id = 0; kb1 = kb-1
+    do l = 1, nttot
       pstore(l) = vx(link(l))
     enddo
-    do l = 1,nttot
+    do l = 1, nttot
       vx(l) = pstore(l)
     enddo
 
-    do l = 1,nttot
+    do l = 1, nttot
       pstore(l) = vy(link(l))
     enddo
-    do l = 1,nttot
+    do l = 1, nttot
       vy(l) = pstore(l)
     enddo      
 
-    do l = 1,nttot
+    do l = 1, nttot
       pstore(l) = vz(link(l))
     enddo
-    do l = 1,nttot
+    do l = 1, nttot
       vz(l) = pstore(l)
     enddo      
 
-    do l = 1,nttot
+    do l = 1, nttot
       pstore(l) = x(link(l))
     enddo
-    do l = 1,nttot
+    do l = 1, nttot
       x(l) = pstore(l)
     enddo      
 
-    do l = 1,nttot
+    do l = 1, nttot
       pstore(l) = y(link(l))
     enddo
-    do l = 1,nttot
+    do l = 1, nttot
       y(l) = pstore(l)
     enddo      
 
-    do l = 1,nttot
+    do l = 1, nttot
       pstore(l) = z(link(l))
     enddo
-    do l = 1,nttot
+    do l = 1, nttot
       z(l) = pstore(l)
     enddo
 
-    do l = 1,nttot
+    do l = 1, nttot
       pstore(l) = qp(link(l))
     enddo
-    do l = 1,nttot
+    do l = 1, nttot
       qp(l) = pstore(l)
     enddo
 
-    do l = 1,nttot
+    do l = 1, nttot
       pstore2(l) = ptag(link(l))
     enddo
-    do l = 1,nttot
+    do l = 1, nttot
       ptag(l) = pstore2(l)
     enddo
 
     l=1
-    do is = 1,nspec
-      do iz = kb-1,ke
-        do iy = jb-1,je
+    do is = 1, nspec
+      do iz = kb-1, ke
+        do iy = jb-1, je
           do ix = 1, nx1
             nplist = iphead(ix,iy,iz,is)
-            if (nplist.ne.0) then
+            if (nplist /= 0) then
               iphead(ix,iy,iz,is) = l
               do np = l, l+nplist-1
                 link(np) = np+1
@@ -1388,10 +1402,10 @@ module m_particle
       enddo
     enddo
 
-    if (l-1.ne.nttot) then
-      print *,'Problem in SORT: l-1 NE NTTOT'
-      stop
-    endif
+    if (l-1 /= nttot) then
+      call error_abort('Problem in SORT: l-1 /= NTTOT')
+    endif 
+
     ipstore = nttot + 1
     do l = nttot+1, nplmax-1
       link(l) = l+1
@@ -1824,11 +1838,11 @@ module m_particle
 
     ! copy input array "a" to "temp" including ghost cells
     do k=kb-1,ke+1
-        do j = jb-1,je+1
-          do i=1,nx2
-              temp(i,j,k)=a(i,j,k)
-          enddo
+      do j = jb-1,je+1
+        do i=1,nx2
+            temp(i,j,k)=a(i,j,k)
         enddo
+      enddo
     enddo
 
     ! smoothing only for inner cells (exclude ghost cells)
@@ -2083,7 +2097,7 @@ module m_particle
     real*8 :: rxe,rye,rze,fxe,fye,fze
     real*8 :: v_limit,eps2,myranf,fluxran,vxa,vyz,vza
     INTEGER*8:: L, EXIT_CODE_P, EXIT_CODE
-    integer*8:: n_fast_removed,n_fast_removed_local,Courant_Violation,Courant_Violation_p,Field_Diverge,Field_Diverge_p
+    integer*8:: n_fast_removed,n_fast_removed_local,courant_violate,courant_violate_p,Field_Diverge,Field_Diverge_p
     real*8 :: hxmin,hxmax,hymin,hymax,hzmin,hzmax,cell_size_min,x_disp,y_disp,z_disp          &
                       ,y_disp_max_p,x_disp_max_p,z_disp_max_p,y_disp_max,x_disp_max,z_disp_max
     real*8 :: disp_max_p(3),disp_max(3),tx,ty,tz,v_x,v_y,v_z  
@@ -2104,7 +2118,7 @@ module m_particle
 
     Storage_Error_p = 0
     Field_Diverge_p = 0
-    Courant_Violation_p = 0
+    courant_violate_p = 0
     x_disp_max_p        = 0
     y_disp_max_p        = 0
     z_disp_max_p        = 0
@@ -2368,8 +2382,11 @@ module m_particle
                 x(l)=x(l)+ x_disp
                 y(l)=y(l)+ y_disp
                   
-                if ( abs(x_disp/meshX%dxn(ixep1)) > 1.0 .or.                                               &
-                    abs(y_disp/meshY%dxn(iyep1)) > 1.0) Courant_Violation_p = Courant_Violation_p + 1
+                if (abs(x_disp/meshX%dxn(ixep1)) > 1.0 .or.                                               &
+                    abs(y_disp/meshY%dxn(iyep1)) > 1.0) then
+                  courant_violate_p = courant_violate_p + 1
+                endif 
+
                 x_disp_max_p = max(x_disp_max_p,abs(x_disp)/meshX%dxn(ixep1))
                 y_disp_max_p = max(y_disp_max_p,abs(y_disp)/meshY%dxn(iyep1))
 
@@ -2391,10 +2408,10 @@ module m_particle
         write(6,*) " maximum y-displacement/dy = ",y_disp_max
       endif
 
-      call MPI_ALLREDUCE(Courant_Violation_p,Courant_Violation,1,MPI_INTEGER8,MPI_SUM,MPI_COMM_WORLD,IERR)
+      call MPI_ALLREDUCE(courant_violate_p,courant_violate,1,MPI_INTEGER8,MPI_SUM,MPI_COMM_WORLD,IERR)
 
-      if (Courant_Violation /= 0) then
-          if (myid == 0) write(6,*) "Particle displacements exceed cell size ",Courant_Violation," times"
+      if (courant_violate /= 0) then
+          if (myid == 0) write(6,*) "Particle displacements exceed cell size ",courant_violate," times"
           call MPI_FINALIZE(IERR)
           STOP
       endif
@@ -2492,7 +2509,7 @@ module m_particle
                 np=iphead(ixe,iye,ize,is)
               endif
       
-  15            continue
+  15          continue
             enddo
             iphead(ixe,iye,ize,is)=iptemp(ixe,iye,ize,is)
             iptemp(ixe,iye,ize,is)=0
@@ -2895,14 +2912,14 @@ module m_particle
 
       deltime2 = deltime2 + real(clock_time1-clock_now)
 
-      call xreal_2d(DNS(1,jb-1,kb-1,is),NX,NY,NZ)
-      call xreal_2d(VXS(1,jb-1,kb-1,is),NX,NY,NZ)
-      call xreal_2d(VYS(1,jb-1,kb-1,is),NX,NY,NZ)
-      call xreal_2d(VZS(1,jb-1,kb-1,is),NX,NY,NZ)
-      call xrealbcc_2d(DNS(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
-      call xrealbcc_2d(VXS(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
-      call xrealbcc_2d(VYS(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
-      call xrealbcc_2d(VZS(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
+      call xreal_2d(dns(1,jb-1,kb-1,is),NX,NY,NZ)
+      call xreal_2d(vxs(1,jb-1,kb-1,is),NX,NY,NZ)
+      call xreal_2d(vys(1,jb-1,kb-1,is),NX,NY,NZ)
+      call xreal_2d(vzs(1,jb-1,kb-1,is),NX,NY,NZ)
+      call xrealbcc_2d(dns(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
+      call xrealbcc_2d(vxs(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
+      call xrealbcc_2d(vys(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
+      call xrealbcc_2d(vzs(1,jb-1,kb-1,is),1_8,NX,NY,NZ)
 
       do IIZ=KB-1,KE+1
         do IIY=JB-1,JE+1

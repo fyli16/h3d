@@ -211,47 +211,48 @@ module m_diag
 
 
   !---------------------------------------------------------------------
-  ! track particle data
+  ! diag tracking particles
   !---------------------------------------------------------------------
   subroutine diag_tracking
     double precision, dimension(tracking_width,nspec*maxtags) :: buf_p2
-    integer :: iix,iiy,iiz,is, isize, m, n,l,i,k,ii
+    integer :: iix, iiy, iiz, is, isize, m, n, l, i, k, ii
 
-    if (myid==0) then
-      i=mod(it-1, nbufsteps)+1 
+    if (myid == 0) then
+      i = mod(it-1,nbufsteps) + 1 
+
       ! copy particles in rank 0
-      do n=1,ntot
-        k=INT(buf_p1(8,n)) ! this is particle tag
-        do l=1,tracking_width
-          buf_particle(l,k,i)=buf_p1(l,n)
+      do n = 1, ntot
+        k = int(buf_p1(8,n)) ! this is particle tag
+        do l = 1, tracking_width
+          buf_particle(l,k,i) = buf_p1(l,n)
         enddo
       enddo
+
       ! receive particles from rank 1 to nprocs-1
-      do m=1, nprocs-1
+      do m = 1, nprocs-1
         call MPI_Recv(isize, 1, MPI_INTEGER, m, 999, MPI_COMM_WORLD, status, ierr)
         !write(*,*)'receiving',m,isize
         call MPI_Recv(buf_p2, isize*tracking_width, MPI_DOUBLE, m, m, MPI_COMM_WORLD, status, ierr)
-        do n=1,isize
-          k=INT(buf_p2(8,n))
-          do l=1,tracking_width
-            buf_particle(l,k,i)=buf_p2(l,n)
+        do n = 1, isize
+          k = int(buf_p2(8,n))
+          do l = 1, tracking_width
+            buf_particle(l,k,i) = buf_p2(l,n)
           enddo
         enddo
       enddo
-      if (i==nbufsteps) then
-        if (tracking_binary) then
-        !!! binary output
-          write(13)buf_particle
-        else
-        !!! formatted output
-        ! TODO: make this following compact
-          do ii=1,nbufsteps
-            do k=1, nspec*maxtags
-              do l=1,7
+
+      if (i == nbufsteps) then
+        if (tracking_binary) then ! binary output
+          write(13)buf_particle 
+        else ! formatted output
+          ! (TODO: make the following compact)
+          do ii = 1, nbufsteps
+            do k = 1, nspec*maxtags
+              do l = 1, 7
                 write(13,'(E14.6,1x)',advance='no')buf_particle(l,k,ii)
               enddo
               write(13,'(I8)',advance='no')INT(buf_particle(8,k,ii))
-              do l=9,14
+              do l = 9, 14
                 write(13,'(E14.6,1x)',advance='no')buf_particle(l,k,ii)
               enddo
               write(13,*)
@@ -259,9 +260,7 @@ module m_diag
           enddo
         endif
       endif
-
-    else
-      !write(*,*)'sending',myid,ntot
+    else ! myid \= 0
       call MPI_Send(ntot, 1, MPI_INTEGER, 0, 999, MPI_COMM_WORLD, ierr)
       call MPI_Send(buf_p1, ntot*tracking_width, MPI_DOUBLE, 0, myid, MPI_COMM_WORLD, ierr)
     endif

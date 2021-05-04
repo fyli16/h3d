@@ -189,6 +189,26 @@ module m_field
           ey(i,j,k) = (vixa*bzav-viza*bxav) + (curlbz_scalar*bxav-curlbx_scalar*bzav) - dpedy(i,j,k) + teny/a
           ez(i,j,k) = (viya*bxav-vixa*byav) + (curlbx_scalar*byav-curlby_scalar*bxav) - dpedz(i,j,k) + tenz/a 
           
+          ! if (myid == 0) then
+          !   print*, 'viya*bxav-vixa*byav = ', viya*bxav-vixa*byav
+          !   print*, 'urlbx_scalar*byav-curlby_scalar*bxav = ', curlbx_scalar*byav-curlby_scalar*bxav
+          !   print*, 'dpedz(i,j,k) =', dpedz(i,j,k)
+          !   print*, 'tenz/a = ', tenz/a
+          ! endif 
+
+          if (myid==0) then
+            if (viya*bxav-vixa*byav>1e-4/wpiwci**2 .or. curlbx_scalar*byav-curlby_scalar*bxav>1e-4/wpiwci**2 &
+            .or. dpedz(i,j,k)>1e-4/wpiwci**2 .or. tenz/a>1e-4/wpiwci**2) then
+              print*, 'it,i,j,k = ', it,i,j,k
+              ! print*, 'viya*bxav-vixa*byav = ', viya*bxav-vixa*byav
+              ! print*, 'urlbx_scalar*byav-curlby_scalar*bxav = ', curlbx_scalar*byav-curlby_scalar*bxav
+              ! print*, 'dpedz(i,j,k) =', dpedz(i,j,k)
+              ! print*, 'tenz/a = ', tenz/a
+              print*, 'ez(i,j,k)*(wpiwci**2) =', ez(i,j,k)*wpiwci**2
+              print*, " "
+            endif 
+          endif 
+
         enddo
       enddo
     enddo

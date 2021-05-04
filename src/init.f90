@@ -161,7 +161,7 @@ module m_init
           q_p  = hx*hy*hz*dfac(is)*frac(is)
         endif
 
-        np = ipstore
+        np = ipstore ! np points to the 1st particle
         x(np) = x_p; y(np) = y_p; z(np) = z_p; qp(np) = q_p
 
         ! tag particles for tracking
@@ -246,12 +246,12 @@ module m_init
         vx(np) = vxa; vy(np) = vya; vz(np) = vza
 
         ! point to next particle
-        ipstore = link(np) 
-        link(np) = iphead(ixe,iye,ize,is)
-        iphead(ixe,iye,ize,is) = np
+        ipstore = link(np) ! link(1)-->2-->ipstore
+        link(np) = iphead(ixe,iye,ize,is) ! link(1)-->0
+        iphead(ixe,iye,ize,is) = np ! iphead=1
 
-        load_percent = 100.0*real(ip-ipb1)/(ipb2-ipb1)
-        
+        ! print progress of loading
+        load_percent = 100.0*real(ip-ipb1)/(ipb2-ipb1)  
         if (myid==0 .and. load_percent>=print_percent) then
             write(6,"(A,F5.1,A)") "loaded ", load_percent," % of particles"
             print_percent = print_percent + 20.0d0

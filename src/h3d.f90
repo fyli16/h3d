@@ -140,16 +140,16 @@ program h3d
       print*, "total time                        (s)          =",time_elapsed(1)
       print*, "   sub update_eta                 (s)          =",time_elapsed(2)
       print*, "   sub update_particles           (s)          =",time_elapsed(3)
-      print*, "   sub sort                       (s)          =",time_elapsed(4)
       print*, "   sub update_fields              (s)          =",time_elapsed(5)
       print*, "   sub diagnostics                (s)          =",time_elapsed(6)
       print*, " "
       print*, " "
-      print*, "In update_particles.parmov,"
+      print*, "In update_particles"
       print*, "   sub push                       (s)          =",time_elapsed(33)
       print*, "   sub particle_boundary          (s)          =",time_elapsed(34)
       print*, "   sub moment_calculation         (s)          =",time_elapsed(35)
-      print*, "   total parmov                   (s)          =",time_elapsed(31)
+      print*, "   sub sort                       (s)          =",time_elapsed(36)
+      print*, "   total update_particles         (s)          =",time_elapsed(2)
       print*, " "
       print*, " "
       print*, "In update_fields,"
