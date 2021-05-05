@@ -114,9 +114,12 @@ module m_field
     real*8 :: bxav, byav, bzav  
     real*8 :: dexdy, dexdz, deydx, deydz, dezdx, dezdy  
 
-    do k = kb, ke
-      do j = jb, je
-        do i = 2, nx1
+    ! do k = kb, ke
+    !   do j = jb, je
+    !     do i = 2, nx1
+    do k = kb-1, ke
+      do j = jb-1, je
+        do i = 1, nx1
           vixa = (1.-iflag)*(1.5*vix(i,j,k)-0.5*vixo(i,j,k)) + iflag*vix(i,j,k)
           viya = (1.-iflag)*(1.5*viy(i,j,k)-0.5*viyo(i,j,k)) + iflag*viy(i,j,k)
           viza = (1.-iflag)*(1.5*viz(i,j,k)-0.5*vizo(i,j,k)) + iflag*viz(i,j,k)
@@ -128,7 +131,7 @@ module m_field
           dxa = a/(4.*meshX%dxc(i))
           dya = a/(4.*meshY%dxc(j+1)) ! integer index in y direction starts at 0
           dza = a/(4.*meshZ%dxc(k+1)) ! integer index in z direction starts at 0
-
+          
           ! dxa = a/(2.*meshX%dxc(i))
           ! dya = a/(2.*meshY%dxc(j+1)) ! integer index in y direction starts at 0
           ! dza = a/(2.*meshZ%dxc(k+1)) ! integer index in z direction starts at 0
@@ -266,9 +269,13 @@ module m_field
                 - ez(i  ,j-1,k  ) - ez(i-1,j-1,k  )   &
                 - ez(i-1,j-1,k-1) - ez(i  ,j-1,k-1)
 
-          curlex(i,j,k) = dezdy/(4.*meshY%dxn(j+1)) - deydz/(4.*meshZ%dxn(k+1))  ! index in y and z directions start  at 0
-          curley(i,j,k) = dexdz/(4.*meshZ%dxn(k+1)) - dezdx/(4.*meshX%dxn(i  ))  ! index in z       direction  starts at 0
-          curlez(i,j,k) = deydx/(4.*meshX%dxn(i  )) - dexdy/(4.*meshY%dxn(j+1))  ! index in y       direction  starts at 0
+          ! curlex(i,j,k) = dezdy/(4.*meshY%dxn(j+1)) - deydz/(4.*meshZ%dxn(k+1))  ! index in y and z directions start  at 0
+          ! curley(i,j,k) = dexdz/(4.*meshZ%dxn(k+1)) - dezdx/(4.*meshX%dxn(i  ))  ! index in z       direction  starts at 0
+          ! curlez(i,j,k) = deydx/(4.*meshX%dxn(i  )) - dexdy/(4.*meshY%dxn(j+1))  ! index in y       direction  starts at 0
+
+          curlex(i,j,k) = dezdy/(4.*meshY%dxn(j)) - deydz/(4.*meshZ%dxn(k)) 
+          curley(i,j,k) = dexdz/(4.*meshZ%dxn(k)) - dezdx/(4.*meshX%dxn(i))  
+          curlez(i,j,k) = deydx/(4.*meshX%dxn(i)) - dexdy/(4.*meshY%dxn(j))
         enddo
       enddo
     enddo

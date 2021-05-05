@@ -224,7 +224,7 @@ module m_particle
     deltime1 = 0.; deltime2 = 0.; npleavingp = 0
 
     ! if dt==0, no actual particle push is done
-    if (dt>0) then 
+    if (dt > 0) then 
 
       ! push particles for a half step
       call date_and_time(values=time_begin(:,33))
