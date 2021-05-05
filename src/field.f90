@@ -114,12 +114,12 @@ module m_field
     real*8 :: bxav, byav, bzav  
     real*8 :: dexdy, dexdz, deydx, deydz, dezdx, dezdy  
 
-    ! do k = kb, ke
-    !   do j = jb, je
-    !     do i = 2, nx1
-    do k = kb-1, ke
-      do j = jb-1, je
-        do i = 1, nx1
+    do k = kb, ke
+      do j = jb, je
+        do i = 2, nx1
+    ! do k = kb-1, ke
+    !   do j = jb-1, je
+    !     do i = 1, nx1
           vixa = (1.-iflag)*(1.5*vix(i,j,k)-0.5*vixo(i,j,k)) + iflag*vix(i,j,k)
           viya = (1.-iflag)*(1.5*viy(i,j,k)-0.5*viyo(i,j,k)) + iflag*viy(i,j,k)
           viza = (1.-iflag)*(1.5*viz(i,j,k)-0.5*vizo(i,j,k)) + iflag*viz(i,j,k)
@@ -222,7 +222,7 @@ module m_field
             .or. dpedz(i,j,k)>1e-4/wpiwci**2 .or. tenz/a>1e-4/wpiwci**2) then
               print*, 'it,i,j,k = ', it,i,j,k
               print*, 'viya*bxav-vixa*byav = ', viya*bxav-vixa*byav
-              print*, 'urlbx_scalar*byav-curlby_scalar*bxav = ', curlbx_scalar*byav-curlby_scalar*bxav
+              print*, 'curlbx_scalar*byav-curlby_scalar*bxav = ', curlbx_scalar*byav-curlby_scalar*bxav
               print*, 'dpedz(i,j,k) =', dpedz(i,j,k)
               print*, 'tenz/a = ', tenz/a
               print*, 'ez(i,j,k)*(wpiwci**2) =', ez(i,j,k)*wpiwci**2
