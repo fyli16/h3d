@@ -210,7 +210,7 @@ module m_field
           !   endif 
           ! endif 
 
-          if (i==2 .and. j=jb .and. k=kb) then
+          if (i==2 .and. j==jb .and. k==kb) then
             term1 = viya*bxav-vixa*byav
             term2 = curlbx_scalar*byav-curlby_scalar*bxav
             term3 = - dpedz(i,j,k)

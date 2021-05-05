@@ -98,7 +98,7 @@ module m_diag
   !---------------------------------------------------------------------
   subroutine diag_mesh
     integer :: i
-    
+
     if ( n_diag_mesh>0 .and. mod(it,n_diag_mesh)==0 ) then
       ! this block is not executed when MPI_IO_format=.true.
       if (myid==0 .and. .not.MPI_IO_format) then
@@ -130,7 +130,7 @@ module m_diag
   ! write energy history data
   !---------------------------------------------------------------------
   subroutine diag_energy
-    if (it==itstart) call open_hist_files  ! open files at the first step
+    ! calculate energy and write
     if ( n_diag_energy>0 .and. mod(it,n_diag_energy)==0 ) then
       call cal_energy 
       if (myid==0) then
