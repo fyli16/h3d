@@ -98,25 +98,30 @@ module m_diag
   !---------------------------------------------------------------------
   subroutine diag_mesh
     integer :: i
+    
     if ( n_diag_mesh>0 .and. mod(it,n_diag_mesh)==0 ) then
       ! this block is not executed when MPI_IO_format=.true.
       if (myid==0 .and. .not.MPI_IO_format) then
         call open_files
       endif 
+
       ! calculate par & perp temperatures (needed only for diagnostics)
       if (ndim /= 1) then
         call cal_temp
       else
         call cal_temp_2d
       endif
+
       ! write data
       call write_mesh
+
       ! this block is not executed when MPI_IO_format=.true.
       if (myid==0 .and. .not.MPI_IO_format) then
         do i = 1, 25
           close(file_unit(i))
         enddo
       endif
+
     endif 
   end subroutine diag_mesh
 

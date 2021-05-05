@@ -9,7 +9,7 @@ module m_io
   !---------------------------------------------------------------------
   subroutine open_hist_files
 
-    character (len=240) :: filename1, filename2
+    character (len=240) :: filename1, filename2, filename3
 
     if (myid == 0) then
       if (restart) then
@@ -47,6 +47,18 @@ module m_io
         open(unit=12,file=trim(data_directory)//filename1,status='unknown')
         open(unit=13,file=trim(data_directory)//filename2,form='unformatted',status='unknown')
       endif
+
+      ! for debug 'ez' purpose
+      write(filename3,"(a,i4.4,a)") 'ecal/ecal_ez_pass1_', myid, '.dat' 
+      open(unit=101,file=trim(data_directory)//filename3,status='unknown')
+      write(filename3,"(a,i4.4,a)") 'ecal/ecal_ez_pass2_', myid, '.dat' 
+      open(unit=102,file=trim(data_directory)//filename3,status='unknown')
+      write(filename3,"(a,i4.4,a)") 'ecal/ecal_ez_pass3_', myid, '.dat' 
+      open(unit=103,file=trim(data_directory)//filename3,status='unknown')
+      write(filename3,"(a,i4.4,a)") 'ecal/ecal_ez_pass4_', myid, '.dat' 
+      open(unit=104,file=trim(data_directory)//filename3,status='unknown')
+      write(filename3,"(a,i4.4,a)") 'ecal/ecal_ez_pass5_', myid, '.dat' 
+      open(unit=105,file=trim(data_directory)//filename3,status='unknown')
     endif
 
   end subroutine open_hist_files

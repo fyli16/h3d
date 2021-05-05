@@ -5,7 +5,8 @@ module m_parameter
 
   save
 
-  ! global simulation/MPI
+  integer :: n_debug_ez=100
+
   integer :: it, itstart, itfinish, itrestart, my_short_int, i_source, i_tag, i_length, i_i, &
              time_begin(8,128), time_end(8,128), ierr
   real*8 :: time_elapsed(128)
@@ -328,7 +329,7 @@ module m_parameter
 
     return
   end subroutine init_input
-  
+
 
   !---------------------------------------------------------------------
   ! Set global parameters

@@ -26,6 +26,7 @@ mkdir -p data/p-yy; mkdir -p data/p-yz; mkdir -p data/p-zz
 mkdir -p data/tpar; mkdir -p data/tperp; mkdir -p data/tracking
 mkdir -p data/vix; mkdir -p data/viy; mkdir -p data/viz 
 mkdir -p data/vxs; mkdir -p data/vys; mkdir -p data/vzs 
+mkdir -p data/ecal
 
 # setenv MPI_TYPE_MAX 65536
 # setenv MPI_REQUEST_MAX 65536

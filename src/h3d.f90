@@ -10,10 +10,12 @@ program h3d
 
   use m_parameter
   use m_init
+  use m_io
 
   use m_eta
   use m_particle
   use m_field
+
   use m_diag
   use m_restart
 
@@ -50,8 +52,11 @@ program h3d
   subroutine run_sim
     integer :: i
 
+    ! open hist diagnostic files in the beginning
+    call open_hist_files
+
     ! initialize time arrays, and get a time stamp
-    ! just before entering the simulation loop
+    ! just before entering the loop
     time_elapsed=0.; time_begin=0; time_end=0
     call get_time(clock_init)
     clock_old = clock_init
@@ -121,12 +126,18 @@ program h3d
   ! close simulation and exit
   !---------------------------------------------------------------------
   subroutine close_sim
+    integer :: i
 
     if (myid == 0) then
       close(unit=11) ! energy.dat
       close(unit=12) ! probe.dat
       close(unit=13) ! tracking.dat
       ! close(unit=14) ! time.dat
+
+      ! close debug 'ez' files
+      do i = 1, 5
+        close(unit=int(100+i))
+      enddo
     endif
 
     if (tracking_mpi) close(unit=13)
