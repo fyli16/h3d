@@ -125,33 +125,48 @@ module m_field
           ! dena = iflag*0.5*(den(i,j,k)+deno(i,j,k)) + (1.-iflag)*den(i,j,k)
           a = one/dena
 
-          dxa = a/(4.*meshX%dxc(i))
-          dya = a/(4.*meshY%dxc(j+1)) ! integer index in y direction starts at 0
-          dza = a/(4.*meshZ%dxc(k+1)) ! integer index in z direction starts at 0
+          ! dxa = a/(4.*meshX%dxc(i))
+          ! dya = a/(4.*meshY%dxc(j+1)) ! integer index in y direction starts at 0
+          ! dza = a/(4.*meshZ%dxc(k+1)) ! integer index in z direction starts at 0
+          dxa = a/(2.*meshX%dxc(i))
+          dya = a/(2.*meshY%dxc(j+1)) ! integer index in y direction starts at 0
+          dza = a/(2.*meshZ%dxc(k+1)) ! integer index in z direction starts at 0
 
-          dbxdy = bx(i+1,j+1,k+1) + bx(i,j+1,k+1) + bx(i,j+1,k) + bx(i+1,j+1,k) &
-                - bx(i+1,j,k+1) - bx(i,j,k+1) - bx(i,j,k) - bx(i+1,j,k)
-          dbxdz = bx(i+1,j+1,k+1)+bx(i  ,j+1,k+1)+bx(i  ,j  ,k+1)+bx(i+1,j  ,k+1) &
-                -bx(i+1,j+1,k  )-bx(i  ,j+1,k  )-bx(i  ,j  ,k  )-bx(i+1,j ,k  )
-          dbydx = by(i+1,j+1,k+1)+by(i+1,j  ,k+1)+by(i+1,j  ,k  )+by(i+1,j+1,k  )&
-                -by(i  ,j+1,k+1)-by(i  ,j  ,k+1)-by(i  ,j  ,k  )-by(i  ,j+1,k  )
-          dbydz= by(i+1,j+1,k+1)+by(i  ,j+1,k+1)+by(i  ,j  ,k+1)+by(i+1,j  ,k+1)&
-                -by(i+1,j+1,k  )-by(i  ,j+1,k  )-by(i  ,j  ,k  )-by(i+1,j  ,k  )
-          dbzdx= bz(i+1,j+1,k+1)+bz(i+1,j  ,k+1)+bz(i+1,j  ,k  )+bz(i+1,j+1,k  )&
-                -bz(i  ,j+1,k+1)-bz(i  ,j  ,k+1)-bz(i  ,j  ,k  )-bz(i  ,j+1,k  )
-          dbzdy= bz(i+1,j+1,k+1)+bz(i  ,j+1,k+1)+bz(i  ,j+1,k  )+bz(i+1,j+1,k  )&
-                -bz(i+1,j  ,k+1)-bz(i  ,j  ,k+1)-bz(i  ,j  ,k  )-bz(i+1,j  ,k  )
+          ! dbxdy = bx(i+1,j+1,k+1) + bx(i,j+1,k+1) + bx(i,j+1,k) + bx(i+1,j+1,k) &
+          !       - bx(i+1,j,k+1) - bx(i,j,k+1) - bx(i,j,k) - bx(i+1,j,k)
+          ! dbxdz = bx(i+1,j+1,k+1)+bx(i  ,j+1,k+1)+bx(i  ,j  ,k+1)+bx(i+1,j  ,k+1) &
+          !       -bx(i+1,j+1,k  )-bx(i  ,j+1,k  )-bx(i  ,j  ,k  )-bx(i+1,j ,k  )
+          ! dbydx = by(i+1,j+1,k+1)+by(i+1,j  ,k+1)+by(i+1,j  ,k  )+by(i+1,j+1,k  )&
+          !       -by(i  ,j+1,k+1)-by(i  ,j  ,k+1)-by(i  ,j  ,k  )-by(i  ,j+1,k  )
+          ! dbydz= by(i+1,j+1,k+1)+by(i  ,j+1,k+1)+by(i  ,j  ,k+1)+by(i+1,j  ,k+1)&
+          !       -by(i+1,j+1,k  )-by(i  ,j+1,k  )-by(i  ,j  ,k  )-by(i+1,j  ,k  )
+          ! dbzdx= bz(i+1,j+1,k+1)+bz(i+1,j  ,k+1)+bz(i+1,j  ,k  )+bz(i+1,j+1,k  )&
+          !       -bz(i  ,j+1,k+1)-bz(i  ,j  ,k+1)-bz(i  ,j  ,k  )-bz(i  ,j+1,k  )
+          ! dbzdy= bz(i+1,j+1,k+1)+bz(i  ,j+1,k+1)+bz(i  ,j+1,k  )+bz(i+1,j+1,k  )&
+          !       -bz(i+1,j  ,k+1)-bz(i  ,j  ,k+1)-bz(i  ,j  ,k  )-bz(i+1,j  ,k  )
+          dbxdy = bx(i,j+1,k) - bx(i,j-1,k)
+          dbxdz = bx(i,j,k+1) - bx(i,j,k-1)
+          dbydx = by(i+1,j,k) - by(i-1,j,k)
+          dbydz = by(i,j,k+1) - by(i,j,k-1)
+          dbzdx = bz(i+1,j,k) - bz(i-1,j,k)
+          dbzdy = bz(i,j+1,k) - bz(i,j-1,k)
 
           curlbx_scalar = dya*dbzdy - dza*dbydz
           curlby_scalar = dza*dbxdz - dxa*dbzdx
           curlbz_scalar = dxa*dbydx - dya*dbxdy
 
-          bxav = 0.125*( bx(i+1,j+1,k) + bx(i,j+1,k) + bx(i,j,k) + bx(i+1,j ,k) &
-                  + bx(i+1,j+1,k+1) + bx(i,j+1,k+1) + bx(i,j,k+1) + bx(i+1,j,k+1) )
-          byav = 0.125*( by(i+1,j+1,k) + by(i,j+1,k) + by(i,j,k) + by(i+1,j ,k) &
-                  + by(i+1,j+1,k+1) + by(i,j+1,k+1) + by(i,j,k+1) + by(i+1,j,k+1) )
-          bzav = 0.125*( bz(i+1,j+1,k) + bz(i,j+1,k) + bz(i,j,k) + bz(i+1,j ,k) &
-                  + bz(i+1,j+1,k+1) + bz(i,j+1,k+1) + bz(i,j,k+1) + bz(i+1,j,k+1) )
+          ! bxav = 0.125*( bx(i+1,j+1,k) + bx(i,j+1,k) + bx(i,j,k) + bx(i+1,j ,k) &
+          !         + bx(i+1,j+1,k+1) + bx(i,j+1,k+1) + bx(i,j,k+1) + bx(i+1,j,k+1) )
+          ! byav = 0.125*( by(i+1,j+1,k) + by(i,j+1,k) + by(i,j,k) + by(i+1,j ,k) &
+          !         + by(i+1,j+1,k+1) + by(i,j+1,k+1) + by(i,j,k+1) + by(i+1,j,k+1) )
+          ! bzav = 0.125*( bz(i+1,j+1,k) + bz(i,j+1,k) + bz(i,j,k) + bz(i+1,j ,k) &
+          !         + bz(i+1,j+1,k+1) + bz(i,j+1,k+1) + bz(i,j,k+1) + bz(i+1,j,k+1) )
+          bxav = ( bx(i+1,j,k) + bx(i,j,k+1) + bx(i-1,j,k) + bx(i,j ,k-1) &
+                  + bx(i,j-1,k) + bx(i,j+1,k) )/6.0
+          byav = ( by(i+1,j,k) + by(i,j,k+1) + by(i-1,j,k) + by(i,j ,k-1) &
+                  + by(i,j-1,k) + by(i,j+1,k) )/6.0
+          bzav = ( bz(i+1,j,k) + bz(i,j,k+1) + bz(i-1,j,k) + bz(i,j ,k-1) &
+                  + bz(i,j-1,k) + bz(i,j+1,k) )/6.0
 
           xj = curlbx_scalar
           yj = curlby_scalar
@@ -196,18 +211,18 @@ module m_field
           !   print*, 'tenz/a = ', tenz/a
           ! endif 
 
-          if (myid==0) then
-            if (viya*bxav-vixa*byav>1e-4/wpiwci**2 .or. curlbx_scalar*byav-curlby_scalar*bxav>1e-4/wpiwci**2 &
-            .or. dpedz(i,j,k)>1e-4/wpiwci**2 .or. tenz/a>1e-4/wpiwci**2) then
-              print*, 'it,i,j,k = ', it,i,j,k
-              ! print*, 'viya*bxav-vixa*byav = ', viya*bxav-vixa*byav
-              ! print*, 'urlbx_scalar*byav-curlby_scalar*bxav = ', curlbx_scalar*byav-curlby_scalar*bxav
-              ! print*, 'dpedz(i,j,k) =', dpedz(i,j,k)
-              ! print*, 'tenz/a = ', tenz/a
-              print*, 'ez(i,j,k)*(wpiwci**2) =', ez(i,j,k)*wpiwci**2
-              print*, " "
-            endif 
-          endif 
+          ! if (myid==0) then
+          !   if (viya*bxav-vixa*byav>1e-4/wpiwci**2 .or. curlbx_scalar*byav-curlby_scalar*bxav>1e-4/wpiwci**2 &
+          !   .or. dpedz(i,j,k)>1e-4/wpiwci**2 .or. tenz/a>1e-4/wpiwci**2) then
+          !     print*, 'it,i,j,k = ', it,i,j,k
+          !     ! print*, 'viya*bxav-vixa*byav = ', viya*bxav-vixa*byav
+          !     ! print*, 'urlbx_scalar*byav-curlby_scalar*bxav = ', curlbx_scalar*byav-curlby_scalar*bxav
+          !     ! print*, 'dpedz(i,j,k) =', dpedz(i,j,k)
+          !     ! print*, 'tenz/a = ', tenz/a
+          !     print*, 'ez(i,j,k)*(wpiwci**2) =', ez(i,j,k)*wpiwci**2
+          !     print*, " "
+          !   endif 
+          ! endif 
 
         enddo
       enddo
