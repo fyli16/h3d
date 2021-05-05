@@ -194,15 +194,24 @@ module m_particle
 
     ! obtain spatial average of bx, by, bz
     bx_av=0.; by_av=0.; bz_av=0.
-    do k = kb-1, ke
-      do j = jb-1, je
-        do i = 1, nx1
-          bx_av(i,j,k) = 0.125*( bx(i+1,j+1,k) + bx(i,j+1,k) + bx(i,j,k) + bx(i+1,j ,k) &
-                          + bx(i+1,j+1,k+1) + bx(i,j+1,k+1) + bx(i,j,k+1) + bx(i+1,j,k+1) )
-          by_av(i,j,k) = 0.125*( bx(i+1,j+1,k) + bx(i,j+1,k) + bx(i,j,k) + bx(i+1,j ,k) &
-                          + bx(i+1,j+1,k+1) + bx(i,j+1,k+1) + bx(i,j,k+1) + bx(i+1,j,k+1) )
-          bz_av(i,j,k) = 0.125*( bx(i+1,j+1,k) + bx(i,j+1,k) + bx(i,j,k) + bx(i+1,j ,k) &
-                          + bx(i+1,j+1,k+1) + bx(i,j+1,k+1) + bx(i,j,k+1) + bx(i+1,j,k+1) )
+    ! do k = kb-1, ke
+    !   do j = jb-1, je
+    !     do i = 1, nx1
+    do k = kb, ke
+      do j = jb, je
+        do i = 2, nx1
+          ! bx_av(i,j,k) = 0.125*( bx(i+1,j+1,k) + bx(i,j+1,k) + bx(i,j,k) + bx(i+1,j ,k) &
+          !                 + bx(i+1,j+1,k+1) + bx(i,j+1,k+1) + bx(i,j,k+1) + bx(i+1,j,k+1) )
+          ! by_av(i,j,k) = 0.125*( bx(i+1,j+1,k) + bx(i,j+1,k) + bx(i,j,k) + bx(i+1,j ,k) &
+          !                 + bx(i+1,j+1,k+1) + bx(i,j+1,k+1) + bx(i,j,k+1) + bx(i+1,j,k+1) )
+          ! bz_av(i,j,k) = 0.125*( bx(i+1,j+1,k) + bx(i,j+1,k) + bx(i,j,k) + bx(i+1,j ,k) &
+          !                 + bx(i+1,j+1,k+1) + bx(i,j+1,k+1) + bx(i,j,k+1) + bx(i+1,j,k+1) )
+          bx_av = ( bx(i+1,j,k) + bx(i,j,k+1) + bx(i-1,j,k) + bx(i,j ,k-1) &
+                  + bx(i,j-1,k) + bx(i,j+1,k) )/6.0
+          by_av = ( by(i+1,j,k) + by(i,j,k+1) + by(i-1,j,k) + by(i,j ,k-1) &
+                  + by(i,j-1,k) + by(i,j+1,k) )/6.0
+          bz_av = ( bz(i+1,j,k) + bz(i,j,k+1) + bz(i-1,j,k) + bz(i,j ,k-1) &
+                  + bz(i,j-1,k) + bz(i,j+1,k) )/6.0
         enddo
       enddo
     enddo
