@@ -223,7 +223,7 @@ module m_field
 
     ! debug ez component
     if (n_debug_ez > 0 .and. mod(it, n_debug_ez) ==0) then
-      write(int(100+call_pass), '(I6,E10.6,E10.6,E10.6,E10.6)') it, &
+      write(int(100+call_pass), '(I6,1x,6E14.6,1x)') it, &
           term1, term2, term3, term4
     endif 
 
