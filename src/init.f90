@@ -282,10 +282,11 @@ module m_init
       enddo
     enddo
 
-    ! what's the purpose here
+    ! 'move' particles with dt=0 (no actual push), just to collect 
+    ! moments which will be used in initializing fields at t=0
     dt_tmp = dt
-    dt = zero ! temporarily set dt=0
-    call update_particles  ! no actual push is done as dt=0 (see 'parmov')
+    dt = zero
+    call update_particles 
     dt = dt_tmp
 
   end subroutine init_particles

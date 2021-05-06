@@ -126,18 +126,13 @@ program h3d
   ! close simulation and exit
   !---------------------------------------------------------------------
   subroutine close_sim
-    integer :: i
 
     if (myid == 0) then
       close(unit=11) ! energy.dat
       close(unit=12) ! probe.dat
       close(unit=13) ! tracking.dat
       ! close(unit=14) ! time.dat
-
-      ! close debug 'ez' files
-      do i = 1, 5
-        close(unit=int(100+i))
-      enddo
+      close(unit=105) ! debug 'ez' files
     endif
 
     if (tracking_mpi) close(unit=13)
