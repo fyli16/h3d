@@ -283,23 +283,6 @@ module m_parameter
     restart_index_suffix(1) = '.1'
     restart_index_suffix(2) = '.2'
 
-  end subroutine read_input
-
-
-  !---------------------------------------------------------------------
-  ! init MPI decomposition
-  !---------------------------------------------------------------------
-  subroutine init_decomp
-    integer :: i 
-
-    ! init MPI domain decomposition
-    if (myid == 0) then
-      print*
-      print*
-      print*, "Initializing MPI decompsition"
-      print*, "-------------------------------------------------"
-    endif 
-
     ! specify decomposition along y, z; no decomposition along x 
     if (nz==1 .and. ny==1) then ! only nx>=1 and 1 rank will be used  
       ndim=0; dims(1)=1; dims(2)=1
@@ -311,18 +294,6 @@ module m_parameter
 
     ! npy(z) now means number of particles in each rank along y(z)
     npy=npy/dims(1); npz=npz/dims(2)
-
-    ! print decomposition information
-    if (myid == 0) then
-      write(6,*) " Total number of processors = ", nprocs
-      do i = 1, ndim
-        write(6,'(a,i5,a,i5)') " Dimension = ", i, ", Dims = ", dims(i)
-      enddo
-      write(6,*)
-      write(6,'(a,i5,i5,i5,i5,i5)') ' Local number of particles in x: ', npx 
-      write(6,'(a,i5,i5,i5,i5,i5)') ' Local number of particles in y: ', npy 
-      write(6,'(a,i5,i5,i5,i5,i5)') ' Local number of particles in z: ', npz 
-    endif  
 
     ! Makes a new communicator with topology information attached
     call MPI_CART_CREATE(MPI_COMM_WORLD, NDIM, DIMS, PERIODS, REORDER, COMM2D, IERR) 
@@ -343,8 +314,20 @@ module m_parameter
     nxmax = nx + 2; nymax = ny + 2; nzmax = nz + 2
     ! local (at each rank) max number of cells
     nylmax = je - jb + 1 ; nzlmax = ke - kb + 1  
+
+    ! print decomposition information
     if (myid == 0) then
-      print* 
+      write(6,*)
+      write(6,*) " Total number of processors = ", nprocs
+      do i = 1, ndim
+        write(6,'(a,i5,a,i5)') " Dimension = ", i, ", Dims = ", dims(i)
+      enddo
+      write(6,*)
+      write(6,'(a,i5,i5,i5,i5,i5)') ' Local number of particles in x: ', npx 
+      write(6,'(a,i5,i5,i5,i5,i5)') ' Local number of particles in y: ', npy 
+      write(6,'(a,i5,i5,i5,i5,i5)') ' Local number of particles in z: ', npz 
+
+      write(6,*)
       write(6,'(a,i5)') " Local array size in x = ", nx
       write(6,'(a,i5)') " Local array size in y = ", nylmax
       write(6,'(a,i5)') " Local array size in z = ", nzlmax
@@ -352,7 +335,7 @@ module m_parameter
 
     return
 
-  end subroutine init_decomp
+  end subroutine read_input
 
 
   !---------------------------------------------------------------------

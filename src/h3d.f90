@@ -24,9 +24,6 @@ program h3d
   ! read input deck
   call read_input
 
-  ! init MPI decomposition
-  call init_decomp
-
   ! init global arrays
   call init_arrays
 

@@ -43,7 +43,115 @@ module m_mesh
     module procedure mesh_index_yuri, mesh_index_hxv
   end interface
 
+  
   contains
+
+  !---------------------------------------------------------------------
+  ! initialize mesh
+  !---------------------------------------------------------------------
+  subroutine init_mesh
+    use m_parameter
+
+    integer :: is, ixe, iye, ize
+
+    if (myid==0) then
+      print*
+      print*
+      print*, "Setting up mesh"
+      print*, "-------------------------------------------------"
+    endif
+
+    ! Initialize uniform mesh
+    call mesh_init_1d(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh
+    call mesh_init_1d(meshY,yaa,ybb,ymax,nay,nby,ny) ! initialize y-mesh
+    call mesh_init_1d(meshZ,zaa,zbb,zmax,naz,nbz,nz) ! initialize z-mesh
+
+    ! mesh_index_yuri
+    call mesh_index(meshX,cell,ixv_2_c_map)
+    call mesh_index(meshY,cell,iyv_2_c_map)
+    call mesh_index(meshZ,cell,izv_2_c_map)
+    call mesh_index(meshX,node,ixv_2_v_map)
+    call mesh_index(meshY,node,iyv_2_v_map)
+    call mesh_index(meshZ,node,izv_2_v_map)
+
+    ! mesh_index_hxv
+    call mesh_index(meshX,cell,ixc_2_c_map,cell)
+    call mesh_index(meshY,cell,iyc_2_c_map,cell)
+    call mesh_index(meshZ,cell,izc_2_c_map,cell)
+    call mesh_index(meshX,node,ixc_2_v_map,cell)
+    call mesh_index(meshY,node,iyc_2_v_map,cell)
+    call mesh_index(meshZ,node,izc_2_v_map,cell)
+
+    ! some constants of mesh
+    dtxi = one/meshX%dt ! dtxi=nx
+    dtyi = one/meshY%dt ! dtyi=ny
+    dtzi = one/meshZ%dt ! dtzi=nz
+
+    nx1 = nx+1; nx2 = nx+2
+    ny1 = ny+1; ny2 = ny+2
+    nz1 = nz+1; nz2 = nz+2
+    hx = xmax/nx; hy = ymax/ny; hz = zmax/nz
+    hxi = one/hx; hyi = one/hy; hzi = one/hz
+
+    if (myid==0) then
+      print*, "dtxi, dtyi, dtzi = ", dtxi, dtyi, dtzi
+      print*, 'hx,   hy,   hz   = ', hx, hy, hz
+    endif 
+
+    xb = zero; xe = xmax
+
+    yb = meshY%xn(jb+1); ye = meshY%xn(je+2)
+    do ipe = 0, nprocs-1
+      ybglobal(ipe)=meshY%xn(jbglobal(ipe)+1)
+      yeglobal(ipe)=meshY%xn(jeglobal(ipe)+2)
+    enddo
+
+    zb = meshZ%xn(kb+1); ze = meshZ%xn(ke+2)
+    do ipe = 0, nprocs-1
+      zbglobal(ipe)=meshZ%xn(kbglobal(ipe)+1)
+      zeglobal(ipe)=meshZ%xn(keglobal(ipe)+2)
+    enddo
+
+    ! fraction of local mesh size to global mesh
+    volume_fraction = (ye-yb)*(ze-zb)/(ymax*zmax)
+
+    ! what are they for?
+    xb_logical = mesh_unmap(meshX,xb)
+    xe_logical = mesh_unmap(meshX,xe)
+    yb_logical = mesh_unmap(meshY,yb)
+    ye_logical = mesh_unmap(meshY,ye)
+    zb_logical = mesh_unmap(meshZ,zb)
+    ze_logical = mesh_unmap(meshZ,ze)
+    ! notice here 'xb' is different from 'meshX%xb'
+    ! the former refers to the beginning of x
+    ! the latter refers to 'xbb' which is actually the end of x
+    if (myid==0) then
+      print*, 'xb, xe = ', xb, xe
+      print*, 'yb, ye = ', yb, ye
+      print*, 'zb, ze = ', zb, ze
+      print*
+      print*, "meshX%xa, meshX%xb, meshX%ta = ", meshX%xa, meshX%xb, meshX%ta
+      print*
+      print*, "xb_logical, xe_logical = ", xb_logical, xe_logical
+      print*, "yb_logical, ye_logical = ", yb_logical, ye_logical
+      print*, "zb_logical, ze_logical = ", zb_logical, ze_logical
+    endif 
+
+    ! what is qp_cell
+    do is = 1, nspec
+      npm = npx(is)*npy(is)*npz(is)*nprocs
+      dfac(is)=real(ny*nz*nx)/real(npm)
+      do ixe = 1, nx2 
+        do iye = jb-1, je+1
+          do ize = kb-1, ke+1
+            qp_cell(ixe,iye,ize,is) = meshX%dxc(ixe) * meshY%dxc(iye+1) * meshZ%dxc(ize+1) * dfac(is)*frac(is)
+          enddo
+        enddo
+      enddo
+    enddo
+
+  end subroutine init_mesh
+
 
   !---------------------------------------------------------------------
   ! initialize mesh attributes along one dimension
@@ -273,102 +381,5 @@ module m_mesh
 
     return
   end function mesh_unmap
-
-
-  !---------------------------------------------------------------------
-  ! initialize mesh
-  !---------------------------------------------------------------------
-  subroutine init_mesh
-    use m_parameter
-
-    integer :: is, ixe, iye, ize
-
-    if (myid==0) then
-      print*
-      print*
-      print*, "Setting up mesh"
-      print*, "-------------------------------------------------"
-    endif
-
-    ! Initialize uniform mesh
-    call mesh_init_1d(meshX,xaa,xbb,xmax,nax,nbx,nx) ! initialize x-mesh
-    call mesh_init_1d(meshY,yaa,ybb,ymax,nay,nby,ny) ! initialize y-mesh
-    call mesh_init_1d(meshZ,zaa,zbb,zmax,naz,nbz,nz) ! initialize z-mesh
-
-    ! mesh_index_yuri
-    call mesh_index(meshX,cell,ixv_2_c_map)
-    call mesh_index(meshY,cell,iyv_2_c_map)
-    call mesh_index(meshZ,cell,izv_2_c_map)
-    call mesh_index(meshX,node,ixv_2_v_map)
-    call mesh_index(meshY,node,iyv_2_v_map)
-    call mesh_index(meshZ,node,izv_2_v_map)
-
-    ! mesh_index_hxv
-    call mesh_index(meshX,cell,ixc_2_c_map,cell)
-    call mesh_index(meshY,cell,iyc_2_c_map,cell)
-    call mesh_index(meshZ,cell,izc_2_c_map,cell)
-    call mesh_index(meshX,node,ixc_2_v_map,cell)
-    call mesh_index(meshY,node,iyc_2_v_map,cell)
-    call mesh_index(meshZ,node,izc_2_v_map,cell)
-
-    ! some constants of mesh
-    dtxi = one/meshX%dt ! dtxi=nx
-    dtyi = one/meshY%dt ! dtyi=ny
-    dtzi = one/meshZ%dt ! dtzi=nz
-    if (myid==0) print*, "dtxi, dtyi, dtzi = ", dtxi, dtyi, dtzi
-    nx1 = nx+1; nx2 = nx+2
-    ny1 = ny+1; ny2 = ny+2
-    nz1 = nz+1; nz2 = nz+2
-    hx = xmax/nx; hy = ymax/ny; hz = zmax/nz
-    hxi = one/hx; hyi = one/hy; hzi = one/hz
-
-    xb = zero; xe = xmax
-
-    yb = meshY%xn(jb+1); ye = meshY%xn(je+2)
-    do ipe = 0, nprocs-1
-      ybglobal(ipe)=meshY%xn(jbglobal(ipe)+1)
-      yeglobal(ipe)=meshY%xn(jeglobal(ipe)+2)
-    enddo
-
-    zb = meshZ%xn(kb+1); ze = meshZ%xn(ke+2)
-    do ipe = 0, nprocs-1
-      zbglobal(ipe)=meshZ%xn(kbglobal(ipe)+1)
-      zeglobal(ipe)=meshZ%xn(keglobal(ipe)+2)
-    enddo
-
-    ! fraction of local mesh size to global mesh
-    volume_fraction = (ye-yb)*(ze-zb)/(ymax*zmax)
-
-    ! what are they for?
-    xb_logical = mesh_unmap(meshX,xb)
-    xe_logical = mesh_unmap(meshX,xe)
-    yb_logical = mesh_unmap(meshY,yb)
-    ye_logical = mesh_unmap(meshY,ye)
-    zb_logical = mesh_unmap(meshZ,zb)
-    ze_logical = mesh_unmap(meshZ,ze)
-    ! notice here 'xb' is different from 'meshX%xb'
-    ! the former refers to the beginning of x
-    ! the latter refers to 'xbb' which is actually the end of x
-    if (myid==0) then
-      print*, "xb, meshX%xa, meshX%xb, meshX%ta = ", xb, meshX%xa, meshX%xb, meshX%ta
-      print*, "xb_logical, xe_logical = ", xb_logical, xe_logical
-      print*, "yb_logical, ye_logical = ", yb_logical, ye_logical
-      print*, "zb_logical, ze_logical = ", zb_logical, ze_logical
-    endif 
-
-    ! what is qp_cell
-    do is = 1, nspec
-      npm = npx(is)*npy(is)*npz(is)*nprocs
-      dfac(is)=real(ny*nz*nx)/real(npm)
-      do ixe = 1, nx2 
-        do iye = jb-1, je+1
-          do ize = kb-1, ke+1
-            qp_cell(ixe,iye,ize,is) = meshX%dxc(ixe) * meshY%dxc(iye+1) * meshZ%dxc(ize+1) * dfac(is)*frac(is)
-          enddo
-        enddo
-      enddo
-    enddo
-
-  end subroutine init_mesh
 
 end module m_mesh

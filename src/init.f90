@@ -37,6 +37,14 @@ module m_init
     ky = zero
     kz = num_wave_cycles*kzmin
 
+    if (myid == 0) then
+      print*, 'dB_B0           = ', dB_B0
+      print*, 'num_wave_cycles = ', num_wave_cycles
+      print*, 'VA              = ', VA
+      print*
+      print*, 'initializing a single Alfven wave ...'
+    endif 
+
     bx = zero; by = zero; bz = zero
     ex = zero; ey = zero; ez = zero
 
