@@ -313,16 +313,16 @@ module m_parameter
     npy=npy/dims(1); npz=npz/dims(2)
 
     ! print decomposition information
-    ! if (myid == 0) then
-    !   write(6,*) " Total number of processors = ", nprocs
-    !   do i = 1, ndim
-    !     write(6,'(a,i5,a,i5)') " Dimension = ", i, ", Dims = ", dims(i)
-    !   enddo
-    !   write(6,*)
-    !   write(6,'(a,i5,i5,i5,i5,i5)') ' Local number of particles in x: ', npx 
-    !   write(6,'(a,i5,i5,i5,i5,i5)') ' Local number of particles in y: ', npy 
-    !   write(6,'(a,i5,i5,i5,i5,i5)') ' Local number of particles in z: ', npz 
-    ! endif  
+    if (myid == 0) then
+      write(6,*) " Total number of processors = ", nprocs
+      do i = 1, ndim
+        write(6,'(a,i5,a,i5)') " Dimension = ", i, ", Dims = ", dims(i)
+      enddo
+      write(6,*)
+      write(6,'(a,i5,i5,i5,i5,i5)') ' Local number of particles in x: ', npx 
+      write(6,'(a,i5,i5,i5,i5,i5)') ' Local number of particles in y: ', npy 
+      write(6,'(a,i5,i5,i5,i5,i5)') ' Local number of particles in z: ', npz 
+    endif  
 
     ! Makes a new communicator with topology information attached
     call MPI_CART_CREATE(MPI_COMM_WORLD, NDIM, DIMS, PERIODS, REORDER, COMM2D, IERR) 
@@ -341,14 +341,14 @@ module m_parameter
 
     ! max number of cells. why adding 2?
     nxmax = nx + 2; nymax = ny + 2; nzmax = nz + 2
-    ! local max number of cells
+    ! local (at each rank) max number of cells
     nylmax = je - jb + 1 ; nzlmax = ke - kb + 1  
-    ! if (myid == 0) then
-    !   print* 
-    !   write(6,'(a,i5)') " Local array size in x = ", nx
-    !   write(6,'(a,i5)') " Local array size in y = ", nylmax
-    !   write(6,'(a,i5)') " Local array size in z = ", nzlmax
-    ! endif
+    if (myid == 0) then
+      print* 
+      write(6,'(a,i5)') " Local array size in x = ", nx
+      write(6,'(a,i5)') " Local array size in y = ", nylmax
+      write(6,'(a,i5)') " Local array size in z = ", nzlmax
+    endif
 
     return
 
@@ -649,6 +649,11 @@ module m_parameter
     allocate ( buf_p1(tracking_width,nspec*maxtags) )
 
     ! make particle list
+    if (myid == 0) then
+      print*
+      print*, 'done allocation of global arrays'
+      print*, 'calling make particle list'
+    endif 
     call makelist
 
   end subroutine init_arrays 
