@@ -5,31 +5,47 @@ module m_parameter
 
   save
 
-  integer :: n_debug_ez=100
+  ! global 
+  logical :: restart, uniform_load_logical, MPI_IO_format 
+  logical :: periods(2), reorder=.true.
 
-  integer :: it, itstart, itfinish, itrestart, my_short_int, i_source, i_tag, i_length, i_i, &
-             time_begin(8,128), time_end(8,128), ierr
+  integer :: it, itstart, itfinish, itrestart, my_short_int 
+  integer :: i_source, i_tag, i_length, i_i
+  integer :: time_begin(8,128), time_end(8,128), ierr
   real*8 :: time_elapsed(128)
+  real*8 :: clock_init, clock_old, clock_now, clock_time1
 
-  logical :: periods(2), reorder
-  integer :: status(mpi_status_size), status1(mpi_status_size), status2(mpi_status_size), status_array(mpi_status_size,8)
-
-  integer*8 :: nxmax, nymax, nzmax, nvar, nylmax, nzlmax, npm
-  
   integer :: nprocs, ndim, dims(2), node_conf(2), comm2d, myid, req(8), & 
             nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot, &      
             nbrleft, nbrrite, ipe, stridery, striderz, iseed(1), coords(2)
 
-  real*8 :: zb, ze, yb, ye, xb, xe, volume_fraction, cell_volume_ratio, &
+  integer :: status(mpi_status_size), status1(mpi_status_size), &
+            status2(mpi_status_size), status_array(mpi_status_size,8)
+
+  integer*8:: recl_for_single, recl_for_double
+  real :: single_prec
+  real*8 :: double_prec
+
+  integer*8 :: restart_index=1
+  character(len=2) :: restart_index_suffix(2)
+  character(len=160) :: data_directory, restart_directory, cycle_ascii, cycle_ascii_new, &
+                        myid_char, cleanup_status
+
+  ! mesh 
+  integer*8 :: nxmax, nymax, nzmax, nvar, nylmax, nzlmax, npm
+  
+  real*8 :: xb, xe, yb, ye, zb, ze, volume_fraction, cell_volume_ratio, &
       zb_logical, ze_logical, yb_logical, ye_logical, xb_logical, xe_logical
 
   real*8, dimension(:), allocatable :: zbglobal, zeglobal, ybglobal, yeglobal, &
                                       xc_uniform, yc_uniform, zc_uniform, &
                                       xv_uniform, yv_uniform, zv_uniform
 
-  integer*8, dimension(:), allocatable :: kbglobal, keglobal, jbglobal, jeglobal, &
-      nsendp, nrecvp, ixc_2_c_map, iyc_2_c_map, izc_2_c_map, ixc_2_v_map, iyc_2_v_map, izc_2_v_map, &
-      ixv_2_c_map, iyv_2_c_map, izv_2_c_map, ixv_2_v_map, iyv_2_v_map, izv_2_v_map  
+  integer*8, dimension(:), allocatable :: kbglobal, keglobal, jbglobal, jeglobal, nsendp, nrecvp, &
+                          ixc_2_c_map, iyc_2_c_map, izc_2_c_map, & 
+                          ixc_2_v_map, iyc_2_v_map, izc_2_v_map, &
+                          ixv_2_c_map, iyv_2_c_map, izv_2_c_map, &
+                          ixv_2_v_map, iyv_2_v_map, izv_2_v_map  
 
   real*8, dimension(:,:,:), allocatable :: uniform_mesh, ex, ey, ez, bx, by, bz, fox, foy, foz, &
       eta, curlex, curley, curlez, bx_av, by_av, bz_av, bxs, bys, bzs, den, deno, denh, &
@@ -71,22 +87,26 @@ module m_parameter
   integer*8 :: nax, nbx, nay, nby, naz, nbz
   integer*8, dimension(8) :: wall_clock_begin,wall_clock_end
   integer*8, dimension(5) :: npx, npy, npz
-  integer*8 :: iterb, nspec, n_sort, nx, ny, nz, n_print, &
-            n_diag_mesh, n_diag_energy, n_diag_probe, n_diag_tracking, &
+  integer*8 :: iterb, nspec, n_sort, nx, ny, nz 
+  
+  ! diagnostics
+  integer :: n_print, n_diag_mesh, n_diag_energy, n_diag_probe, n_diag_tracking, &
             n_diag_particle, n_write_restart
+  integer :: n_debug_ez=100
+  
+  ! plasma particles
+  logical :: smoothing 
+  integer :: smooth_pass 
 
-  ! resistivity
   integer*8 :: ieta, netax, netay, eta_par, eta_zs
   real*8 :: etamin, etamax
 
-  logical :: restart, uniform_load_logical, MPI_IO_format, smoothing 
-  integer :: smooth_pass 
-
   real*8 ::  hx, hy, hz, hxi, hyi, hzi, dtxi, dtyi, dtzi, &
             efld, bfld, efluid, ethermal, eptcl, time, te0
+
   integer*8 :: nsteps0, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(25), &
               file_unit_read(20), nptot, npleaving, npentering, iclock_speed, nptotp
-  real*8 :: clock_init, clock_old, clock_now, clock_time1
+
   real*8, dimension(:), allocatable :: dfac
   integer*8, dimension(:), allocatable :: nskip, ipleft, iprite, ipsendleft, ipsendrite, iprecv, &
             ipsendtop, ipsendbot, ipsendlefttop,ipsendleftbot,ipsendritetop,ipsendritebot,ipsend
@@ -103,48 +123,43 @@ module m_parameter
   integer, parameter :: nprobes=6, nbufsteps=100, tracking_width=14
   integer :: maxtags=100, maxtags_pe, ntot 
   logical :: tracking_binary, tracking_mpi
-  integer*8 :: restart_index=1
-  character(len=2) :: restart_index_suffix(2)
-  character(len=160) :: data_directory, restart_directory, cycle_ascii, cycle_ascii_new, &
-                        myid_char, cleanup_status
   
-  integer*8:: recl_for_single, recl_for_double
-  real :: single_prec
-  real*8 :: double_prec
-
-  real*8 :: dB_B0, num_wave_cycles ! for initializing waves
+  ! waves
+  real*8 :: dB_B0, num_wave_cycles 
   integer :: seed_size
   integer, allocatable :: seed(:)
+
+  ! some constant parameters
   real*8, parameter :: zero=0.0d0, one=1.0d0, two=2.0d0, one_half=0.5d0, pi=acos(-1.)
+
 
   contains
 
   !---------------------------------------------------------------------
   ! read in input file/parameters
   !---------------------------------------------------------------------
-  subroutine init_input
+  subroutine read_input
     integer :: i 
 
-    namelist /datum/ &
-    tmax, dtwci, restart, &   ! global info
-    MPI_IO_format, &
-    nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, node_conf, periods, &  ! simulation domain
-    xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
-    uniform_load_logical, &
-    iterb, eta_par, &  ! field solver
-    nspec, n_sort, qspec, wspec, frac, denmin, wpiwci, beta_spec, beta_e, &  ! plasma setup
-    ieta, resis, netax, netay, etamin, etamax, eta_zs, &
-    anisot, gamma, ave1, ave2, phib, smoothing, smooth_pass, &
-    dB_B0, num_wave_cycles, &  ! init waves
-    n_print, n_diag_mesh, n_diag_energy, n_diag_probe, & ! diagnostics
-    n_diag_tracking, n_write_restart, n_diag_particle, &  
-    tracking_binary, tracking_mpi, &
-    xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r
+    namelist /input/ &
+      tmax, dtwci, restart, MPI_IO_format, & ! global info
+      nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, node_conf, periods, &  ! simulation domain
+      xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
+      uniform_load_logical, &
+      iterb, eta_par, &  ! field solver
+      nspec, n_sort, qspec, wspec, frac, denmin, wpiwci, beta_spec, beta_e, &  ! plasma setup 
+      ieta, resis, netax, netay, etamin, etamax, eta_zs, &
+      anisot, gamma, ave1, ave2, phib, smoothing, smooth_pass, &
+      dB_B0, num_wave_cycles, &  ! init waves
+      n_print, n_diag_mesh, n_diag_energy, n_diag_probe, & ! diagnostics
+      n_diag_tracking, n_write_restart, n_diag_particle, &  
+      tracking_binary, tracking_mpi, &
+      xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r
 
     ! Initialize MPI
-    call MPI_INIT(IERR)
-    call MPI_COMM_SIZE(MPI_COMM_WORLD,NPROCS,IERR)
-    call MPI_COMM_RANK(MPI_COMM_WORLD,MYID,IERR)
+    call MPI_INIT(ierr)
+    call MPI_COMM_SIZE(MPI_COMM_WORLD,nprocs,ierr)
+    call MPI_COMM_RANK(MPI_COMM_WORLD,myid,ierr)
 
     ! convert number 'myid' to character
     ! (these characters will be used in file dumping by rank)
@@ -152,7 +167,7 @@ module m_parameter
     call integer_to_character(myid_char, len(myid_char), my_short_int)
 
     ! print logo
-    if (myid==0) then
+    if (myid == 0) then
       print*, " "
       print*, "*********************************************************************"
       print*, "*           ||     ||    ======        ======                       *"
@@ -166,11 +181,13 @@ module m_parameter
 
     ! read in input deck
     if (myid == 0) then
-      print*, " "
+      print*
+      print*
       print*, "Reading input file"
       print*, "-------------------------------------------------"
       open(5, file='input.f90', form='formatted', status='old')
-      read(5, nml=datum, iostat=ierr)
+      read(5, nml=input, iostat=ierr)
+      if (ierr == 0) print*, 'Input deck loaded successfully.' 
     endif
 
     ! Broadcast input parameters (read in at rank 0) to all other ranks
@@ -266,27 +283,25 @@ module m_parameter
     restart_index_suffix(1) = '.1'
     restart_index_suffix(2) = '.2'
 
-    ! print input deck
-    if (myid==0) then
-      print*
-      if (restart) then 
-        print*, "*** Restart run ***"
-      else 
-        print*, "*** New run ***"
-      endif 
-      write(6, datum)
-    endif  
+  end subroutine read_input
+
+
+  !---------------------------------------------------------------------
+  ! init MPI decomposition
+  !---------------------------------------------------------------------
+  subroutine init_decomp
+    integer :: i 
 
     ! init MPI domain decomposition
-    if (myid==0) then
-      print*, " "
-      print*, "MPI decompsition"
+    if (myid == 0) then
+      print*
+      print*
+      print*, "Initializing MPI decompsition"
       print*, "-------------------------------------------------"
-      print*, "Total number of processors = ", nprocs
     endif 
 
     ! specify decomposition along y, z; no decomposition along x 
-    if (nz==1 .and. ny==1) then ! only nx>1 and 1 rank will be used  
+    if (nz==1 .and. ny==1) then ! only nx>=1 and 1 rank will be used  
       ndim=0; dims(1)=1; dims(2)=1
     else if (nz == 1) then ! ny>1 and decomposition only occurs in y
       ndim=1; dims(1)=node_conf(1); dims(2)=1
@@ -298,13 +313,17 @@ module m_parameter
     npy=npy/dims(1); npz=npz/dims(2)
 
     ! print decomposition information
-    if (myid == 0) then
-      do i = 1, ndim
-        print*, "Dimension = ", i, " Dims = ", dims(i)
-      enddo
-    endif
+    ! if (myid == 0) then
+    !   write(6,*) " Total number of processors = ", nprocs
+    !   do i = 1, ndim
+    !     write(6,'(a,i5,a,i5)') " Dimension = ", i, ", Dims = ", dims(i)
+    !   enddo
+    !   write(6,*)
+    !   write(6,'(a,i5,i5,i5,i5,i5)') ' Local number of particles in x: ', npx 
+    !   write(6,'(a,i5,i5,i5,i5,i5)') ' Local number of particles in y: ', npy 
+    !   write(6,'(a,i5,i5,i5,i5,i5)') ' Local number of particles in z: ', npz 
+    ! endif  
 
-    REORDER = .TRUE. ! reorder ranking or not
     ! Makes a new communicator with topology information attached
     call MPI_CART_CREATE(MPI_COMM_WORLD, NDIM, DIMS, PERIODS, REORDER, COMM2D, IERR) 
     ! Determines calling rank in the new communicator
@@ -314,21 +333,26 @@ module m_parameter
     ! splits mesh cell elements between nprocs processors
     call MPE_DECOMP1D(NY, DIMS(1), COORDS(1), JB, JE)
     call MPE_DECOMP1D(NZ, DIMS(2), COORDS(2), KB, KE)
+
     ! print decomposition info (debug purpose)
-    ! print*, 'myid=', myid, 'jb, je =', jb, je, 'kb, ke = ',kb, ke, 'coords =', coords
+    ! write(6,'(a,i5,a,i7,i7,a,i7,i7,a,i7,i7)') &
+    !     ' myid=', myid, ',  jb, je =', jb, je, &
+    !     ',  kb, ke = ',kb, ke, ',  coords =', coords
 
     ! max number of cells. why adding 2?
     nxmax = nx + 2; nymax = ny + 2; nzmax = nz + 2
     ! local max number of cells
     nylmax = je - jb + 1 ; nzlmax = ke - kb + 1  
-    if (myid == 0) then
-      print*, "Local array size in x-direction = ", nx
-      print*, "Local array size in y-direction = ", nylmax
-      print*, "Local array size in z-direction = ", nzlmax
-    endif
+    ! if (myid == 0) then
+    !   print* 
+    !   write(6,'(a,i5)') " Local array size in x = ", nx
+    !   write(6,'(a,i5)') " Local array size in y = ", nylmax
+    !   write(6,'(a,i5)') " Local array size in z = ", nzlmax
+    ! endif
 
     return
-  end subroutine init_input
+
+  end subroutine init_decomp
 
 
   !---------------------------------------------------------------------
@@ -338,8 +362,9 @@ module m_parameter
     integer :: i, j, k
 
     if (myid==0) then
-      print*, " "
-      print*, "Setting up global arrays"
+      print*
+      print*
+      print*, "Initializing global arrays"
       print*, "-------------------------------------------------"
     endif
 
@@ -623,6 +648,7 @@ module m_parameter
     allocate ( buf_particle(tracking_width,nspec*maxtags,nbufsteps) )
     allocate ( buf_p1(tracking_width,nspec*maxtags) )
 
+    ! make particle list
     call makelist
 
   end subroutine init_arrays 

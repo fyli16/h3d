@@ -17,7 +17,8 @@ module m_init
     integer :: i, j, k
 
     if (myid == 0) then
-      print*, " "
+      print*
+      print*
       print*, "Initializing waves on the mesh"
       print*, "-------------------------------------------------"
     endif 
@@ -103,6 +104,7 @@ module m_init
     real*8 :: load_percent, print_percent
 
     if (myid==0) then
+      print*
       print*
       print*, "Initializing particles"
       print*, "-------------------------------------------------" 
@@ -253,7 +255,7 @@ module m_init
         ! print progress of loading
         load_percent = 100.0*real(ip-ipb1)/(ipb2-ipb1)  
         if (myid==0 .and. load_percent>=print_percent) then
-            write(6,"(A,F5.1,A)") "loaded ", load_percent," % of particles"
+            write(6,"(A,F5.1,A)") " loaded ", load_percent," % of particles"
             print_percent = print_percent + 20.0d0
         endif
 

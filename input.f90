@@ -1,4 +1,4 @@
-&datum
+&input
 
 ! ------------------ global simulation info -----------!
 tmax = 10.0, ! max sim. time, in units of 1/wci

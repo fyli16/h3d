@@ -2173,7 +2173,9 @@ module m_particle
     call XREALBCC_PACK_B(BX_AV,BY_AV,BZ_AV,1_8,NX,NY,NZ)
     call XREALBCC_PACK_B(BX   ,BY   ,BZ   ,1_8,NX,NY,NZ)
 
-    if ((myid == 0).and.mod(it,n_print)==0) write(6,*) " Calling parmove, nspec = ", nspec
+    if ((myid == 0) .and. mod(it,n_print) == 0) then 
+      write(6,*) " Calling parmove, nspec = ", nspec
+    endif 
 
     ! initalize diagnostic variables that keep track of
     ! particle number, injection, and escape

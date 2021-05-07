@@ -13,8 +13,38 @@ module m_diag
   use m_restart
   implicit none 
 
-  contains 
+  contains
+
+  !---------------------------------------------------------------------
+  ! init diagnostics
+  !---------------------------------------------------------------------
+  subroutine init_diag
+    if (myid == 0) then
+      print*
+      print*
+      print*, "Initializing diagnostics"
+      print*, "-------------------------------------------------" 
+    endif 
+
+    ! open hist diagnostic files in the beginning
+    call open_hist_files
+
+    if (myid == 0) then
+      write(6, '(a,i7,a)') ' diag mesh     at every', n_diag_mesh,     ' steps'
+      write(6, '(a,i7,a)') ' diag energy   at every', n_diag_energy,   ' steps'
+      write(6, '(a,i7,a)') ' diag probe    at every', n_diag_probe,    ' steps'
+      write(6, '(a,i7,a)') ' diag tracking at every', n_diag_tracking, ' steps'
+      write(6, '(a,i7,a)') ' diag particle at every', n_diag_particle, ' steps'
+      print*
+      write(6, '(a,i7,a)') ' write restart at every', n_write_restart, ' steps'
+    endif 
+
+  end subroutine init_diag
   
+  
+  !---------------------------------------------------------------------
+  ! main diagnostics to perform
+  !---------------------------------------------------------------------
   subroutine diagnostics
     ! convert 'it' to char and broadcast to all ranks,
     ! which will be used in file dumps by rank.

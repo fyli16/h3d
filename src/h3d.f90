@@ -22,7 +22,10 @@ program h3d
   implicit none
 
   ! read input deck
-  call init_input
+  call read_input
+
+  ! init MPI decomposition
+  call init_decomp
 
   ! init global arrays
   call init_arrays
@@ -38,6 +41,9 @@ program h3d
     call init_particles 
   endif 
 
+  ! init diagnostics
+  call init_diag
+
   ! main simulation loops
   call run_sim
 
@@ -52,22 +58,30 @@ program h3d
   subroutine run_sim
     integer :: i
 
-    ! open hist diagnostic files in the beginning
-    call open_hist_files
+    ! print the type of this run: restart or new 
+    if (myid==0) then
+      print*
+      print*
+      if (restart) then 
+        print*, "*** Restart run ***"
+      else 
+        print*, "*** New run ***"
+      endif 
+    endif  
 
-    ! initialize time arrays, and get a time stamp
-    ! just before entering the loop
+    ! get the initial stamp just before entering the loop
     time_elapsed=0.; time_begin=0; time_end=0
     call get_time(clock_init)
     clock_old = clock_init
     
-    ! main simulation loop
     if (myid==0) then 
-      print*, " " 
+      print*
+      print*
       print*, "Executing main simulation loops:"
       print*, "-------------------------------------------------"
     endif 
 
+    ! main simulation loop
     do while(it <= itfinish)
 
       ! timing a full loop
@@ -76,8 +90,8 @@ program h3d
       ! print time & step info
       if (myid==0 .and. mod(it,n_print)==0) then
         call get_time(clock_now)
-        write(6,"(A7,I7,A2,I7,A11,F8.3,A14,F8.3,A12,F8.3)") &
-                      '  it = ', it, '/', itfinish, &
+        write(6,"(A6,I7,A2,I7,A11,F8.3,A14,F8.3,A12,F8.3)") &
+                      ' it = ', it, '/', itfinish, &
                       ',   time = ', time, &
                       ',   delta_t = ', real(clock_now - clock_old), &
                       ',   tot_t = ', real(clock_now - clock_init)

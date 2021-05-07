@@ -284,7 +284,8 @@ module m_mesh
     integer :: is, ixe, iye, ize
 
     if (myid==0) then
-      print*, " "
+      print*
+      print*
       print*, "Setting up mesh"
       print*, "-------------------------------------------------"
     endif
