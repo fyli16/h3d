@@ -98,8 +98,10 @@ module m_parameter
   logical :: smoothing 
   integer :: smooth_pass 
 
+  ! field solver
   integer*8 :: ieta, netax, netay, eta_par, eta_zs, mask_zs 
   real*8 :: mask_r
+  logical :: mask
   real*8 :: etamin, etamax
 
   real*8 ::  hx, hy, hz, hxi, hyi, hzi, dtxi, dtyi, dtzi, &
@@ -147,7 +149,7 @@ module m_parameter
       nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, node_conf, periods, &  ! simulation domain
       xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
       uniform_load_logical, &
-      iterb, eta_par, mask_zs, mask_r, &  ! field solver
+      iterb, eta_par, mask, mask_zs, mask_r, &  ! field solver
       nspec, n_sort, qspec, wspec, frac, denmin, wpiwci, beta_spec, beta_e, &  ! plasma setup 
       ieta, resis, netax, netay, etamin, etamax, eta_zs, &
       anisot, gamma, ave1, ave2, phib, smoothing, smooth_pass, &
@@ -226,6 +228,7 @@ module m_parameter
     ! field solver
     call MPI_BCAST(iterb                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(eta_par                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(mask                   ,1     ,MPI_LOGICAL          ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(mask_zs                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(mask_r                 ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     ! plasma setup

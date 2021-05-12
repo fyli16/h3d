@@ -58,7 +58,15 @@ module m_init
 
           ! single Alfven wave
           if (ieta == 6) then
-            if (k > eta_zs .and. k < nz-eta_zs) then
+            if (k >= eta_zs .and. k <= nz-eta_zs) then
+              bx_ =  dB_B0*B0*sin(kz*z_pos)
+              by_ = - dB_B0*B0*cos(kz*z_pos)
+            else
+              bx_ = 0.
+              by_ = 0.
+            endif 
+          else if (mask) then 
+            if (k <= nz-mask_zs) then
               bx_ =  dB_B0*B0*sin(kz*z_pos)
               by_ = - dB_B0*B0*cos(kz*z_pos)
             else
