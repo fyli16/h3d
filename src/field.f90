@@ -116,6 +116,12 @@ module m_field
     real*8 :: dexdy, dexdz, deydx, deydz, dezdx, dezdy  
 
     do k = kb, ke
+      if (k>=(nz-mask_zs)) then
+        fm = 1-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
+      else 
+        fm = 1.
+      endif
+      
       do j = jb, je
         do i = 2, nx1
           vixa = (1.-iflag)*(1.5*vix(i,j,k)-0.5*vixo(i,j,k)) + iflag*vix(i,j,k)
@@ -189,12 +195,6 @@ module m_field
             endif 
           endif 
 
-          if (k>=(nz-mask_zs)) then
-            fm = 1-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
-          else 
-            fm = 1.
-          endif
-
           ! ex(i,j,k) = (viza*byav-viya*bzav) + (curlby_scalar*bzav-curlbz_scalar*byav) - dpedx(i,j,k) + tenx/a
           ! ey(i,j,k) = (vixa*bzav-viza*bxav) + (curlbz_scalar*bxav-curlbx_scalar*bzav) - dpedy(i,j,k) + teny/a
           ! ez(i,j,k) = (viya*bxav-vixa*byav) + (curlbx_scalar*byav-curlby_scalar*bxav) - dpedz(i,j,k) + tenz/a 
@@ -248,6 +248,12 @@ module m_field
 
     ! calculate curl E
     do k = kb, ke+1
+      if (k>=(nz-mask_zs)) then
+        fm = 1-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
+      else 
+        fm = 1.
+      endif
+
       do j = jb, je+1
         do i = 2, nx2
           dexdy=  ex(i  ,j  ,k  ) + ex(i-1,j  ,k  ) + ex(i-1,j  ,k-1) + ex(i  ,j  ,k-1)   &
@@ -262,12 +268,6 @@ module m_field
                 - ez(i-1,j  ,k  ) - ez(i-1,j-1,k  ) - ez(i-1,j-1,k-1) - ez(i-1,j  ,k-1)
           dezdy=  ez(i  ,j  ,k  ) + ez(i-1,j  ,k  ) + ez(i-1,j  ,k-1) + ez(i  ,j  ,k-1)   &
                 - ez(i  ,j-1,k  ) - ez(i-1,j-1,k  ) - ez(i-1,j-1,k-1) - ez(i  ,j-1,k-1)
-
-          if (k>=(nz-mask_zs)) then
-            fm = 1-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
-          else 
-            fm = 1.
-          endif
 
           ! curlex(i,j,k) = dezdy/(4.*meshY%dxn(j+1)) - deydz/(4.*meshZ%dxn(k+1))  ! index in y, z start  at 0
           ! curley(i,j,k) = dexdz/(4.*meshZ%dxn(k+1)) - dezdx/(4.*meshX%dxn(i  ))  ! index in z starts at 0
