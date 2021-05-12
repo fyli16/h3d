@@ -182,9 +182,9 @@ module m_eta
             !   eta(i,j,k) = 0.
             ! endif 
 
-            if (k.le.eta_zs) then
+            if (k<=eta_zs) then
               eta(i,j,k) = (resis/2)*(1+cos(pi*real(k)/real(eta_zs)))
-            else if (k.ge.(nz-eta_zs)) then
+            else if (k>=(nz-eta_zs)) then
               eta(i,j,k) = (resis/2)*(1-cos(pi*(real(k)-nz+eta_zs)/real(eta_zs)))
             else
               eta(i,j,k) = 0.

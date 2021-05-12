@@ -43,7 +43,7 @@ module m_mesh
     module procedure mesh_index_yuri, mesh_index_hxv
   end interface
 
-  
+
   contains
 
   !---------------------------------------------------------------------
@@ -94,8 +94,9 @@ module m_mesh
     hxi = one/hx; hyi = one/hy; hzi = one/hz
 
     if (myid==0) then
-      print*, "dtxi, dtyi, dtzi = ", dtxi, dtyi, dtzi
-      print*, 'hx,   hy,   hz   = ', hx, hy, hz
+      write(6,"(a,3ES14.4)") " dtxi, dtyi, dtzi = ", dtxi, dtyi, dtzi
+      write(6,"(a,3ES14.4)") ' hx,   hy,   hz   = ', hx, hy, hz
+      write(6,*)
     endif 
 
     xb = zero; xe = xmax
@@ -126,15 +127,15 @@ module m_mesh
     ! the former refers to the beginning of x
     ! the latter refers to 'xbb' which is actually the end of x
     if (myid==0) then
-      print*, 'xb, xe = ', xb, xe
-      print*, 'yb, ye = ', yb, ye
-      print*, 'zb, ze = ', zb, ze
-      print*
-      print*, "meshX%xa, meshX%xb, meshX%ta = ", meshX%xa, meshX%xb, meshX%ta
-      print*
-      print*, "xb_logical, xe_logical = ", xb_logical, xe_logical
-      print*, "yb_logical, ye_logical = ", yb_logical, ye_logical
-      print*, "zb_logical, ze_logical = ", zb_logical, ze_logical
+      write(6,"(a,2F8.2)") ' xb, xe = ', xb, xe
+      write(6,"(a,2F8.2)") ' yb, ye = ', yb, ye
+      write(6,"(a,2F8.2)") ' zb, ze = ', zb, ze
+      write(6,*)
+      write(6,"(a,3F8.2)") " meshX%xa, meshX%xb, meshX%ta = ", meshX%xa, meshX%xb, meshX%ta
+      write(6,*)
+      write(6,"(a,2ES14.4)") " xb_logical, xe_logical = ", xb_logical, xe_logical
+      write(6,"(a,2ES14.4)") " yb_logical, ye_logical = ", yb_logical, ye_logical
+      write(6,"(a,2ES14.4)") " zb_logical, ze_logical = ", zb_logical, ze_logical
     endif 
 
     ! what is qp_cell

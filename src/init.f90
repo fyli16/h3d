@@ -38,11 +38,12 @@ module m_init
     kz = num_wave_cycles*kzmin
 
     if (myid == 0) then
-      print*, 'dB_B0           = ', dB_B0
-      print*, 'num_wave_cycles = ', num_wave_cycles
-      print*, 'VA              = ', VA
-      print*
-      print*, 'initializing a single Alfven wave ...'
+      write(6,*) 'loading a single Alfven wave'
+      write(6,'(a20,ES15.4)') ' dB_B0 = ', dB_B0
+      write(6,'(a20,ES15.4)') ' num_wave_cycles = ', num_wave_cycles
+      write(6,'(a20,ES15.4)') ' VA = ', VA
+      write(6,*)
+      
     endif 
 
     bx = zero; by = zero; bz = zero
@@ -128,6 +129,15 @@ module m_init
       call MPI_ALLREDUCE(npart(is),npart_global(is),1,MPI_INTEGER8,MPI_SUM,MPI_COMM_WORLD,IERR)
     enddo
     te0 = beta_e/(two*wpiwci**2) ! electron temp.
+    if (myid==0) then
+      write(6,*)
+      write(6,'(a20,ES14.6)') 'te0 = ', te0
+      do is = 1, nspec
+        write(6,'(a15,i1,a,ES14.6)') 'tx0(', is, ') = ', tx0(is)
+        write(6,'(a15,i1,a,i6)') 'npart_global(', is, ') = ', npart_global(is)
+      enddo 
+      print*
+    endif 
 
     ! init particles per species
     call init_seed

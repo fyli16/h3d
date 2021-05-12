@@ -1,5 +1,5 @@
 # Choose compilers and options 
-F90         = mpif90
+FC         = mpif90
 CC          = mpicc
 # OPTFLAGS    = -O3 
 # OPTFLAGS2   = -O3
@@ -12,31 +12,31 @@ LIBS        =
 # Define dependecies
 EFILE = h3d
 OBJS =  param.of90 \
-		utils.of90\
-		int2char.ogcc \
-		func.of90 \
-		mesh.of90 \
-		field.of90\
-		particle.of90 \
-		eta.of90 \
-		boundary.of90 \
-		io.of90\
-		restart.of90 \
-	 	diag.of90\
-		init.of90 \
-		h3d.of90
+				utils.of90\
+				int2char.ogcc \
+				func.of90 \
+				mesh.of90 \
+				field.of90\
+				particle.of90 \
+				eta.of90 \
+				boundary.of90 \
+				io.of90\
+				restart.of90 \
+				diag.of90\
+				init.of90 \
+				h3d.of90
 
 $(EFILE): $(OBJS)
 	@echo "linking..."
-	$(F90) $(OPTFLAGS2) -o $(EFILE) $(OBJS) $(LIBS)
+	$(FC) $(OPTFLAGS2) -o $(EFILE) $(OBJS) $(LIBS)
 
 # Compile C files 
 %.ogcc: %.c 
 	$(CC) -o $@ -c $<
 
-# Compile F90 files
+# Compile Fortran files
 %.of90: %.f90
-	$(F90) $(OPTFLAGS) -o $@ -c $< 
+	$(FC) $(OPTFLAGS) -o $@ -c $< 
 
 clean:
-	-rm  *.mod *.of90 *.ogcc
+	-rm  *.mod *.of90 *.o *.ogcc

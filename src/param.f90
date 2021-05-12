@@ -98,7 +98,8 @@ module m_parameter
   logical :: smoothing 
   integer :: smooth_pass 
 
-  integer*8 :: ieta, netax, netay, eta_par, eta_zs
+  integer*8 :: ieta, netax, netay, eta_par, eta_zs, mask_zs 
+  real*8 :: mask_r
   real*8 :: etamin, etamax
 
   real*8 ::  hx, hy, hz, hxi, hyi, hzi, dtxi, dtyi, dtzi, &
@@ -146,7 +147,7 @@ module m_parameter
       nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, node_conf, periods, &  ! simulation domain
       xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
       uniform_load_logical, &
-      iterb, eta_par, &  ! field solver
+      iterb, eta_par, mask_zs, mask_r, &  ! field solver
       nspec, n_sort, qspec, wspec, frac, denmin, wpiwci, beta_spec, beta_e, &  ! plasma setup 
       ieta, resis, netax, netay, etamin, etamax, eta_zs, &
       anisot, gamma, ave1, ave2, phib, smoothing, smooth_pass, &
@@ -168,15 +169,12 @@ module m_parameter
 
     ! print logo
     if (myid == 0) then
-      print*, " "
-      print*, "*********************************************************************"
-      print*, "*           ||     ||    ======        ======                       *"
-      print*, "*           ||     ||           ||    ||      \\                    *"
-      print*, "*           ||=====||     ======||    ||       ||                   *"
-      print*, "*           ||     ||           ||    ||      //                    *"
-      print*, "*           ||     ||    ======        ======                       *"
-      print*, "*********************************************************************"
-      print*, " "
+      print*
+      print*, "           ||     ||    ======        ======            "              
+      print*, "           ||     ||           ||    ||      \\         "         
+      print*, "           ||=====||     ======||    ||       ||        "         
+      print*, "           ||     ||           ||    ||      //         "         
+      print*, "           ||     ||    ======        ======            "          
     endif 
 
     ! read in input deck
@@ -187,7 +185,11 @@ module m_parameter
       print*, "-------------------------------------------------"
       open(5, file='input.f90', form='formatted', status='old')
       read(5, nml=input, iostat=ierr)
-      if (ierr == 0) print*, 'Input deck loaded successfully.' 
+      if (ierr == 0) then 
+        print*, 'Input deck loaded successfully.' 
+      else
+        call error_abort("error reading input deck!")
+      endif 
     endif
 
     ! Broadcast input parameters (read in at rank 0) to all other ranks
@@ -224,6 +226,8 @@ module m_parameter
     ! field solver
     call MPI_BCAST(iterb                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(eta_par                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(mask_zs                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(mask_r                 ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     ! plasma setup
     call MPI_BCAST(nspec                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_sort                 ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
@@ -318,19 +322,19 @@ module m_parameter
     ! print decomposition information
     if (myid == 0) then
       write(6,*)
-      write(6,*) " Total number of processors = ", nprocs
+      write(6,*) "Total number of processors = ", nprocs
       do i = 1, ndim
         write(6,'(a,i5,a,i5)') " Dimension = ", i, ", Dims = ", dims(i)
       enddo
       write(6,*)
-      write(6,'(a,i5,i5,i5,i5,i5)') ' Local number of particles in x: ', npx 
-      write(6,'(a,i5,i5,i5,i5,i5)') ' Local number of particles in y: ', npy 
-      write(6,'(a,i5,i5,i5,i5,i5)') ' Local number of particles in z: ', npz 
+      write(6,'(a29,5i5)') ' Local paricle number in x = ', npx 
+      write(6,'(a29,5i5)') ' Local paricle number in y = ', npy 
+      write(6,'(a29,5i5)') ' Local paricle number in z = ', npz 
 
       write(6,*)
-      write(6,'(a,i5)') " Local array size in x = ", nx
-      write(6,'(a,i5)') " Local array size in y = ", nylmax
-      write(6,'(a,i5)') " Local array size in z = ", nzlmax
+      write(6,'(a29,i5)') " Local cell number in x = ", nx
+      write(6,'(a29,i5)') " Local cell number in y = ", nylmax
+      write(6,'(a29,i5)') " Local cell number in z = ", nzlmax
     endif
 
     return
@@ -369,8 +373,8 @@ module m_parameter
     enddo
     nplmax = 5* nptotp  ! pad storage requirement by a factor; why?
     if (myid==0) then
-      print*, "total particle # per rank      = ", nptotp
-      print*, "total particle # per rank (x5) = ", nplmax
+      write(6,"(a35,i10)") " total particle # per rank       = ", nptotp
+      write(6,"(a35,i10)") " total particle # per rank (x5)  = ", nplmax
     endif
 
     ! number of tags used to track particles per species-rank
@@ -380,7 +384,10 @@ module m_parameter
         maxtags_pe = 1 
         maxtags = maxtags_pe * nprocs
     endif
-    if (myid==0) print*, "maxtags_pe, maxtags = ", maxtags_pe, maxtags
+    if (myid==0) then
+      write(6,*)
+      write(6,"(a35,2i10)") " maxtags_pe, maxtags = ", maxtags_pe, maxtags
+    endif 
 
     ! allocate arrays that depend on 'nprocs', 'nplmax'
     allocate( zbglobal(0:nprocs-1), zeglobal(0:nprocs-1), ybglobal(0:nprocs-1), yeglobal(0:nprocs-1), &

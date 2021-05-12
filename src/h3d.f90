@@ -87,7 +87,7 @@ program h3d
       ! print time & step info
       if (myid==0 .and. mod(it,n_print)==0) then
         call get_time(clock_now)
-        write(6,"(A6,I7,A2,I7,A11,F8.3,A14,F8.3,A12,F8.3)") &
+        write(6,"(A6,I7,A2,I7,A11,ES12.4,A14,ES12.4,A12,ES12.4)") &
                       ' it = ', it, '/', itfinish, &
                       ',   time = ', time, &
                       ',   delta_t = ', real(clock_now - clock_old), &
@@ -143,7 +143,7 @@ program h3d
       close(unit=12) ! probe.dat
       close(unit=13) ! tracking.dat
       ! close(unit=14) ! time.dat
-      close(unit=105) ! debug 'ez' files
+      ! close(unit=105) ! debug 'ez' files
     endif
 
     if (tracking_mpi) close(unit=13)
@@ -154,37 +154,37 @@ program h3d
       print*, "*** Run completed *** "
       print*, " "
       print*, " "
-      print*, "total time                        (s)          =",time_elapsed(1)
-      print*, "   sub update_eta                 (s)          =",time_elapsed(2)
-      print*, "   sub update_particles           (s)          =",time_elapsed(3)
-      print*, "   sub update_fields              (s)          =",time_elapsed(5)
-      print*, "   sub diagnostics                (s)          =",time_elapsed(6)
+      print '(a,ES15.4)', "total time                        (s)       =",time_elapsed(1)
+      print '(a,ES15.4)', "   sub update_eta                 (s)       =",time_elapsed(2)
+      print '(a,ES15.4)', "   sub update_particles           (s)       =",time_elapsed(3)
+      print '(a,ES15.4)', "   sub update_fields              (s)       =",time_elapsed(5)
+      print '(a,ES15.4)', "   sub diagnostics                (s)       =",time_elapsed(6)
       print*, " "
       print*, " "
       print*, "In update_particles"
-      print*, "   sub push                       (s)          =",time_elapsed(33)
-      print*, "   sub particle_boundary          (s)          =",time_elapsed(34)
-      print*, "   sub moment_calculation         (s)          =",time_elapsed(35)
-      print*, "   sub sort                       (s)          =",time_elapsed(36)
-      print*, "   total update_particles         (s)          =",time_elapsed(2)
+      print '(a,ES15.4)', "   sub push                       (s)       =",time_elapsed(33)
+      print '(a,ES15.4)', "   sub particle_boundary          (s)       =",time_elapsed(34)
+      print '(a,ES15.4)', "   sub moment_calculation         (s)       =",time_elapsed(35)
+      print '(a,ES15.4)', "   sub sort                       (s)       =",time_elapsed(36)
+      print '(a,ES15.4)', "   total update_particles         (s)       =",time_elapsed(3)
       print*, " "
       print*, " "
       print*, "In update_fields,"
-      print*, "   sub pressgrad                  (s)          =",time_elapsed(51)
-      print*, "   sub bcalc                      (s)          =",time_elapsed(52)
-      print*, "   sub ecalc                      (s)          =",time_elapsed(53)
-      print*, "   sub focalc                     (s)          =",time_elapsed(54)
-      print*, "   total update_fields            (s)          =",time_elapsed(5)
+      print '(a,ES15.4)', "   sub pressgrad                  (s)       =",time_elapsed(51)
+      print '(a,ES15.4)', "   sub bcalc                      (s)       =",time_elapsed(52)
+      print '(a,ES15.4)', "   sub ecalc                      (s)       =",time_elapsed(53)
+      print '(a,ES15.4)', "   sub focalc                     (s)       =",time_elapsed(54)
+      print '(a,ES15.4)', "   total update_fields            (s)       =",time_elapsed(5)
       print*, " "
       print*, " "
       print*, "In diagnostics,"
-      print*, "   sub diag_mesh                  (s)          =",time_elapsed(61)
-      print*, "   sub diag_energy                (s)          =",time_elapsed(62)
-      print*, "   sub diag_particle              (s)          =",time_elapsed(63)
-      print*, "   sub diag_probe                 (s)          =",time_elapsed(64)
-      print*, "   sub diag_tracking              (s)          =",time_elapsed(65)
-      print*, "   sub write_restart              (s)          =",time_elapsed(66)
-      print*, "   total diagnostics              (s)          =",time_elapsed(6)
+      print '(a,ES15.4)', "   sub diag_mesh                  (s)       =",time_elapsed(61)
+      print '(a,ES15.4)', "   sub diag_energy                (s)       =",time_elapsed(62)
+      print '(a,ES15.4)', "   sub diag_particle              (s)       =",time_elapsed(63)
+      print '(a,ES15.4)', "   sub diag_probe                 (s)       =",time_elapsed(64)
+      print '(a,ES15.4)', "   sub diag_tracking              (s)       =",time_elapsed(65)
+      print '(a,ES15.4)', "   sub write_restart              (s)       =",time_elapsed(66)
+      print '(a,ES15.4)', "   total diagnostics              (s)       =",time_elapsed(6)
     endif
 
     call MPI_FINALIZE(IERR)
