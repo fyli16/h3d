@@ -116,11 +116,15 @@ module m_field
     real*8 :: dexdy, dexdz, deydx, deydz, dezdx, dezdy  
 
     do k = kb, ke
-      if (k>=(nz-mask_zs)) then
-        fm = 1-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
+      if ( mask .eqv. .true. ) then
+        if (k>=(nz-mask_zs)) then
+          fm = 1-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
+        else 
+          fm = 1.
+        endif
       else 
         fm = 1.
-      endif
+      endif 
 
       do j = jb, je
         do i = 2, nx1
@@ -248,11 +252,15 @@ module m_field
 
     ! calculate curl E
     do k = kb, ke+1
-      if (k>=(nz-mask_zs)) then
-        fm = 1-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
+      if ( mask .eqv. .true. ) then
+        if (k>=(nz-mask_zs)) then
+          fm = 1-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
+        else 
+          fm = 1.
+        endif
       else 
         fm = 1.
-      endif
+      endif 
 
       do j = jb, je+1
         do i = 2, nx2
