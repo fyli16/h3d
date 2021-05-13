@@ -4,7 +4,7 @@
 tmax = 1.0, ! max sim. time, in units of 1/wci
 dtwci = 0.01,  ! value of dt*wci
 restart = .false.,  ! whether to restart from 'restart' directory
-MPI_IO_format = .true. ! use MPI IO (one file only) instead of traditional binary output
+MPI_IO_format = .true., ! use MPI IO (one file only) instead of traditional binary output
 
 ! MPI nodes(ranks) configuration along y, z (no decompostion along x)
 ! and whether the ranks are treated periodic in either directions
@@ -17,7 +17,7 @@ xmax = 1., ymax = 4., zmax = 2000.,  ! max lengths of each dim
 
 ! uniform loading in logical space
 ! used in loading particles? see 'init waves'
-uniform_load_logical = .false. 
+uniform_load_logical = .false., 
 
 ! ------------------ field solver ----------------!
 n_sub_b = 5, ! number of subcycles for advancing B field
@@ -25,7 +25,6 @@ eta_par = 0, ! parallel resisitivity? options: 0, 1, 2
 
 ! field masking
 mask = .true., ! if perform field masking
-mask_iflag = 0
 mask_zs = 200, ! scale length (in cell) of field masking in z
 mask_r = 1., ! factor r in field masking, which controls the slope of mask function
 
@@ -80,8 +79,8 @@ n_diag_particle = 0, ! frequency at which to write particles within a volume
 
 n_write_restart = 0, ! frequency at which to write restart files
 
-tracking_binary = .true. ! write tracking data in binary (unformatted) or formatted form
-tracking_mpi = .true. ! write tracking data by mpi rank
+tracking_binary = .true., ! write tracking data in binary (unformatted) or formatted form
+tracking_mpi = .true., ! write tracking data by mpi rank
 
 ! volume within which particles will be dumped
 xbox_l = 0., xbox_r = 1.0,
