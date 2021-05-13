@@ -21,6 +21,16 @@ program h3d
 
   implicit none
 
+  ! Initialize MPI
+  call MPI_INIT(ierr)
+  call MPI_COMM_SIZE(MPI_COMM_WORLD,nprocs,ierr)
+  call MPI_COMM_RANK(MPI_COMM_WORLD,myid,ierr)
+
+  ! convert number 'myid' to character
+  ! (these characters will be used in file dumping by rank)
+  my_short_int = myid
+  call integer_to_character(myid_char, len(myid_char), my_short_int)
+
   ! read input deck
   call read_input
 
@@ -143,7 +153,7 @@ program h3d
       close(unit=12) ! probe.dat
       close(unit=13) ! tracking.dat
       ! close(unit=14) ! time.dat
-      ! close(unit=105) ! debug 'ez' files
+      ! close(unit=100) ! debug 'ez' files
     endif
 
     if (tracking_mpi) close(unit=13)

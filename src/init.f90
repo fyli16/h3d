@@ -35,12 +35,12 @@ module m_init
     kzmin = two*pi/zmax
     kx = zero
     ky = zero
-    kz = num_wave_cycles*kzmin
+    kz = n_wave_cycles*kzmin
 
     if (myid == 0) then
       write(6,*) 'loading a single Alfven wave'
       write(6,'(a20,ES15.4)') ' dB_B0 = ', dB_B0
-      write(6,'(a20,ES15.4)') ' num_wave_cycles = ', num_wave_cycles
+      write(6,'(a20,ES15.4)') ' n_wave_cycles = ', n_wave_cycles
       write(6,'(a20,ES15.4)') ' VA = ', VA
       write(6,*)
       
@@ -136,7 +136,7 @@ module m_init
       x0(is) = zero; x1(is) = xmax
       call MPI_ALLREDUCE(npart(is),npart_global(is),1,MPI_INTEGER8,MPI_SUM,MPI_COMM_WORLD,IERR)
     enddo
-    te0 = beta_e/(two*wpiwci**2) ! electron temp.
+    te0 = beta_elec/(two*wpiwci**2) ! electron temp.
     if (myid==0) then
       write(6,*)
       write(6,'(a20,ES14.6)') 'te0 = ', te0
@@ -155,14 +155,16 @@ module m_init
 
       ! determine local start/end indexes of particles
       ipb1 = 1
-      if (uniform_load_logical) then
-        ipb2 = npx(is)*npy(is)*npz(is)
-      else
-        ipb2 = npx(is)*npy(is)*npz(is)*nprocs*volume_fraction
-      endif
+      ipb2 = nplx(is)*nply(is)*nplz(is)
+      ! if (uniform_load_logical) then
+      !   ipb2 = npx(is)*npy(is)*npz(is)
+      ! else
+      !   ipb2 = npx(is)*npy(is)*npz(is)*nprocs*volume_fraction
+      ! endif
 
       ! parallel/perpendicular thermal speeds
-      npm = npx(is)*npy(is)*npz(is)*nprocs ! total particle #
+      ! npm = npx(is)*npy(is)*npz(is)*nprocs ! total particle #
+      npm = ppcx(is)*ppcy(is)*ppcz(is)*nx*ny*nz ! total particle #
       dfac(is) = real(ny*nz)*(x1(is)-x0(is))/(hx*real(npm))
       vpar(is) = sqrt( beta_spec(is)/(wspec(is)*wpiwci*wpiwci) )
       vper(is) = vpar(is)*sqrt(anisot(is))

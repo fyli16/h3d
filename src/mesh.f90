@@ -140,7 +140,8 @@ module m_mesh
 
     ! what is qp_cell
     do is = 1, nspec
-      npm = npx(is)*npy(is)*npz(is)*nprocs
+      ! npm = npx(is)*npy(is)*npz(is)*nprocs
+      npm = ppcx(is)*ppcy(is)*ppcz(is)*nx*ny*nz 
       dfac(is)=real(ny*nz*nx)/real(npm)
       do ixe = 1, nx2 
         do iye = jb-1, je+1

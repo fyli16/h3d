@@ -37,7 +37,7 @@ module m_field
     call add_time(time_begin(1,51), time_end(1,51), time_elapsed(51))
 
     call date_and_time(values=time_begin(:,53))
-    call ecalc(0,5)
+    call ecalc(0)
     call date_and_time(values=time_end(:,53))
     call add_time(time_begin(1,53), time_end(1,53), time_elapsed(53))
 
@@ -104,8 +104,8 @@ module m_field
   !---------------------------------------------------------------------
   ! computes electric field and curl(E)
   !---------------------------------------------------------------------
-  subroutine ecalc(iflag, call_pass)
-    integer :: iflag, call_pass
+  subroutine ecalc(iflag)
+    integer :: iflag
     real*8 :: term1, term2, term3, term4, fm
     integer*8 :: i,j,k
     real*8 :: tenx,teny,tenz,xj,yj,zj,bxx,byy,bzz,btot,tjdotb,curr_tot
@@ -121,7 +121,7 @@ module m_field
       else 
         fm = 1.
       endif
-      
+
       do j = jb, je
         do i = 2, nx1
           vixa = (1.-iflag)*(1.5*vix(i,j,k)-0.5*vixo(i,j,k)) + iflag*vix(i,j,k)
@@ -234,9 +234,9 @@ module m_field
       enddo
     enddo
 
-    ! debug ez component
-    ! if (n_debug_ez > 0 .and. mod(it, n_debug_ez) ==0 .and. call_pass==5) then
-    !   write(int(100+call_pass), '(I6,1x,6E14.6,1x)') it, &
+    ! debug ez component (only when iflag==0, i.e., outside 'bcal' call)
+    ! if (n_debug_ez > 0 .and. mod(it, n_debug_ez) ==0 .and. iflag==0) then
+    !   write(int(100), '(I6,1x,4E14.6,1x)') it, &
     !       term1, term2, term3, term4
     ! endif 
 
@@ -295,18 +295,18 @@ module m_field
              ,tempy1(nxmax,jb-1:je+1,kb-1:ke+1) &
              ,tempz1(nxmax,jb-1:je+1,kb-1:ke+1)
     
-    dts  = dt/real(iterb)
+    dts  = dt/real(n_sub_b)
     dts2 = dts/2.
     dts6 = dts/6.
 
-    ! subcycle into iterb interations
+    ! subcycle into n_sub_b interations
     !VR : E is synchronized between processors at each step of RK.
     !VR : but is it enough to make sure that B is consistent?
-    do ii = 1, iterb
+    do ii = 1, n_sub_b
       bxs=bx; bys=by; bzs=bz ! save B at the start of each subcycle
 
       ! R-K part 1
-      call ecalc(1, 1)    
+      call ecalc(1)    
       ! B = B(n)+dt*K1/2
       do k = kb, ke+1
         do j = jb, je+1
@@ -329,7 +329,7 @@ module m_field
       enddo
         
       ! R-K part 2
-      call ecalc(1, 2)
+      call ecalc(1)
       ! B = B(n)+dt*K2/2
       do k = kb, ke+1
         do j = jb, je+1
@@ -352,7 +352,7 @@ module m_field
       enddo
         
       ! R-K part 3
-      call ecalc(1, 3)
+      call ecalc(1)
       ! B = B(n)+dt*K3
       do k = kb, ke+1
         do j = jb, je+1
@@ -375,7 +375,7 @@ module m_field
       enddo
         
       ! R-K part 4
-      call ecalc(1, 4)
+      call ecalc(1)
       ! B = B(n) + (dt/6)*(K1 + 2*K2 + 2*K3 + K4)
       do k = kb, ke+1
         do j = jb, je+1
@@ -681,12 +681,12 @@ module m_field
                       ,tempy1(nxmax,jb-1:je+1,kb-1:ke+1)&
                       ,tempz1(nxmax,jb-1:je+1,kb-1:ke+1)
 
-    dts=dt/real(iterb)
+    dts=dt/real(n_sub_b)
     dts2=dts/2.
     dts6=dts/6.
 
-    ! subcycle into iterb interations
-    do ii = 1, iterb
+    ! subcycle into n_sub_b interations
+    do ii = 1, n_sub_b
       bxs=bx
       bys=by
       bzs=bz

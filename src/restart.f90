@@ -62,7 +62,8 @@ module m_restart
     ze_logical = mesh_unmap(meshZ,ze)
               
     do is = 1, nspec
-      npm = npx(is)*npy(is)*npz(is)*nprocs
+      ! npm = npx(is)*npy(is)*npz(is)*nprocs
+      npm = ppcx(is)*ppcy(is)*ppcz(is)*nx*ny*nz ! total particle #
       dfac(is) = real(ny*nz*nx)/real(npm)
       do ixe=1,nx2
           do iye=jb-1,je+1
@@ -272,10 +273,10 @@ module m_restart
       write(f_unit) x0,x1,tx0,vpar,vper
 
       write(f_unit) beta_spec, qspec, wspec, frac,                    &
-      anisot, denmin, resis, wpiwci, beta_e,ave1,             &
-      ave2,phib, xmax,ymax,zmax,gamma,                              &
-      npx, npy, npz,                                               &
-      iterb, eta_par, netax, netay, nspec,   &
+      anisot, denmin, resis, wpiwci, beta_elec,                &
+      xmax,ymax,zmax,gamma,                              &
+      nplx, nply, nplz,                                               &
+      n_sub_b, eta_par, netax, netay, nspec,   &
       nx, ny, nz, restart, etamin, etamax, ieta
 
       write(f_unit) hx,hy,hz,hxi,hyi,hzi                           &
@@ -426,10 +427,10 @@ module m_restart
       read(f_unit) x0,x1,tx0,vpar,vper
 
       read(f_unit) beta_spec, qspec, wspec, frac,       &
-      anisot, denmin, resis, wpiwci, beta_e,ave1,      &
-      ave2,phib, xmax,ymax,zmax,gamma,                  &
-      npx, npy, npz,                                               &
-      iterb, eta_par, netax, netay, nspec,   &
+      anisot, denmin, resis, wpiwci, beta_elec,       &
+      xmax,ymax,zmax,gamma,                  &
+      nplx, nply, nplz,                                               &
+      n_sub_b, eta_par, netax, netay, nspec,   &
       nx, ny, nz, restart, etamin, etamax, ieta
 
       read(f_unit) hx,hy,hz,hxi,hyi,hzi                            &

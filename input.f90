@@ -14,22 +14,23 @@ periods(:) = .true., .true.,
 ! ------------------ simulation domain ----------------!
 nx = 1, ny = 4, nz = 2240,  ! number of cells along each dim
 xmax = 1., ymax = 4., zmax = 2240.,  ! max lengths of each dim
-npx(1:5) = 10, ! number of particles along x over full length (not one cell) for maximum 5 ion species
-npy(1:5) = 40, 
-npz(1:5) = 22400,  
+ppcx(1:5) = 10, ! number of particles per cell along x for maximum 5 ion species
+ppcy(1:5) = 10, ! number of particles per cell along y for maximum 5 ion species
+ppcz(1:5) = 10, ! number of particles per cell along z for maximum 5 ion species
 
 ! boundaries of the uniform region
 ! setting xbb/ybb/zbb to xmax/ymax/zmax would leave only the uniform region to be simulated
-xaa = 0., xbb = 1., nax = 0, nbx = 1
-yaa = 0., ybb = 4., nay = 0, nby = 4
-zaa = 0., zbb = 2240., naz = 0, nbz = 2240
+! now setting them directly in the code
+! xaa = 0., xbb = 1., nax = 0, nbx = 1
+! yaa = 0., ybb = 4., nay = 0, nby = 4
+! zaa = 0., zbb = 2240., naz = 0, nbz = 2240
 
 ! uniform loading in logical space
 ! used in loading particles? see 'init waves'
 uniform_load_logical = .false. 
 
 ! ------------------ field solver ----------------!
-iterb = 5,  ! ion push can use a larger step than field advance
+n_sub_b = 5, ! number of subcycles for advancing B field
 eta_par = 0, ! parallel resisitivity? options: 0, 1, 2
 mask = .true., ! if perform field masking
 mask_zs = 560, ! scale length of field masking in z, in units of cell size
@@ -44,7 +45,7 @@ frac(1:5) = 1., ! density normalized to n0 (associated with wpi)
 denmin = 0.05,  ! when density is smaller than this value, force it to this value to avoid divergence in calculating E field
 wpiwci = 400., ! ratio of ion plasma frequency to ion cyclotron frequency
 beta_spec(1:5) = 0.01, ! beta of each ion species 
-beta_e = 0.01, ! beta of electrons
+beta_elec = 0.01, ! beta of electrons
 n_sort = 10, ! frequency at which to sort particles
 
 ! resistivity 
@@ -58,23 +59,22 @@ eta_zs = 280, ! scale length of resistive layer in z (in unit of cell size); use
 anisot(1:5) = 1.0, ! anisotropy of velocity for each species
 gamma = 1.66667, ! gamma factor in EoS
 
-ave1 = 100.0, ave2 = 50.,
-phib = 180.0,
-
 ! density/velocity smoothing
 smoothing = .true., 
 smooth_pass = 1, 
 
 ! ---------------------- init waves --------------------!
 dB_B0 = 0.1,
-num_wave_cycles = 32.0,
+n_wave_cycles = 32.0,
 
 ! ------------------ diagnostic control ----------------!
 n_print = 100,  ! frequency at which to print simulation progression
 
 n_diag_mesh = 1000, ! frequency at which to write mesh data 
 n_diag_energy = 100, ! frequency at which to write integrated energy data
+
 n_diag_probe = 0, ! frequency at which to write field probe data
+
 n_diag_tracking = 0, ! frequency at which to write tracking particle data
 n_diag_particle = 0, ! frequency at which to write particles within a volume
 

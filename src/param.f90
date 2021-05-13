@@ -18,6 +18,7 @@ module m_parameter
   integer :: nprocs, ndim, dims(2), node_conf(2), comm2d, myid, req(8), & 
             nbrtop, nbrbot, nbrritetop, nbrlefttop, nbrritebot, nbrleftbot, &      
             nbrleft, nbrrite, ipe, stridery, striderz, iseed(1), coords(2)
+  character(len=160) :: myid_char
 
   integer :: status(mpi_status_size), status1(mpi_status_size), &
             status2(mpi_status_size), status_array(mpi_status_size,8)
@@ -28,11 +29,10 @@ module m_parameter
 
   integer*8 :: restart_index=1
   character(len=2) :: restart_index_suffix(2)
-  character(len=160) :: data_directory, restart_directory, cycle_ascii, cycle_ascii_new, &
-                        myid_char, cleanup_status
+  character(len=160) :: data_directory, restart_directory, cycle_ascii, cycle_ascii_new
 
   ! mesh 
-  integer*8 :: nxmax, nymax, nzmax, nvar, nylmax, nzlmax, npm
+  integer*8 :: nxmax, nymax, nzmax, nvar, nylmax, nzlmax
   
   real*8 :: xb, xe, yb, ye, zb, ze, volume_fraction, cell_volume_ratio, &
       zb_logical, ze_logical, yb_logical, ye_logical, xb_logical, xe_logical
@@ -62,11 +62,13 @@ module m_parameter
                                          ainjxy,ainjyx,deavxy,deavyx,vxavxy,vyavxy,vzavxy,vxavyx,      &
                                          vyavyx,vzavyx,vxcaxy,vycaxy,vzcaxy,vxcayx,vycayx,vzcayx
 
+
+  ! particles
   real*8, dimension(:), allocatable :: x, y, z, vx, vy, vz, qp
 
   integer*8, dimension(:), allocatable :: ptag, link, porder
 
-  integer*8 :: nplmax, ipstore, np 
+  integer*8 :: nplmax, ipstore, np, npm 
 
   integer*8, dimension(:,:,:,:), allocatable:: iphead, iptemp
   integer*8, dimension(:), allocatable ::  ninj, ninj_global, nescape,nescape_global, npart, npart_global
@@ -80,24 +82,17 @@ module m_parameter
 
   real*8, dimension(5) :: beta_spec, qspec, wspec, frac, anisot
 
-  real*8 :: denmin, resis, wpiwci, beta_e, ave1, ave2, phib, demin2, &
+  real*8 :: denmin, resis, wpiwci, beta_elec, &
             xmax, ymax, zmax, dt, gamma, dtwci, wall_clock_elapsed, tmax,  &
             xaa, xbb, yaa, ybb, zaa, zbb, t_stopped=0.
 
   integer*8 :: nax, nbx, nay, nby, naz, nbz
-  integer*8, dimension(8) :: wall_clock_begin,wall_clock_end
-  integer*8, dimension(5) :: npx, npy, npz
-  integer*8 :: iterb, nspec, n_sort, nx, ny, nz 
-  
-  ! diagnostics
-  integer :: n_print, n_diag_mesh, n_diag_energy, n_diag_probe, n_diag_tracking, &
-            n_diag_particle, n_write_restart
-  integer :: n_debug_ez=100
-  
-  ! plasma particles
+  integer*8, dimension(5) :: ppcx, ppcy, ppcz, nplx, nply, nplz
+  integer*8 :: n_sub_b, nspec, n_sort, nx, ny, nz 
+
   logical :: smoothing 
   integer :: smooth_pass 
-
+  
   ! field solver
   integer*8 :: ieta, netax, netay, eta_par, eta_zs, mask_zs 
   real*8 :: mask_r
@@ -128,9 +123,15 @@ module m_parameter
   logical :: tracking_binary, tracking_mpi
   
   ! waves
-  real*8 :: dB_B0, num_wave_cycles 
+  real*8 :: dB_B0, n_wave_cycles 
+
   integer :: seed_size
   integer, allocatable :: seed(:)
+
+  ! diagnostics
+  integer :: n_print, n_diag_mesh, n_diag_energy, n_diag_probe, n_diag_tracking, &
+            n_diag_particle, n_write_restart
+  ! integer :: n_debug_ez=100
 
   ! some constant parameters
   real*8, parameter :: zero=0.0d0, one=1.0d0, two=2.0d0, one_half=0.5d0, pi=acos(-1.)
@@ -144,30 +145,25 @@ module m_parameter
   subroutine read_input
     integer :: i 
 
-    namelist /input/ &
-      tmax, dtwci, restart, MPI_IO_format, & ! global info
-      nx, ny, nz, xmax, ymax, zmax, npx, npy, npz, node_conf, periods, &  ! simulation domain
-      xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
+    namelist /input/ tmax, dtwci, restart, MPI_IO_format, & 
+      ! simulation domain
+      nx, ny, nz, xmax, ymax, zmax, ppcx, ppcy, ppcz, node_conf, periods, &  
+      ! xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
       uniform_load_logical, &
-      iterb, eta_par, mask, mask_zs, mask_r, &  ! field solver
-      nspec, n_sort, qspec, wspec, frac, denmin, wpiwci, beta_spec, beta_e, &  ! plasma setup 
+      ! field solver
+      n_sub_b, eta_par, mask, mask_zs, mask_r, &  
+      ! plasma  
+      nspec, n_sort, qspec, wspec, frac, denmin, & 
+      wpiwci, beta_spec, beta_elec, &  
       ieta, resis, netax, netay, etamin, etamax, eta_zs, &
-      anisot, gamma, ave1, ave2, phib, smoothing, smooth_pass, &
-      dB_B0, num_wave_cycles, &  ! init waves
-      n_print, n_diag_mesh, n_diag_energy, n_diag_probe, & ! diagnostics
+      anisot, gamma, smoothing, smooth_pass, &
+      ! init waves
+      dB_B0, n_wave_cycles, &  
+      ! diagnostics
+      n_print, n_diag_mesh, n_diag_energy, n_diag_probe, & 
       n_diag_tracking, n_write_restart, n_diag_particle, &  
       tracking_binary, tracking_mpi, &
       xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r
-
-    ! Initialize MPI
-    call MPI_INIT(ierr)
-    call MPI_COMM_SIZE(MPI_COMM_WORLD,nprocs,ierr)
-    call MPI_COMM_RANK(MPI_COMM_WORLD,myid,ierr)
-
-    ! convert number 'myid' to character
-    ! (these characters will be used in file dumping by rank)
-    my_short_int = myid
-    call integer_to_character(myid_char, len(myid_char), my_short_int)
 
     ! print logo
     if (myid == 0) then
@@ -207,26 +203,26 @@ module m_parameter
     call MPI_BCAST(xmax                   ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(ymax                   ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(zmax                   ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(npx                    ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(npy                    ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(npz                    ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(ppcx                   ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(ppcy                   ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(ppcz                   ,5     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(node_conf              ,2     ,MPI_INTEGER          ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(periods                ,2     ,MPI_LOGICAL          ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(xaa                    ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(xbb                    ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(nax                    ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(nbx                    ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(yaa                    ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(ybb                    ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(nay                    ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(nby                    ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(zaa                    ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(zbb                    ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(naz                    ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(nbz                    ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    ! call MPI_BCAST(xaa                    ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    ! call MPI_BCAST(xbb                    ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    ! call MPI_BCAST(nax                    ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    ! call MPI_BCAST(nbx                    ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    ! call MPI_BCAST(yaa                    ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    ! call MPI_BCAST(ybb                    ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    ! call MPI_BCAST(nay                    ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    ! call MPI_BCAST(nby                    ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    ! call MPI_BCAST(zaa                    ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    ! call MPI_BCAST(zbb                    ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    ! call MPI_BCAST(naz                    ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    ! call MPI_BCAST(nbz                    ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(uniform_load_logical   ,1     ,MPI_LOGICAL          ,0,MPI_COMM_WORLD,IERR)
     ! field solver
-    call MPI_BCAST(iterb                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_sub_b                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(eta_par                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(mask                   ,1     ,MPI_LOGICAL          ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(mask_zs                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
@@ -240,7 +236,7 @@ module m_parameter
     call MPI_BCAST(denmin                 ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(wpiwci                 ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(beta_spec              ,5     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(beta_e                 ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(beta_elec              ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(ieta                   ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(resis                  ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(netax                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
@@ -250,14 +246,11 @@ module m_parameter
     call MPI_BCAST(eta_zs                 ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(anisot                 ,5     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(gamma                  ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(ave1                   ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(ave2                   ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(phib                   ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(smoothing              ,1     ,MPI_LOGICAL          ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(smooth_pass            ,1     ,MPI_INTEGER          ,0,MPI_COMM_WORLD,IERR)
     ! init waves
     call MPI_BCAST(dB_B0                  ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(num_wave_cycles        ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_wave_cycles          ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     ! diagnostic control
     call MPI_BCAST(n_print                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_diag_mesh            ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
@@ -278,6 +271,11 @@ module m_parameter
     ! The unit of dt is 1/wci in input file, 
     ! but now converted to 1/wpi inside the code
     dt = dtwci * wpiwci
+
+    ! boundaries of the uniform region
+    xaa = 0.; xbb = xmax; nax = 0; nbx = nx
+    yaa = 0.; ybb = ymax; nay = 0; nby = ny
+    zaa = 0.; zbb = zmax; naz = 0; nbz = nz
 
     ! steps of iteration 
     ! (could be modified later in 'init_restart' if restart=.true.)
@@ -300,7 +298,7 @@ module m_parameter
     endif
 
     ! npy(z) now means number of particles in each rank along y(z)
-    npy=npy/dims(1); npz=npz/dims(2)
+    ! npy=npy/dims(1); npz=npz/dims(2)
 
     ! Makes a new communicator with topology information attached
     call MPI_CART_CREATE(MPI_COMM_WORLD, NDIM, DIMS, PERIODS, REORDER, COMM2D, IERR) 
@@ -313,14 +311,16 @@ module m_parameter
     call MPE_DECOMP1D(NZ, DIMS(2), COORDS(2), KB, KE)
 
     ! print decomposition info (debug purpose)
-    ! write(6,'(a,i5,a,i7,i7,a,i7,i7,a,i7,i7)') &
-    !     ' myid=', myid, ',  jb, je =', jb, je, &
-    !     ',  kb, ke = ',kb, ke, ',  coords =', coords
+    write(6,'(a,i5,a,i5,i5,a,i5,i5,a,i5,i5)') &
+        ' myid=', myid, ',  jb, je =', jb, je, &
+        ',  kb, ke = ',kb, ke, ',  coords =', coords
 
     ! max number of cells. why adding 2?
     nxmax = nx + 2; nymax = ny + 2; nzmax = nz + 2
     ! local (at each rank) max number of cells
     nylmax = je - jb + 1 ; nzlmax = ke - kb + 1  
+    ! local particle number along x, y, z
+    nplx = ppcx*nx; nply = ppcy*nylmax; nplz = ppcz*nzlmax
 
     ! print decomposition information
     if (myid == 0) then
@@ -329,15 +329,15 @@ module m_parameter
       do i = 1, ndim
         write(6,'(a,i5,a,i5)') " Dimension = ", i, ", Dims = ", dims(i)
       enddo
-      write(6,*)
-      write(6,'(a29,5i5)') ' Local paricle number in x = ', npx 
-      write(6,'(a29,5i5)') ' Local paricle number in y = ', npy 
-      write(6,'(a29,5i5)') ' Local paricle number in z = ', npz 
+      ! write(6,*)
+      ! write(6,'(a29,5i5)') ' Local paricle number in x = ', npx 
+      ! write(6,'(a29,5i5)') ' Local paricle number in y = ', npy 
+      ! write(6,'(a29,5i5)') ' Local paricle number in z = ', npz 
 
-      write(6,*)
-      write(6,'(a29,i5)') " Local cell number in x = ", nx
-      write(6,'(a29,i5)') " Local cell number in y = ", nylmax
-      write(6,'(a29,i5)') " Local cell number in z = ", nzlmax
+      ! write(6,*)
+      ! write(6,'(a29,i5)') " Local cell number in x = ", nx
+      ! write(6,'(a29,i5)') " Local cell number in y = ", nylmax
+      ! write(6,'(a29,i5)') " Local cell number in z = ", nzlmax
     endif
 
     return
@@ -369,16 +369,17 @@ module m_parameter
     inquire(IOLENGTH=recl_for_single) single_prec
     inquire(IOLENGTH=recl_for_double) double_prec
 
-    ! estimate on particle storage requirement
-    nptotp = 0  ! total local number of particles
+    ! local total particle number
+    nptotp = 0 
     do i = 1, nspec
-      nptotp = nptotp + npx(i)*npy(i)*npz(i)
+      nptotp = nptotp + nplx(i)*nply(i)*nplz(i)
     enddo
     nplmax = 5* nptotp  ! pad storage requirement by a factor; why?
-    if (myid==0) then
-      write(6,"(a35,i10)") " total particle # per rank       = ", nptotp
-      write(6,"(a35,i10)") " total particle # per rank (x5)  = ", nplmax
-    endif
+    ! if (myid==0) then
+    !   write(6,"(a35,i10)") " total particle # per rank       = ", nptotp
+    !   write(6,"(a35,i10)") " total particle # per rank (x5)  = ", nplmax
+    ! endif
+    ! print "(2(a,i8))", "myid = ", myid, ',  nptotp = ', nptotp
 
     ! number of tags used to track particles per species-rank
     ! maxtags was initialized as 100
