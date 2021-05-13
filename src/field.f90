@@ -117,7 +117,9 @@ module m_field
 
     do k = kb, ke
       if ( mask .eqv. .true. ) then
-        if (k>=(nz-mask_zs)) then
+        if ( k <= mask_zs ) then
+          fm = 1.-(mask_r*(real(k)-mask_zs)/real(mask_zs))**2.
+        else if ( k >= nz-mask_zs ) then
           fm = 1-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
         else 
           fm = 1.
@@ -253,7 +255,9 @@ module m_field
     ! calculate curl E
     do k = kb, ke+1
       if ( mask .eqv. .true. ) then
-        if (k>=(nz-mask_zs)) then
+        if ( k <= mask_zs ) then
+          fm = 1.-(mask_r*(real(k)-mask_zs)/real(mask_zs))**2.
+        else if ( k >= nz-mask_zs ) then
           fm = 1-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
         else 
           fm = 1.

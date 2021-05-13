@@ -123,7 +123,8 @@ module m_parameter
   logical :: tracking_binary, tracking_mpi
   
   ! waves
-  real*8 :: dB_B0, n_wave_cycles 
+  real*8 :: dB_B0, n_wave_cycles
+  integer :: wave_upramp, wave_flat, wave_downramp 
 
   integer :: seed_size
   integer, allocatable :: seed(:)
@@ -151,14 +152,13 @@ module m_parameter
       ! xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
       uniform_load_logical, &
       ! field solver
-      n_sub_b, eta_par, mask, mask_zs, mask_r, &  
+      n_sub_b, eta_par, mask, mask_zs, mask_r, & 
+      dB_B0, n_wave_cycles, wave_upramp, wave_flat, wave_downramp, &  
       ! plasma  
       nspec, n_sort, qspec, wspec, frac, denmin, & 
       wpiwci, beta_spec, beta_elec, &  
       ieta, resis, netax, netay, etamin, etamax, eta_zs, &
       anisot, gamma, smoothing, smooth_pass, &
-      ! init waves
-      dB_B0, n_wave_cycles, &  
       ! diagnostics
       n_print, n_diag_mesh, n_diag_energy, n_diag_probe, & 
       n_diag_tracking, n_write_restart, n_diag_particle, &  
@@ -227,6 +227,11 @@ module m_parameter
     call MPI_BCAST(mask                   ,1     ,MPI_LOGICAL          ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(mask_zs                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(mask_r                 ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(dB_B0                  ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(n_wave_cycles          ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(wave_upramp            ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(wave_flat              ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(wave_downramp          ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     ! plasma setup
     call MPI_BCAST(nspec                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_sort                 ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
@@ -248,9 +253,6 @@ module m_parameter
     call MPI_BCAST(gamma                  ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(smoothing              ,1     ,MPI_LOGICAL          ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(smooth_pass            ,1     ,MPI_INTEGER          ,0,MPI_COMM_WORLD,IERR)
-    ! init waves
-    call MPI_BCAST(dB_B0                  ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(n_wave_cycles          ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     ! diagnostic control
     call MPI_BCAST(n_print                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_diag_mesh            ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)

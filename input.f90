@@ -1,7 +1,7 @@
 &input
 
 ! ------------------ global simulation info -----------!
-tmax = 1000.0, ! max sim. time, in units of 1/wci
+tmax = 1.0, ! max sim. time, in units of 1/wci
 dtwci = 0.01,  ! value of dt*wci
 restart = .false.,  ! whether to restart from 'restart' directory
 MPI_IO_format = .true. ! use MPI IO (one file only) instead of traditional binary output
@@ -12,8 +12,8 @@ node_conf(:) = 2, 16,
 periods(:) = .true., .true.,
 
 ! ------------------ simulation domain ----------------!
-nx = 1, ny = 4, nz = 2240,  ! total number of cells along each dim
-xmax = 1., ymax = 4., zmax = 2240.,  ! max lengths of each dim
+nx = 1, ny = 4, nz = 2000,  ! total number of cells along each dim
+xmax = 1., ymax = 4., zmax = 2000.,  ! max lengths of each dim
 
 ! uniform loading in logical space
 ! used in loading particles? see 'init waves'
@@ -22,9 +22,19 @@ uniform_load_logical = .false.
 ! ------------------ field solver ----------------!
 n_sub_b = 5, ! number of subcycles for advancing B field
 eta_par = 0, ! parallel resisitivity? options: 0, 1, 2
+
+! field masking
 mask = .true., ! if perform field masking
-mask_zs = 560, ! scale length of field masking in z, in units of cell size
+mask_iflag = 0
+mask_zs = 200, ! scale length (in cell) of field masking in z
 mask_r = 1., ! factor r in field masking, which controls the slope of mask function
+
+! initial waves
+dB_B0 = 0.1,
+n_wave_cycles = 50.0,
+wave_upramp = 200,  ! wave upramp length (in cell)
+wave_flat = 1200,  ! wave central flat length (in cell)
+wave_downramp = 200, ! wave downramp length (in cell)
 
 ! ------------------ plasma setup ----------------!
 nspec = 1,  ! number of ion species, maximum 5
@@ -34,9 +44,9 @@ frac(1:5) = 1., ! density normalized to n0 (associated with wpi)
 beta_spec(1:5) = 0.01, ! beta of each ion species 
 beta_elec = 0.01, ! beta of electrons
 
-ppcx(1:5) = 10, ! number of particles per cell along x 
-ppcy(1:5) = 10, ! number of particles per cell along y 
-ppcz(1:5) = 10, ! number of particles per cell along z 
+ppcx(1:5) = 4, ! number of particles per cell along x 
+ppcy(1:5) = 4, ! number of particles per cell along y 
+ppcz(1:5) = 4, ! number of particles per cell along z 
 
 wpiwci = 400., ! ratio of ion plasma frequency to ion cyclotron frequency 
 denmin = 0.05,  ! force density lower than this to this value
@@ -47,7 +57,7 @@ ieta = 0,  ! available models ieta=1,2,3,4,5,6
 resis = 1.e-6,  ! constant resisitivity (for ieta=0)
 netax = 10, netay = 2 ! (for ieta=1)
 etamin = 1.0e-6, etamax = 5.0e-5,  ! (for ieta>0)
-eta_zs = 280, ! scale length (in cell size) of resistive layer in z (for ieta=6)
+eta_zs = 200, ! scale length (in cell) of resistive layer in z (for ieta=6)
 
 ! anisotropy in velocity
 anisot(1:5) = 1.0, ! anisotropy of velocity for each species
@@ -57,17 +67,13 @@ gamma = 1.66667, ! gamma factor in EoS
 smoothing = .true., 
 smooth_pass = 1, 
 
-! ---------------------- init waves --------------------!
-dB_B0 = 0.1,
-n_wave_cycles = 32.0,
-
 ! ------------------ diagnostic control ----------------!
 n_print = 100,  ! frequency at which to print simulation progression
 
 n_diag_mesh = 1000, ! frequency at which to write mesh data 
 n_diag_energy = 100, ! frequency at which to write integrated energy data
 
-n_diag_probe = 0, ! frequency at which to write field probe data
+n_diag_probe = 100, ! frequency at which to write field probe data
 
 n_diag_tracking = 0, ! frequency at which to write tracking particle data
 n_diag_particle = 0, ! frequency at which to write particles within a volume
@@ -80,6 +86,6 @@ tracking_mpi = .true. ! write tracking data by mpi rank
 ! volume within which particles will be dumped
 xbox_l = 0., xbox_r = 1.0,
 ybox_l = 0., ybox_r = 1.0, 
-zbox_l = 0., zbox_r = 2.24,
+zbox_l = 0., zbox_r = 2.0,
 
 /
