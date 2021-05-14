@@ -1,6 +1,4 @@
-!=======================================================================
-!=======================================================================
-      subroutine init_wave
+      subroutine init_iaw  ! init an ion acoustic wave
       use parameter_mod
       use MESH2D
       implicit none
@@ -16,8 +14,7 @@
       integer :: seed_size
       integer,allocatable :: seed(:)
 
-      real(kind=8) :: x_pos, y_pos, z_pos, B0, VA, dB0, mi
-      real(kind=8) :: bx_, by_, bz_, ex_, ey_, ez_
+      real(kind=8) :: x_pos,y_pos,z_pos, B0, VA, dB0, dn_n0, dx, f_tot
 
       real(kind=8) :: kx,ky,kz,kxmin,kymin,kzmin,dvx_,dvy_,dvz_,sin_factor
       real(kind=8) :: loaded_percentage, print_percentage
@@ -31,8 +28,10 @@
       double precision:: vix6,viy6,viz6
       double precision:: vix7,viy7,viz7
       double precision:: vix8,viy8,viz8
-      integer ixep1,iyep1,izep1
       integer tag,tag0
+      integer, parameter :: nbins=65536
+      real(kind=8), dimension(nbins) :: f,xx
+      real(kind=8), dimension(nbins+1) :: p
 
 
       remake = 0
@@ -84,6 +83,7 @@
           yeglobal(ipe)=meshY%xn(jeglobal(ipe)+2)
         enddo
         volume_fraction = (ye-yb)*(ze-zb)/(ymax*zmax)
+        !write(*,*)'volume_fraction=',volume_fraction, myid
 
         xb        = zero
         xe        = xmax
@@ -110,133 +110,49 @@
 
       ! allocate the necessary vectors
  
-!!!!  Alfvenic perturbation with deltaB in the x direction
-!!!!  i,j,k are wave numbers in x,y,z
-#define DBX_1(k,j,phi) (dB_B0*B0*cos((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
-#define DEY_1(k,j,phi) (-dB_B0*(k/abs(k))*VA*B0*cos((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
-!!!! These give velocity & current consistent with Alfven wave
-#define DUX_1(k,j,phi) (-dB_B0*(k/abs(k))*VA*cos((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
-#define DJY_1(k,j,phi) (-dB_B0*B0*(k)*kzmin*sin((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
-#define DJZ_1(k,j,phi) (dB_B0*B0*(j)*kymin*sin((k)*kzmin*z_pos + (j)*kymin*y_pos + (phi)))
-!
-#define BX_PERT_1 DBX_1(1,1,0) + DBX_1(1,2,1.5) + DBX_1(-2,3,3.9)   
-#define EY_PERT_1 DEY_1(1,1,0) + DEY_1(1,2,1.5) + DEY_1(-2,3,3.9)  
-#define UX_PERT_1 DUX_1(1,1,0) + DUX_1(1,2,1.5) + DUX_1(-2,3,3.9)
-#define JY_PERT_1 DJY_1(1,1,0) + DJY_1(1,2,1.5) + DJY_1(-2,3,3.9)
-#define JZ_PERT_1 DJZ_1(1,1,0) + DJZ_1(1,2,1.5) + DJZ_1(-2,3,3.9)
-
-!!!!  Alfvenic perturbation with deltaB in the y direction
-!!!!  works only for a pair plasma
-#define DBY_2(k,i,phi) (dB_B0*B0*cos((k)*kzmin*z_pos + (i)*kxmin*x_pos + (phi)))
-#define DEX_2(k,i,phi) (dB_B0*(k/abs(k))*VA*B0*cos((k)*kzmin*z_pos + (i)*kxmin*x_pos + (phi)))
-!!!! These give velocity & current consistent with Alfven wave
-#define DUY_2(k,i,phi) (-dB_B0*(k/abs(k))*VA*cos((k)*kzmin*z_pos + (i)*kxmin*x_pos + (phi)))
-#define DJX_2(k,i,phi) (dB_B0*B0*(k)*kzmin*sin((k)*kzmin*z_pos + (i)*kxmin*x_pos + (phi)))
-#define DJZ_2(k,i,phi) (-dB_B0*B0*(i)*kxmin*sin((k)*kzmin*z_pos + (i)*kxmin*x_pos + (phi)))
-!
-#define BY_PERT_2 DBY_2(-1,1,0.4) + DBY_2(-1,-2,2.56) + DBY_2(2,-3,4.19)   
-#define EX_PERT_2 DEX_2(-1,1,0.4) + DEX_2(-1,-2,2.56) + DEX_2(2,-3,4.19) 
-#define UY_PERT_2 DUY_2(-1,1,0.4) + DUY_2(-1,-2,2.56) + DUY_2(2,-3,4.19)
-#define JX_PERT_2 DJX_2(-1,1,0.4) + DJX_2(-1,-2,2.56) + DJX_2(2,-3,4.19)
-#define JZ_PERT_2 DJZ_2(-1,1,0.4) + DJZ_2(-1,-2,2.56) + DJZ_2(2,-3,4.19)
+!!!! density fluctuation of an ion acoustic wave
+#define DENSITY(k,phi) (1+dn_n0*cos((k)*kxmin*x_pos+ (phi)))
+#define DEN DENSITY(3,0)
 
       !VR: initialize wave parameters
-      ! RMS amplitude of the pertubation [B0=RMS(B)]
-      ! dB_B0=0.1  ! now get it from input      
-      B0 = one/wpiwci
-      !VR Alfven speed
-      mi=0.
-      do j =1, nspec
-        mi = mi + frac(j)*wspec(j)
-      enddo
-      VA = one/wpiwci/sqrt(mi)      
 
+      dn_n0=0.00
+
+      B0 = one/wpiwci
       kxmin = two*pi/xmax
       kymin = two*pi/ymax
       kzmin = two*pi/zmax
-      
-      kx = zero
-      ky = zero
-      kz = num_cycles*kzmin  ! num_cycles is taken from input
-      
-      !VR: end wave parameters
 
-      bx=zero;  by=zero; bz = zero;
-      
+      bx=zero;  by=zero; bz = B0;
       ex=zero;ey=zero;ez=zero;
-     
-     ! initialie perturbation on the grid 
-      if (myid==0) print *, "Initializing the perturbation."
-      do k=kb-1,ke+1
-         z_pos = meshZ%xc(k+1)
-         do j=jb-1,je+1  
-            y_pos = meshY%xc(j+1)
-            do i=1,nx2
-               x_pos = meshX%xc(i)   !VR this is not a typo. For some reason, x has different indexing compared to y and z (!!!)               
-! no wave
-!               bx_ = zero
-!               by_ = zero
-!               bz_ = B0
-!               ex_ = zero
-!               ey_ = zero
-!               ez_ = zero
-!               dvx_ = zero
-!               dvy_ = zero
-!               dvz_ = zero
-!! single Alfven wave
-               bx_ =  dB_B0*B0*sin(kz*z_pos)
-               by_ = -dB_B0*B0*cos(kz*z_pos)
-               bz_ = B0
-               ex_ = zero
-               ey_ = zero
-               ez_ = zero
-              
-               dvx_ = -VA*bx_/B0 
-               dvy_ = -VA*by_/B0 
-               dvz_ = zero
-
-! multiple waves
-!               bx_ = BX_PERT_1
-!               by_ = BY_PERT_2
-!               bz_ = B0
-
-!               ex_ = EX_PERT_2
-!               ey_ = EY_PERT_1
-!               ez_ = zero
-              
-!               dvx_ = UX_PERT_1
-!               dvy_ = UY_PERT_2
-!               dvz_ = zero
-
-              !
-              bx(i,j,k) = bx_
-              by(i,j,k) = by_
-              bz(i,j,k) = bz_
-              ex(i,j,k) = ex_
-              ey(i,j,k) = ey_
-              ez(i,j,k) = ez_
-
-              ! use vix to temporary store values of V on the grid
-              vix(i,j,k) = dvx_
-              viy(i,j,k) = dvy_
-              viz(i,j,k) = dvz_
-              
-           enddo
-        enddo
-     enddo
-
-     
+      
+    
 !  LOAD PARTCILES
+     !calculate number of particles in a subdomain
+     f_tot=0d0
+     dx=xmax/nbins
+     do k=1, nbins
+       x_pos=(k-1)*dx
+       f(k)=DEN
+       xx(k)=x_pos
+       f_tot=f_tot+f(k)
+     enddo
+     p(1)=0d0
+     do k=1,nbins
+       p(k+1)=p(k)+f(k)
+     enddo
+     p=p/f_tot
+     !write(*,*)p(nbins:nbins+1)
+     f_tot=f_tot*dx/xmax
+     write(*,*)'f_tot=',f_tot
 
       if (uniform_loading_in_logical_grid) then
-        nptotp=0
-        do is=1,nspec
-          nptotp = nptotp + npx(is)*npy(is)*npz(is)
-        enddo
+        write(*,*)'NOT IMPLEMENTED!'
+        stop
       else
         nptotp=0
         do is=1,nspec
-          nptotp = nptotp + npx(is)*npy(is)*npz(is)*npes*volume_fraction
+          nptotp = nptotp + npx(is)*npy(is)*npz(is)*npes*volume_fraction*f_tot
         enddo
       endif
 
@@ -296,6 +212,7 @@
 
       if (myid==0) print *, "Initializing particles."
       do is = 1, nspec
+        if (myid==0) print *, "species", is
         !tag0=(is-1)*maxtags+maxtags_pe*myid
         tag0=maxtags_pe*nspec*myid+(is-1)*maxtags_pe
         tag=1 
@@ -306,7 +223,7 @@
         if (uniform_loading_in_logical_grid) then
           ipb2 = npx(is)*npy(is)*npz(is)
         else
-          ipb2 = npx(is)*npy(is)*npz(is)*npes*volume_fraction
+          ipb2 = npx(is)*npy(is)*npz(is)*npes*volume_fraction*f_tot
         endif
 
         npm=npx(is)*npy(is)*npz(is)*npes
@@ -314,19 +231,11 @@
         vpar(is)=sqrt(btspec(is)/(wspec(is)*wpiwci*wpiwci))
         vper(is)=vpar(is)*sqrt(anisot(is))
 
-        if (myid==0) then
-          print *, "species", is
-          print *, "frac", frac(is)
-          print *, "npx", npx(is)
-          print *, "npy", npy(is)
-          print *, "npz", npz(is)
-          print *, "dfrac", dfac(is)
-          print *, "nptot_max", nptot_max
-          print *, "q_p=", hx*hy*hz*dfac(is)*frac(is)
-        endif
-
         print_percentage = zero
 
+        !write(*,*)'is, q_p=',is,hx*hy*hz*dfac(is)*frac(is)
+        !write(*,*)'myid, is, ipb1, ipb2',myid,is,ipb1,ipb2
+        !write(*,*)'myid, is, ipstore',myid,is,ipstore
         do ip=ipb1,ipb2
             
           if (ipb2 == ipb1) write(6,*) "myid = , # particles = ",myid,ipb1,ipb2
@@ -345,9 +254,19 @@
 !            q_p          = (meshX%dxc(ixe)*meshY%dxc(iye)*meshZ%dxc(ize)/(hx*hy*hz))*dfac(is)*frac(is)
              q_p          = meshX%dxc(ixe)*meshY%dxc(iye)*meshZ%dxc(ize)*dfac(is)*frac(is)
           else
-            X_P  = X0(IS)+(X1(IS)-X0(IS))*ranval(1)
+            !X_P  = X0(IS)+(X1(IS)-X0(IS))*ranval(1)
+            j=1
+            do
+              if (ranval(1)>p(j+1)) then
+                j=j+1
+              else
+                X_P=xx(j)
+                exit
+              endif
+            enddo
             Y_P  = YB+(YE-YB)*ranval(2)
             Z_P  = ZB+(ZE-ZB)*ranval(3)
+              
             q_p  = hx*hy*hz*dfac(is)*frac(is)
           endif
          
@@ -376,69 +295,15 @@
           iye=iye-1             ! integer index in y direction starts at 0
           ize=ize-1             ! integer index in z direction starts at 0
 !
-          fxe=rxe-ixe
-          fye=rye-iye
-          fze=rze-ize
-          ixep1 = ixe+1
-          iyep1 = iye+1
-          izep1 = ize+1
-
-          w1e=(1.-fxe)*(1.-fye)*(1.-fze)
-          w2e=fxe*(1.-fye)*(1.-fze)
-          w3e=(1.-fxe)*fye*(1.-fze)
-          w4e=fxe*fye*(1.-fze)
-          w5e=(1.-fxe)*(1.-fye)*fze
-          w6e=fxe*(1.-fye)*fze
-          w7e=(1.-fxe)*fye*fze
-          w8e=fxe*fye*fze
-          
-          vix1=vix(ixe  ,iye  ,ize  )
-          vix2=vix(ixep1,iye  ,ize  )
-          vix3=vix(ixe  ,iyep1,ize  )
-          vix4=vix(ixep1,iyep1,ize  )
-          vix5=vix(ixe  ,iye  ,izep1)
-          vix6=vix(ixep1,iye  ,izep1)
-          vix7=vix(ixe  ,iyep1,izep1)
-          vix8=vix(ixep1,iyep1,izep1)
-          viy1=viy(ixe  ,iye  ,ize  )
-          viy2=viy(ixep1,iye  ,ize  )
-          viy3=viy(ixe  ,iyep1,ize  )
-          viy4=viy(ixep1,iyep1,ize  )
-          viy5=viy(ixe  ,iye  ,izep1)
-          viy6=viy(ixep1,iye  ,izep1)
-          viy7=viy(ixe  ,iyep1,izep1)
-          viy8=viy(ixep1,iyep1,izep1)
-          viz1=viz(ixe  ,iye  ,ize  )
-          viz2=viz(ixep1,iye  ,ize  )
-          viz3=viz(ixe  ,iyep1,ize  )
-          viz4=viz(ixep1,iyep1,ize  )
-          viz5=viz(ixe  ,iye  ,izep1)
-          viz6=viz(ixep1,iye  ,izep1)
-          viz7=viz(ixe  ,iyep1,izep1)
-          viz8=viz(ixep1,iyep1,izep1)
-          
-          dvx_=w1e*vix1+w2e*vix2+w3e*vix3+w4e*vix4   &
-               +w5e*vix5+w6e*vix6+w7e*vix7+w8e*vix8  
-          dvy_=w1e*viy1+w2e*viy2+w3e*viy3+w4e*viy4   &
-               +w5e*viy5+w6e*viy6+w7e*viy7+w8e*viy8  
-          dvz_=w1e*viz1+w2e*viz2+w3e*viz3+w4e*viz4   &
-               +w5e*viz5+w6e*viz6+w7e*viz7+w8e*viz8  
-                    
-          !interpolate V at the particle position from pre-computed values at the grid
-
-
-!          dvx_ = -dB_B0*VA*sin(kz*z_p)
-          
-          
           call random_number(harvest=ranval)
           vmag=sqrt(-log(one-ranval(1)))
           th=two*pi*ranval(2)
-          vza=vpar(is)*vmag*cos(th) + dvz_
+          vza=vpar(is)*vmag*cos(th)
           
           vmag=sqrt(-log(one-ranval(3)))
           th=two*pi*ranval(4)
-          vxa=vper(is)*vmag*cos(th) + dvx_
-          vya=vper(is)*vmag*sin(th) + dvy_
+          vxa=vper(is)*vmag*cos(th)
+          vya=vper(is)*vmag*sin(th)
 
           vx(np)=vxa
           vy(np)=vya
@@ -486,8 +351,6 @@
           enddo
         enddo
       enddo
-
-      ! why do we need to set dt=0, and push particles once?
       dtsav=dt
       dt=zero
       call trans
@@ -516,6 +379,6 @@
       
       deallocate(seed) 
       return
-    end subroutine init_wave
+    end subroutine
 !
 !***********************************************************************

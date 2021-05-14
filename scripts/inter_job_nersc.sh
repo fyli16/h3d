@@ -19,8 +19,8 @@ setenv RESTART_DIRECTORY ./restart
 mkdir -p $DATA_DIRECTORY
 mkdir -p $RESTART_DIRECTORY
 
-setenv MPI_TYPE_MAX 65536
-setenv MPI_REQUEST_MAX 65536
+# setenv MPI_TYPE_MAX 65536
+# setenv MPI_REQUEST_MAX 65536
 
-srun -n 64 ./h3d
+srun -n 32 ./src/h3d
 exit

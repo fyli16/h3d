@@ -1,95 +1,90 @@
-&datum
+&input
 
 ! ------------------ global simulation info -----------!
-tmax=2000.0, ! max sim. time, in units of 1/wci
-t_begin=0.0, t_end=2000.0, 
-dtwci=0.01,  ! value of dt*wci
-restart=.false.,  ! whether to restart from 'restart' directory
-quota=24.0,  ! walltime quota (in unit of hours)
-MPI_IO_format = .true. ! use MPI IO instead of traditional binary output
+tmax = 1.0, ! max sim. time, in units of 1/wci
+dtwci = 0.01,  ! value of dt*wci
+restart = .false.,  ! whether to restart from 'restart' directory
+MPI_IO_format = .true., ! use MPI IO (one file only) instead of traditional binary output
 
-! ------------------ simulation domain ----------------!
-nx=1, ny=4, nz=224,  ! number of cells along each dim
-xmax=1., ymax=4., zmax=224.,  ! max lengths of each dim
-npx=10, npy=40, npz=2240,  ! number of particles along each dim over full length (not cell)
+! MPI nodes(ranks) configuration along y, z (no decompostion along x)
+! and whether the ranks are treated periodic in either directions
+node_conf(:) = 2, 16,
+periods(:) = .true., .true.,
 
-! number of nodes (cores) along y, z; (no decompostion along x)
-! make sure npy, npz can be divided by nodey, nodez, respectively
-nodey=2, nodez=32  
+! simulation domain
+nx = 1, ny = 4, nz = 2000,  ! total number of cells along each dim
+xmax = 1., ymax = 4., zmax = 2000.,  ! max lengths of each dim
 
-! boundaries of the uniform region
-! setting xbb/ybb/zbb to xmax/ymax/zmax would leave only the uniform region to be simulated
-xaa=0., xbb=1., nax=0, nbx=1
-yaa=0., ybb=4., nay=0, nby=4
-zaa=0., zbb=224., naz=0, nbz=224
-
-uniform_loading_in_logical_grid = .false., ! used in loading particles? see 'init waves'
-
-buffer_zone=0., ! 'epsilon=buffer_zone' in parmov.f90 ??
-moat_zone=3., ! seems not implemented
-profile_power=0,  ! seems not implemented
+! uniform loading in logical space
+! used in loading particles? see 'init waves'
+uniform_load_logical = .false., 
 
 ! ------------------ field solver ----------------!
-n_subcycles=0
-nskipx=1,  nskipy=1,  nskipz=1, ! not implemented?
+n_sub_b = 5, ! number of subcycles for advancing B field
+eta_par = 0, ! parallel resisitivity? options: 0, 1, 2
 
-iterb=5,  ! ion push can use a larger step than field advance
-testorbt=.false., 
-norbskip=1,
+! field masking
+mask = .true., ! if perform field masking
+mask_zs = 200, ! scale length (in cell) of field masking in z
+mask_r = 1., ! factor r in field masking, which controls the slope of mask function
+
+! initial waves
+dB_B0 = 0.1,
+n_wave_cycles = 50.0,
+wave_upramp = 200,  ! wave upramp length (in cell)
+wave_flat = 1200,  ! wave central flat length (in cell)
+wave_downramp = 200, ! wave downramp length (in cell)
 
 ! ------------------ plasma setup ----------------!
-nspec=1, ! number of ion species, maximum 5
-qspec=1., ! charge of each ion species (use array if nspec>1 and the same for rest)
-wspec=1., ! mass of each ion species
+nspec = 1,  ! number of ion species, maximum 5
+qspec(1:5) = 1., ! charge of each ion species 
+wspec(1:5) = 1., ! mass of each ion species
+frac(1:5) = 1., ! density normalized to n0 (associated with wpi)
+beta_spec(1:5) = 0.01, ! beta of each ion species 
+beta_elec = 0.01, ! beta of electrons
 
-frac=1.0 ! means normalized to n0 (associated with wpi)
-denmin=0.05,  ! density floor. When density is smaller than this value, force it to this value to avoid divergence in calculating E field
-wpiwci=400., ! ratio of ion plasma frequency to ion cyclotron frequency
-btspec=0.01, ! beta of each ion species 
-bete=0.01,  ! beta of electrons
+ppcx(1:5) = 4, ! number of particles per cell along x 
+ppcy(1:5) = 4, ! number of particles per cell along y 
+ppcz(1:5) = 4, ! number of particles per cell along z 
+
+wpiwci = 400., ! ratio of ion plasma frequency to ion cyclotron frequency 
+denmin = 0.05,  ! force density lower than this to this value
+n_sort = 10, ! frequency at which to sort particles
 
 ! resistivity 
-ieta=0,  ! other models include eta=1,2,3,4,5; see 'etacal.f90'
-resis=1.e-6,  ! ieta=0 model; constant resisitivity, i.e., eta=resis
-netax=10, netay=2, netaz=5, ! used in ieta=1 model; tho netaz seems not used
-etamin=1.0e-6, etamax=5.0e-5,  ! used in ieta>1 models
-eta_par=0, ! parallel resisitivity? sth used in 'field.f90'
+ieta = 0,  ! available models ieta=1,2,3,4,5,6
+resis = 1.e-6,  ! constant resisitivity (for ieta=0)
+netax = 10, netay = 2 ! (for ieta=1)
+etamin = 1.0e-6, etamax = 5.0e-5,  ! (for ieta>0)
+eta_zs = 200, ! scale length (in cell) of resistive layer in z (for ieta=6)
 
 ! anisotropy in velocity
-anisot=1.0, ! anisotropy of velocity for each species, used in 'init waves'
-gama=1.66667, ! gamma factor in EoS?
+anisot(1:5) = 1.0, ! anisotropy of velocity for each species
+gamma = 1.66667, ! gamma factor in EoS
 
-ave1=100.0, ave2=50.,
-phib=180.0,
-
-! performing density/velocity smoothing
-smoothing=.true., 
-smooth_coef=0. ! seems not implemented
-
-! ---------------------- init waves --------------------!
-dB_B0=0.1
-num_cycles=5
+! density/velocity smoothing
+smoothing = .true., 
+smooth_pass = 1, 
 
 ! ------------------ diagnostic control ----------------!
-nprint=100,  ! frequency at which to print simulation information
-nwrtdata=1000, ! frequency at which to write data into files
-nwrtparticle=4000,  ! frequency at which to write particles within a box range
+n_print = 100,  ! frequency at which to print simulation progression
 
-restrt_write=1,  ! whether to write restart files
-nwrtrestart=20000000, ! frequency at which to write restart files
+n_diag_mesh = 1000, ! frequency at which to write mesh data 
+n_diag_energy = 100, ! frequency at which to write integrated energy data
 
-! box range within which particles will be dumped
-xbox_l=0., xbox_r=1.0, 
-ybox_l=0., ybox_r=1.0, 
-zbox_l=0., zbox_r=2.24,
+n_diag_probe = 100, ! frequency at which to write field probe data
 
-! ------------------------- others ---------------------!
-! these seem not really implemented
-Yee=.false., ! ?
-global=.true., ! ?
-harris=.false., ! ?
-! sth used in 'io.f90'
-fxsho=1.0,  ! seems not implemented
-nxcel=4,  ! seems not implemented
+n_diag_tracking = 0, ! frequency at which to write tracking particle data
+n_diag_particle = 0, ! frequency at which to write particles within a volume
+
+n_write_restart = 0, ! frequency at which to write restart files
+
+tracking_binary = .true., ! write tracking data in binary (unformatted) or formatted form
+tracking_mpi = .true., ! write tracking data by mpi rank
+
+! volume within which particles will be dumped
+xbox_l = 0., xbox_r = 1.0,
+ybox_l = 0., ybox_r = 1.0, 
+zbox_l = 0., zbox_r = 2.0,
 
 /

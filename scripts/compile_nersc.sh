@@ -20,6 +20,6 @@ module load PrgEnv-gnu openmpi
 echo "#--------------------- compling --------------------#"
 make
 
-echo ""
-echo "#--------------------- cleaning --------------------#"
-make clean
+# echo ""
+# echo "#--------------------- cleaning --------------------#"
+# make clean
