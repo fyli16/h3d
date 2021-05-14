@@ -11,7 +11,7 @@ MPI_IO_format = .true., ! use MPI IO (one file only) instead of traditional bina
 node_conf(:) = 2, 16,
 periods(:) = .true., .true.,
 
-! ------------------ simulation domain ----------------!
+! simulation domain
 nx = 1, ny = 4, nz = 2000,  ! total number of cells along each dim
 xmax = 1., ymax = 4., zmax = 2000.,  ! max lengths of each dim
 
