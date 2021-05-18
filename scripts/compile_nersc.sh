@@ -17,9 +17,5 @@
 module purge PrgEnv-intel
 module load PrgEnv-gnu openmpi
 
-echo "#--------------------- compling --------------------#"
 make
-
-# echo ""
-# echo "#--------------------- cleaning --------------------#"
 # make clean

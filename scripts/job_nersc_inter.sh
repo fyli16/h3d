@@ -2,13 +2,6 @@
 
 module purge PrgEnv-intel
 module load PrgEnv-gnu openmpi
-# echo ""
-# echo "#--------------------- compling --------------------#"
-# make
-# echo ""
-# echo "#--------------------- cleaning --------------------#"
-# make clean
-# echo ""
 
 # set verbose
 setenv OMP_NUM_THREADS 1
@@ -38,5 +31,5 @@ mkdir -p data/ecal
 # setenv MPI_TYPE_MAX 65536
 # setenv MPI_REQUEST_MAX 65536
 
-srun -n 32 ./src/h3d
+srun -n 32 ./build/h3d
 exit

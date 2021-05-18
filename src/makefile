@@ -1,5 +1,5 @@
 # Choose compilers and options 
-FC         = mpif90
+FC          = mpif90
 CC          = mpicc
 # OPTFLAGS    = -O3 
 # OPTFLAGS2   = -O3
@@ -9,34 +9,41 @@ OPTFLAGS2   = -O3 -ffree-line-length-none -fimplicit-none #-fcheck=all
 # OPTFLAGS2   = -Og -fbounds-check -ffree-line-length-none -fimplicit-none -g 
 LIBS        = 
 
+BUILD_DIR = ../build
+$(shell mkdir -p $(BUILD_DIR))
+
 # Define dependecies
 EFILE = h3d
-OBJS =  param.of90 \
-				utils.of90\
-				int2char.ogcc \
-				func.of90 \
-				mesh.of90 \
-				field.of90\
-				particle.of90 \
-				eta.of90 \
-				boundary.of90 \
-				io.of90\
-				restart.of90 \
-				diag.of90\
-				init.of90 \
-				h3d.of90
+OBJS =  $(BUILD_DIR)/param.of90 \
+				$(BUILD_DIR)/utils.of90\
+				$(BUILD_DIR)/int2char.ogcc \
+				$(BUILD_DIR)/func.of90 \
+				$(BUILD_DIR)/mesh.of90 \
+				$(BUILD_DIR)/field.of90\
+				$(BUILD_DIR)/particle.of90 \
+				$(BUILD_DIR)/eta.of90 \
+				$(BUILD_DIR)/boundary.of90 \
+				$(BUILD_DIR)/io.of90\
+				$(BUILD_DIR)/restart.of90 \
+				$(BUILD_DIR)/diag.of90\
+				$(BUILD_DIR)/init.of90 \
+				$(BUILD_DIR)/h3d.of90
 
 $(EFILE): $(OBJS)
 	@echo "linking..."
-	$(FC) $(OPTFLAGS2) -o $(EFILE) $(OBJS) $(LIBS)
+	$(FC) $(OPTFLAGS2) -o $(BUILD_DIR)/$(EFILE) $(OBJS) $(LIBS)
 
 # Compile C files 
-%.ogcc: %.c 
+$(BUILD_DIR)/%.ogcc: %.c 
 	$(CC) -o $@ -c $<
 
 # Compile Fortran files
-%.of90: %.f90
-	$(FC) $(OPTFLAGS) -o $@ -c $< 
+$(BUILD_DIR)/%.of90: %.f90
+	$(FC) $(OPTFLAGS) -J$(BUILD_DIR) -o $@ -c $< 
 
 clean:
-	-rm  *.mod *.of90 *.o *.ogcc
+	-rm $(BUILD_DIR)/*.mod 
+	-rm $(BUILD_DIR)/*.of90
+	-rm $(BUILD_DIR)/*.o 
+	-rm $(BUILD_DIR)/*.ogcc 
+	-rm $(BUILD_DIR)/${EFILE}

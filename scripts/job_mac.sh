@@ -28,5 +28,5 @@ mkdir -p data/ecal
 # setenv MPI_TYPE_MAX 65536
 # setenv MPI_REQUEST_MAX 65536
 
-mpirun -np 6 ~/src/h3d/src/h3d
+mpirun -np 6 ~/src/h3d/build/h3d
 exit

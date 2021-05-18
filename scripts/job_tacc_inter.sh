@@ -1,15 +1,8 @@
 #!/bin/tcsh
 module purge
 module load gcc/9.1.0 impi/19.0.9
-# echo ""
-# echo "#--------------------- compling --------------------#"
-# make
-# echo ""
-# echo "#--------------------- cleaning --------------------#"
-# make clean
-# echo ""
 
-set verbose
+# set verbose
 setenv OMP_NUM_THREADS 1
 
 # setenv DATA_DIRECTORY ./data
@@ -26,5 +19,5 @@ mkdir -p data/tpar; mkdir -p data/tperp; mkdir -p data/tracking
 mkdir -p data/vix; mkdir -p data/viy; mkdir -p data/viz 
 mkdir -p data/vxs; mkdir -p data/vys; mkdir -p data/vzs 
 
-ibrun -np 56 ./src/h3d
+ibrun -np 56 ./build/h3d
 exit
