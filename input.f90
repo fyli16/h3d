@@ -1,19 +1,19 @@
 &input
 
 ! ------------------ global simulation info -----------!
-tmax = 1.0, ! max sim. time, in units of 1/wci
+tmax = 1200.0, ! max sim. time, in units of 1/wci
 dtwci = 0.01,  ! value of dt*wci
 restart = .false.,  ! whether to restart from 'restart' directory
 MPI_IO_format = .true., ! use MPI IO (one file only) instead of traditional binary output
 
 ! MPI nodes(ranks) configuration along y, z (no decompostion along x)
 ! and whether the ranks are treated periodic in either directions
-node_conf(:) = 2, 16,
+node_conf(:) = 2, 28,
 periods(:) = .true., .true.,
 
 ! simulation domain
-nx = 1, ny = 4, nz = 2000,  ! total number of cells along each dim
-xmax = 1., ymax = 4., zmax = 2000.,  ! max lengths of each dim
+nx = 1, ny = 4, nz = 1200,  ! total number of cells along each dim
+xmax = 1., ymax = 4., zmax = 1200.,  ! max lengths of each dim
 
 ! uniform loading in logical space
 ! used in loading particles? see 'init waves'
@@ -21,7 +21,7 @@ uniform_load_logical = .false.,
 
 ! ------------------ field solver ----------------!
 n_sub_b = 5, ! number of subcycles for advancing B field
-eta_par = 0, ! parallel resisitivity? options: 0, 1, 2
+eta_par = 0, ! ? options: 0, 1, 2; used in 'ecal'
 
 ! field masking
 mask = .true., ! if perform field masking
@@ -29,10 +29,10 @@ mask_zs = 200, ! scale length (in cell) of field masking in z
 mask_r = 1., ! factor r in field masking, which controls the slope of mask function
 
 ! initial waves
-dB_B0 = 0.1,
-n_wave_cycles = 50.0,
+dB_B0 = 0.01,
+n_wave_cycles = 30.0,
 wave_upramp = 200,  ! wave upramp length (in cell)
-wave_flat = 1200,  ! wave central flat length (in cell)
+wave_flat = 200,  ! wave central flat length (in cell)
 wave_downramp = 200, ! wave downramp length (in cell)
 
 ! ------------------ plasma setup ----------------!
@@ -69,7 +69,7 @@ smooth_pass = 1,
 ! ------------------ diagnostic control ----------------!
 n_print = 100,  ! frequency at which to print simulation progression
 
-n_diag_mesh = 1000, ! frequency at which to write mesh data 
+n_diag_mesh = 100, ! frequency at which to write mesh data 
 n_diag_energy = 100, ! frequency at which to write integrated energy data
 
 n_diag_probe = 100, ! frequency at which to write field probe data

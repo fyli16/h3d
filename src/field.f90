@@ -120,7 +120,7 @@ module m_field
         if ( k <= mask_zs ) then
           fm = 1.-(mask_r*(real(k)-mask_zs)/real(mask_zs))**2.
         else if ( k >= nz-mask_zs ) then
-          fm = 1-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
+          fm = 1.-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
         else 
           fm = 1.
         endif
@@ -258,7 +258,7 @@ module m_field
         if ( k <= mask_zs ) then
           fm = 1.-(mask_r*(real(k)-mask_zs)/real(mask_zs))**2.
         else if ( k >= nz-mask_zs ) then
-          fm = 1-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
+          fm = 1.-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
         else 
           fm = 1.
         endif

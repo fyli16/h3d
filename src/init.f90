@@ -81,6 +81,21 @@ module m_init
               bx_ = 0.
               by_ = 0.
             endif 
+          ! else if (mask .eqv. .true.) then ! in case of field masking
+          !   if (k >= nz - mask_zs - wave_upramp - wave_flat - wave_downramp .and. k <= nz-mask_zs) then
+          !     if ( k <= mask_zs + wave_downramp ) then
+          !       wave_env = (sin(0.5*pi*(k-mask_zs)/wave_downramp))**2.
+          !     else if ( k <= mask_zs + wave_downramp + wave_flat ) then
+          !       wave_env = 1.0
+          !     else 
+          !       wave_env = (cos(0.5*pi*(k-mask_zs-wave_downramp-wave_flat)/wave_upramp))**2.
+          !     endif 
+          !     bx_ =   dB_B0*B0*wave_env*sin(kz*z_pos)
+          !     by_ = - dB_B0*B0*wave_env*cos(kz*z_pos)
+          !   else
+          !     bx_ = 0.
+          !     by_ = 0.
+          !   endif 
           else ! no resistive layer (ieta=6), no field masking
             bx_ =  dB_B0*B0*sin(kz*z_pos)
             by_ = - dB_B0*B0*cos(kz*z_pos)
