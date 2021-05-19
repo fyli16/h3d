@@ -242,7 +242,7 @@ module m_field
 
     ! calculate curl E
     do k = kb, ke+1
-      fm = masking_func(k, iflag)
+      ! fm = masking_func(k, iflag)
       do j = jb, je+1
         do i = 2, nx2
           dexdy=  ex(i  ,j  ,k  ) + ex(i-1,j  ,k  ) + ex(i-1,j  ,k-1) + ex(i  ,j  ,k-1)   &
@@ -258,13 +258,13 @@ module m_field
           dezdy=  ez(i  ,j  ,k  ) + ez(i-1,j  ,k  ) + ez(i-1,j  ,k-1) + ez(i  ,j  ,k-1)   &
                 - ez(i  ,j-1,k  ) - ez(i-1,j-1,k  ) - ez(i-1,j-1,k-1) - ez(i  ,j-1,k-1)
 
-          ! curlex(i,j,k) = dezdy/(4.*meshY%dxn(j+1)) - deydz/(4.*meshZ%dxn(k+1))  ! index in y, z start  at 0
-          ! curley(i,j,k) = dexdz/(4.*meshZ%dxn(k+1)) - dezdx/(4.*meshX%dxn(i  ))  ! index in z starts at 0
-          ! curlez(i,j,k) = deydx/(4.*meshX%dxn(i  )) - dexdy/(4.*meshY%dxn(j+1))  ! index in y starts at 0
+          curlex(i,j,k) = dezdy/(4.*meshY%dxn(j+1)) - deydz/(4.*meshZ%dxn(k+1))  ! index in y, z start  at 0
+          curley(i,j,k) = dexdz/(4.*meshZ%dxn(k+1)) - dezdx/(4.*meshX%dxn(i  ))  ! index in z starts at 0
+          curlez(i,j,k) = deydx/(4.*meshX%dxn(i  )) - dexdy/(4.*meshY%dxn(j+1))  ! index in y starts at 0
 
-          curlex(i,j,k) = (dezdy/(4.*meshY%dxn(j+1)) - deydz/(4.*meshZ%dxn(k+1)))*fm  ! index in y, z start  at 0
-          curley(i,j,k) = (dexdz/(4.*meshZ%dxn(k+1)) - dezdx/(4.*meshX%dxn(i  )))*fm  ! index in z starts at 0
-          curlez(i,j,k) = (deydx/(4.*meshX%dxn(i  )) - dexdy/(4.*meshY%dxn(j+1)))*fm  ! index in y starts at 0
+          ! curlex(i,j,k) = (dezdy/(4.*meshY%dxn(j+1)) - deydz/(4.*meshZ%dxn(k+1)))*fm  ! index in y, z start  at 0
+          ! curley(i,j,k) = (dexdz/(4.*meshZ%dxn(k+1)) - dezdx/(4.*meshX%dxn(i  )))*fm  ! index in z starts at 0
+          ! curlez(i,j,k) = (deydx/(4.*meshX%dxn(i  )) - dexdy/(4.*meshY%dxn(j+1)))*fm  ! index in y starts at 0
           
         enddo
       enddo
