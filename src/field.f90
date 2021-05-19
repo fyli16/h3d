@@ -105,9 +105,8 @@ module m_field
   ! computes electric field and curl(E)
   !---------------------------------------------------------------------
   subroutine ecalc(iflag)
-    integer :: iflag
+    integer :: iflag, i, j, k
     real*8 :: term1, term2, term3, term4, fm
-    integer*8 :: i,j,k
     real*8 :: tenx,teny,tenz,xj,yj,zj,bxx,byy,bzz,btot,tjdotb,curr_tot
     real*8 :: vixa, viya, viza, dena, a, dxa, dya, dza 
     real*8 :: dbxdy, dbxdz, dbydx, dbydz, dbzdx, dbzdy 
@@ -116,18 +115,7 @@ module m_field
     real*8 :: dexdy, dexdz, deydx, deydz, dezdx, dezdy  
 
     do k = kb, ke
-      if ( mask .eqv. .true. ) then
-        if ( k <= mask_zs ) then
-          fm = 1.-(mask_r*(real(k)-mask_zs)/real(mask_zs))**2.
-        else if ( k >= nz-mask_zs ) then
-          fm = 1.-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
-        else 
-          fm = 1.
-        endif
-      else 
-        fm = 1.
-      endif 
-
+      fm = masking_func(k, iflag)
       do j = jb, je
         do i = 2, nx1
           vixa = (1.-iflag)*(1.5*vix(i,j,k)-0.5*vixo(i,j,k)) + iflag*vix(i,j,k)
@@ -254,18 +242,7 @@ module m_field
 
     ! calculate curl E
     do k = kb, ke+1
-      ! if ( mask .eqv. .true. ) then
-      !   if ( k <= mask_zs ) then
-      !     fm = 1.-(mask_r*(real(k)-mask_zs)/real(mask_zs))**2.
-      !   else if ( k >= nz-mask_zs ) then
-      !     fm = 1.-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
-      !   else 
-      !     fm = 1.
-      !   endif
-      ! else 
-      !   fm = 1.
-      ! endif 
-
+      fm = masking_func(k, iflag)
       do j = jb, je+1
         do i = 2, nx2
           dexdy=  ex(i  ,j  ,k  ) + ex(i-1,j  ,k  ) + ex(i-1,j  ,k-1) + ex(i  ,j  ,k-1)   &
@@ -301,7 +278,7 @@ module m_field
   ! advance magnetic field
   !---------------------------------------------------------------------
   subroutine bcalc
-    integer*8 :: i, j, k, ii
+    integer :: i, j, k, ii
     real*8 :: dts, dts2, dts6
     real*8 :: fm
     real*8 :: tempx1(nxmax,jb-1:je+1,kb-1:ke+1) &
@@ -322,25 +299,15 @@ module m_field
       call ecalc(1)    
       ! B = B(n)+dt*K1/2
       do k = kb, ke+1
-        if ( mask .eqv. .true. ) then
-          if ( k <= mask_zs ) then
-            fm = 1.-(mask_r*(real(k)-mask_zs)/real(mask_zs))**2.
-          else if ( k >= nz-mask_zs ) then
-            fm = 1.-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
-          else 
-            fm = 1.
-          endif
-        else 
-          fm = 1.
-        endif 
+        ! fm = masking_func(k, 1)
         do j = jb, je+1
           do i = 2, nx2
-            ! bx(i,j,k) = bxs(i,j,k) - dts2*curlex(i,j,k)
-            ! by(i,j,k) = bys(i,j,k) - dts2*curley(i,j,k)
-            ! bz(i,j,k) = bzs(i,j,k) - dts2*curlez(i,j,k)
-            bx(i,j,k) = ( bxs(i,j,k) - dts2*curlex(i,j,k) )*fm
-            by(i,j,k) = ( bys(i,j,k) - dts2*curley(i,j,k) )*fm
-            bz(i,j,k) = ( bzs(i,j,k) - dts2*curlez(i,j,k) )*fm
+            bx(i,j,k) = bxs(i,j,k) - dts2*curlex(i,j,k)
+            by(i,j,k) = bys(i,j,k) - dts2*curley(i,j,k)
+            bz(i,j,k) = bzs(i,j,k) - dts2*curlez(i,j,k)
+            ! bx(i,j,k) = ( bxs(i,j,k) - dts2*curlex(i,j,k) )*fm
+            ! by(i,j,k) = ( bys(i,j,k) - dts2*curley(i,j,k) )*fm
+            ! bz(i,j,k) = ( bzs(i,j,k) - dts2*curlez(i,j,k) )*fm
           enddo
         enddo
       enddo   
@@ -359,25 +326,15 @@ module m_field
       call ecalc(1)
       ! B = B(n)+dt*K2/2
       do k = kb, ke+1
-        if ( mask .eqv. .true. ) then
-          if ( k <= mask_zs ) then
-            fm = 1.-(mask_r*(real(k)-mask_zs)/real(mask_zs))**2.
-          else if ( k >= nz-mask_zs ) then
-            fm = 1.-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
-          else 
-            fm = 1.
-          endif
-        else 
-          fm = 1.
-        endif 
+        ! fm = masking_func(k, 1)
         do j = jb, je+1
           do i = 2, nx2
-            ! bx(i,j,k) = bxs(i,j,k) - dts2*curlex(i,j,k)
-            ! by(i,j,k) = bys(i,j,k) - dts2*curley(i,j,k)
-            ! bz(i,j,k) = bzs(i,j,k) - dts2*curlez(i,j,k)
-            bx(i,j,k) = ( bxs(i,j,k) - dts2*curlex(i,j,k) )*fm
-            by(i,j,k) = ( bys(i,j,k) - dts2*curley(i,j,k) )*fm
-            bz(i,j,k) = ( bzs(i,j,k) - dts2*curlez(i,j,k) )*fm
+            bx(i,j,k) = bxs(i,j,k) - dts2*curlex(i,j,k)
+            by(i,j,k) = bys(i,j,k) - dts2*curley(i,j,k)
+            bz(i,j,k) = bzs(i,j,k) - dts2*curlez(i,j,k)
+            ! bx(i,j,k) = ( bxs(i,j,k) - dts2*curlex(i,j,k) )*fm
+            ! by(i,j,k) = ( bys(i,j,k) - dts2*curley(i,j,k) )*fm
+            ! bz(i,j,k) = ( bzs(i,j,k) - dts2*curlez(i,j,k) )*fm
           enddo
         enddo
       enddo
@@ -396,25 +353,15 @@ module m_field
       call ecalc(1)
       ! B = B(n)+dt*K3
       do k = kb, ke+1
-        if ( mask .eqv. .true. ) then
-          if ( k <= mask_zs ) then
-            fm = 1.-(mask_r*(real(k)-mask_zs)/real(mask_zs))**2.
-          else if ( k >= nz-mask_zs ) then
-            fm = 1.-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
-          else 
-            fm = 1.
-          endif
-        else 
-          fm = 1.
-        endif 
+        ! fm = masking_func(k, 1)
         do j = jb, je+1
           do i = 2, nx2
-            ! bx(i,j,k) = bxs(i,j,k) - dts*curlex(i,j,k)
-            ! by(i,j,k) = bys(i,j,k) - dts*curley(i,j,k)
-            ! bz(i,j,k) = bzs(i,j,k) - dts*curlez(i,j,k)
-            bx(i,j,k) = ( bxs(i,j,k) - dts*curlex(i,j,k) )*fm
-            by(i,j,k) = ( bys(i,j,k) - dts*curley(i,j,k) )*fm
-            bz(i,j,k) = ( bzs(i,j,k) - dts*curlez(i,j,k) )*fm
+            bx(i,j,k) = bxs(i,j,k) - dts*curlex(i,j,k)
+            by(i,j,k) = bys(i,j,k) - dts*curley(i,j,k)
+            bz(i,j,k) = bzs(i,j,k) - dts*curlez(i,j,k)
+            ! bx(i,j,k) = ( bxs(i,j,k) - dts*curlex(i,j,k) )*fm
+            ! by(i,j,k) = ( bys(i,j,k) - dts*curley(i,j,k) )*fm
+            ! bz(i,j,k) = ( bzs(i,j,k) - dts*curlez(i,j,k) )*fm
           enddo
         enddo
       enddo
@@ -433,18 +380,7 @@ module m_field
       call ecalc(1)
       ! B = B(n) + (dt/6)*(K1 + 2*K2 + 2*K3 + K4)
       do k = kb, ke+1
-        if ( mask .eqv. .true. ) then
-          if ( k <= mask_zs ) then
-            fm = 1.-(mask_r*(real(k)-mask_zs)/real(mask_zs))**2.
-          else if ( k >= nz-mask_zs ) then
-            fm = 1.-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
-          else 
-            fm = 1.
-          endif
-        else 
-          fm = 1.
-        endif 
-
+        fm = masking_func(k, 0)
         do j = jb, je+1
           do i = 2, nx2
             ! bx(i,j,k) = bxs(i,j,k) - dts6*(tempx1(i,j,k)+curlex(i,j,k))
@@ -942,5 +878,28 @@ module m_field
 
     return
   end subroutine focalc_2d
+
+
+  !---------------------------------------------------------------------
+  ! retrun the value for field masking, dependent on z position
+  !---------------------------------------------------------------------
+  double precision function masking_func(k, iflag)
+    integer, intent(in) :: k, iflag
+
+    if ( mask .eqv. .true. .and. iflag == 0 ) then
+      if ( k <= mask_zs ) then
+        masking_func = 1.-(mask_r*(real(k)-mask_zs)/real(mask_zs))**2.
+      else if ( k >= nz-mask_zs ) then
+        masking_func = 1.-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
+      else 
+        masking_func = 1.
+      endif
+    else 
+      masking_func = 1.
+    endif 
+
+    return
+  end function masking_func
+
 
 end module m_field
