@@ -88,10 +88,11 @@ module m_parameter
 
   integer*8 :: nax, nbx, nay, nby, naz, nbz
   integer*8, dimension(5) :: ppcx, ppcy, ppcz, nplx, nply, nplz
-  integer*8 :: n_sub_b, nspec, n_sort, nx, ny, nz 
+  integer :: n_sub_b, nspec, n_sort
+  integer*8 :: nx, ny, nz 
 
   logical :: smoothing 
-  integer :: smooth_pass 
+  integer*8 :: smooth_pass 
   
   ! field solver
   integer*8 :: ieta, netax, netay, eta_par, eta_zs, mask_zs 

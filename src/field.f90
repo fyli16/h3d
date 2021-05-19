@@ -105,7 +105,8 @@ module m_field
   ! computes electric field and curl(E)
   !---------------------------------------------------------------------
   subroutine ecalc(iflag)
-    integer :: iflag, i, j, k
+    integer :: iflag
+    integer*8 :: i, j, k
     real*8 :: term1, term2, term3, term4, fm
     real*8 :: tenx,teny,tenz,xj,yj,zj,bxx,byy,bzz,btot,tjdotb,curr_tot
     real*8 :: vixa, viya, viza, dena, a, dxa, dya, dza 
@@ -278,7 +279,8 @@ module m_field
   ! advance magnetic field
   !---------------------------------------------------------------------
   subroutine bcalc
-    integer :: i, j, k, ii
+    integer*8 :: i, j, k
+    integer :: ii
     real*8 :: dts, dts2, dts6
     real*8 :: fm
     real*8 :: tempx1(nxmax,jb-1:je+1,kb-1:ke+1) &
@@ -380,7 +382,7 @@ module m_field
       call ecalc(1)
       ! B = B(n) + (dt/6)*(K1 + 2*K2 + 2*K3 + K4)
       do k = kb, ke+1
-        fm = masking_func(k, 0)
+        fm = masking_func(k, ii)
         do j = jb, je+1
           do i = 2, nx2
             ! bx(i,j,k) = bxs(i,j,k) - dts6*(tempx1(i,j,k)+curlex(i,j,k))
@@ -883,10 +885,11 @@ module m_field
   !---------------------------------------------------------------------
   ! retrun the value for field masking, dependent on z position
   !---------------------------------------------------------------------
-  double precision function masking_func(k, iflag)
-    integer, intent(in) :: k, iflag
+  double precision function masking_func(k, flag)
+    integer*8, intent(in) :: k
+    integer :: flag
 
-    if ( mask .eqv. .true. .and. iflag == 0 ) then
+    if ( (mask .eqv. .true.) .and. (flag == 0 .or. flag == n_sub_b) ) then
       if ( k <= mask_zs ) then
         masking_func = 1.-(mask_r*(real(k)-mask_zs)/real(mask_zs))**2.
       else if ( k >= nz-mask_zs ) then
