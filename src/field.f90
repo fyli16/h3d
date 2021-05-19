@@ -281,13 +281,13 @@ module m_field
           dezdy=  ez(i  ,j  ,k  ) + ez(i-1,j  ,k  ) + ez(i-1,j  ,k-1) + ez(i  ,j  ,k-1)   &
                 - ez(i  ,j-1,k  ) - ez(i-1,j-1,k  ) - ez(i-1,j-1,k-1) - ez(i  ,j-1,k-1)
 
-          curlex(i,j,k) = dezdy/(4.*meshY%dxn(j+1)) - deydz/(4.*meshZ%dxn(k+1))  ! index in y, z start  at 0
-          curley(i,j,k) = dexdz/(4.*meshZ%dxn(k+1)) - dezdx/(4.*meshX%dxn(i  ))  ! index in z starts at 0
-          curlez(i,j,k) = deydx/(4.*meshX%dxn(i  )) - dexdy/(4.*meshY%dxn(j+1))  ! index in y starts at 0
+          ! curlex(i,j,k) = dezdy/(4.*meshY%dxn(j+1)) - deydz/(4.*meshZ%dxn(k+1))  ! index in y, z start  at 0
+          ! curley(i,j,k) = dexdz/(4.*meshZ%dxn(k+1)) - dezdx/(4.*meshX%dxn(i  ))  ! index in z starts at 0
+          ! curlez(i,j,k) = deydx/(4.*meshX%dxn(i  )) - dexdy/(4.*meshY%dxn(j+1))  ! index in y starts at 0
 
-          ! curlex(i,j,k) = (dezdy/(4.*meshY%dxn(j+1)) - deydz/(4.*meshZ%dxn(k+1)))*fm  ! index in y, z start  at 0
-          ! curley(i,j,k) = (dexdz/(4.*meshZ%dxn(k+1)) - dezdx/(4.*meshX%dxn(i  )))*fm  ! index in z starts at 0
-          ! curlez(i,j,k) = (deydx/(4.*meshX%dxn(i  )) - dexdy/(4.*meshY%dxn(j+1)))*fm  ! index in y starts at 0
+          curlex(i,j,k) = (dezdy/(4.*meshY%dxn(j+1)) - deydz/(4.*meshZ%dxn(k+1)))*fm  ! index in y, z start  at 0
+          curley(i,j,k) = (dexdz/(4.*meshZ%dxn(k+1)) - dezdx/(4.*meshX%dxn(i  )))*fm  ! index in z starts at 0
+          curlez(i,j,k) = (deydx/(4.*meshX%dxn(i  )) - dexdy/(4.*meshY%dxn(j+1)))*fm  ! index in y starts at 0
           
         enddo
       enddo
@@ -322,11 +322,25 @@ module m_field
       call ecalc(1)    
       ! B = B(n)+dt*K1/2
       do k = kb, ke+1
+        if ( mask .eqv. .true. ) then
+          if ( k <= mask_zs ) then
+            fm = 1.-(mask_r*(real(k)-mask_zs)/real(mask_zs))**2.
+          else if ( k >= nz-mask_zs ) then
+            fm = 1.-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
+          else 
+            fm = 1.
+          endif
+        else 
+          fm = 1.
+        endif 
         do j = jb, je+1
           do i = 2, nx2
-            bx(i,j,k) = bxs(i,j,k) - dts2*curlex(i,j,k)
-            by(i,j,k) = bys(i,j,k) - dts2*curley(i,j,k)
-            bz(i,j,k) = bzs(i,j,k) - dts2*curlez(i,j,k)
+            ! bx(i,j,k) = bxs(i,j,k) - dts2*curlex(i,j,k)
+            ! by(i,j,k) = bys(i,j,k) - dts2*curley(i,j,k)
+            ! bz(i,j,k) = bzs(i,j,k) - dts2*curlez(i,j,k)
+            bx(i,j,k) = ( bxs(i,j,k) - dts2*curlex(i,j,k) )*fm
+            by(i,j,k) = ( bys(i,j,k) - dts2*curley(i,j,k) )*fm
+            bz(i,j,k) = ( bzs(i,j,k) - dts2*curlez(i,j,k) )*fm
           enddo
         enddo
       enddo   
@@ -345,11 +359,25 @@ module m_field
       call ecalc(1)
       ! B = B(n)+dt*K2/2
       do k = kb, ke+1
+        if ( mask .eqv. .true. ) then
+          if ( k <= mask_zs ) then
+            fm = 1.-(mask_r*(real(k)-mask_zs)/real(mask_zs))**2.
+          else if ( k >= nz-mask_zs ) then
+            fm = 1.-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
+          else 
+            fm = 1.
+          endif
+        else 
+          fm = 1.
+        endif 
         do j = jb, je+1
           do i = 2, nx2
-            bx(i,j,k) = bxs(i,j,k) - dts2*curlex(i,j,k)
-            by(i,j,k) = bys(i,j,k) - dts2*curley(i,j,k)
-            bz(i,j,k) = bzs(i,j,k) - dts2*curlez(i,j,k)
+            ! bx(i,j,k) = bxs(i,j,k) - dts2*curlex(i,j,k)
+            ! by(i,j,k) = bys(i,j,k) - dts2*curley(i,j,k)
+            ! bz(i,j,k) = bzs(i,j,k) - dts2*curlez(i,j,k)
+            bx(i,j,k) = ( bxs(i,j,k) - dts2*curlex(i,j,k) )*fm
+            by(i,j,k) = ( bys(i,j,k) - dts2*curley(i,j,k) )*fm
+            bz(i,j,k) = ( bzs(i,j,k) - dts2*curlez(i,j,k) )*fm
           enddo
         enddo
       enddo
@@ -368,11 +396,25 @@ module m_field
       call ecalc(1)
       ! B = B(n)+dt*K3
       do k = kb, ke+1
+        if ( mask .eqv. .true. ) then
+          if ( k <= mask_zs ) then
+            fm = 1.-(mask_r*(real(k)-mask_zs)/real(mask_zs))**2.
+          else if ( k >= nz-mask_zs ) then
+            fm = 1.-(mask_r*(real(k)-nz+mask_zs)/real(mask_zs))**2.
+          else 
+            fm = 1.
+          endif
+        else 
+          fm = 1.
+        endif 
         do j = jb, je+1
           do i = 2, nx2
-            bx(i,j,k) = bxs(i,j,k) - dts*curlex(i,j,k)
-            by(i,j,k) = bys(i,j,k) - dts*curley(i,j,k)
-            bz(i,j,k) = bzs(i,j,k) - dts*curlez(i,j,k)
+            ! bx(i,j,k) = bxs(i,j,k) - dts*curlex(i,j,k)
+            ! by(i,j,k) = bys(i,j,k) - dts*curley(i,j,k)
+            ! bz(i,j,k) = bzs(i,j,k) - dts*curlez(i,j,k)
+            bx(i,j,k) = ( bxs(i,j,k) - dts*curlex(i,j,k) )*fm
+            by(i,j,k) = ( bys(i,j,k) - dts*curley(i,j,k) )*fm
+            bz(i,j,k) = ( bzs(i,j,k) - dts*curlez(i,j,k) )*fm
           enddo
         enddo
       enddo
