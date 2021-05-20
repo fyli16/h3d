@@ -391,7 +391,7 @@ module m_field
             ! bz(i,j,k) = bzs(i,j,k) - dts6*(tempz1(i,j,k)+curlez(i,j,k))
             bx(i,j,k) = ( bxs(i,j,k) - dts6*(tempx1(i,j,k)+curlex(i,j,k)) )*fm
             by(i,j,k) = ( bys(i,j,k) - dts6*(tempy1(i,j,k)+curley(i,j,k)) )*fm
-            bz(i,j,k) = ( bzs(i,j,k) - dts6*(tempz1(i,j,k)+curlez(i,j,k)) )*fm
+            bz(i,j,k) = bzs(i,j,k) - dts6*(tempz1(i,j,k)+curlez(i,j,k)) 
           enddo
         enddo
       enddo
