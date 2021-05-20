@@ -116,7 +116,7 @@ module m_field
     real*8 :: dexdy, dexdz, deydx, deydz, dezdx, dezdy  
 
     do k = kb, ke
-      fm = masking_func(k, iflag)
+      ! fm = masking_func(k, iflag)
       do j = jb, je
         do i = 2, nx1
           vixa = (1.-iflag)*(1.5*vix(i,j,k)-0.5*vixo(i,j,k)) + iflag*vix(i,j,k)
@@ -190,13 +190,13 @@ module m_field
             endif 
           endif 
 
-          ! ex(i,j,k) = (viza*byav-viya*bzav) + (curlby_scalar*bzav-curlbz_scalar*byav) - dpedx(i,j,k) + tenx/a
-          ! ey(i,j,k) = (vixa*bzav-viza*bxav) + (curlbz_scalar*bxav-curlbx_scalar*bzav) - dpedy(i,j,k) + teny/a
-          ! ez(i,j,k) = (viya*bxav-vixa*byav) + (curlbx_scalar*byav-curlby_scalar*bxav) - dpedz(i,j,k) + tenz/a 
+          ex(i,j,k) = (viza*byav-viya*bzav) + (curlby_scalar*bzav-curlbz_scalar*byav) - dpedx(i,j,k) + tenx/a
+          ey(i,j,k) = (vixa*bzav-viza*bxav) + (curlbz_scalar*bxav-curlbx_scalar*bzav) - dpedy(i,j,k) + teny/a
+          ez(i,j,k) = (viya*bxav-vixa*byav) + (curlbx_scalar*byav-curlby_scalar*bxav) - dpedz(i,j,k) + tenz/a 
 
-          ex(i,j,k) = (viza*byav-viya*bzav)*fm + (curlby_scalar*bzav-curlbz_scalar*byav)*fm - dpedx(i,j,k) + tenx/a
-          ey(i,j,k) = (vixa*bzav-viza*bxav)*fm + (curlbz_scalar*bxav-curlbx_scalar*bzav)*fm - dpedy(i,j,k) + teny/a
-          ez(i,j,k) = (viya*bxav-vixa*byav)*fm + (curlbx_scalar*byav-curlby_scalar*bxav)*fm - dpedz(i,j,k) + tenz/a 
+          ! ex(i,j,k) = (viza*byav-viya*bzav)*fm + (curlby_scalar*bzav-curlbz_scalar*byav)*fm - dpedx(i,j,k) + tenx/a
+          ! ey(i,j,k) = (vixa*bzav-viza*bxav)*fm + (curlbz_scalar*bxav-curlbx_scalar*bzav)*fm - dpedy(i,j,k) + teny/a
+          ! ez(i,j,k) = (viya*bxav-vixa*byav)*fm + (curlbx_scalar*byav-curlby_scalar*bxav)*fm - dpedz(i,j,k) + tenz/a 
           
           ! if (myid == 0) then
           !   print*, 'viya*bxav-vixa*byav = ', viya*bxav-vixa*byav
@@ -382,6 +382,7 @@ module m_field
       call ecalc(1)
       ! B = B(n) + (dt/6)*(K1 + 2*K2 + 2*K3 + K4)
       do k = kb, ke+1
+        ! fm = masking_func(k, ii)
         fm = masking_func(k, ii)
         do j = jb, je+1
           do i = 2, nx2
@@ -889,7 +890,8 @@ module m_field
     integer*8, intent(in) :: k
     integer :: flag
 
-    if ( (mask .eqv. .true.) .and. (flag == 0 .or. flag == n_sub_b) ) then
+    ! if ( (mask .eqv. .true.) .and. (flag == 0 .or. flag == n_sub_b) ) then
+    if ( (mask .eqv. .true.) .and. (flag == n_sub_b) ) then
       if ( k <= mask_zs ) then
         masking_func = 1.-(mask_r*(real(k)-mask_zs)/real(mask_zs))**2.
       else if ( k >= nz-mask_zs ) then
