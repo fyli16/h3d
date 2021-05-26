@@ -8,15 +8,18 @@ module m_functions
   !---------------------------------------------------------------------
   double precision function func(t) 
     real*8, intent(in) :: t 
+
     real*8 :: rhs
     integer*8 :: n
 
     common /fparams/ rhs,n
-    if(t.le.1.) then
-      func = 1./real(n)-rhs
+
+    if( t <=1. ) then
+      func = 1./real(n) - rhs
     else
-      func = (t-1.)/(t**n-1.)-rhs
+      func = (t-1.)/(t**n-1.) - rhs
     endif
+    
     return
   end function func 
 

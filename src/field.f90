@@ -54,7 +54,7 @@ module m_field
   ! computes electron pressure gradient
   !---------------------------------------------------------------------
   subroutine pressgrad(iflag)
-    integer :: iflag
+    integer, intent(in) :: iflag
     integer*8 :: i, j, k
     real*8 :: dena, dxa, dya, dza, a
     
@@ -888,7 +888,7 @@ module m_field
   !---------------------------------------------------------------------
   double precision function masking_func(k, flag)
     integer*8, intent(in) :: k
-    integer :: flag
+    integer, intent(in) :: flag
 
     ! if ( (mask .eqv. .true.) .and. (flag == 0 .or. flag == n_sub_b) ) then
     if ( (mask .eqv. .true.) .and. (flag == n_sub_b) ) then

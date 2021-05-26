@@ -1658,30 +1658,25 @@ module m_particle
     ! particle energy calculation -- works for 3D only !!!
     p_xx=0.; p_yy=0.; p_zz=0.
 
-    do is = 1, 1 ! ??
-      do iize = kb-1,ke
-        do iiye = jb-1,je
-          do iixe = 1, NX1
+    do is = 1, 1  ! only do for 1st species ??
+      do iize = kb-1, ke
+        do iiye = jb-1, je
+          do iixe = 1, nx1
             np = iphead(iixe,iiye,iize,is)
-            do while (np.ne.0)
-              L=np
+            do while ( np /= 0 ) ! quit when all particles are collected
+              l=np
 
               ! Nonuniform mesh - using mesh_unmap
               rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
               ry=dtyi*mesh_unmap(meshY,y(l))+1.50000000000d+00
               rz=dtzi*mesh_unmap(meshZ,z(l))+1.50000000000d+00
-              ix=rx
-              iy=ry
-              iz=rz
-              fx=rx-ix
-              fy=ry-iy
-              fz=rz-iz
-              iy=iy-1  ! integer index in y direction starts at 0
-              iz=iz-1  ! integer index in z direction starts at 0
+              ix=rx; iy=ry; iz=rz
+              fx=rx-ix; fy=ry-iy; fz=rz-iz
 
-              ixp1 = ix+1
-              iyp1 = iy+1
-              izp1 = iz+1
+              iy = iy - 1  ! integer index in y direction starts at 0
+              iz = iz - 1  ! integer index in z direction starts at 0
+
+              ixp1 = ix+1; iyp1 = iy+1; izp1 = iz+1
 
               w1=(1.-fx)*(1.-fy)*(1.-fz)
               w2=    fx *(1.-fy)*(1.-fz)
@@ -1692,50 +1687,45 @@ module m_particle
               w7=(1.-fx)*    fy*     fz
               w8=    fx*     fy*     fz
 
-              dns1= dns(ix  ,iy  ,iz  ,1)*w1+dns(ixp1,iy  ,iz  ,1)*w2  &
-              +     dns(ix  ,iyp1,iz  ,1)*w3+dns(ixp1,iyp1,iz  ,1)*w4  &
-              +     dns(ix  ,iy  ,izp1,1)*w5+dns(ixp1,iy  ,izp1,1)*w6  &
-              +     dns(ix  ,iyp1,izp1,1)*w7+dns(ixp1,iyp1,izp1,1)*w8
-
+              ! interpolation of density
+              dns1 = dns(ix  ,iy  ,iz  ,1)*w1+dns(ixp1,iy  ,iz  ,1)*w2  &
+                  + dns(ix  ,iyp1,iz  ,1)*w3+dns(ixp1,iyp1,iz  ,1)*w4  &
+                  + dns(ix  ,iy  ,izp1,1)*w5+dns(ixp1,iy  ,izp1,1)*w6  &
+                  + dns(ix  ,iyp1,izp1,1)*w7+dns(ixp1,iyp1,izp1,1)*w8
               dns2= 0.
-
               dnst = dns1 + dns2
     
-              vxavg1=vxs(ix  ,iy  ,iz  ,1)*w1+vxs(ixp1,iy  ,iz  ,1)*w2  &
-              +      vxs(ix  ,iyp1,iz  ,1)*w3+vxs(ixp1,iyp1,iz  ,1)*w4  &
-              +      vxs(ix  ,iy  ,izp1,1)*w5+vxs(ixp1,iy  ,izp1,1)*w6  &
-              +      vxs(ix  ,iyp1,izp1,1)*w7+vxs(ixp1,iyp1,izp1,1)*w8
-
+              ! interpolation of fluid velocity (x)
+              vxavg1 = vxs(ix  ,iy  ,iz  ,1)*w1+vxs(ixp1,iy  ,iz  ,1)*w2  &
+                    + vxs(ix  ,iyp1,iz  ,1)*w3+vxs(ixp1,iyp1,iz  ,1)*w4  &
+                    + vxs(ix  ,iy  ,izp1,1)*w5+vxs(ixp1,iy  ,izp1,1)*w6  &
+                    + vxs(ix  ,iyp1,izp1,1)*w7+vxs(ixp1,iyp1,izp1,1)*w8
               vxavg2= 0.
-
               vxavg = (dns1*vxavg1 + dns2*vxavg2)/dnst
 
-              vyavg1=vys(ix  ,iy  ,iz  ,1)*w1+vys(ixp1,iy  ,iz  ,1)*w2  &
-              +      vys(ix  ,iyp1,iz  ,1)*w3+vys(ixp1,iyp1,iz  ,1)*w4  &
-              +      vys(ix  ,iy  ,izp1,1)*w5+vys(ixp1,iy  ,izp1,1)*w6  &
-              +      vys(ix  ,iyp1,izp1,1)*w7+vys(ixp1,iyp1,izp1,1)*w8
-
+              ! interpolation of fluid velocity (y)
+              vyavg1 = vys(ix  ,iy  ,iz  ,1)*w1+vys(ixp1,iy  ,iz  ,1)*w2  &
+                    + vys(ix  ,iyp1,iz  ,1)*w3+vys(ixp1,iyp1,iz  ,1)*w4  &
+                    + vys(ix  ,iy  ,izp1,1)*w5+vys(ixp1,iy  ,izp1,1)*w6  &
+                    + vys(ix  ,iyp1,izp1,1)*w7+vys(ixp1,iyp1,izp1,1)*w8
               vyavg2=0.
-
               vyavg = (dns1*vyavg1 + dns2*vyavg2)/dnst
 
-              vzavg1=vzs(ix  ,iy  ,iz  ,1)*w1+vzs(ixp1,iy  ,iz  ,1)*w2  &
-              +      vzs(ix  ,iyp1,iz  ,1)*w3+vzs(ixp1,iyp1,iz  ,1)*w4  &
-              +      vzs(ix  ,iy  ,izp1,1)*w5+vzs(ixp1,iy  ,izp1,1)*w6  &
-              +      vzs(ix  ,iyp1,izp1,1)*w7+vzs(ixp1,iyp1,izp1,1)*w8
-
+              ! interpolation of fluid velocity (z)
+              vzavg1 = vzs(ix  ,iy  ,iz  ,1)*w1+vzs(ixp1,iy  ,iz  ,1)*w2  &
+                    + vzs(ix  ,iyp1,iz  ,1)*w3+vzs(ixp1,iyp1,iz  ,1)*w4  &
+                    + vzs(ix  ,iy  ,izp1,1)*w5+vzs(ixp1,iy  ,izp1,1)*w6  &
+                    + vzs(ix  ,iyp1,izp1,1)*w7+vzs(ixp1,iyp1,izp1,1)*w8
               vzavg2=0.
-
               vzavg = (dns1*vzavg1 + dns2*vzavg2)/dnst
 
-              vxa=vx(l)-vxavg
+              ! velocity deviation from average
+              vxa=vx(l)-vxavg 
               vya=vy(l)-vyavg
               vza=vz(l)-vzavg
 
-              xx=vxa*vxa
-              yy=vya*vya
-              zz=vza*vza
-
+              ! pressure
+              xx=vxa*vxa; yy=vya*vya; zz=vza*vza
               p_xx (ix  ,iy  ,iz  ,is)=p_xx (ix  ,iy  ,iz  ,is)+qp(np)*w1*xx
               p_xx (ixp1,iy  ,iz  ,is)=p_xx (ixp1,iy  ,iz  ,is)+qp(np)*w2*xx 
               p_xx (ix  ,iyp1,iz  ,is)=p_xx (ix  ,iyp1,iz  ,is)+qp(np)*w3*xx 
@@ -1763,14 +1753,15 @@ module m_particle
               p_zz (ix  ,iyp1,izp1,is)=p_zz (ix  ,iyp1,izp1,is)+qp(np)*w7*zz 
               p_zz (ixp1,iyp1,izp1,is)=p_zz (ixp1,iyp1,izp1,is)+qp(np)*w8*zz 
 
+              ! individual particles
               v2 = v2 + qp(l)*( vx(l)**2 + vy(l)**2 + vz(l)**2 )
 
+              ! point to next particle
               np=link(np)
             enddo
           enddo
         enddo
       enddo
-
 
       call xreal(p_xx (1,jb-1,kb-1,is),nx,ny,nz)
       call xreal(p_yy (1,jb-1,kb-1,is),nx,ny,nz)
@@ -1779,34 +1770,37 @@ module m_particle
       do iiz = kb-1, ke+1
         do iiy = jb-1, je+1
           do iix = 1, nx2
-            p_xx(iix,iiy,iiz,is) = p_xx(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
-            p_yy(iix,iiy,iiz,is) = p_yy(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
-            p_zz(iix,iiy,iiz,is) = p_zz(iix,iiy,iiz,is) / (meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+            p_xx(iix,iiy,iiz,is) = p_xx(iix,iiy,iiz,is)/(meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+            p_yy(iix,iiy,iiz,is) = p_yy(iix,iiy,iiz,is)/(meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
+            p_zz(iix,iiy,iiz,is) = p_zz(iix,iiy,iiz,is)/(meshX%dxc(iix)*meshY%dxc(iiy+1)*meshZ%dxc(iiz+1))
           enddo
         enddo
       enddo
 
     enddo
 
-    ! field energy calculation
+    ! energy calculation
     do k=kb,ke
-        do j=jb,je
-          do i=2,nx1
-              efld_p = efld_p + ex(i,j,k)**2+ey(i,j,k)**2+ez(i,j,k)**2
-              bfld_p = bfld_p + bx(i,j,k)**2+by(i,j,k)**2+bz(i,j,k)**2
-              ! particle energy for species 1 only
-              efluid_p = efluid_p + dns(i,j,k,1)*( vxs(i,j,k,1)**2 + vys(i,j,k,1)**2 + vzs(i,j,k,1)**2 )
-              ethermal_p = ethermal_p + p_xx(i,j,k,1) + p_yy(i,j,k,1) + p_yy(i,j,k,1)
-          enddo
+      do j=jb,je
+        do i=2,nx1
+          ! field energy 
+          efld_p = efld_p + ex(i,j,k)**2+ey(i,j,k)**2+ez(i,j,k)**2
+          bfld_p = bfld_p + bx(i,j,k)**2+by(i,j,k)**2+bz(i,j,k)**2
+          ! particle energy (1st species only)
+          efluid_p = efluid_p + dns(i,j,k,1)*( vxs(i,j,k,1)**2 + vys(i,j,k,1)**2 + vzs(i,j,k,1)**2 )
+          ! ethermal_p = ethermal_p + p_xx(i,j,k,1) + p_yy(i,j,k,1) + p_yy(i,j,k,1)
+          ethermal_p = ethermal_p + p_xx(i,j,k,1) + p_yy(i,j,k,1) + p_zz(i,j,k,1)
         enddo
+      enddo
     enddo
+
     efld_p = efld_p*hx*hy*hz*0.5 ! assuming uniform grids
     bfld_p = bfld_p*hx*hy*hz*0.5
     efluid_p = efluid_p*hx*hy*hz*0.5
     ethermal_p = ethermal_p*hx*hy*hz*0.5
-    v2 = v2*0.5
+    v2 = v2*0.5 ! what actually is this?
 
-    ! collect energies
+    ! collect energies (what is eptcl?)
     call MPI_ALLREDUCE(efld_p,efld,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
     call MPI_ALLREDUCE(bfld_p,bfld,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
     call MPI_ALLREDUCE(efluid_p,efluid,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
