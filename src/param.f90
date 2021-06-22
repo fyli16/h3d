@@ -119,7 +119,7 @@ module m_parameter
   real*8, dimension(:,:), allocatable :: buf, buf2, buf_p1
   real*8, dimension(:,:,:), allocatable :: buf_particle
   integer, dimension(:), allocatable :: buftime
-  integer, parameter :: nprobes=6, nbufsteps=100, tracking_width=14
+  integer, parameter :: nprobes=10, nbufsteps=100, tracking_width=14
   integer :: maxtags=100, maxtags_pe, ntot 
   logical :: tracking_binary, tracking_mpi
   
@@ -133,6 +133,7 @@ module m_parameter
   ! diagnostics
   integer :: n_print, n_diag_mesh, n_diag_energy, n_diag_probe, n_diag_tracking, &
             n_diag_particle, n_write_restart
+  integer :: probe_x
   ! integer :: n_debug_ez=100
 
   ! some constant parameters
@@ -163,6 +164,7 @@ module m_parameter
       ! diagnostics
       n_print, n_diag_mesh, n_diag_energy, n_diag_probe, & 
       n_diag_tracking, n_write_restart, n_diag_particle, &  
+      probe_x, &
       tracking_binary, tracking_mpi, &
       xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r
 
@@ -260,6 +262,7 @@ module m_parameter
     call MPI_BCAST(n_diag_mesh            ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_diag_energy          ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_diag_probe           ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(probe_x                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_diag_tracking        ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_diag_particle        ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_write_restart        ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)

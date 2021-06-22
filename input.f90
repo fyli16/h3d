@@ -78,6 +78,7 @@ n_diag_mesh = 100, ! frequency at which to write mesh data
 n_diag_energy = 100, ! frequency at which to write integrated energy data
 
 n_diag_probe = 100, ! frequency at which to write field probe data
+probe_x = 2, ! x location (in cell) of the probes
 
 n_diag_tracking = 0, ! frequency at which to write tracking particle data
 n_diag_particle = 0, ! frequency at which to write particles within a volume
