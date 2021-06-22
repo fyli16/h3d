@@ -119,7 +119,7 @@ module m_parameter
   real*8, dimension(:,:), allocatable :: buf, buf2, buf_p1
   real*8, dimension(:,:,:), allocatable :: buf_particle
   integer, dimension(:), allocatable :: buftime
-  integer, parameter :: nprobes=10, nbufsteps=100, tracking_width=14
+  integer, parameter :: nprobes=6, nbufsteps=100, tracking_width=14
   integer :: maxtags=100, maxtags_pe, ntot 
   logical :: tracking_binary, tracking_mpi
   

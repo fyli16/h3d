@@ -235,15 +235,15 @@ module m_diag
   subroutine diag_probe_mpi
 
     integer :: i, j, k, m, bufsize
-    double precision, dimension(nprobes) :: factor
+    double precision, dimension(10) :: factor
 
     factor = (/wpiwci**2, wpiwci**2, wpiwci**2, wpiwci, wpiwci, wpiwci, &
-              1.0, wpiwci, wpiwci, wpiwci/)
+              1.0_8, wpiwci, wpiwci, wpiwci/)
     write(12,'(I6,1x,2I6,10E14.5,1x)') it, jb, kb, &
-          ex(2,jb,kb)*factor(1), ey(2,jb,kb)*factor(2), ez(2,jb,kb)*factor(3), &
-          bx(2,jb,kb)*factor(4), by(2,jb,kb)*factor(5), bz(2,jb,kb)*factor(6), &
-          den(2,jb,kb)*factor(7), &
-          vix(2,jb,kb)*factor(8), viy(2,jb,kb)*factor(9), viz(2,jb,kb)*factor(10)
+      ex(probe_x,jb,kb)*factor(1), ey(probe_x,jb,kb)*factor(2), ez(probe_x,jb,kb)*factor(3), &
+      bx(probe_x,jb,kb)*factor(4), by(probe_x,jb,kb)*factor(5), bz(probe_x,jb,kb)*factor(6), &
+      den(probe_x,jb,kb)*factor(7), &
+      vix(probe_x,jb,kb)*factor(8), viy(probe_x,jb,kb)*factor(9), viz(probe_x,jb,kb)*factor(10)
 
   end subroutine diag_probe_mpi
 
