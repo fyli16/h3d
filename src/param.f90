@@ -124,7 +124,7 @@ module m_parameter
   logical :: tracking_binary, tracking_mpi
   
   ! waves
-  real*8 :: dB_B0, n_wave_cycles
+  real*8 :: dB_B0, n_wave_cycles, sign_cos
   integer :: wave_upramp, wave_flat, wave_downramp 
 
   integer :: seed_size
@@ -154,7 +154,7 @@ module m_parameter
       uniform_load_logical, &
       ! field solver
       n_sub_b, eta_par, mask, mask_zs, mask_r, & 
-      dB_B0, n_wave_cycles, wave_upramp, wave_flat, wave_downramp, &  
+      dB_B0, n_wave_cycles, sign_cos, wave_upramp, wave_flat, wave_downramp, &  
       ! plasma  
       nspec, n_sort, qspec, wspec, frac, denmin, & 
       wpiwci, beta_spec, beta_elec, &  
@@ -230,6 +230,7 @@ module m_parameter
     call MPI_BCAST(mask_r                 ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(dB_B0                  ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_wave_cycles          ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(sign_cos               ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(wave_upramp            ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(wave_flat              ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(wave_downramp          ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)

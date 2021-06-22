@@ -11,6 +11,8 @@ module m_particle
   !-----------------------------------------------------------------
   ! update particles
   ! (computes velocities? what is the difference between vxs and vix?)
+  ! vxs: fluid velocity for each species (nxmax,jb-1:je+1,kb-1:ke+1,nspec)
+  ! vix: integrated fluid velocity for all species? (nxmax,jb-1:je+1,kb-1:ke+1)
   !-----------------------------------------------------------------
   subroutine update_particles        
     integer*8 :: jbmin, jbmax, kbmin, kbmax
@@ -1469,15 +1471,13 @@ module m_particle
               +      vxs(ix  ,iyp1,iz  ,is)*w3+vxs(ixp1,iyp1,iz  ,is)*w4  &
               +      vxs(ix  ,iy  ,izp1,is)*w5+vxs(ixp1,iy  ,izp1,is)*w6  &
               +      vxs(ix  ,iyp1,izp1,is)*w7+vxs(ixp1,iyp1,izp1,is)*w8
-              vxavg=vxavg/dnst
-              
+              vxavg=vxavg/dnst              
 
               vyavg=vys(ix  ,iy  ,iz  ,is)*w1+vys(ixp1,iy  ,iz  ,is)*w2  &
               +      vys(ix  ,iyp1,iz  ,is)*w3+vys(ixp1,iyp1,iz  ,is)*w4  &
               +      vys(ix  ,iy  ,izp1,is)*w5+vys(ixp1,iy  ,izp1,is)*w6  &
               +      vys(ix  ,iyp1,izp1,is)*w7+vys(ixp1,iyp1,izp1,is)*w8
-              vyavg=vyavg/dnst
-              
+              vyavg=vyavg/dnst             
 
               vzavg=vzs(ix  ,iy  ,iz  ,is)*w1+vzs(ixp1,iy  ,iz  ,is)*w2  &
               +      vzs(ix  ,iyp1,iz  ,is)*w3+vzs(ixp1,iyp1,iz  ,is)*w4  &
@@ -1523,6 +1523,7 @@ module m_particle
               tpar (ixp1,iy  ,izp1,is)=tpar (ixp1,iy  ,izp1,is)+qp(np)*w6*wpar*wpar 
               tpar (ix  ,iyp1,izp1,is)=tpar (ix  ,iyp1,izp1,is)+qp(np)*w7*wpar*wpar 
               tpar (ixp1,iyp1,izp1,is)=tpar (ixp1,iyp1,izp1,is)+qp(np)*w8*wpar*wpar 
+              
               tperp(ix  ,iy  ,iz  ,is)=tperp(ix  ,iy  ,iz  ,is)+qp(np)*w1*wperp2 
               tperp(ixp1,iy  ,iz  ,is)=tperp(ixp1,iy  ,iz  ,is)+qp(np)*w2*wperp2 
               tperp(ix  ,iyp1,iz  ,is)=tperp(ix  ,iyp1,iz  ,is)+qp(np)*w3*wperp2 
@@ -1531,6 +1532,7 @@ module m_particle
               tperp(ixp1,iy  ,izp1,is)=tperp(ixp1,iy  ,izp1,is)+qp(np)*w6*wperp2
               tperp(ix  ,iyp1,izp1,is)=tperp(ix  ,iyp1,izp1,is)+qp(np)*w7*wperp2 
               tperp(ixp1,iyp1,izp1,is)=tperp(ixp1,iyp1,izp1,is)+qp(np)*w8*wperp2
+              
               dpedx(ix  ,iy  ,iz  )=dpedx(ix  ,iy  ,iz  )+qp(np)*w1
               dpedx(ixp1,iy  ,iz  )=dpedx(ixp1,iy  ,iz  )+qp(np)*w2 
               dpedx(ix  ,iyp1,iz  )=dpedx(ix  ,iyp1,iz  )+qp(np)*w3 

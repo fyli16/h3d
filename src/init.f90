@@ -105,8 +105,8 @@ module m_init
           ex_ = zero  ! e-fields will be determined in field solver
           ey_ = zero
           ez_ = zero
-          dvx_ = -VA*bx_/B0 
-          dvy_ = -VA*by_/B0 
+          dvx_ = -VA*bx_/B0 * sign_cos 
+          dvy_ = -VA*by_/B0 * sign_cos
           dvz_ = zero
 
           bx(i,j,k) = bx_

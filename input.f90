@@ -34,6 +34,7 @@ n_wave_cycles = 30.0,
 wave_upramp = 200,  ! wave upramp length (in cell)
 wave_flat = 200,  ! wave central flat length (in cell)
 wave_downramp = 200, ! wave downramp length (in cell)
+sign_cos = 1.0, ! sign of cos\theta which determines wave propagation direction
 
 ! ------------------ plasma setup ----------------!
 nspec = 1,  ! number of ion species, maximum 5
