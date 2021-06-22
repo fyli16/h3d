@@ -24,17 +24,21 @@ n_sub_b = 5, ! number of subcycles for advancing B field
 eta_par = 0, ! ? options: 0, 1, 2; used in 'ecal'
 
 ! field masking
-mask = .true., ! if perform field masking
+mask = .true., ! if to perform field masking
 mask_zs = 200, ! scale length (in cell) of field masking in z
 mask_r = 1., ! factor r in field masking, which controls the slope of mask function
 
 ! initial waves
-dB_B0 = 0.01,
-n_wave_cycles = 30.0,
+dB_B0 = 0.01, ! Alfven wave amplitude
+n_wave_cycles = 30.0, ! number of wave cycles that would occcupy the full box dimension in z
+! upramp, flat, and downramp of the wave envelope
+! these only function when mask==.true.
 wave_upramp = 200,  ! wave upramp length (in cell)
 wave_flat = 200,  ! wave central flat length (in cell)
 wave_downramp = 200, ! wave downramp length (in cell)
-sign_cos = 1.0, ! sign of cos\theta which determines wave propagation direction
+! sign of cos\theta which determines wave propagation direction;
+! +1: along B0; -1: opposite to B0
+sign_cos = 1.0, 
 
 ! ------------------ plasma setup ----------------!
 nspec = 1,  ! number of ion species, maximum 5
