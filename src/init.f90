@@ -182,26 +182,34 @@ module m_init
         endif 
         bx_ =   0.1*B0*wave_env*sin(-kz*inj_time)
         by_ = - 0.1*B0*wave_env*cos(-kz*inj_time)
+      else
+        bx_ = 0.0
+        by_ = 0.0
       endif 
 
-      ! ex_ = zero  ! e-fields will be determined in field solver
-      ! ey_ = zero
-      ! ez_ = zero
-      dvx_ = -VA*bx_/B0 * sign_cos 
-      dvy_ = -VA*by_/B0 * sign_cos
-      dvz_ = zero
+      do j = jb-1, je+1
+        do i = 1, nx2
+          ! ex_ = zero  ! e-fields will be determined in field solver
+          ! ey_ = zero
+          ! ez_ = zero
+          dvx_ = -VA*bx_/B0 * sign_cos 
+          dvy_ = -VA*by_/B0 * sign_cos
+          dvz_ = zero
 
-      bx(i,j,inj_z_pos) = bx(i,j,inj_z_pos) + bx_
-      by(i,j,inj_z_pos) = by(i,j,inj_z_pos) + by_
-      bz(i,j,inj_z_pos) = bz(i,j,inj_z_pos) + bz_
-      ! ex(i,j,inj_z_pos) = ex(i,j,inj_z_pos) + ex_
-      ! ey(i,j,inj_z_pos) = ey(i,j,inj_z_pos) + ey_
-      ! ez(i,j,inj_z_pos) = ez(i,j,inj_z_pos) + ez_
+          bx(i,j,inj_z_pos) = bx(i,j,inj_z_pos) + bx_
+          by(i,j,inj_z_pos) = by(i,j,inj_z_pos) + by_
+          bz(i,j,inj_z_pos) = bz(i,j,inj_z_pos) + bz_
+          ! ex(i,j,inj_z_pos) = ex(i,j,inj_z_pos) + ex_
+          ! ey(i,j,inj_z_pos) = ey(i,j,inj_z_pos) + ey_
+          ! ez(i,j,inj_z_pos) = ez(i,j,inj_z_pos) + ez_
 
-      ! use vix to temporarily store values of V on the grid
-      vix(i,j,inj_z_pos) = vix(i,j,inj_z_pos) + dvx_
-      viy(i,j,inj_z_pos) = vix(i,j,inj_z_pos) + dvy_
-      viz(i,j,inj_z_pos) = vix(i,j,inj_z_pos) + dvz_
+          ! use vix to temporarily store values of V on the grid
+          vix(i,j,inj_z_pos) = vix(i,j,inj_z_pos) + dvx_
+          viy(i,j,inj_z_pos) = vix(i,j,inj_z_pos) + dvy_
+          viz(i,j,inj_z_pos) = vix(i,j,inj_z_pos) + dvz_
+        enddo
+      enddo
+      
     endif 
 
   end subroutine inject_waves
