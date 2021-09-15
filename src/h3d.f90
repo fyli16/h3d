@@ -121,6 +121,7 @@ program h3d
 
       ! update fields
       call date_and_time(values=time_begin(:,5))
+      call inject_waves  ! antenna
       call update_fields
       call date_and_time(values=time_end(:,5))
       call add_time(time_begin(1,5),time_end(1,5),time_elapsed(5))

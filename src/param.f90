@@ -125,7 +125,9 @@ module m_parameter
   
   ! waves
   real*8 :: dB_B0, n_wave_cycles, sign_cos
-  integer :: wave_upramp, wave_flat, wave_downramp 
+  integer :: wave_upramp, wave_flat, wave_downramp
+  integer :: inj_z_pos
+  real*8 :: inj_t_upramp, inj_t_flat, inj_t_downramp 
 
   integer :: seed_size
   integer, allocatable :: seed(:)
@@ -156,6 +158,7 @@ module m_parameter
       ! field solver
       n_sub_b, eta_par, mask, mask_zs, mask_r, & 
       dB_B0, n_wave_cycles, sign_cos, wave_upramp, wave_flat, wave_downramp, &  
+      inj_z_pos, inj_t_upramp, inj_t_flat, inj_t_downramp, &
       ! plasma  
       nspec, n_sort, qspec, wspec, frac, denmin, & 
       wpiwci, beta_spec, beta_elec, &  
@@ -236,6 +239,10 @@ module m_parameter
     call MPI_BCAST(wave_upramp            ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(wave_flat              ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(wave_downramp          ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(inj_z_pos              ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(inj_t_upramp           ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(inj_t_flat             ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(inj_t_downramp         ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     ! plasma setup
     call MPI_BCAST(nspec                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_sort                 ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
