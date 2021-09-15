@@ -180,8 +180,8 @@ module m_init
         else
           wave_env = (cos(0.5*pi*(inj_time-inj_t_upramp-inj_t_flat)/inj_t_downramp))**2.
         endif 
-        bx_ =   0.1*B0*wave_env*sin(-kz*inj_time)
-        by_ = - 0.1*B0*wave_env*cos(-kz*inj_time)
+        bx_ =   inj_dB_B0*B0*wave_env*sin(-kz*inj_time)
+        by_ = - inj_dB_B0*B0*wave_env*cos(-kz*inj_time)
       else
         bx_ = 0.0
         by_ = 0.0
@@ -209,7 +209,7 @@ module m_init
           viz(i,j,inj_z_pos) = vix(i,j,inj_z_pos) + dvz_
         enddo
       enddo
-      
+
     endif 
 
   end subroutine inject_waves

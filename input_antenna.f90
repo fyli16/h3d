@@ -41,6 +41,7 @@ wave_downramp = 200, ! wave downramp length (in cell)
 sign_cos = 1.0, 
 
 ! inject waves 
+inj_dB_B0 = 0.1, ! injection wave amplitude
 inj_z_pos = 240,  ! injection z position (in cell)
 inj_t_upramp = 200.0, ! injection upramp time (in 1/wci)
 inj_t_flat = 200.0, ! injection flat time (in 1/wci)
