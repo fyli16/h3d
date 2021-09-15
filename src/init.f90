@@ -180,8 +180,8 @@ module m_init
         else
           wave_env = (cos(0.5*pi*(inj_time-inj_t_upramp-inj_t_flat)/inj_t_downramp))**2.
         endif 
-        bx_ =   dB_B0*B0*wave_env*sin(-kz*inj_time)
-        by_ = - dB_B0*B0*wave_env*cos(-kz*inj_time)
+        bx_ =   0.1*B0*wave_env*sin(-kz*inj_time)
+        by_ = - 0.1*B0*wave_env*cos(-kz*inj_time)
       endif 
 
       ! ex_ = zero  ! e-fields will be determined in field solver
