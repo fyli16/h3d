@@ -29,7 +29,7 @@ mask_zs = 200, ! scale length (in cell) of field masking in z
 mask_r = 1., ! factor r in field masking, which controls the slope of mask function
 
 ! initial waves
-dB_B0 = 0.01, ! Alfven wave amplitude
+dB_B0 = 0.0, ! Alfven wave amplitude
 n_wave_cycles = 30.0, ! number of wave cycles that would fill the box in z
 ! upramp, flat, and downramp of the wave envelope
 ! these only function when mask==.true.

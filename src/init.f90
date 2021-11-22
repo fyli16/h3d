@@ -194,19 +194,13 @@ module m_init
           ! ez_ = zero
           dvx_ = -VA*bx_/B0 * sign_cos 
           dvy_ = -VA*by_/B0 * sign_cos
-          dvz_ = zero
 
-          bx(i,j,inj_z_pos) = bx(i,j,inj_z_pos) + bx_
-          by(i,j,inj_z_pos) = by(i,j,inj_z_pos) + by_
-          bz(i,j,inj_z_pos) = bz(i,j,inj_z_pos) + bz_
-          ! ex(i,j,inj_z_pos) = ex(i,j,inj_z_pos) + ex_
-          ! ey(i,j,inj_z_pos) = ey(i,j,inj_z_pos) + ey_
-          ! ez(i,j,inj_z_pos) = ez(i,j,inj_z_pos) + ez_
+          bx(i,j,inj_z_pos) = bx_
+          by(i,j,inj_z_pos) = by_
 
           ! use vix to temporarily store values of V on the grid
-          vix(i,j,inj_z_pos) = vix(i,j,inj_z_pos) + dvx_
-          viy(i,j,inj_z_pos) = vix(i,j,inj_z_pos) + dvy_
-          viz(i,j,inj_z_pos) = vix(i,j,inj_z_pos) + dvz_
+          vix(i,j,inj_z_pos) = dvx_
+          viy(i,j,inj_z_pos) = dvy_
         enddo
       enddo
 
