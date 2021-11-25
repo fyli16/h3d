@@ -1,19 +1,19 @@
 &input
 
 ! ------------------ global simulation info -----------!
-tmax = 400.0, ! max sim. time, in units of 1/wci
+tmax = 3000.0, ! max sim. time, in units of 1/wci
 dtwci = 0.01,  ! value of dt*wci
 restart = .false.,  ! whether to restart from 'restart' directory
 MPI_IO_format = .true., ! use MPI IO (one file only) instead of traditional binary output
 
 ! MPI nodes(ranks) configuration along y, z (no decompostion along x)
 ! and whether the ranks are treated periodic in either directions
-node_conf(:) = 2, 3,
+node_conf(:) = 2, 64,
 periods(:) = .true., .true.,
 
 ! simulation domain
-nx = 1, ny = 4, nz = 1200,  ! total number of cells along each dim
-xmax = 1., ymax = 4., zmax = 1200.,  ! max lengths of each dim
+nx = 1, ny = 5, nz = 320,  ! total number of cells along each dim
+xmax = 1., ymax = 1., zmax = 160.,  ! max lengths of each dim
 
 ! uniform loading in logical space
 ! used in loading particles? see 'init waves'
@@ -25,36 +25,42 @@ eta_par = 0, ! ? options: 0, 1, 2; used in 'ecal'
 
 ! field masking
 mask = .true., ! if to perform field masking
-mask_zs = 200, ! scale length (in cell) of field masking in z
-mask_r = 1., ! factor r in field masking, which controls the slope of mask function
+mask_zs = 100, ! scale length (in cell) of field masking in z
+mask_r = 0.1, ! factor r in field masking, which controls the slope of mask function
 
-! initial waves
-dB_B0 = 0.0, ! Alfven wave amplitude
-n_wave_cycles = 30.0, ! number of wave cycles that would fill the box in z
+! load waves initially inside the box
+dB_B0         = 0.0, ! Alfven wave amplitude
+wave_cycles   = 16.0, ! number of wave cycles that would fill the box in z
 ! upramp, flat, and downramp of the wave envelope
 ! these only function when mask==.true.
-wave_upramp = 200,  ! wave upramp length (in cell)
-wave_flat = 200,  ! wave central flat length (in cell)
+wave_upramp   = 200,  ! wave upramp length (in cell)
+wave_flat     = 200,  ! wave central flat length (in cell)
 wave_downramp = 200, ! wave downramp length (in cell)
-! sign of cos\theta which determines wave propagation direction;
-! +1: along B0; -1: opposite to B0
-sign_cos = 1.0, 
+sign_cos      = 1.0, ! sign of cos\theta which determines wave propagation direction; +1: along B0; -1: opposite to B0
 
-! inject waves 
-inj_dB_B0 = 0.1, ! injection wave amplitude
-inj_z_pos = 240,  ! injection z position (in cell)
-inj_t_upramp = 200.0, ! injection upramp time (in 1/wci)
-inj_t_flat = 200.0, ! injection flat time (in 1/wci)
-inj_t_downramp = 200.0, ! injection downramp time (in 1/wci)
-! n_wave_cycles is inherited from 'init_waves' to determine kz
+! ------------------ inject waves  ----------------!
+inj_waves = .true., ! whether injection or not
+
+! wave properties
+inj_dB_B0(1:4)       = 3e-3,    3e-3,    0.0,    0.0,   ! injection wave amplitude
+inj_wave_cycles(1:4) = 16.0,   16.0,   30.0,   30.0,  ! number of wave cycles used to determine kz
+inj_sign_cos(1:4)    = 1.0,     1.0,    -1.0,    -1.0,  ! sign of cos\theta which determines wave propagation dir.
+inj_wave_pol(1:4)    = 0,         1,       0,      1, ! polarization; 0:x, 1:y
+
+! injection properties
+inj_z_pos(1:4)       = 120,    120,      0,      0,   ! injection z position (in cell)
+inj_t_upramp(1:4)    = 50.0  50.0,  200.0,  200.0,  ! injection upramp time (in 1/wci)
+inj_t_flat(1:4)      = 1e8, 1e8,  200.0,  200.0,  ! injection flat time (in 1/wci)
+inj_t_downramp(1:4)  = 200.0, 200.0,  200.0,  200.0,  ! injection downramp time (in 1/wci)
+
 
 ! ------------------ plasma setup ----------------!
-nspec = 1,  ! number of ion species, maximum 5
-qspec(1:5) = 1., ! charge of each ion species 
-wspec(1:5) = 1., ! mass of each ion species
-frac(1:5) = 1., ! density normalized to n0 (associated with wpi)
-beta_spec(1:5) = 0.01, ! beta of each ion species 
-beta_elec = 0.01, ! beta of electrons
+nspec          = 1,  ! number of ion species, maximum 5
+qspec(1:5)     = 1., ! charge of each ion species 
+wspec(1:5)     = 1., ! mass of each ion species
+frac(1:5)      = 1., ! density normalized to n0 (associated with wpi)
+beta_spec(1:5) = 1e-4, ! beta of each ion species 
+beta_elec      = 4e-4, ! beta of electrons
 
 ppcx(1:5) = 4, ! number of particles per cell along x 
 ppcy(1:5) = 4, ! number of particles per cell along y 
@@ -65,18 +71,24 @@ denmin = 0.05,  ! force density lower than this to this value
 n_sort = 10, ! frequency at which to sort particles
 
 ! resistivity 
-ieta = 0,  ! available models ieta=1,2,3,4,5,6
-resis = 1.e-6,  ! constant resisitivity (for ieta=0)
-netax = 10, netay = 2 ! (for ieta=1)
-etamin = 1.0e-6, etamax = 5.0e-5,  ! (for ieta>0)
-eta_zs = 200, ! scale length (in cell) of resistive layer in z (for ieta=6)
+ieta   = 0,       ! available models ieta=1,2,3,4,5,6
+! for ieta=0
+resis  = 2.e-4,  ! constant resisitivity 
+! for ieta=1
+netax  = 10,      
+netay  = 2 
+! for ieta>0
+etamin = 1.0e-6, 
+etamax = 5.0e-5,
+! for ieta=6: resistive layer  
+eta_zs = 200, ! scale length (in cell) of resistive layer in z
 
 ! anisotropy in velocity
 anisot(1:5) = 1.0, ! anisotropy of velocity for each species
-gamma = 1.66667, ! gamma factor in EoS
+gamma       = 1.66667, ! gamma factor in EoS
 
 ! density/velocity smoothing
-smoothing = .true., 
+smoothing   = .true., 
 smooth_pass = 1, 
 
 ! ------------------ diagnostic control ----------------!

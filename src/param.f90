@@ -123,11 +123,15 @@ module m_parameter
   integer :: maxtags=100, maxtags_pe, ntot 
   logical :: tracking_binary, tracking_mpi
   
-  ! waves
-  real*8 :: dB_B0, n_wave_cycles, sign_cos
+  ! wave loading (inside box)
+  real*8 :: dB_B0, wave_cycles, sign_cos
   integer :: wave_upramp, wave_flat, wave_downramp
-  integer :: inj_z_pos
-  real*8 :: inj_dB_B0, inj_t_upramp, inj_t_flat, inj_t_downramp 
+
+  ! wave injection (max. 4 waves)
+  logical :: inj_waves
+  integer, dimension(4) :: inj_z_pos, inj_wave_pol
+  real*8, dimension(4) :: inj_dB_B0, inj_wave_cycles, inj_sign_cos, &
+        inj_t_upramp, inj_t_flat, inj_t_downramp 
 
   integer :: seed_size
   integer, allocatable :: seed(:)
@@ -157,8 +161,10 @@ module m_parameter
       uniform_load_logical, &
       ! field solver
       n_sub_b, eta_par, mask, mask_zs, mask_r, & 
-      dB_B0, n_wave_cycles, sign_cos, wave_upramp, wave_flat, wave_downramp, &  
-      inj_dB_B0, inj_z_pos, inj_t_upramp, inj_t_flat, inj_t_downramp, &
+      dB_B0, wave_cycles, sign_cos, wave_upramp, wave_flat, wave_downramp, &  
+      ! wave injection
+      inj_waves, inj_dB_B0, inj_wave_cycles, inj_sign_cos, inj_wave_pol, &
+      inj_z_pos, inj_t_upramp, inj_t_flat, inj_t_downramp, &
       ! plasma  
       nspec, n_sort, qspec, wspec, frac, denmin, & 
       wpiwci, beta_spec, beta_elec, &  
@@ -234,16 +240,21 @@ module m_parameter
     call MPI_BCAST(mask_zs                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(mask_r                 ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(dB_B0                  ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(n_wave_cycles          ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(wave_cycles            ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(sign_cos               ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(wave_upramp            ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(wave_flat              ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(wave_downramp          ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(inj_dB_B0              ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(inj_z_pos              ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(inj_t_upramp           ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(inj_t_flat             ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(inj_t_downramp         ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    ! wave injection
+    call MPI_BCAST(inj_waves              ,1     ,MPI_LOGICAL          ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(inj_dB_B0              ,4     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(inj_wave_cycles        ,4     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(inj_sign_cos           ,4     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(inj_wave_pol           ,4     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(inj_z_pos              ,4     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(inj_t_upramp           ,4     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(inj_t_flat             ,4     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(inj_t_downramp         ,4     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     ! plasma setup
     call MPI_BCAST(nspec                  ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_sort                 ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)

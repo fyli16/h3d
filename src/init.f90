@@ -36,12 +36,12 @@ module m_init
     kzmin = two*pi/zmax
     kx = zero
     ky = zero
-    kz = n_wave_cycles*kzmin
+    kz = wave_cycles*kzmin
 
     if (myid == 0) then
       write(6,*) 'loading a single Alfven wave'
       write(6,'(a20,ES15.4)') ' dB_B0 = ', dB_B0
-      write(6,'(a20,ES15.4)') ' n_wave_cycles = ', n_wave_cycles
+      write(6,'(a20,ES15.4)') ' wave_cycles = ', wave_cycles
       write(6,'(a20,ES15.4)') ' VA = ', VA
       write(6,*)
     endif 
@@ -130,19 +130,14 @@ module m_init
   !---------------------------------------------------------------------
   subroutine inject_waves
     real*8 :: B0, VA, mi
-    real*8 :: kx, ky, kz, kxmin, kymin, kzmin, x_pos, y_pos, z_pos
+    real*8 :: kx, ky, kxmin, kymin, kzmin, x_pos, y_pos, z_pos
+    real*8, dimension(4) :: kz
     real*8 :: inj_time
     real*8 :: bx_, by_, bz_, ex_, ey_, ez_
     real*8 :: dvx_, dvy_, dvz_
     integer :: i, j, k
+    integer :: iw  ! index of wave
     real*8 :: wave_env  ! wave envelope
-
-    ! if (myid == 0) then
-    !   print*
-    !   print*
-    !   print*, "Initializing waves on the mesh"
-    !   print*, "-------------------------------------------------"
-    ! endif 
 
     B0 = one/wpiwci  ! RMS amplitude of background B field  
     mi = 0.
@@ -156,55 +151,68 @@ module m_init
     kzmin = two*pi/zmax
     kx = zero
     ky = zero
-    kz = n_wave_cycles*kzmin
+    ! kz = wave_cycles*kzmin
+    do iw = 1, 4
+      kz(iw) = inj_wave_cycles(iw) * kzmin
+    enddo 
 
-    ! if (myid == 0) then
-    !   write(6,*) 'loading a single Alfven wave'
-    !   write(6,'(a20,ES15.4)') ' dB_B0 = ', dB_B0
-    !   write(6,'(a20,ES15.4)') ' n_wave_cycles = ', n_wave_cycles
-    !   write(6,'(a20,ES15.4)') ' VA = ', VA
-    !   write(6,*)
-    ! endif 
+    do iw = 1, 4 
+      if ( inj_dB_B0(iw)>0.0 .and. (kb-1)<=inj_z_pos(iw) .and. inj_z_pos(iw)<=ke+1 ) then
+        ! z_pos = meshZ%xc(inj_z_pos+1)
+        inj_time = it * dtwci  ! in 1/wci
+        if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)+inj_t_downramp(iw)) then
+          if (inj_time <= inj_t_upramp(iw)) then
+            wave_env = (sin(0.5*pi*inj_time/inj_t_upramp(iw)))**2.
+          else if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)) then
+            wave_env = 1.0
+          else
+            wave_env = (cos(0.5*pi*(inj_time-inj_t_upramp(iw)-inj_t_flat(iw))/inj_t_downramp(iw)))**2.
+          endif 
 
-    ! bx = zero; by = zero; bz = zero
-    ! ex = zero; ey = zero; ez = zero
+          if (inj_wave_pol(iw)==0) then 
+            bx_ = inj_dB_B0(iw)*B0*wave_env*sin(-kz(iw)*inj_time)
+            by_ = 0.0
+          else if (inj_wave_pol(iw)==1) then 
+            bx_ = 0.0
+            by_ = - inj_dB_B0(iw)*B0*wave_env*cos(-kz(iw)*inj_time)
+          endif
 
-    if ( (kb-1)<=inj_z_pos .and. inj_z_pos<=ke+1 ) then
-      ! z_pos = meshZ%xc(inj_z_pos+1)
-      inj_time = it * dtwci  ! in 1/wpi
-      if (inj_time <= inj_t_upramp+inj_t_flat+inj_t_downramp) then
-        if (inj_time <= inj_t_upramp) then
-          wave_env = (sin(0.5*pi*inj_time/inj_t_upramp))**2.
-        else if (inj_time <= inj_t_upramp+inj_t_flat) then
-          wave_env = 1.0
         else
-          wave_env = (cos(0.5*pi*(inj_time-inj_t_upramp-inj_t_flat)/inj_t_downramp))**2.
+          bx_ = 0.0
+          by_ = 0.0
         endif 
-        bx_ =   inj_dB_B0*B0*wave_env*sin(-kz*inj_time)
-        by_ = - inj_dB_B0*B0*wave_env*cos(-kz*inj_time)
-      else
-        bx_ = 0.0
-        by_ = 0.0
-      endif 
 
-      do j = jb-1, je+1
-        do i = 1, nx2
-          ! ex_ = zero  ! e-fields will be determined in field solver
-          ! ey_ = zero
-          ! ez_ = zero
-          dvx_ = -VA*bx_/B0 * sign_cos 
-          dvy_ = -VA*by_/B0 * sign_cos
+        do j = jb-1, je+1
+          do i = 1, nx2
+            ! ex_ = zero  ! e-fields will be determined by the field solver
+            ! ey_ = zero
+            ! ez_ = zero
+            
+            if ( iw>1 .and. inj_z_pos(iw)==inj_z_pos(iw-1) ) then
+              bx(i,j,inj_z_pos(iw)) = bx(i,j,inj_z_pos(iw)) + bx_
+              by(i,j,inj_z_pos(iw)) = by(i,j,inj_z_pos(iw)) + by_
 
-          bx(i,j,inj_z_pos) = bx_
-          by(i,j,inj_z_pos) = by_
+              ! use vix to temporarily store values of V on the grid
+              dvx_ = -VA*bx_/B0 * inj_sign_cos(iw) 
+              dvy_ = -VA*by_/B0 * inj_sign_cos(iw)
+              vix(i,j,inj_z_pos(iw)) = vix(i,j,inj_z_pos(iw)) + dvx_
+              viy(i,j,inj_z_pos(iw)) = viy(i,j,inj_z_pos(iw)) + dvy_
+            else
+              bx(i,j,inj_z_pos(iw)) = bx_
+              by(i,j,inj_z_pos(iw)) = by_
 
-          ! use vix to temporarily store values of V on the grid
-          vix(i,j,inj_z_pos) = dvx_
-          viy(i,j,inj_z_pos) = dvy_
+              ! use vix to temporarily store values of V on the grid
+              dvx_ = -VA*bx_/B0 * inj_sign_cos(iw) 
+              dvy_ = -VA*by_/B0 * inj_sign_cos(iw)
+              vix(i,j,inj_z_pos(iw)) = dvx_
+              viy(i,j,inj_z_pos(iw)) = dvy_
+            endif 
+
+          enddo
         enddo
-      enddo
 
-    endif 
+      endif 
+    enddo ! end wave count
 
   end subroutine inject_waves
 
