@@ -41,10 +41,14 @@ sign_cos      = 1.0, ! sign of cos\theta which determines wave propagation direc
 ! ------------------ inject waves  ----------------!
 inj_waves = .true., ! whether injection or not
 
+! currently, allowing to inject 4 waves. 
+! waves that are injected at the location position should be placed next to 
+!    each other in the array, so their V, B will be added up during initialization
+
 ! wave properties
 inj_dB_B0(1:4)       = 3e-3,    3e-3,    0.0,    0.0,   ! injection wave amplitude
-inj_wave_cycles(1:4) = 16.0,   16.0,   30.0,   30.0,  ! number of wave cycles used to determine kz
-inj_sign_cos(1:4)    = 1.0,     1.0,    -1.0,    -1.0,  ! sign of cos\theta which determines wave propagation dir.
+inj_wave_cycles(1:4) = 16.0,   16.0,     30.0,   30.0,  ! number of wave cycles used to determine kz
+inj_sign_cos(1:4)    = 1.0,     1.0,     -1.0,    -1.0,  ! sign of cos\theta which determines wave propagation dir.
 inj_wave_pol(1:4)    = 0,         1,       0,      1, ! polarization; 0:x, 1:y
 
 ! injection properties
@@ -94,7 +98,7 @@ smooth_pass = 1,
 ! ------------------ diagnostic control ----------------!
 n_print = 100,  ! frequency at which to print simulation progression
 
-n_diag_mesh = 100, ! frequency at which to write mesh data 
+n_diag_mesh = 1000, ! frequency at which to write mesh data 
 n_diag_energy = 100, ! frequency at which to write integrated energy data
 
 n_diag_probe = 100, ! frequency at which to write field probe data

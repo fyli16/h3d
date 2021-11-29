@@ -64,6 +64,7 @@ module m_init
             else
               bx_ = 0.
               by_ = 0.
+              bz_ = B0
             endif 
           else if (mask .eqv. .true.) then ! in case of field masking
             if (k >= mask_zs .and. k <= mask_zs + wave_downramp + wave_flat + wave_upramp) then
@@ -76,9 +77,11 @@ module m_init
               endif 
               bx_ =   dB_B0*B0*wave_env*sin(kz*z_pos)
               by_ = - dB_B0*B0*wave_env*cos(kz*z_pos)
+              bz_ = B0
             else
               bx_ = 0.
               by_ = 0.
+              bz_ = B0/2.
             endif 
           ! else if (mask .eqv. .true.) then ! in case of field masking
           !   if (k >= nz - mask_zs - wave_upramp - wave_flat - wave_downramp .and. k <= nz-mask_zs) then
@@ -98,9 +101,10 @@ module m_init
           else ! no resistive layer (ieta=6), no field masking
             bx_ =  dB_B0*B0*sin(kz*z_pos)
             by_ = - dB_B0*B0*cos(kz*z_pos)
+            bz_ = B0
           endif 
 
-          bz_ = B0
+          ! bz_ = B0
           ex_ = zero  ! e-fields will be determined in field solver
           ey_ = zero
           ez_ = zero
@@ -152,63 +156,59 @@ module m_init
     kx = zero
     ky = zero
     ! kz = wave_cycles*kzmin
+    inj_time = it * dtwci  ! in 1/wci
 
     do iw = 1, 4 
-      if (inj_dB_B0(iw)>0.0) then
-        if ( (kb-1)<=inj_z_pos(iw) .and. inj_z_pos(iw)<=ke+1) then 
-          ! z_pos = meshZ%xc(inj_z_pos+1)
-          inj_time = it * dtwci  ! in 1/wci
-          if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)+inj_t_downramp(iw)) then
-            if (inj_time <= inj_t_upramp(iw)) then
-              wave_env = (sin(0.5*pi*inj_time/inj_t_upramp(iw)))**2.
-            else if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)) then
-              wave_env = 1.0
-            else
-              wave_env = (cos(0.5*pi*(inj_time-inj_t_upramp(iw)-inj_t_flat(iw))/inj_t_downramp(iw)))**2.
-            endif 
-
-            ! kz(iw) = inj_wave_cycles(iw) * kzmin
-            kz = inj_wave_cycles(iw) * kzmin
-            if (inj_wave_pol(iw)==0) then 
-              bx_ = inj_dB_B0(iw)*B0*wave_env*sin(-kz*inj_time)
-              by_ = 0.0
-            else if (inj_wave_pol(iw)==1) then 
-              bx_ = 0.0
-              by_ = - inj_dB_B0(iw)*B0*wave_env*cos(-kz*inj_time)
-            endif
-
+      if ( inj_dB_B0(iw)>0.0 .and. (kb-1)<=inj_z_pos(iw) .and. inj_z_pos(iw)<=ke+1 ) then 
+        if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)+inj_t_downramp(iw)) then
+          if (inj_time <= inj_t_upramp(iw)) then
+            wave_env = (sin(0.5*pi*inj_time/inj_t_upramp(iw)))**2.
+          else if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)) then
+            wave_env = 1.0
           else
-            bx_ = 0.0
-            by_ = 0.0
+            wave_env = (cos(0.5*pi*(inj_time-inj_t_upramp(iw)-inj_t_flat(iw))/inj_t_downramp(iw)))**2.
           endif 
 
-          do j = jb-1, je+1
-            do i = 1, nx2
-              ! ex_ = zero  ! e-fields will be determined by the field solver
-              ! ey_ = zero
-              ! ez_ = zero
-              
-              if ( iw>1 .and. inj_z_pos(iw)==inj_z_pos(iw-1) ) then
-                bx(i,j,inj_z_pos(iw)) = bx(i,j,inj_z_pos(iw)) + bx_
-                by(i,j,inj_z_pos(iw)) = by(i,j,inj_z_pos(iw)) + by_
-                ! use vix to temporarily store values of V on the grid
-                dvx_ = -VA*bx_/B0 * inj_sign_cos(iw) 
-                dvy_ = -VA*by_/B0 * inj_sign_cos(iw)
-                vix(i,j,inj_z_pos(iw)) = vix(i,j,inj_z_pos(iw)) + dvx_
-                viy(i,j,inj_z_pos(iw)) = viy(i,j,inj_z_pos(iw)) + dvy_
-              else
-                bx(i,j,inj_z_pos(iw)) = bx_
-                by(i,j,inj_z_pos(iw)) = by_
-                ! use vix to temporarily store values of V on the grid
-                dvx_ = -VA*bx_/B0 * inj_sign_cos(iw) 
-                dvy_ = -VA*by_/B0 * inj_sign_cos(iw)
-                vix(i,j,inj_z_pos(iw)) = dvx_
-                viy(i,j,inj_z_pos(iw)) = dvy_
-              endif 
-            enddo
-          enddo
+          kz = inj_wave_cycles(iw) * kzmin
+          if (inj_wave_pol(iw)==0) then 
+            bx_ = inj_dB_B0(iw)*B0*wave_env*sin(-kz*inj_time)
+            by_ = 0.0
+          else if (inj_wave_pol(iw)==1) then 
+            bx_ = 0.0
+            by_ = - inj_dB_B0(iw)*B0*wave_env*cos(-kz*inj_time)
+          endif
+
+        else
+          bx_ = 0.0
+          by_ = 0.0
         endif 
-      endif
+
+        do j = jb-1, je+1
+          do i = 1, nx2
+            ! ex_ = zero  ! e-fields will be determined by the field solver
+            ! ey_ = zero
+            ! ez_ = zero
+            
+            if ( iw>1 .and. inj_z_pos(iw)==inj_z_pos(iw-1) ) then
+              bx(i,j,inj_z_pos(iw)) = bx(i,j,inj_z_pos(iw)) + bx_
+              by(i,j,inj_z_pos(iw)) = by(i,j,inj_z_pos(iw)) + by_
+              ! use vix to temporarily store values of V on the grid
+              dvx_ = -VA*bx_/B0 * inj_sign_cos(iw) 
+              dvy_ = -VA*by_/B0 * inj_sign_cos(iw)
+              vix(i,j,inj_z_pos(iw)) = vix(i,j,inj_z_pos(iw)) + dvx_
+              viy(i,j,inj_z_pos(iw)) = viy(i,j,inj_z_pos(iw)) + dvy_
+            else
+              bx(i,j,inj_z_pos(iw)) = bx_
+              by(i,j,inj_z_pos(iw)) = by_
+              ! use vix to temporarily store values of V on the grid
+              dvx_ = -VA*bx_/B0 * inj_sign_cos(iw) 
+              dvy_ = -VA*by_/B0 * inj_sign_cos(iw)
+              vix(i,j,inj_z_pos(iw)) = dvx_
+              viy(i,j,inj_z_pos(iw)) = dvy_
+            endif 
+          enddo
+        enddo
+      endif 
 
     enddo ! end wave count
 
