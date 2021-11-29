@@ -54,7 +54,9 @@ module m_init
       do j = jb-1, je+1  
         y_pos = meshY%xc(j+1)
         do i = 1, nx2
-          x_pos = meshX%xc(i) ! x has a different indexing              
+          x_pos = meshX%xc(i) ! x has a different indexing    
+          
+          bz_ = B0
 
           ! single Alfven wave
           if (ieta == 6) then ! in case of resistive layer
@@ -64,7 +66,6 @@ module m_init
             else
               bx_ = 0.
               by_ = 0.
-              bz_ = B0
             endif 
           else if (mask .eqv. .true.) then ! in case of field masking
             if (k >= mask_zs .and. k <= mask_zs + wave_downramp + wave_flat + wave_upramp) then
@@ -106,7 +107,6 @@ module m_init
           else ! no resistive layer (ieta=6), no field masking
             bx_ =  dB_B0*B0*sin(kz*z_pos)
             by_ = - dB_B0*B0*cos(kz*z_pos)
-            bz_ = B0
           endif 
 
           ! bz_ = B0
