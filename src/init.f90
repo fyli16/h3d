@@ -84,7 +84,7 @@ module m_init
             endif 
 
             ! reduce bz in mask region to achieve absorption in a shorter distance
-            if (k <= mask_zs .and. k >= nz-mask_zs) then
+            if (k <= mask_zs .or. k >= nz-mask_zs) then
               bz_ = B0/2.
             else 
               bz_ = B0 
