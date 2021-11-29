@@ -77,11 +77,16 @@ module m_init
               endif 
               bx_ =   dB_B0*B0*wave_env*sin(kz*z_pos)
               by_ = - dB_B0*B0*wave_env*cos(kz*z_pos)
-              bz_ = B0
             else
               bx_ = 0.
               by_ = 0.
+            endif 
+
+            ! reduce bz in mask region to achieve absorption in a shorter distance
+            if (k <= mask_zs .and. k >= nz-mask_zs) then
               bz_ = B0/2.
+            else 
+              bz_ = B0 
             endif 
           ! else if (mask .eqv. .true.) then ! in case of field masking
           !   if (k >= nz - mask_zs - wave_upramp - wave_flat - wave_downramp .and. k <= nz-mask_zs) then
