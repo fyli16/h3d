@@ -170,11 +170,11 @@ module m_init
             ! kz(iw) = inj_wave_cycles(iw) * kzmin
             kz = inj_wave_cycles(iw) * kzmin
             if (inj_wave_pol(iw)==0) then 
-              bx_ = inj_dB_B0(iw)*B0*wave_env*sin(-kz(iw)*inj_time)
+              bx_ = inj_dB_B0(iw)*B0*wave_env*sin(-kz*inj_time)
               by_ = 0.0
             else if (inj_wave_pol(iw)==1) then 
               bx_ = 0.0
-              by_ = - inj_dB_B0(iw)*B0*wave_env*cos(-kz(iw)*inj_time)
+              by_ = - inj_dB_B0(iw)*B0*wave_env*cos(-kz*inj_time)
             endif
 
           else
