@@ -27,6 +27,7 @@ eta_par = 0, ! ? options: 0, 1, 2; used in 'ecal'
 mask = .true., ! if to perform field masking
 mask_zs = 100, ! scale length (in cell) of field masking in z
 mask_r = 0.1, ! factor r in field masking, which controls the slope of mask function
+mask_B0_fac = 0.5, ! reduction factor for B0 in the mask layers (purpose: slow down wave & better absorption) 
 
 ! load waves initially inside the box
 dB_B0         = 0.0, ! Alfven wave amplitude
@@ -75,17 +76,13 @@ denmin = 0.05,  ! force density lower than this to this value
 n_sort = 10, ! frequency at which to sort particles
 
 ! resistivity 
-ieta   = 0,       ! available models ieta=1,2,3,4,5,6
-! for ieta=0
-resis  = 2.e-4,  ! constant resisitivity 
-! for ieta=1
-netax  = 10,      
+ieta   = 0,      ! available models ieta=1,2,3,4,5,6
+resis  = 2.e-4,  ! for ieta=0: constant resisitivity 
+netax  = 10,     ! for ieta=1   
 netay  = 2 
-! for ieta>0
-etamin = 1.0e-6, 
+etamin = 1.0e-6, ! for ieta>0
 etamax = 5.0e-5,
-! for ieta=6: resistive layer  
-eta_zs = 200, ! scale length (in cell) of resistive layer in z
+eta_zs = 200,    ! for ieta=6: z scale length (in cell) of the resistive layers
 
 ! anisotropy in velocity
 anisot(1:5) = 1.0, ! anisotropy of velocity for each species

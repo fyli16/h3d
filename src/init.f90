@@ -38,12 +38,17 @@ module m_init
     ky = zero
     kz = wave_cycles*kzmin
 
-    if (myid == 0) then
-      write(6,*) 'loading a single Alfven wave'
-      write(6,'(a20,ES15.4)') ' dB_B0 = ', dB_B0
-      write(6,'(a20,ES15.4)') ' wave_cycles = ', wave_cycles
-      write(6,'(a20,ES15.4)') ' VA = ', VA
-      write(6,*)
+    if ( myid==0) then
+      if (dB_B0>0.) then 
+        write(6,*) 'loading a single Alfven wave inside the box'
+        write(6,'(a20,ES15.4)') ' dB_B0 = ', dB_B0
+        write(6,'(a20,ES15.4)') ' wave_cycles = ', wave_cycles
+        write(6,'(a20,ES15.4)') ' VA = ', VA
+        write(6,*)
+      else
+        write(6,*) 'No Alfven waves will be loaded inside the box'
+        write(6,*) 'Only set bz=B0'
+      endif 
     endif 
 
     bx = zero; by = zero; bz = zero
@@ -54,12 +59,14 @@ module m_init
       do j = jb-1, je+1  
         y_pos = meshY%xc(j+1)
         do i = 1, nx2
-          x_pos = meshX%xc(i) ! x has a different indexing    
+          x_pos = meshX%xc(i) ! x has a different indexing
           
+          ! default: load wave across full box
+          bx_ =  dB_B0*B0*sin(kz*z_pos)
+          by_ = - dB_B0*B0*cos(kz*z_pos)          
           bz_ = B0
 
-          ! single Alfven wave
-          if (ieta == 6) then ! in case of resistive layer
+          if (ieta == 6) then ! in case of resistive layers
             if (k >= eta_zs .and. k <= nz-eta_zs) then
               bx_ =  dB_B0*B0*sin(kz*z_pos)
               by_ = - dB_B0*B0*cos(kz*z_pos)
@@ -67,7 +74,8 @@ module m_init
               bx_ = 0.
               by_ = 0.
             endif 
-          else if (mask .eqv. .true.) then ! in case of field masking
+
+          else if (mask .eqv. .true.) then ! in case of mask layers
             if (k >= mask_zs .and. k <= mask_zs + wave_downramp + wave_flat + wave_upramp) then
               if ( k <= mask_zs + wave_downramp ) then
                 wave_env = (sin(0.5*pi*(k-mask_zs)/wave_downramp))**2.
@@ -83,33 +91,14 @@ module m_init
               by_ = 0.
             endif 
 
-            ! reduce bz in mask region to achieve absorption in a shorter distance
+            ! reduce bz in mask region to slow down wave 
+            !   for wave absorption in short distances
             if (k <= mask_zs .or. k >= nz-mask_zs) then
-              bz_ = B0/2.
-            else 
-              bz_ = B0 
+              bz_ = B0*mask_B0_fac
             endif 
-          ! else if (mask .eqv. .true.) then ! in case of field masking
-          !   if (k >= nz - mask_zs - wave_upramp - wave_flat - wave_downramp .and. k <= nz-mask_zs) then
-          !     if ( k <= mask_zs + wave_downramp ) then
-          !       wave_env = (sin(0.5*pi*(k-mask_zs)/wave_downramp))**2.
-          !     else if ( k <= mask_zs + wave_downramp + wave_flat ) then
-          !       wave_env = 1.0
-          !     else 
-          !       wave_env = (cos(0.5*pi*(k-mask_zs-wave_downramp-wave_flat)/wave_upramp))**2.
-          !     endif 
-          !     bx_ =   dB_B0*B0*wave_env*sin(kz*z_pos)
-          !     by_ = - dB_B0*B0*wave_env*cos(kz*z_pos)
-          !   else
-          !     bx_ = 0.
-          !     by_ = 0.
-          !   endif 
-          else ! no resistive layer (ieta=6), no field masking
-            bx_ =  dB_B0*B0*sin(kz*z_pos)
-            by_ = - dB_B0*B0*cos(kz*z_pos)
+
           endif 
 
-          ! bz_ = B0
           ex_ = zero  ! e-fields will be determined in field solver
           ey_ = zero
           ez_ = zero
@@ -164,6 +153,7 @@ module m_init
     inj_time = it * dtwci  ! in 1/wci
 
     do iw = 1, 4 
+      bx_ = 0.0; by_ = 0.0
       if ( inj_dB_B0(iw)>0.0 .and. (kb-1)<=inj_z_pos(iw) .and. inj_z_pos(iw)<=ke+1 ) then 
         if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)+inj_t_downramp(iw)) then
           if (inj_time <= inj_t_upramp(iw)) then
@@ -175,25 +165,17 @@ module m_init
           endif 
 
           kz = inj_wave_cycles(iw) * kzmin
-          if (inj_wave_pol(iw)==0) then 
+          if (inj_wave_pol(iw)==0) then  ! x-pol
             bx_ = inj_dB_B0(iw)*B0*wave_env*sin(-kz*inj_time)
-            by_ = 0.0
-          else if (inj_wave_pol(iw)==1) then 
-            bx_ = 0.0
+          else if (inj_wave_pol(iw)==1) then ! y-pol
             by_ = - inj_dB_B0(iw)*B0*wave_env*cos(-kz*inj_time)
           endif
-
-        else
-          bx_ = 0.0
-          by_ = 0.0
         endif 
 
         do j = jb-1, je+1
           do i = 1, nx2
-            ! ex_ = zero  ! e-fields will be determined by the field solver
-            ! ey_ = zero
-            ! ez_ = zero
-            
+            ! add injection value to previous wave if they 
+            !    have the same injection position
             if ( iw>1 .and. inj_z_pos(iw)==inj_z_pos(iw-1) ) then
               bx(i,j,inj_z_pos(iw)) = bx(i,j,inj_z_pos(iw)) + bx_
               by(i,j,inj_z_pos(iw)) = by(i,j,inj_z_pos(iw)) + by_
@@ -202,7 +184,7 @@ module m_init
               dvy_ = -VA*by_/B0 * inj_sign_cos(iw)
               vix(i,j,inj_z_pos(iw)) = vix(i,j,inj_z_pos(iw)) + dvx_
               viy(i,j,inj_z_pos(iw)) = viy(i,j,inj_z_pos(iw)) + dvy_
-            else
+            else ! injection at a new position, simply replace with the injection value
               bx(i,j,inj_z_pos(iw)) = bx_
               by(i,j,inj_z_pos(iw)) = by_
               ! use vix to temporarily store values of V on the grid

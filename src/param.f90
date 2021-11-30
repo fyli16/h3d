@@ -96,7 +96,7 @@ module m_parameter
   
   ! field solver
   integer*8 :: ieta, netax, netay, eta_par, eta_zs, mask_zs 
-  real*8 :: mask_r
+  real*8 :: mask_r, mask_B0_fac
   logical :: mask
   real*8 :: etamin, etamax
 
@@ -160,7 +160,7 @@ module m_parameter
       ! xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
       uniform_load_logical, &
       ! field solver
-      n_sub_b, eta_par, mask, mask_zs, mask_r, & 
+      n_sub_b, eta_par, mask, mask_zs, mask_r, mask_B0_fac, & 
       dB_B0, wave_cycles, sign_cos, wave_upramp, wave_flat, wave_downramp, &  
       ! wave injection
       inj_waves, inj_dB_B0, inj_wave_cycles, inj_sign_cos, inj_wave_pol, &
@@ -180,11 +180,13 @@ module m_parameter
     ! print logo
     if (myid == 0) then
       print*
+      print*, "********************************************************"
       print*, "           ||     ||    ======        ======            "              
       print*, "           ||     ||           ||    ||      \\         "         
       print*, "           ||=====||     ======||    ||       ||        "         
       print*, "           ||     ||           ||    ||      //         "         
-      print*, "           ||     ||    ======        ======            "          
+      print*, "           ||     ||    ======        ======            "  
+      print*, "********************************************************"        
     endif 
 
     ! read in input deck
@@ -239,6 +241,7 @@ module m_parameter
     call MPI_BCAST(mask                   ,1     ,MPI_LOGICAL          ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(mask_zs                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(mask_r                 ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(mask_B0_fac            ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(dB_B0                  ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(wave_cycles            ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(sign_cos               ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
@@ -337,9 +340,9 @@ module m_parameter
     call MPE_DECOMP1D(NZ, DIMS(2), COORDS(2), KB, KE)
 
     ! print decomposition info (debug purpose)
-    write(6,'(a,i5,a,i5,i5,a,i5,i5,a,i5,i5)') &
-        ' myid=', myid, ',  jb, je =', jb, je, &
-        ',  kb, ke = ',kb, ke, ',  coords =', coords
+    ! write(6,'(a,i5,a,i5,i5,a,i5,i5,a,i5,i5)') &
+    !     ' myid=', myid, ',  jb, je =', jb, je, &
+    !     ',  kb, ke = ',kb, ke, ',  coords =', coords
 
     ! max number of cells. why adding 2?
     nxmax = nx + 2; nymax = ny + 2; nzmax = nz + 2
