@@ -255,7 +255,7 @@ module m_init
       ! determine local start/end indexes of particles
       ipb1 = 1
       ipb2 = nplx(is)*nply(is)*nplz(is)
-      print*, 'myid = ', myid, '   ipb2 = ', ipb2
+      ! print*, 'myid = ', myid, '   ipb2 = ', ipb2
       ! if (uniform_load_logical) then
       !   ipb2 = npx(is)*npy(is)*npz(is)
       ! else
