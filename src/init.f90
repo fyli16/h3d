@@ -154,6 +154,7 @@ module m_init
 
     do iw = 1, 4 
       bx_ = 0.0; by_ = 0.0
+
       if ( inj_dB_B0(iw)>0.0 .and. (kb-1)<=inj_z_pos(iw) .and. inj_z_pos(iw)<=ke+1 ) then 
         if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)+inj_t_downramp(iw)) then
           if (inj_time <= inj_t_upramp(iw)) then
@@ -172,6 +173,9 @@ module m_init
           endif
         endif 
 
+        dvx_ = -VA*bx_/B0 * inj_sign_cos(iw) 
+        dvy_ = -VA*by_/B0 * inj_sign_cos(iw)
+
         do j = jb-1, je+1
           do i = 1, nx2
             ! add injection value to previous wave if they 
@@ -180,16 +184,12 @@ module m_init
               bx(i,j,inj_z_pos(iw)) = bx(i,j,inj_z_pos(iw)) + bx_
               by(i,j,inj_z_pos(iw)) = by(i,j,inj_z_pos(iw)) + by_
               ! use vix to temporarily store values of V on the grid
-              dvx_ = -VA*bx_/B0 * inj_sign_cos(iw) 
-              dvy_ = -VA*by_/B0 * inj_sign_cos(iw)
               vix(i,j,inj_z_pos(iw)) = vix(i,j,inj_z_pos(iw)) + dvx_
               viy(i,j,inj_z_pos(iw)) = viy(i,j,inj_z_pos(iw)) + dvy_
             else ! injection at a new position, simply replace with the injection value
               bx(i,j,inj_z_pos(iw)) = bx_
               by(i,j,inj_z_pos(iw)) = by_
               ! use vix to temporarily store values of V on the grid
-              dvx_ = -VA*bx_/B0 * inj_sign_cos(iw) 
-              dvy_ = -VA*by_/B0 * inj_sign_cos(iw)
               vix(i,j,inj_z_pos(iw)) = dvx_
               viy(i,j,inj_z_pos(iw)) = dvy_
             endif 
