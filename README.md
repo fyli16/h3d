@@ -1,1 +1,1 @@
-# A hybrid 3D code for studying plasma physics
+# A hybrid (electron fluid, ion kinetic), three-dimensional, plasma simulation code for studying laboratory and space plasma problems.
