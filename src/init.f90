@@ -4,6 +4,7 @@ module m_init
   use m_mesh
   implicit none
 
+
   contains 
 
   !---------------------------------------------------------------------
@@ -167,9 +168,11 @@ module m_init
 
           kz = inj_wave_cycles(iw) * kzmin
           if (inj_wave_pol(iw)==0) then  ! x-pol
-            bx_ = inj_dB_B0(iw)*B0*wave_env*sin(-kz*inj_time)
-          else if (inj_wave_pol(iw)==1) then ! y-pol
-            by_ = - inj_dB_B0(iw)*B0*wave_env*cos(-kz*inj_time)
+            bx_ = inj_dB_B0(iw)*B0*wave_env*sin(kz*inj_time)
+          else if (inj_wave_pol(iw)==1) then ! y-pol, left-hand pol
+            by_ = inj_dB_B0(iw)*B0*wave_env*cos(kz*inj_time)
+          else if (inj_wave_pol(iw)==-1) then ! y-pol, right-hand pol
+            by_ = -inj_dB_B0(iw)*B0*wave_env*cos(kz*inj_time)
           endif
         endif 
 

@@ -54,9 +54,9 @@ inj_wave_pol(1:4)    = 0,         1,       0,      1, ! polarization; 0:x, 1:y
 
 ! injection properties
 inj_z_pos(1:4)       = 120,    120,      0,      0,   ! injection z position (in cell)
-inj_t_upramp(1:4)    = 50.0  50.0,  200.0,  200.0,  ! injection upramp time (in 1/wci)
-inj_t_flat(1:4)      = 1e8, 1e8,  200.0,  200.0,  ! injection flat time (in 1/wci)
-inj_t_downramp(1:4)  = 200.0, 200.0,  200.0,  200.0,  ! injection downramp time (in 1/wci)
+inj_t_upramp(1:4)    = 50.0,   50.0,    200.0,   200.0,  ! injection upramp time (in 1/wci)
+inj_t_flat(1:4)      = 1e8,    1e8,     200.0,   200.0,  ! injection flat time (in 1/wci)
+inj_t_downramp(1:4)  = 200.0,  200.0,   200.0,   200.0,  ! injection downramp time (in 1/wci)
 
 
 ! ------------------ plasma setup ----------------!
