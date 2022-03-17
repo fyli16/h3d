@@ -14,8 +14,12 @@
 #   endif
 # endif
 
-module purge PrgEnv-intel
-module load PrgEnv-gnu openmpi
+# module purge PrgEnv-intel
+# module load PrgEnv-gnu openmpi
+
+# 3/17/22
+module purge
+module load impi
 
 make
 # make clean
