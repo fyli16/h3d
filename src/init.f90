@@ -200,10 +200,10 @@ module m_init
             enddo
           enddo
         else ! inj_wave_radius(iw)>0, and selectively apply to x, y
-          if (nx==1) then ! raidus only applies to y
-            do j = jb-1, je+1
-              if ( j>=(nymax/2-inj_wave_radius(iw)) .and. j<=(nymax/2+inj_wave_radius(iw)) ) then
-                do i = 1, nx2
+          do j = jb-1, je+1
+            if ( j>=(nymax/2-inj_wave_radius(iw)) .and. j<=(nymax/2+inj_wave_radius(iw)) ) then
+              do i = 1, nx2
+                if ( i>=(nxmax/2-inj_wave_radius(iw)) .and. i<=(nxmax/2+inj_wave_radius(iw)) ) then
                   ! add injection value to previous wave if they 
                   !    have the same injection position
                   if ( iw>1 .and. inj_z_pos(iw)==inj_z_pos(iw-1) ) then
@@ -219,39 +219,15 @@ module m_init
                     vix(i,j,inj_z_pos(iw)) = dvx_
                     viy(i,j,inj_z_pos(iw)) = dvy_
                   endif 
-                enddo
-              endif
-            enddo
-          else ! radius applies both x, y
-            do j = jb-1, je+1
-              if ( j>=(nymax/2-inj_wave_radius(iw)) .and. j<=(nymax/2+inj_wave_radius(iw)) ) then
-                do i = 1, nx2
-                  if ( i>=(nxmax/2-inj_wave_radius(iw)) .and. i<=(nxmax/2+inj_wave_radius(iw)) ) then
-                    ! add injection value to previous wave if they 
-                    !    have the same injection position
-                    if ( iw>1 .and. inj_z_pos(iw)==inj_z_pos(iw-1) ) then
-                      bx(i,j,inj_z_pos(iw)) = bx(i,j,inj_z_pos(iw)) + bx_
-                      by(i,j,inj_z_pos(iw)) = by(i,j,inj_z_pos(iw)) + by_
-                      ! use vix to temporarily store values of V on the grid
-                      vix(i,j,inj_z_pos(iw)) = vix(i,j,inj_z_pos(iw)) + dvx_
-                      viy(i,j,inj_z_pos(iw)) = viy(i,j,inj_z_pos(iw)) + dvy_
-                    else ! injection at a new position, simply replace with the injection value
-                      bx(i,j,inj_z_pos(iw)) = bx_
-                      by(i,j,inj_z_pos(iw)) = by_
-                      ! use vix to temporarily store values of V on the grid
-                      vix(i,j,inj_z_pos(iw)) = dvx_
-                      viy(i,j,inj_z_pos(iw)) = dvy_
-                    endif 
-                  endif 
-                enddo
-              endif
-            enddo
-          endif 
-        endif
+                endif 
+              enddo
+            endif
+          enddo
+        endif ! end inj_wave_radius
 
-      endif 
+      endif ! end inj_dB_B0(iw)
 
-    enddo ! end wave count
+    enddo ! end wave indexing (iw)
 
   end subroutine inject_waves
 
