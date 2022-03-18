@@ -129,7 +129,7 @@ module m_parameter
 
   ! wave injection (max. 4 waves)
   logical :: inj_waves
-  integer, dimension(4) :: inj_z_pos, inj_wave_pol
+  integer, dimension(4) :: inj_z_pos, inj_wave_pol, inj_wave_radius
   real*8, dimension(4) :: inj_dB_B0, inj_wave_cycles, inj_sign_cos, &
         inj_t_upramp, inj_t_flat, inj_t_downramp 
 
@@ -164,7 +164,7 @@ module m_parameter
       dB_B0, wave_cycles, sign_cos, wave_upramp, wave_flat, wave_downramp, &  
       ! wave injection
       inj_waves, inj_dB_B0, inj_wave_cycles, inj_sign_cos, inj_wave_pol, &
-      inj_z_pos, inj_t_upramp, inj_t_flat, inj_t_downramp, &
+      inj_wave_radius, inj_z_pos, inj_t_upramp, inj_t_flat, inj_t_downramp, &
       ! plasma  
       nspec, n_sort, qspec, wspec, frac, denmin, & 
       wpiwci, beta_spec, beta_elec, &  
@@ -254,6 +254,7 @@ module m_parameter
     call MPI_BCAST(inj_wave_cycles        ,4     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(inj_sign_cos           ,4     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(inj_wave_pol           ,4     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(inj_wave_radius        ,4     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(inj_z_pos              ,4     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(inj_t_upramp           ,4     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(inj_t_flat             ,4     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
