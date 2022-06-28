@@ -120,7 +120,7 @@ module m_field
     real*8 :: inj_time
     real*8 :: bx_, by_, bz_, ex_, ey_, ez_
     real*8 :: dvx_, dvy_, dvz_
-    integer :: i, j, k
+    ! integer :: i, j, k
     integer :: iw  ! index of wave
     real*8 :: wave_env  ! wave envelope
 
