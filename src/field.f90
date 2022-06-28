@@ -116,13 +116,11 @@ module m_field
     real*8 :: dexdy, dexdz, deydx, deydz, dezdx, dezdy  
     ! for injecting waves via E field
     real*8 :: B0, VA, mi
-    real*8 :: kx, ky, kz, kxmin, kymin, kzmin, x_pos, y_pos, z_pos
+    real*8 :: kx, ky, kz, kxmin, kymin, kzmin
     real*8 :: inj_time
-    real*8 :: bx_, by_, bz_, ex_, ey_, ez_
-    real*8 :: dvx_, dvy_, dvz_
-    ! integer :: i, j, k
+    real*8 :: ex_, ey_, ez_
     integer :: iw  ! index of wave
-    real*8 :: wave_env  ! wave envelope
+    real*8 :: time_env, radial_env  ! wave envelope
 
 
     do k = kb, ke
@@ -256,52 +254,38 @@ module m_field
       inj_time = it * dtwci  ! in 1/wci
 
       do iw = 1, 4 
-        bx_ = 0.0; by_ = 0.0
+        ex_ = 0.0; ey_ = 0.0
 
         if ( inj_dB_B0(iw)>0.0 .and. (kb-1)<=inj_z_pos(iw) .and. inj_z_pos(iw)<=ke+1 ) then 
           if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)+inj_t_downramp(iw)) then
             if (inj_time <= inj_t_upramp(iw)) then
-              wave_env = (sin(0.5*pi*inj_time/inj_t_upramp(iw)))**2.
+              time_env = (sin(0.5*pi*inj_time/inj_t_upramp(iw)))**2.
             else if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)) then
-              wave_env = 1.0
+              time_env = 1.0
             else
-              wave_env = (cos(0.5*pi*(inj_time-inj_t_upramp(iw)-inj_t_flat(iw))/inj_t_downramp(iw)))**2.
+              time_env = (cos(0.5*pi*(inj_time-inj_t_upramp(iw)-inj_t_flat(iw))/inj_t_downramp(iw)))**2.
             endif 
 
             kz = inj_wave_cycles(iw) * kzmin
             if (inj_wave_pol(iw)==0) then  ! x-pol
-              bx_ = inj_dB_B0(iw)*B0*wave_env*sin(kz*inj_time)
+              ex_ = inj_dB_B0(iw)*B0/wpiwci*time_env*sin(kz*inj_time)
             else if (inj_wave_pol(iw)==1) then ! y-pol, left-hand pol
-              by_ = inj_dB_B0(iw)*B0*wave_env*cos(kz*inj_time)
+              ey_ = inj_dB_B0(iw)*B0/wpiwci*time_env*cos(kz*inj_time)
             else if (inj_wave_pol(iw)==-1) then ! y-pol, right-hand pol
-              by_ = -inj_dB_B0(iw)*B0*wave_env*cos(kz*inj_time)
+              ey_ = -inj_dB_B0(iw)*B0/wpiwci*time_env*cos(kz*inj_time)
             endif
           endif 
-
-          !dvx_ = -VA*bx_/B0 * inj_sign_cos(iw) 
-          !dvy_ = -VA*by_/B0 * inj_sign_cos(iw)
 
           if (inj_wave_radius(iw)==0) then ! inject at all x, y
             do j = jb-1, je+1
               do i = 1, nx2
-                ! add injection value to previous wave if they 
-                !    have the same injection position
+                ! add injection value to previous wave if they have the same injection position
                 if ( iw>1 .and. inj_z_pos(iw)==inj_z_pos(iw-1) ) then
-                  ! bx(i,j,inj_z_pos(iw)) = bx(i,j,inj_z_pos(iw)) + bx_
-                  ! by(i,j,inj_z_pos(iw)) = by(i,j,inj_z_pos(iw)) + by_
-                  ey(i,j,inj_z_pos(iw)) = ey(i,j,inj_z_pos(iw)) + bx_/wpiwci
-                  ex(i,j,inj_z_pos(iw)) = ex(i,j,inj_z_pos(iw)) + by_/wpiwci
-                  ! use vix to temporarily store values of V on the grid
-                  ! vix(i,j,inj_z_pos(iw)) = vix(i,j,inj_z_pos(iw)) + dvx_
-                  ! viy(i,j,inj_z_pos(iw)) = viy(i,j,inj_z_pos(iw)) + dvy_
+                 ex(i,j,inj_z_pos(iw)) = ex(i,j,inj_z_pos(iw)) + ex_
+                 ey(i,j,inj_z_pos(iw)) = ey(i,j,inj_z_pos(iw)) + ey_     
                 else ! injection at a new position, simply replace with the injection value
-                  ! bx(i,j,inj_z_pos(iw)) = bx_
-                  ! by(i,j,inj_z_pos(iw)) = by_
-                  ey(i,j,inj_z_pos(iw)) = bx_/wpiwci
-                  ex(i,j,inj_z_pos(iw)) = by_/wpiwci
-                  ! use vix to temporarily store values of V on the grid
-                  ! vix(i,j,inj_z_pos(iw)) = dvx_
-                  ! viy(i,j,inj_z_pos(iw)) = dvy_
+                  ex(i,j,inj_z_pos(iw)) = ex_
+                  ey(i,j,inj_z_pos(iw)) = ey_
                 endif 
               enddo
             enddo
@@ -310,24 +294,15 @@ module m_field
               if ( j>=(nymax/2-inj_wave_radius(iw)) .and. j<=(nymax/2+inj_wave_radius(iw)) ) then
                 do i = 1, nx2
                   if ( i>=(nxmax/2-inj_wave_radius(iw)) .and. i<=(nxmax/2+inj_wave_radius(iw)) ) then
-                    ! add injection value to previous wave if they 
-                    !    have the same injection position
+                    ! add radial envelope
+                    radial_env = cos(0.5*pi*(i-nxmax/2)/inj_wave_radius(iw))*cos(0.5*pi*(j-nymax/2)/inj_wave_radius(iw))
+                    ! add injection value to previous wave if they have the same injection position
                     if ( iw>1 .and. inj_z_pos(iw)==inj_z_pos(iw-1) ) then
-                      ! bx(i,j,inj_z_pos(iw)) = bx(i,j,inj_z_pos(iw)) + bx_
-                      ! by(i,j,inj_z_pos(iw)) = by(i,j,inj_z_pos(iw)) + by_
-                      ey(i,j,inj_z_pos(iw)) = ey(i,j,inj_z_pos(iw)) + bx_/wpiwci
-                      ex(i,j,inj_z_pos(iw)) = ex(i,j,inj_z_pos(iw)) + by_/wpiwci
-                      ! use vix to temporarily store values of V on the grid
-                      ! vix(i,j,inj_z_pos(iw)) = vix(i,j,inj_z_pos(iw)) + dvx_
-                      ! viy(i,j,inj_z_pos(iw)) = viy(i,j,inj_z_pos(iw)) + dvy_
+                      ex(i,j,inj_z_pos(iw)) = ex(i,j,inj_z_pos(iw)) + ex_*radial_env
+                      ey(i,j,inj_z_pos(iw)) = ey(i,j,inj_z_pos(iw)) + ey_*radial_env
                     else ! injection at a new position, simply replace with the injection value
-                      ! bx(i,j,inj_z_pos(iw)) = bx_
-                      ! by(i,j,inj_z_pos(iw)) = by_
-                      ey(i,j,inj_z_pos(iw)) = bx_/wpiwci
-                      ex(i,j,inj_z_pos(iw)) = by_/wpiwci
-                      ! use vix to temporarily store values of V on the grid
-                      ! vix(i,j,inj_z_pos(iw)) = dvx_
-                      ! viy(i,j,inj_z_pos(iw)) = dvy_
+                      ex(i,j,inj_z_pos(iw)) = ex_*radial_env
+                      ey(i,j,inj_z_pos(iw)) = ey_*radial_env
                     endif 
                   endif 
                 enddo
