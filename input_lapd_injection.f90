@@ -40,7 +40,8 @@ wave_downramp = 200, ! wave downramp length (in cell)
 sign_cos      = 1.0, ! sign of cos\theta which determines wave propagation direction; +1: along B0; -1: opposite to B0
 
 ! ------------------ inject waves  ----------------!
-inj_waves = .true., ! whether injection or not
+inj_waves = .false., ! inject waves via B field
+inj_waves_efld = .true.,  ! inject waves via E field
 
 ! currently, allowing to inject 4 waves. 
 ! waves that are injected at the location position should be placed next to 
