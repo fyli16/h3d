@@ -9,7 +9,7 @@
 program h3d 
 
   use m_parameter
-  ! use m_init
+  use m_init
   use m_io
 
   use m_eta
