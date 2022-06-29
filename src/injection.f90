@@ -208,6 +208,7 @@ module m_injection
     real*8 :: kx, ky, kz, kxmin, kymin, kzmin
     real*8 :: inj_time
     real*8 :: ex_, ey_, ez_
+    integer :: i, j, k
     integer :: iw  ! index of wave
     real*8 :: time_env, radial_env  ! wave envelope
 
