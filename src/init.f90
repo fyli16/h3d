@@ -201,7 +201,7 @@ module m_init
         else ! inj_wave_radius(iw)>0, and selectively apply to x, y
           do j = jb-1, je+1
             do i = 1, nx2
-              if ( sqrt((i-nxmax/2)**2+(j-nymax/2)**2)<=inj_wave_radius(iw) ) then
+              if ( sqrt((i-nxmax/2.0)**2.0+(j-nymax/2.0)**2.0)<=inj_wave_radius(iw) ) then
                 ! add radial envelope
                 radial_env = cos(0.5*pi*(i-nxmax/2)/inj_wave_radius(iw))*cos(0.5*pi*(j-nymax/2)/inj_wave_radius(iw))
                 ! add injection value to previous wave if they have the same injection position
