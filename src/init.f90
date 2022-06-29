@@ -200,28 +200,26 @@ module m_init
           enddo
         else ! inj_wave_radius(iw)>0, and selectively apply to x, y
           do j = jb-1, je+1
-            if ( j>=(nymax/2-inj_wave_radius(iw)) .and. j<=(nymax/2+inj_wave_radius(iw)) ) then
-              do i = 1, nx2
-                if ( i>=(nxmax/2-inj_wave_radius(iw)) .and. i<=(nxmax/2+inj_wave_radius(iw)) ) then
-                  ! add radial envelope
-                  radial_env = cos(0.5*pi*(i-nxmax/2)/inj_wave_radius(iw))*cos(0.5*pi*(j-nymax/2)/inj_wave_radius(iw))
-                  ! add injection value to previous wave if they have the same injection position
-                  if ( iw>1 .and. inj_z_pos(iw)==inj_z_pos(iw-1) ) then
-                    bx(i,j,inj_z_pos(iw)) = bx(i,j,inj_z_pos(iw)) + bx_*radial_env
-                    by(i,j,inj_z_pos(iw)) = by(i,j,inj_z_pos(iw)) + by_*radial_env
-                    ! use vix to temporarily store values of V on the grid
-                    vix(i,j,inj_z_pos(iw)) = vix(i,j,inj_z_pos(iw)) + dvx_*radial_env
-                    viy(i,j,inj_z_pos(iw)) = viy(i,j,inj_z_pos(iw)) + dvy_*radial_env
-                  else ! injection at a new position, simply replace with the injection value
-                    bx(i,j,inj_z_pos(iw)) = bx_*radial_env
-                    by(i,j,inj_z_pos(iw)) = by_*radial_env
-                    ! use vix to temporarily store values of V on the grid
-                    vix(i,j,inj_z_pos(iw)) = dvx_*radial_env
-                    viy(i,j,inj_z_pos(iw)) = dvy_*radial_env
-                  endif 
+            do i = 1, nx2
+              if ( sqrt((i-nxmax/2)**2+(j-nymax/2)**2)<=inj_wave_radius(iw) ) then
+                ! add radial envelope
+                radial_env = cos(0.5*pi*(i-nxmax/2)/inj_wave_radius(iw))*cos(0.5*pi*(j-nymax/2)/inj_wave_radius(iw))
+                ! add injection value to previous wave if they have the same injection position
+                if ( iw>1 .and. inj_z_pos(iw)==inj_z_pos(iw-1) ) then
+                  bx(i,j,inj_z_pos(iw)) = bx(i,j,inj_z_pos(iw)) + bx_*radial_env
+                  by(i,j,inj_z_pos(iw)) = by(i,j,inj_z_pos(iw)) + by_*radial_env
+                  ! use vix to temporarily store values of V on the grid
+                  vix(i,j,inj_z_pos(iw)) = vix(i,j,inj_z_pos(iw)) + dvx_*radial_env
+                  viy(i,j,inj_z_pos(iw)) = viy(i,j,inj_z_pos(iw)) + dvy_*radial_env
+                else ! injection at a new position, simply replace with the injection value
+                  bx(i,j,inj_z_pos(iw)) = bx_*radial_env
+                  by(i,j,inj_z_pos(iw)) = by_*radial_env
+                  ! use vix to temporarily store values of V on the grid
+                  vix(i,j,inj_z_pos(iw)) = dvx_*radial_env
+                  viy(i,j,inj_z_pos(iw)) = dvy_*radial_env
                 endif 
-              enddo
-            endif
+              endif 
+            enddo
           enddo
         endif ! end inj_wave_radius
 
