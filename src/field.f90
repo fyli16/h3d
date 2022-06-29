@@ -1,6 +1,7 @@
 module m_field
   use m_parameter
   use m_mesh
+  use m_injection
   implicit none 
 
   contains 
@@ -25,6 +26,13 @@ module m_field
     call pressgrad(1) ! full step at N
     call date_and_time(values=time_end(:,51))
     call add_time(time_begin(1,51), time_end(1,51), time_elapsed(51))
+
+    ! wave injection via B field
+    if (inj_waves_b .eqv. .true.) then
+      call inject_waves_b  
+    else if (inj_waves_bv .eqv. .true.) then
+      call inject_waves_bv
+    endif 
 
     call date_and_time(values=time_begin(:,52))
     call bcalc
@@ -114,14 +122,6 @@ module m_field
     real*8 :: curlbx_scalar,curlby_scalar,curlbz_scalar
     real*8 :: bxav, byav, bzav  
     real*8 :: dexdy, dexdz, deydx, deydz, dezdx, dezdy  
-    ! for injecting waves via E field
-    real*8 :: B0, VA, mi
-    real*8 :: kx, ky, kz, kxmin, kymin, kzmin
-    real*8 :: inj_time
-    real*8 :: ex_, ey_, ez_
-    integer :: iw  ! index of wave
-    real*8 :: time_env, radial_env  ! wave envelope
-
 
     do k = kb, ke
       ! fm = masking_func(k, iflag)
@@ -237,89 +237,16 @@ module m_field
       enddo
     enddo
 
-    ! inject waves via E field
-    if (inj_waves_efld .eqv. .true.) then
-      B0 = one/wpiwci  ! RMS amplitude of background B field  
-      mi = 0.
-      do j = 1, nspec
-        mi = mi + frac(j)*wspec(j)
-      enddo
-      VA = one/wpiwci/sqrt(mi) ! Alfven speed     
-
-      kxmin = two*pi/xmax
-      kymin = two*pi/ymax
-      kzmin = two*pi/zmax
-      kx = zero
-      ky = zero
-      inj_time = it * dtwci  ! in 1/wci
-
-      do iw = 1, 4 
-        ex_ = 0.0; ey_ = 0.0
-
-        if ( inj_dB_B0(iw)>0.0 .and. (kb-1)<=inj_z_pos(iw) .and. inj_z_pos(iw)<=ke+1 ) then 
-          if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)+inj_t_downramp(iw)) then
-            if (inj_time <= inj_t_upramp(iw)) then
-              time_env = (sin(0.5*pi*inj_time/inj_t_upramp(iw)))**2.
-            else if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)) then
-              time_env = 1.0
-            else
-              time_env = (cos(0.5*pi*(inj_time-inj_t_upramp(iw)-inj_t_flat(iw))/inj_t_downramp(iw)))**2.
-            endif 
-
-            kz = inj_wave_cycles(iw) * kzmin
-            if (inj_wave_pol(iw)==0) then  ! x-pol
-              ex_ = inj_dB_B0(iw)*B0/wpiwci*time_env*sin(kz*inj_time)
-            else if (inj_wave_pol(iw)==1) then ! y-pol, left-hand pol
-              ey_ = inj_dB_B0(iw)*B0/wpiwci*time_env*cos(kz*inj_time)
-            else if (inj_wave_pol(iw)==-1) then ! y-pol, right-hand pol
-              ey_ = -inj_dB_B0(iw)*B0/wpiwci*time_env*cos(kz*inj_time)
-            endif
-          endif 
-
-          if (inj_wave_radius(iw)==0) then ! inject at all x, y
-            do j = jb-1, je+1
-              do i = 1, nx2
-                ! add injection value to previous wave if they have the same injection position
-                if ( iw>1 .and. inj_z_pos(iw)==inj_z_pos(iw-1) ) then
-                 ex(i,j,inj_z_pos(iw)) = ex(i,j,inj_z_pos(iw)) + ex_
-                 ey(i,j,inj_z_pos(iw)) = ey(i,j,inj_z_pos(iw)) + ey_     
-                else ! injection at a new position, simply replace with the injection value
-                  ex(i,j,inj_z_pos(iw)) = ex_
-                  ey(i,j,inj_z_pos(iw)) = ey_
-                endif 
-              enddo
-            enddo
-          else ! inj_wave_radius(iw)>0, and selectively apply to x, y
-            do j = jb-1, je+1
-              do i = 1, nx2
-                if ( sqrt((i-nxmax/2.0)**2.0+(j-nymax/2.0)**2.0)<=inj_wave_radius(iw) ) then
-                  ! add radial envelope
-                  radial_env = cos(0.5*pi*(i-nxmax/2)/inj_wave_radius(iw))*cos(0.5*pi*(j-nymax/2)/inj_wave_radius(iw))
-                  ! add injection value to previous wave if they have the same injection position
-                  if ( iw>1 .and. inj_z_pos(iw)==inj_z_pos(iw-1) ) then
-                    ex(i,j,inj_z_pos(iw)) = ex(i,j,inj_z_pos(iw)) + ex_*radial_env
-                    ey(i,j,inj_z_pos(iw)) = ey(i,j,inj_z_pos(iw)) + ey_*radial_env
-                  else ! injection at a new position, simply replace with the injection value
-                    ex(i,j,inj_z_pos(iw)) = ex_*radial_env
-                    ey(i,j,inj_z_pos(iw)) = ey_*radial_env
-                  endif 
-                endif 
-              enddo
-            enddo
-          endif ! end inj_wave_radius
-
-        endif ! end inj_dB_B0(iw)
-
-      enddo ! end wave indexing (iw)
-
-    endif ! end if inj_waves_efld
-
-
     ! debug ez component (only when iflag==0, i.e., outside 'bcal' call)
     ! if (n_debug_ez > 0 .and. mod(it, n_debug_ez) ==0 .and. iflag==0) then
     !   write(int(100), '(I6,1x,4E14.6,1x)') it, &
     !       term1, term2, term3, term4
     ! endif 
+
+    ! wave injection via E field
+    if (inj_waves_e .eqv. .true.) then
+      call inject_waves_e
+    endif 
 
     ! boundary conditions
     call date_and_time(values=time_begin(:,18))

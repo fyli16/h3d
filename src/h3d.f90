@@ -9,7 +9,7 @@
 program h3d 
 
   use m_parameter
-  use m_init
+  ! use m_init
   use m_io
 
   use m_eta
@@ -121,7 +121,7 @@ program h3d
 
       ! update fields
       call date_and_time(values=time_begin(:,5))
-      if (inj_waves .eqv. .true.) call inject_waves  ! wave injection 
+      ! if (inj_waves .eqv. .true.) call inject_waves  ! wave injection 
       call update_fields
       call date_and_time(values=time_end(:,5))
       call add_time(time_begin(1,5),time_end(1,5),time_elapsed(5))

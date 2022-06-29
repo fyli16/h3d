@@ -19,6 +19,7 @@ OBJS =  $(BUILD_DIR)/param.of90 \
 				$(BUILD_DIR)/int2char.ogcc \
 				$(BUILD_DIR)/func.of90 \
 				$(BUILD_DIR)/mesh.of90 \
+				$(BUILD_DIR)/injection.of90\
 				$(BUILD_DIR)/field.of90\
 				$(BUILD_DIR)/particle.of90 \
 				$(BUILD_DIR)/eta.of90 \
