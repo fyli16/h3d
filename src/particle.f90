@@ -3,9 +3,6 @@ module m_particle
   use m_mesh
   implicit none
 
-  real*8, private :: hh, dth
-  integer, private :: is, i, j, k
-
   contains 
 
   !-----------------------------------------------------------------
@@ -17,6 +14,7 @@ module m_particle
   subroutine update_particles        
     integer*8 :: jbmin, jbmax, kbmin, kbmax
     real*8 :: dns_tmp
+    integer*8 :: is, i, j, k
 
     ! init density, velocity
     do is = 1, nspec
@@ -155,14 +153,14 @@ module m_particle
     real*8 :: foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8,foza
     real*8 :: w1e,w2e,w3e,w4e,w5e,w6e,w7e,w8e
     real*8 :: vex,vey,vez,vmag,vx_tmp,vy_tmp,vz_tmp
-    real*8 :: p2xs,p2ys,p2zs,q_p,th
+    real*8 :: p2xs,p2ys,p2zs,q_p,th, dth
 
-    integer*8 ii,iix,iixe, iiy,iiye,iiz,iize,irepeat,irepeatp,itmp
-    integer*8 iv,iye_cc,ize_cc,jv,npleavingp,nprecv,nprecvtmp
-    integer*8 Storage_Error_p,Storage_Error
-    integer*8:: nsendactual, nsendactualp, nrecvactual, nrecvactualp, &
-                jj,kk,ix,iy,iz,ixe,iye,ize, &
-                ixep1,iyep1,izep1,ixp1,iyp1,izp1
+    integer*8 :: is, i, j, k, ii,iix,iixe, iiy,iiye,iiz,iize,irepeat,irepeatp,itmp
+    integer*8 :: iv,iye_cc,ize_cc,jv,npleavingp,nprecv,nprecvtmp
+    integer*8 :: Storage_Error_p,Storage_Error
+    integer*8 :: nsendactual, nsendactualp, nrecvactual, nrecvactualp, &
+                  jj,kk,ix,iy,iz,ixe,iye,ize, &
+                  ixep1,iyep1,izep1,ixp1,iyp1,izp1
     real*8 :: pdata(7),rx,ry,rz,fx,fy,fz,w1,w2,w3,w4,w5,w6,w7,w8,xpart,ypart,zpart
     real*8 :: rxe, rye, rze, fxe, fye, fze
     real*8 :: x_disp,y_disp,z_disp 
@@ -208,13 +206,6 @@ module m_particle
                           + by(i+1,j+1,k+1) + by(i,j+1,k+1) + by(i,j,k+1) + by(i+1,j,k+1) )
           bz_av(i,j,k) = 0.125*( bz(i+1,j+1,k) + bz(i,j+1,k) + bz(i,j,k) + bz(i+1,j ,k) &
                           + bz(i+1,j+1,k+1) + bz(i,j+1,k+1) + bz(i,j,k+1) + bz(i+1,j,k+1) )
-
-          ! bx_av = ( bx(i+1,j,k) + bx(i,j,k+1) + bx(i-1,j,k) + bx(i,j ,k-1) &
-          !         + bx(i,j-1,k) + bx(i,j+1,k) )/6.0
-          ! by_av = ( by(i+1,j,k) + by(i,j,k+1) + by(i-1,j,k) + by(i,j ,k-1) &
-          !         + by(i,j-1,k) + by(i,j+1,k) )/6.0
-          ! bz_av = ( bz(i+1,j,k) + bz(i,j,k+1) + bz(i-1,j,k) + bz(i,j ,k-1) &
-          !         + bz(i,j-1,k) + bz(i,j+1,k) )/6.0
         enddo
       enddo
     enddo
@@ -513,8 +504,9 @@ module m_particle
   ! This subourtine pushes particles for half a step
   !---------------------------------------------------------------------
   subroutine push
-    integer*8 :: iixe,iiye,iize,l
+    integer*8 :: is, iixe,iiye,iize,l
     integer*8 :: ix,iy,iz,ixe,iye,ize,ixep1,iyep1,izep1,ixp1,iyp1,izp1
+    real*8 :: hh, dth
     real*8 :: bx1,bx2,bx3,bx4,bx5,bx6,bx7,bx8, &
               by1,by2,by3,by4,by5,by6,by7,by8, &
               bz1,bz2,bz3,bz4,bz5,bz6,bz7,bz8, & 
@@ -772,7 +764,7 @@ module m_particle
       integer*8 :: nsendactual,nsendactualp,nrecvactualp,nrecvactual,jj,kk,ix,iy,iz,ixe,iye,ize           &
                   ,ixep1,iyep1,izep1,ixp1,iyp1,izp1
       integer*8 :: Storage_Error_p,Storage_Error
-      integer*8 :: l
+      integer*8 :: l, is, i
       integer, dimension(8) :: nsend_to_nbr, nbrs
       integer :: idest,max_nsend,max_nrecv
       real*8, dimension(:,:,:), allocatable, target :: packed_pdata_send
@@ -1266,7 +1258,7 @@ module m_particle
   subroutine sort
     real*8 :: pstore(nplmax)
     integer :: pstore2(nplmax)
-    integer*8 :: id, kb1, ix, iy, iz, ixe ,iye, ize, l, nttot, nplist
+    integer*8 :: is, id, kb1, ix, iy, iz, ixe ,iye, ize, l, nttot, nplist
     real*8 :: rxe,rye,rze,fxe,fye,fze
 
     id = 0; kb1 = kb-1; iptemp = 0; porder = 0
@@ -1413,7 +1405,7 @@ module m_particle
   subroutine cal_temp
 
     real*8 :: rx,ry,rz,fx,fy,fz, xx,xy,xz,yy,yz,zz
-    integer*8 :: ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,l,iix,iixe
+    integer*8 :: is, ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,l,iix,iixe
     real*8 :: vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
               ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar
     real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,dns1,dns2,bxa,bya,bza,btota,dnst
@@ -1613,9 +1605,9 @@ module m_particle
       call xreal(p_yz (1,jb-1,kb-1,is),nx,ny,nz)
       call xreal(p_zz (1,jb-1,kb-1,is),nx,ny,nz)
 
-      do IZ = kb-1,ke
-        do IY = jb-1,je
-          do IX = 1, NX1
+      do iz = kb-1,ke
+        do iy = jb-1,je
+          do ix = 1, NX1
             if (dpedx(ix,iy,iz) /= 0.) then
               tpar (ix,iy,iz,is) = tpar (ix,iy,iz,is)/(   tx0(is)*dpedx(ix,iy,iz))
               tperp(ix,iy,iz,is) = tperp(ix,iy,iz,is)/(2.*tx0(is)*dpedx(ix,iy,iz))
@@ -1649,7 +1641,7 @@ module m_particle
   !-----------------------------------------------------------------
   subroutine cal_energy
     real*8 :: rx,ry,rz,fx,fy,fz,xx,xy,xz,yy,yz,zz
-    integer*8 ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,l,iix,iixe
+    integer*8 :: is, i, j, k, ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,l,iix,iixe
     real*8 :: vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
           ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar
     real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,dns1,dns2,bxa,bya,bza,btota,dnst
@@ -1820,6 +1812,7 @@ module m_particle
   !---------------------------------------------------------------------
   subroutine nsmooth (a)
     real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
+    integer*8 :: i, j, k
 
     ! copy input array "a" to "temp" including ghost cells
     do k=kb-1,ke+1
@@ -1851,7 +1844,7 @@ module m_particle
     enddo
 
     ! apply periodic BCs 
-    call XREALBCC(a,0_8,NX,NY,NZ)
+    call xrealbcc(a, 0_8, nx, ny, nz)
 
     return
   end subroutine nsmooth
@@ -1860,7 +1853,7 @@ module m_particle
   !---------------------------------------------------------------------
   subroutine cal_temp_2d
     real*8 :: rx,ry,rz,fx,fy,fz,xx,xy,xz,yy,yz,zz
-    integer*8 ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,l,iix,iixe
+    integer*8 :: is, ix,iy,iz,ixp1,iyp1,izp1,iiy,iiye,iiz,iize,l,iix,iixe
     real*8 :: vxa,vya,vza,rfrac,vxavg,vxavg1,vxavg2 &
           ,vyavg,vyavg1,vyavg2,vzavg,vzavg1,vzavg2,wperp2,wpar
     real*8 :: w1,w2,w3,w4,w5,w6,w7,w8,dns1,dns2,bxa,bya,bza,btota,dnst
@@ -1873,15 +1866,15 @@ module m_particle
 
     if (nspec >= 2) rfrac = frac(2)/frac(1)
 
-    do IS=1,NSPEC
+    do is = 1, nspec
       dpedx = 0.
 
       do IIZE = KB-1,KE
         do IIYE = JB-1,JE
           do IIXE = 1, NX1
             NP=IPHEAD(IIXE,IIYE,IIZE,IS)
-            do while (NP.NE.0)
-              L=NP
+            do while (np .ne. 0)
+              l = np
 
               ! Nonuniform mesh - using mesh_unmap
               rx=dtxi*mesh_unmap(meshX,x(l))+1.50000000000d+00
@@ -2066,9 +2059,9 @@ module m_particle
     real*8 :: foz1,foz2,foz3,foz4,foz5,foz6,foz7,foz8,foza
     real*8 :: w1e,w2e,w3e,w4e,w5e,w6e,w7e,w8e
     real*8 :: vex,vey,vez,vmag,vx_tmp,vy_tmp,vz_tmp
-    real*8 :: p2xs,p2ys,p2zs,q_p,th
+    real*8 :: p2xs,p2ys,p2zs,q_p,th, hh
 
-    integer*8 :: ii,iix,iixe,iiy,iiye,iiz,iize,irepeat,irepeatp,itmp
+    integer*8 :: is, i, j, k, ii,iix,iixe,iiy,iiye,iiz,iize,irepeat,irepeatp,itmp
     integer*8 :: iv,iye_cc,ize_cc,jv,kspc,npleavingp,nprecv,nprecvtmp
     integer*8 :: icount
     integer*8 :: count_kbq
@@ -2978,7 +2971,7 @@ module m_particle
 
 !---------------------------------------------------------------------
 subroutine nsmooth_2d (a,nx2m,ny2m,nz2m)
-  integer*8 :: nx2m, ny2m, nz2m
+  integer*8 :: i, j, k, nx2m, ny2m, nz2m
   real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: temp, a
 
   ! smoothing routine--assumes aperiodic in x
