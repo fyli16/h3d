@@ -44,11 +44,11 @@ $(BUILD_DIR)/%.of90: $(SRC_DIR)/%.f90
 	$(FC) $(OPTFLAGS) -J$(BUILD_DIR) -o $@ -c $< 
 
 clean:
-	rm $(BUILD_DIR)/*.mod 
-	rm $(BUILD_DIR)/*.of90
-	rm $(BUILD_DIR)/*.o 
-	rm $(BUILD_DIR)/*.ogcc 
-	rm $(BUILD_DIR)/${EFILE}
+	-rm $(BUILD_DIR)/*.mod 
+	-rm $(BUILD_DIR)/*.of90
+	-rm $(BUILD_DIR)/*.o 
+	-rm $(BUILD_DIR)/*.ogcc 
+	-rm $(BUILD_DIR)/${EFILE}
 
 
 
