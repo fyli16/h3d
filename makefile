@@ -4,8 +4,9 @@
 FC          = mpif90
 CC          = mpicc
 
-OPTFLAGS    = -O3 -ffree-line-length-none -fimplicit-none -cpp #-fcheck=all 
-OPTFLAGS2   = -O3 -ffree-line-length-none -fimplicit-none #-fcheck=all 
+# -fcheck=all
+OPTFLAGS_COMPILE = -O3 -fallow-argument-mismatch -ffree-line-length-none -fimplicit-none -cpp 
+OPTFLAGS_LINK    = -O3 -fallow-argument-mismatch -ffree-line-length-none -fimplicit-none 
 
 LIBS        = 
 
@@ -33,7 +34,7 @@ OBJS =  $(BUILD_DIR)/param.of90 \
 
 $(EFILE): $(OBJS)
 	@echo "linking..."
-	$(FC) $(OPTFLAGS2) -o $(BUILD_DIR)/$(EFILE) $(OBJS) $(LIBS)
+	$(FC) $(OPTFLAGS_LINK) -o $(BUILD_DIR)/$(EFILE) $(OBJS) $(LIBS)
 
 # Compile C files 
 $(BUILD_DIR)/%.ogcc: $(SRC_DIR)/%.c 
@@ -41,7 +42,7 @@ $(BUILD_DIR)/%.ogcc: $(SRC_DIR)/%.c
 
 # Compile Fortran files
 $(BUILD_DIR)/%.of90: $(SRC_DIR)/%.f90
-	$(FC) $(OPTFLAGS) -J$(BUILD_DIR) -o $@ -c $< 
+	$(FC) $(OPTFLAGS_COMPILE) -J$(BUILD_DIR) -o $@ -c $< 
 
 clean:
 	-rm $(BUILD_DIR)/*.mod 

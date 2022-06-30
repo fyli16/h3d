@@ -6,11 +6,6 @@ module load PrgEnv-gnu openmpi
 # set verbose
 setenv OMP_NUM_THREADS 1
 
-# setenv DATA_DIRECTORY ./data
-# setenv RESTART_DIRECTORY ./restart
-# mkdir -p $DATA_DIRECTORY
-# mkdir -p $RESTART_DIRECTORY
-
 mkdir -p data; mkdir -p restart
 
 mkdir -p data/bx;  mkdir -p data/by;  mkdir -p data/bz
