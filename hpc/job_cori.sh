@@ -7,18 +7,10 @@
 #SBATCH -n 64       
 #SBATCH -t 01:30:00 
 #SBATCH -A m2407  #MR
-##SBATCH -A m3757  #CSR
 #SBATCH --constraint=haswell
 
-module purge PrgEnv-intel
-module load PrgEnv-gnu openmpi
-# echo ""
-# echo "#--------------------- compling --------------------#"
-# make
-# echo ""
-# echo "#--------------------- cleaning --------------------#"
-# make clean
-# echo ""
+module purge
+module load impi
 
 # set verbose
 setenv OMP_NUM_THREADS 1

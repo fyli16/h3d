@@ -335,7 +335,7 @@ module m_init
     enddo
 
     ! 'move' particles with dt=0 (no actual push), just to collect 
-    ! moments which will be used in initializing fields at t=0
+    ! moments which will be used for initializing fields at t=0
     dt_tmp = dt
     dt = zero
     call update_particles 

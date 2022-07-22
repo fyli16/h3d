@@ -216,7 +216,7 @@ module m_particle
     ! particle number, injection, and escape
     deltime1 = 0.; deltime2 = 0.; npleavingp = 0
 
-    ! if dt==0, no actual particle push is done
+    ! if dt=0, no actual particle push is done
     if (dt > 0) then 
 
       ! push particles for a half step
@@ -533,6 +533,7 @@ module m_particle
       y_disp_max_p        = 0
       z_disp_max_p        = 0
       hh = 0.5*dt*qspec(is)/wspec(is)
+      dth = dt/2
   
       do iize = kb-1, ke
         do iiye = jb-1, je

@@ -395,7 +395,6 @@ module m_field
       call ecalc(1)
       ! B = B(n) + (dt/6)*(K1 + 2*K2 + 2*K3 + K4)
       do k = kb, ke+1
-        ! fm = masking_func(k, ii)
         fm = masking_func(k, ii)
         do j = jb, je+1
           do i = 2, nx2

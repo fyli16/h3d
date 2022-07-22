@@ -1,10 +1,12 @@
 #!/bin/tcsh
 
-module purge PrgEnv-intel
-module load PrgEnv-gnu openmpi
-
 # set verbose
 setenv OMP_NUM_THREADS 1
+
+# setenv DATA_DIRECTORY ./data
+# setenv RESTART_DIRECTORY ./restart
+# mkdir -p $DATA_DIRECTORY
+# mkdir -p $RESTART_DIRECTORY
 
 mkdir -p data; mkdir -p restart
 
@@ -26,5 +28,5 @@ mkdir -p data/ecal
 # setenv MPI_TYPE_MAX 65536
 # setenv MPI_REQUEST_MAX 65536
 
-srun -n 32 ./build/h3d
+srun -n 128 $HOME/src/h3d-dev/antenna-refactor/build/h3d
 exit
