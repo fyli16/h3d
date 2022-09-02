@@ -244,7 +244,8 @@ module m_field
     ! endif 
 
     ! wave injection via E field
-    if (inj_waves_e .eqv. .true.) then
+    ! only inject E field after updating B field (i.e., iflag=0)
+    if (iflag==0 .and. inj_waves_e .eqv. .true.) then
       call inject_waves_e
     endif 
 
