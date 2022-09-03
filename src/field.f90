@@ -307,8 +307,7 @@ module m_field
       bxs=bx; bys=by; bzs=bz ! save B at the start of each subcycle
 
       ! R-K part 1
-      call ecalc(1)  
-      endif 
+      call ecalc(1)   
       do k = kb, ke+1
         do j = jb, je+1
           do i = 2, nx2
