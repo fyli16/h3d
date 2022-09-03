@@ -45,7 +45,7 @@ module m_field
     call add_time(time_begin(1,51), time_end(1,51), time_elapsed(51))
 
     call date_and_time(values=time_begin(:,53))
-    call ecalc(0, 0)
+    call ecalc(0)
     call date_and_time(values=time_end(:,53))
     call add_time(time_begin(1,53), time_end(1,53), time_elapsed(53))
 
@@ -112,8 +112,8 @@ module m_field
   !---------------------------------------------------------------------
   ! computes electric field and curl(E)
   !---------------------------------------------------------------------
-  subroutine ecalc(iflag, inj_e_flag)
-    integer, intent(in) :: iflag, inj_e_flag
+  subroutine ecalc(iflag)
+    integer, intent(in) :: iflag
     integer*8 :: i, j, k
     real*8 :: term1, term2, term3, term4, fm
     real*8 :: tenx,teny,tenz,xj,yj,zj,bxx,byy,bzz,btot,tjdotb,curr_tot
@@ -245,7 +245,7 @@ module m_field
 
     ! wave injection via E field
     ! only inject E field after updating B field (i.e., iflag=0)
-    if (inj_e_flag>0 .and. inj_waves_e .eqv. .true.) then
+    if (iflag>0 .and. inj_waves_e .eqv. .true.) then
       call inject_waves_e
     endif 
 
@@ -257,7 +257,6 @@ module m_field
 
     ! calculate curl E
     do k = kb, ke+1
-      ! fm = masking_func(k, iflag)
       do j = jb, je+1
         do i = 2, nx2
           dexdy=  ex(i  ,j  ,k  ) + ex(i-1,j  ,k  ) + ex(i-1,j  ,k-1) + ex(i  ,j  ,k-1)   &
@@ -276,10 +275,6 @@ module m_field
           curlex(i,j,k) = dezdy/(4.*meshY%dxn(j+1)) - deydz/(4.*meshZ%dxn(k+1))  ! index in y, z start  at 0
           curley(i,j,k) = dexdz/(4.*meshZ%dxn(k+1)) - dezdx/(4.*meshX%dxn(i  ))  ! index in z starts at 0
           curlez(i,j,k) = deydx/(4.*meshX%dxn(i  )) - dexdy/(4.*meshY%dxn(j+1))  ! index in y starts at 0
-
-          ! curlex(i,j,k) = (dezdy/(4.*meshY%dxn(j+1)) - deydz/(4.*meshZ%dxn(k+1)))*fm  ! index in y, z start  at 0
-          ! curley(i,j,k) = (dexdz/(4.*meshZ%dxn(k+1)) - dezdx/(4.*meshX%dxn(i  )))*fm  ! index in z starts at 0
-          ! curlez(i,j,k) = (deydx/(4.*meshX%dxn(i  )) - dexdy/(4.*meshY%dxn(j+1)))*fm  ! index in y starts at 0
           
         enddo
       enddo
@@ -312,56 +307,33 @@ module m_field
       bxs=bx; bys=by; bzs=bz ! save B at the start of each subcycle
 
       ! R-K part 1
-      if (ii<2) then
-        call ecalc(1, 1) ! only inject E field at very first call
-      else
-        call ecalc(1,0)  
+      call ecalc(1)  
       endif 
-      ! B = B(n)+dt*K1/2
       do k = kb, ke+1
-        ! fm = masking_func(k, 1)
         do j = jb, je+1
           do i = 2, nx2
+            ! B = B(n)+dt*K1/2
             bx(i,j,k) = bxs(i,j,k) - dts2*curlex(i,j,k)
             by(i,j,k) = bys(i,j,k) - dts2*curley(i,j,k)
             bz(i,j,k) = bzs(i,j,k) - dts2*curlez(i,j,k)
-            ! bx(i,j,k) = ( bxs(i,j,k) - dts2*curlex(i,j,k) )*fm
-            ! by(i,j,k) = ( bys(i,j,k) - dts2*curley(i,j,k) )*fm
-            ! bz(i,j,k) = ( bzs(i,j,k) - dts2*curlez(i,j,k) )*fm
-          enddo
-        enddo
-      enddo   
-      ! temp1 = K1
-      do k = kb, ke+1
-        do j = jb, je+1
-          do i = 2, nx2
+            ! temp1 = -K1
             tempx1(i,j,k) = curlex(i,j,k)
             tempy1(i,j,k) = curley(i,j,k)
             tempz1(i,j,k) = curlez(i,j,k)
           enddo
         enddo
-      enddo
+      enddo   
         
       ! R-K part 2
-      call ecalc(1, 0)
-      ! B = B(n)+dt*K2/2
+      call ecalc(1)
       do k = kb, ke+1
-        ! fm = masking_func(k, 1)
         do j = jb, je+1
           do i = 2, nx2
+            ! B = B(n)+dt*K2/2
             bx(i,j,k) = bxs(i,j,k) - dts2*curlex(i,j,k)
             by(i,j,k) = bys(i,j,k) - dts2*curley(i,j,k)
             bz(i,j,k) = bzs(i,j,k) - dts2*curlez(i,j,k)
-            ! bx(i,j,k) = ( bxs(i,j,k) - dts2*curlex(i,j,k) )*fm
-            ! by(i,j,k) = ( bys(i,j,k) - dts2*curley(i,j,k) )*fm
-            ! bz(i,j,k) = ( bzs(i,j,k) - dts2*curlez(i,j,k) )*fm
-          enddo
-        enddo
-      enddo
-      ! temp1 = K1 + 2*K2
-      do k = kb, ke+1
-        do j = jb, je+1
-          do i = 2, nx2
+            ! temp1 = -K1 - 2*K2
             tempx1(i,j,k) = tempx1(i,j,k) + 2.*curlex(i,j,k)
             tempy1(i,j,k) = tempy1(i,j,k) + 2.*curley(i,j,k)
             tempz1(i,j,k) = tempz1(i,j,k) + 2.*curlez(i,j,k)
@@ -370,25 +342,15 @@ module m_field
       enddo
         
       ! R-K part 3
-      call ecalc(1, 0)
-      ! B = B(n)+dt*K3
+      call ecalc(1)
       do k = kb, ke+1
-        ! fm = masking_func(k, 1)
         do j = jb, je+1
           do i = 2, nx2
+            ! B = B(n)+dt*K3
             bx(i,j,k) = bxs(i,j,k) - dts*curlex(i,j,k)
             by(i,j,k) = bys(i,j,k) - dts*curley(i,j,k)
             bz(i,j,k) = bzs(i,j,k) - dts*curlez(i,j,k)
-            ! bx(i,j,k) = ( bxs(i,j,k) - dts*curlex(i,j,k) )*fm
-            ! by(i,j,k) = ( bys(i,j,k) - dts*curley(i,j,k) )*fm
-            ! bz(i,j,k) = ( bzs(i,j,k) - dts*curlez(i,j,k) )*fm
-          enddo
-        enddo
-      enddo
-      ! temp1 = K1 + 2*K2 + 2*K3
-      do k = kb, ke+1
-        do j = jb, je+1
-          do i = 2, nx2
+            ! temp1 = -K1 - 2*K2 - 2*K3
             tempx1(i,j,k) = tempx1(i,j,k) + 2.*curlex(i,j,k)
             tempy1(i,j,k) = tempy1(i,j,k) + 2.*curley(i,j,k)
             tempz1(i,j,k) = tempz1(i,j,k) + 2.*curlez(i,j,k)
@@ -397,12 +359,12 @@ module m_field
       enddo
         
       ! R-K part 4
-      call ecalc(1, 0)
-      ! B = B(n) + (dt/6)*(K1 + 2*K2 + 2*K3 + K4)
+      call ecalc(1)
       do k = kb, ke+1
         fm = masking_func(k, ii)
         do j = jb, je+1
           do i = 2, nx2
+            ! B = B(n) - (dt/6)*(-K1 - 2*K2 - 2*K3 - K4)
             ! bx(i,j,k) = bxs(i,j,k) - dts6*(tempx1(i,j,k)+curlex(i,j,k))
             ! by(i,j,k) = bys(i,j,k) - dts6*(tempy1(i,j,k)+curley(i,j,k))
             ! bz(i,j,k) = bzs(i,j,k) - dts6*(tempz1(i,j,k)+curlez(i,j,k))
