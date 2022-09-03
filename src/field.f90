@@ -45,7 +45,7 @@ module m_field
     call add_time(time_begin(1,51), time_end(1,51), time_elapsed(51))
 
     call date_and_time(values=time_begin(:,53))
-    call ecalc(0)
+    call ecalc(0, 0)
     call date_and_time(values=time_end(:,53))
     call add_time(time_begin(1,53), time_end(1,53), time_elapsed(53))
 
@@ -112,8 +112,8 @@ module m_field
   !---------------------------------------------------------------------
   ! computes electric field and curl(E)
   !---------------------------------------------------------------------
-  subroutine ecalc(iflag)
-    integer :: iflag
+  subroutine ecalc(iflag, inj_e_flag)
+    integer, intent(in) :: iflag, inj_e_flag
     integer*8 :: i, j, k
     real*8 :: term1, term2, term3, term4, fm
     real*8 :: tenx,teny,tenz,xj,yj,zj,bxx,byy,bzz,btot,tjdotb,curr_tot
@@ -245,7 +245,7 @@ module m_field
 
     ! wave injection via E field
     ! only inject E field after updating B field (i.e., iflag=0)
-    if (iflag==0 .and. inj_waves_e .eqv. .true.) then
+    if (inj_e_flag==1 .and. inj_waves_e .eqv. .true.) then
       call inject_waves_e
     endif 
 
@@ -312,7 +312,8 @@ module m_field
       bxs=bx; bys=by; bzs=bz ! save B at the start of each subcycle
 
       ! R-K part 1
-      call ecalc(1)    
+      if (ii==1) call ecalc(1, 1) ! only inject E field at very first call
+      call ecalc(1,0)  
       ! B = B(n)+dt*K1/2
       do k = kb, ke+1
         ! fm = masking_func(k, 1)
@@ -339,7 +340,7 @@ module m_field
       enddo
         
       ! R-K part 2
-      call ecalc(1)
+      call ecalc(1, 0)
       ! B = B(n)+dt*K2/2
       do k = kb, ke+1
         ! fm = masking_func(k, 1)
@@ -366,7 +367,7 @@ module m_field
       enddo
         
       ! R-K part 3
-      call ecalc(1)
+      call ecalc(1, 0)
       ! B = B(n)+dt*K3
       do k = kb, ke+1
         ! fm = masking_func(k, 1)
@@ -393,7 +394,7 @@ module m_field
       enddo
         
       ! R-K part 4
-      call ecalc(1)
+      call ecalc(1, 0)
       ! B = B(n) + (dt/6)*(K1 + 2*K2 + 2*K3 + K4)
       do k = kb, ke+1
         fm = masking_func(k, ii)
