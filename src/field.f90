@@ -312,8 +312,11 @@ module m_field
       bxs=bx; bys=by; bzs=bz ! save B at the start of each subcycle
 
       ! R-K part 1
-      if (ii==1) call ecalc(1, 1) ! only inject E field at very first call
-      call ecalc(1,0)  
+      if (ii==1) then
+        call ecalc(1, 1) ! only inject E field at very first call
+      else
+        call ecalc(1,0)  
+      endif 
       ! B = B(n)+dt*K1/2
       do k = kb, ke+1
         ! fm = masking_func(k, 1)
