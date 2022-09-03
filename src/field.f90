@@ -245,7 +245,7 @@ module m_field
 
     ! wave injection via E field
     ! only inject E field after updating B field (i.e., iflag=0)
-    if (inj_e_flag==1 .and. inj_waves_e .eqv. .true.) then
+    if (inj_e_flag>0 .and. inj_waves_e .eqv. .true.) then
       call inject_waves_e
     endif 
 
@@ -312,7 +312,7 @@ module m_field
       bxs=bx; bys=by; bzs=bz ! save B at the start of each subcycle
 
       ! R-K part 1
-      if (ii==1) then
+      if (ii<2) then
         call ecalc(1, 1) ! only inject E field at very first call
       else
         call ecalc(1,0)  
