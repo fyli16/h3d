@@ -239,7 +239,7 @@ module m_diag
 
     factor = (/wpiwci**2, wpiwci**2, wpiwci**2, wpiwci, wpiwci, wpiwci, &
               1.0_8, wpiwci, wpiwci, wpiwci/)
-    write(12,'(I6,1x,2I6,10E14.5,1x)') it, jb, kb, &
+    write(12,'(I10,1x,2I6,10E14.5,1x)') it, jb, kb, &
       ex(probe_x,jb,kb)*factor(1), ey(probe_x,jb,kb)*factor(2), ez(probe_x,jb,kb)*factor(3), &
       bx(probe_x,jb,kb)*factor(4), by(probe_x,jb,kb)*factor(5), bz(probe_x,jb,kb)*factor(6), &
       den(probe_x,jb,kb)*factor(7), &
