@@ -277,7 +277,7 @@ module m_restart
       xmax,ymax,zmax,gamma,                              &
       nplx, nply, nplz,                                               &
       n_sub_b, eta_par, netax, netay, nspec,   &
-      nx, ny, nz, restart, etamin, etamax, ieta
+      nx, ny, nz, etamin, etamax, ieta
 
       write(f_unit) hx,hy,hz,hxi,hyi,hzi                           &
       ,pi,efld,bfld,efluid,ethermal,eptcl,time,te0                &
@@ -431,7 +431,7 @@ module m_restart
       xmax,ymax,zmax,gamma,                  &
       nplx, nply, nplz,                                               &
       n_sub_b, eta_par, netax, netay, nspec,   &
-      nx, ny, nz, restart, etamin, etamax, ieta
+      nx, ny, nz, etamin, etamax, ieta
 
       read(f_unit) hx,hy,hz,hxi,hyi,hzi                            &
       ,efld,bfld,efluid,ethermal,eptcl,time,te0                                        &
