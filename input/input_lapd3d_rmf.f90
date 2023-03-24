@@ -43,11 +43,17 @@ sign_cos      = 1.0, ! sign of cos\theta which determines wave propagation direc
 inj_waves_b = .false., ! inject waves via B field
 inj_waves_bv = .false.,  ! inject waves via BV field
 inj_waves_e = .false.,  ! inject waves via E field
-inj_waves_b_rmf = .true.,  ! inject 3d RMF antenna waves via B field
+! inject 3d RMF antenna waves via B field
+!   in this case, allowing to inject 2 waves 
+!   the two waves have the same current loop radius: inj_wave_radius(1)
+inj_waves_b_rmf = .true.,  
+inj_rmf_ampl_corr = 0.31892948790361647, ! wave amplitude correction factor, 
+                                        !to make sure amplitude at wave center is gieven by inj_dB_B0
 
 ! currently, allowing to inject 4 waves. 
 ! waves that are injected at the location position should be placed next to 
 !    each other in the array, so their V, B will be added up during initialization
+
 ! wave properties
 inj_dB_B0(1:4)       = 1e-2,    1e-2,    0.0,    0.0,   ! injection wave amplitude
 inj_wave_cycles(1:4) = 9.0,     9.0,     30.0,   30.0,  ! number of wave cycles used to determine kz
