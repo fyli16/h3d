@@ -368,16 +368,19 @@ module m_init
   subroutine init_rmf_fields
     integer :: i, j
     real*8 :: dx, dy, xc, yc, xp, yp, r2, rho, alpha2, beta, beta2, m, Km, Em
+    real*8 :: loop_r, loop_r2
 
     if (myid==0) then
       print*
       print*, 'init B fields for RMF antenna injection'
     endif 
-    
+
     dx = xmax/nx
     dy = ymax/ny
     xc = xmax/2.0
     yc = ymax/2.0
+    loop_r = inj_wave_radius(1)*dx
+    loop_r2 = loop_r**2.0
 
     do j = jb-1, je+1
       do i = 1, nx2
@@ -386,24 +389,24 @@ module m_init
         r2 = xp**2.0 + yp**2.0
         ! current loop #1 fields
         rho = abs(yp)
-        alpha2 = inj_wave_radius(1)**2.0 + r2 - 2*inj_wave_radius(1)*rho
-        beta2  = inj_wave_radius(1)**2.0 + r2 + 2*inj_wave_radius(1)*rho
+        alpha2 = loop_r2 + r2 - 2*loop_r*rho
+        beta2  = loop_r2 + r2 + 2*loop_r*rho
         beta = sqrt(beta2)
         m = 1.0 - alpha2/beta2
         Km = ellipk(m)
         Em = ellipe(m)
-        rmf_bx1(i,j) = 0.5/(alpha2*beta)*((inj_wave_radius(1)**2.0-r2)*Em+alpha2*Km)
-        rmf_by1(i,j) = 0.5*xp*yp/(alpha2*beta*yp**2)*((inj_wave_radius(1)**2.0+r2)*Em-alpha2*Km)
+        rmf_bx1(i,j) = 0.5/(alpha2*beta)*((loop_r2-r2)*Em+alpha2*Km)
+        rmf_by1(i,j) = 0.5*xp*yp/(alpha2*beta*yp**2)*((loop_r2+r2)*Em-alpha2*Km)
         ! current loop #2 fields
         rho = abs(xp)
-        alpha2 = inj_wave_radius(1)**2.0 + r2 - 2*inj_wave_radius(1)*rho
-        beta2  = inj_wave_radius(1)**2.0 + r2 + 2*inj_wave_radius(1)*rho
+        alpha2 = loop_r2 + r2 - 2*loop_r*rho
+        beta2  = loop_r2 + r2 + 2*loop_r*rho
         beta = sqrt(beta2)
         m = 1.0 - alpha2/beta2
         Km = ellipk(m)
         Em = ellipe(m)
-        rmf_bx2(i,j) = 0.5*xp*yp/(alpha2*beta*xp**2)*((inj_wave_radius(1)**2.0+r2)*Em-alpha2*Km)
-        rmf_by2(i,j) = 0.5/(alpha2*beta)*((inj_wave_radius(1)**2.0-r2)*Em+alpha2*Km)
+        rmf_bx2(i,j) = 0.5*xp*yp/(alpha2*beta*xp**2)*((loop_r2+r2)*Em-alpha2*Km)
+        rmf_by2(i,j) = 0.5/(alpha2*beta)*((loop_r2-r2)*Em+alpha2*Km)
       enddo 
     enddo 
 
