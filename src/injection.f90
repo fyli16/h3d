@@ -7,6 +7,71 @@ module m_injection
   contains 
 
   !---------------------------------------------------------------------
+  ! inject 3D RMF antenna waves via B field
+  !---------------------------------------------------------------------
+  subroutine inject_waves_b_rmf
+    real*8 :: B0, VA, mi
+    real*8 :: kx, ky, kz, kxmin, kymin, kzmin
+    real*8 :: inj_time
+    real*8 :: bx_, by_, bz_
+    integer :: i, j, k
+    integer :: iw  ! index of wave
+    real*8 :: time_env, radial_env  ! wave envelope
+
+    B0 = one/wpiwci  ! RMS amplitude of background B field  
+    mi = 0.
+    do j = 1, nspec
+      mi = mi + frac(j)*wspec(j)
+    enddo
+    VA = one/wpiwci/sqrt(mi) ! Alfven speed     
+
+    kxmin = two*pi/xmax
+    kymin = two*pi/ymax
+    kzmin = two*pi/zmax
+    kx = zero
+    ky = zero
+    ! kz = wave_cycles*kzmin
+    inj_time = it * dtwci  ! in 1/wci
+
+    do iw = 1, 2 
+      bx_ = 0.0; by_ = 0.0
+
+      if ( inj_dB_B0(iw)>0.0 .and. (kb-1)<=inj_z_pos(iw) .and. inj_z_pos(iw)<=ke+1 ) then 
+        if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)+inj_t_downramp(iw)) then
+          if (inj_time <= inj_t_upramp(iw)) then
+            time_env = (sin(0.5*pi*inj_time/inj_t_upramp(iw)))**2.
+          else if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)) then
+            time_env = 1.0
+          else
+            time_env = (cos(0.5*pi*(inj_time-inj_t_upramp(iw)-inj_t_flat(iw))/inj_t_downramp(iw)))**2.
+          endif 
+
+          bx_ = inj_dB_B0(iw)*B0*time_env*inj_rmf_ampl_corr 
+          by_ = inj_dB_B0(iw)*B0*time_env*inj_rmf_ampl_corr
+        endif 
+
+        do j = jb-1, je+1
+          do i = 1, nx2
+            if (inj_wave_pol(iw)==0) then  ! x-pol
+              bx(i,j,inj_z_pos(iw)) = bx_*rmf_bx1(i,j)*sin(kz*inj_time)
+              by(i,j,inj_z_pos(iw)) = by_*rmf_by1(i,j)*sin(kz*inj_time)
+            else if (inj_wave_pol(iw)==1) then  ! left-hand
+              bx(i,j,inj_z_pos(iw)) = bx_*rmf_bx1(i,j)*sin(kz*inj_time) + bx_*rmf_bx2(i,j)*cos(kz*inj_time)
+              by(i,j,inj_z_pos(iw)) = by_*rmf_by1(i,j)*sin(kz*inj_time) + by_*rmf_by2(i,j)*cos(kz*inj_time)
+            else if (inj_wave_pol(iw)==-1) then  ! right-hand
+              bx(i,j,inj_z_pos(iw)) = bx_*rmf_bx1(i,j)*cos(kz*inj_time) + bx_*rmf_bx2(i,j)*sin(kz*inj_time)
+              by(i,j,inj_z_pos(iw)) = by_*rmf_by1(i,j)*cos(kz*inj_time) + by_*rmf_by2(i,j)*sin(kz*inj_time)
+            endif 
+          enddo
+        enddo
+
+      endif ! end inj_dB_B0(iw)
+    enddo ! end wave indexing (iw)
+
+  end subroutine inject_waves_b_rmf
+
+
+  !---------------------------------------------------------------------
   ! inject waves via B field
   !---------------------------------------------------------------------
   subroutine inject_waves_b

@@ -1,9 +1,15 @@
 !---------------------------------------------------------------------
-!                                 H3D (V6.0)                               
-!                           YURI'S NONUNIFORM MESH                         
-!                           3D IMPLEMENTATION ONLY                         
-!                      UNIFORM LOADING IN PHYSICAL SPACE                   
-!             (UNIFORM LOADING IN LOGICAL SPACE NOT YET IMPLEMENTED)       
+! H3D: Hybrid (massless electron fluid, ion kinetic) 3D code
+!
+! v6.0: Yuri's nonuniform mesh; 3D implementation only; 
+!       uniform loading in physical space; 
+!       uniform loading in logical space not yet implemented.
+!
+! v7.0: 01/2021 onward, by Feiyu Li (fyli.acad@gmail.com)
+!       refactored the codes and input decks; 
+!       implemented field masks for absorbing Alfven waves on sides;
+!       03/2023: implemented 3D rotating magnetic field (RMF) type 
+!                 Alfven wave injection;  
 !---------------------------------------------------------------------
 
 program h3d 
@@ -46,6 +52,11 @@ program h3d
   else
     call init_waves
     call init_particles 
+  endif 
+
+  ! init transverse distribution of B fields for RMF antenna injection
+  if (inj_waves_b_rmf) then
+    call init_rmf_fields
   endif 
 
   ! init diagnostics

@@ -32,7 +32,9 @@ module m_field
       call inject_waves_b  
     else if (inj_waves_bv) then
       call inject_waves_bv
-    endif 
+    else if (inj_waves_b_rmf) then
+      call inject_waves_b_rmf
+    endif
 
     call date_and_time(values=time_begin(:,52))
     call bcalc

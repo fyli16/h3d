@@ -2,6 +2,7 @@ module m_init
   use m_parameter
   use m_io
   use m_mesh
+  use m_functions
   implicit none
 
 
@@ -358,5 +359,55 @@ module m_init
     call MPI_BCAST(seed, seed_size, MPI_INTEGER, 0, MPI_COMM_WORLD, IERR)  
     call random_seed(put=myid*seed) ! set current seed
   end subroutine init_seed
+
+
+  !---------------------------------------------------------------------
+  ! pre-calculate B fields associated with current loops for 
+  !   RMF antenna injection
+  !---------------------------------------------------------------------
+  subroutine init_rmf_fields
+    integer :: i, j
+    real*8 :: dx, dy, xc, yc, xp, yp, r2, rho, alpha2, beta, beta2, m, Km, Em
+
+    if (myid==0) then
+      print*
+      print*, 'init B fields for RMF antenna injection'
+    endif 
+    
+    dx = xmax/nx
+    dy = ymax/ny
+    xc = xmax/2.0
+    yc = ymax/2.0
+
+    do j = jb-1, je+1
+      do i = 1, nx2
+        xp = i*dx - xc  ! x position relative to the center
+        yp = j*dy - yc  ! y position relative to the center
+        r2 = xp**2.0 + yp**2.0
+        ! current loop #1 fields
+        rho = abs(yp)
+        alpha2 = inj_wave_radius(1)**2.0 + r2 - 2*inj_wave_radius(1)*rho
+        beta2  = inj_wave_radius(1)**2.0 + r2 + 2*inj_wave_radius(1)*rho
+        beta = sqrt(beta2)
+        m = 1.0 - alpha2/beta2
+        Km = ellipk(m)
+        Em = ellipe(m)
+        rmf_bx1(i,j) = 0.5/(alpha2*beta)*((inj_wave_radius(1)**2.0-r2)*Em+alpha2*Km)
+        rmf_by1(i,j) = 0.5*xp*yp/(alpha2*beta*yp**2)*((inj_wave_radius(1)**2.0+r2)*Em-alpha2*Km)
+        ! current loop #2 fields
+        rho = abs(xp)
+        alpha2 = inj_wave_radius(1)**2.0 + r2 - 2*inj_wave_radius(1)*rho
+        beta2  = inj_wave_radius(1)**2.0 + r2 + 2*inj_wave_radius(1)*rho
+        beta = sqrt(beta2)
+        m = 1.0 - alpha2/beta2
+        Km = ellipk(m)
+        Em = ellipe(m)
+        rmf_bx2(i,j) = 0.5*xp*yp/(alpha2*beta*xp**2)*((inj_wave_radius(1)**2.0+r2)*Em-alpha2*Km)
+        rmf_by2(i,j) = 0.5/(alpha2*beta)*((inj_wave_radius(1)**2.0-r2)*Em+alpha2*Km)
+      enddo 
+    enddo 
+
+    return
+  end subroutine init_rmf_fields
 
 end module m_init 

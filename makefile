@@ -5,8 +5,10 @@ FC          = mpif90
 CC          = mpicc
 
 # -fcheck=all
-OPTFLAGS_COMPILE = -O3 -fallow-argument-mismatch -ffree-line-length-none -fimplicit-none -cpp 
-OPTFLAGS_LINK    = -O3 -fallow-argument-mismatch -ffree-line-length-none -fimplicit-none 
+# OPTFLAGS_COMPILE = -O3 -fallow-argument-mismatch -ffree-line-length-none -fimplicit-none -cpp 
+# OPTFLAGS_LINK    = -O3 -fallow-argument-mismatch -ffree-line-length-none -fimplicit-none 
+OPTFLAGS_COMPILE = -O3 -ffree-line-length-none -fimplicit-none -cpp 
+OPTFLAGS_LINK    = -O3 -ffree-line-length-none -fimplicit-none 
 
 LIBS        = 
 
@@ -16,10 +18,10 @@ SRC_DIR   = ./src
 
 # Define dependecies
 EFILE = h3d
-OBJS =  $(BUILD_DIR)/param.of90 \
+OBJS =  $(BUILD_DIR)/func.of90 \
+				$(BUILD_DIR)/param.of90 \
 				$(BUILD_DIR)/utils.of90\
 				$(BUILD_DIR)/int2char.ogcc \
-				$(BUILD_DIR)/func.of90 \
 				$(BUILD_DIR)/mesh.of90 \
 				$(BUILD_DIR)/injection.of90\
 				$(BUILD_DIR)/field.of90\

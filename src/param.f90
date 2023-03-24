@@ -128,10 +128,12 @@ module m_parameter
   integer :: wave_upramp, wave_flat, wave_downramp
 
   ! wave injection (max. 4 waves)
-  logical :: inj_waves_b, inj_waves_bv, inj_waves_e
+  logical :: inj_waves_b, inj_waves_bv, inj_waves_e, inj_waves_b_rmf
   integer, dimension(4) :: inj_z_pos, inj_wave_pol, inj_wave_radius
   real*8, dimension(4) :: inj_dB_B0, inj_wave_cycles, inj_sign_cos, &
         inj_t_upramp, inj_t_flat, inj_t_downramp 
+  real*8, dimension(:,:), allocatable :: rmf_bx1, rmf_by1, rmf_bx2, rmf_by2
+  real*8 :: inj_rmf_ampl_corr
 
   integer :: seed_size
   integer, allocatable :: seed(:)
@@ -163,7 +165,8 @@ module m_parameter
       n_sub_b, eta_par, mask, mask_zs, mask_r, mask_B0_fac, & 
       dB_B0, wave_cycles, sign_cos, wave_upramp, wave_flat, wave_downramp, &  
       ! wave injection
-      inj_waves_b, inj_waves_bv, inj_waves_e, inj_dB_B0, inj_wave_cycles, inj_sign_cos, inj_wave_pol, &
+      inj_waves_b, inj_waves_bv, inj_waves_e, inj_waves_b_rmf, inj_rmf_ampl_corr, &
+      inj_dB_B0, inj_wave_cycles, inj_sign_cos, inj_wave_pol, &
       inj_wave_radius, inj_z_pos, inj_t_upramp, inj_t_flat, inj_t_downramp, &
       ! plasma  
       nspec, n_sort, qspec, wspec, frac, denmin, & 
@@ -252,6 +255,8 @@ module m_parameter
     call MPI_BCAST(inj_waves_b            ,1     ,MPI_LOGICAL          ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(inj_waves_bv           ,1     ,MPI_LOGICAL          ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(inj_waves_e            ,1     ,MPI_LOGICAL          ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(inj_waves_b_rmf        ,1     ,MPI_LOGICAL          ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(inj_rmf_ampl_corr      ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(inj_dB_B0              ,4     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(inj_wave_cycles        ,4     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(inj_sign_cos           ,4     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
@@ -619,7 +624,9 @@ module m_parameter
       vix   (nxmax,jb-1:je+1,kb-1:ke+1), viy    (nxmax,jb-1:je+1,kb-1:ke+1), viz    (nxmax,jb-1:je+1,kb-1:ke+1), &  
       vixo  (nxmax,jb-1:je+1,kb-1:ke+1), viyo   (nxmax,jb-1:je+1,kb-1:ke+1), vizo   (nxmax,jb-1:je+1,kb-1:ke+1), & 
       curlbx(nxmax,jb-1:je+1,kb-1:ke+1), curlby (nxmax,jb-1:je+1,kb-1:ke+1), curlbz (nxmax,jb-1:je+1,kb-1:ke+1), & 
-      pe    (nxmax,jb-1:je+1,kb-1:ke+1), eta    (nxmax,jb-1:je+1,kb-1:ke+1), eta_times_b_dot_j(nxmax,jb-1:je+1,kb-1:ke+1) )
+      pe    (nxmax,jb-1:je+1,kb-1:ke+1), eta    (nxmax,jb-1:je+1,kb-1:ke+1), eta_times_b_dot_j(nxmax,jb-1:je+1,kb-1:ke+1), &
+      rmf_bx1(nxmax, jb-1:je+1), rmf_by1(nxmax, jb-1:je+1), &
+      rmf_bx2(nxmax, jb-1:je+1), rmf_by2(nxmax, jb-1:je+1) )
 
     allocate ( dns(nxmax,jb-1:je+1,kb-1:ke+1,nspec), &
                dnsh(nxmax,jb-1:je+1,kb-1:ke+1,nspec), &
