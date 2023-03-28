@@ -372,22 +372,23 @@ module m_init
 
     if (myid==0) then
       print*
-      print*, 'init B fields for RMF antenna injection'
+      print*, 'Init B fields for RMF antenna injection'
+      print*, "-------------------------------------------------" 
     endif 
 
-    dx = xmax/nx
-    dy = ymax/ny
+    dx = xmax/(nx+1)
+    dy = ymax/(ny-1)
     xc = xmax/2.0
     yc = ymax/2.0
     loop_r = inj_wave_radius(1)*dx
     loop_r2 = loop_r**2.0
     wire_r = 3.0*dx
-
+    
     ! current loop #1 fields
     do j = jb-1, je+1
       do i = 1, nx2
-        xp = i*dx - xc  ! x position relative to the center
-        yp = j*dy - yc  ! y position relative to the center
+        xp = (i-1)*dx - xc  ! x position relative to the center
+        yp = (j-1)*dy - yc  ! y position relative to the center
         if ( (xp**2.0+(yp-wire_r)**2.0>wire_r**2.0) .and. (xp**2.0+(yp+wire_r)**2.0>wire_r**2.0)  ) then
           r2 = xp**2.0 + yp**2.0
           rho = abs(yp)
@@ -402,7 +403,7 @@ module m_init
         else 
           rmf_bx1(i,j) = 0.0
           rmf_by1(i,j) = 0.0
-        endif 
+        endif     
       enddo 
     enddo 
 
