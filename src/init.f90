@@ -389,7 +389,7 @@ module m_init
       do i = 1, nx2
         xp = (i-1)*dx - xc  ! x position relative to the center
         yp = (j-1)*dy - yc  ! y position relative to the center
-        if ( (xp**2.0+(yp-wire_r)**2.0>wire_r**2.0) .and. (xp**2.0+(yp+wire_r)**2.0>wire_r**2.0)  ) then
+        if ( (xp**2.0+(yp-loop_r)**2.0>wire_r**2.0) .and. (xp**2.0+(yp+loop_r)**2.0>wire_r**2.0)  ) then
           r2 = xp**2.0 + yp**2.0
           rho = abs(yp)
           alpha2 = loop_r2 + r2 - 2*loop_r*rho
@@ -412,7 +412,7 @@ module m_init
       do i = 1, nx2
         xp = (i-1)*dx - xc  ! x position relative to the center
         yp = (j-1)*dy - yc  ! y position relative to the center
-        if ( ((xp-wire_r)**2.0+yp**2.0>wire_r**2.0) .and. ((xp+wire_r)**2.0+yp**2.0>wire_r**2.0)  ) then   
+        if ( ((xp-loop_r)**2.0+yp**2.0>wire_r**2.0) .and. ((xp+loop_r)**2.0+yp**2.0>wire_r**2.0)  ) then   
           r2 = xp**2.0 + yp**2.0 
           rho = abs(xp)
           alpha2 = loop_r2 + r2 - 2*loop_r*rho
