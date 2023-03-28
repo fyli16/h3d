@@ -410,8 +410,8 @@ module m_init
     ! current loop #2 fields
     do j = jb-1, je+1
       do i = 1, nx2
-        xp = i*dx - xc  ! x position relative to the center
-        yp = j*dy - yc  ! y position relative to the center
+        xp = (i-1)*dx - xc  ! x position relative to the center
+        yp = (j-1)*dy - yc  ! y position relative to the center
         if ( ((xp-wire_r)**2.0+yp**2.0>wire_r**2.0) .and. ((xp+wire_r)**2.0+yp**2.0>wire_r**2.0)  ) then    
           rho = abs(xp)
           alpha2 = loop_r2 + r2 - 2*loop_r*rho
