@@ -37,9 +37,9 @@ module m_injection
       bx_ = 0.0; by_ = 0.0
 
       if ( inj_dB_B0(iw)>0.0 .and. (kb-1)<=inj_z_pos(iw) .and. inj_z_pos(iw)<=ke+1 ) then 
-        
+
         if (inj_time <=inj_t_upramp(iw)) then
-          time_env = time_env = (sin(0.5*pi*inj_time/inj_t_upramp(iw)))**2.
+          time_env = (sin(0.5*pi*inj_time/inj_t_upramp(iw)))**2.
         else if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)) then
           time_env = 1.0
         else if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)+inj_t_downramp(iw)) then
@@ -107,7 +107,7 @@ module m_injection
       if ( inj_dB_B0(iw)>0.0 .and. (kb-1)<=inj_z_pos(iw) .and. inj_z_pos(iw)<=ke+1 ) then 
 
         if (inj_time <=inj_t_upramp(iw)) then
-          time_env = time_env = (sin(0.5*pi*inj_time/inj_t_upramp(iw)))**2.
+          time_env = (sin(0.5*pi*inj_time/inj_t_upramp(iw)))**2.
         else if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)) then
           time_env = 1.0
         else if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)+inj_t_downramp(iw)) then
