@@ -172,6 +172,10 @@ module m_field
           yj = curlby_scalar
           zj = curlbz_scalar
 
+          jx(i,j,k) = curlbx_scalar
+          jy(i,j,k) = curlby_scalar
+          jz(i,j,k) = curlbz_scalar
+
           if (eta_par==0) then
             tenx = eta(i,j,k)*xj
             teny = eta(i,j,k)*yj

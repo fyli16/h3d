@@ -47,7 +47,7 @@ module m_parameter
                           ixv_2_c_map, iyv_2_c_map, izv_2_c_map, &
                           ixv_2_v_map, iyv_2_v_map, izv_2_v_map  
 
-  real*8, dimension(:,:,:), allocatable :: uniform_mesh, ex, ey, ez, bx, by, bz, fox, foy, foz, &
+  real*8, dimension(:,:,:), allocatable :: uniform_mesh, ex, ey, ez, bx, by, bz, jx, jy, jz, fox, foy, foz, &
       eta, curlex, curley, curlez, bx_av, by_av, bz_av, bxs, bys, bzs, den, deno, denh, &
       dpedx, dpedy, dpedz, vix, viy, viz, vixo, viyo, vizo, pe, curlbx, curlby, curlbz, eta_times_b_dot_j
 
@@ -616,6 +616,7 @@ module m_parameter
       ex    (nxmax,jb-1:je+1,kb-1:ke+1), ey     (nxmax,jb-1:je+1,kb-1:ke+1), ez     (nxmax,jb-1:je+1,kb-1:ke+1), &
       bx    (nxmax,jb-1:je+1,kb-1:ke+1), by     (nxmax,jb-1:je+1,kb-1:ke+1), bz     (nxmax,jb-1:je+1,kb-1:ke+1), &
       bx_av (nxmax,jb-1:je+1,kb-1:ke+1), by_av  (nxmax,jb-1:je+1,kb-1:ke+1), bz_av  (nxmax,jb-1:je+1,kb-1:ke+1), &
+      jx    (nxmax,jb-1:je+1,kb-1:ke+1), jy     (nxmax,jb-1:je+1,kb-1:ke+1), jz     (nxmax,jb-1:je+1,kb-1:ke+1), &
       fox   (nxmax,jb-1:je+1,kb-1:ke+1), foy    (nxmax,jb-1:je+1,kb-1:ke+1), foz    (nxmax,jb-1:je+1,kb-1:ke+1), &
       curlex(nxmax,jb-1:je+1,kb-1:ke+1), curley (nxmax,jb-1:je+1,kb-1:ke+1), curlez (nxmax,jb-1:je+1,kb-1:ke+1), &
       bxs   (nxmax,jb-1:je+1,kb-1:ke+1), bys    (nxmax,jb-1:je+1,kb-1:ke+1), bzs    (nxmax,jb-1:je+1,kb-1:ke+1), &

@@ -149,6 +149,15 @@ module m_io
     open (file_unit(22),                                                                      &
           file= trim(trim(data_directory)//'foz/foz_'//trim(adjustl(cycle_ascii)))//'.gda',   &
           form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+    open (file_unit(26),                                                                      &
+          file= trim(trim(data_directory)//'jx/jx_'//trim(adjustl(cycle_ascii)))//'.gda',   &
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+    open (file_unit(27),                                                                      &
+          file= trim(trim(data_directory)//'jy/jy_'//trim(adjustl(cycle_ascii)))//'.gda',   &
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
+    open (file_unit(28),                                                                      &
+          file= trim(trim(data_directory)//'jz/jz_'//trim(adjustl(cycle_ascii)))//'.gda',   &
+          form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
     
     return
   end subroutine open_files
@@ -196,6 +205,33 @@ module m_io
       call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
       call write_file_non_mpio(uniform_mesh,rnorm,file_unit(3),irec_start,ny,nz)
+    endif
+
+    rnorm = 1.
+    uniform_mesh = jx 
+    if (MPI_IO_format) then
+      filename= trim(trim(data_directory)//'jx/jx_'//trim(adjustl(cycle_ascii)))//'.gda'
+      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    else
+      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(26),irec_start,ny,nz)
+    endif
+
+    rnorm = 1.
+    uniform_mesh = jy 
+    if (MPI_IO_format) then
+      filename= trim(trim(data_directory)//'jy/jy_'//trim(adjustl(cycle_ascii)))//'.gda'
+      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    else
+      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(27),irec_start,ny,nz)
+    endif
+
+    rnorm = 1.
+    uniform_mesh = jz
+    if (MPI_IO_format) then
+      filename= trim(trim(data_directory)//'jz/jz_'//trim(adjustl(cycle_ascii)))//'.gda'
+      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    else
+      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(28),irec_start,ny,nz)
     endif
 
     rnorm = 1.
