@@ -30,7 +30,6 @@ module m_injection
     kzmin = two*pi/zmax
     kx = zero
     ky = zero
-    ! kz = wave_cycles*kzmin
     inj_time = it * dtwci  ! in 1/wci
 
     do iw = 1, 4 
@@ -52,7 +51,6 @@ module m_injection
         by_ = inj_dB_B0(iw)*B0*time_env*inj_rmf_ampl_corr
 
         kz = inj_wave_cycles(iw) * kzmin
-
         do j = jb-1, je+1
           do i = 1, nx2
             if (inj_wave_pol(iw)==0) then  ! x-pol
@@ -117,7 +115,6 @@ module m_injection
         endif 
 
         kz = inj_wave_cycles(iw) * kzmin
-
         if (inj_wave_pol(iw)==0) then  ! x-pol
           bx_ = inj_dB_B0(iw)*B0*time_env*sin(kz*inj_time)
         else if (inj_wave_pol(iw)==1) then ! y-pol, left-hand pol
@@ -197,24 +194,25 @@ module m_injection
       bx_ = 0.0; by_ = 0.0
 
       if ( inj_dB_B0(iw)>0.0 .and. (kb-1)<=inj_z_pos(iw) .and. inj_z_pos(iw)<=ke+1 ) then 
-        if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)+inj_t_downramp(iw)) then
-          if (inj_time <= inj_t_upramp(iw)) then
-            time_env = (sin(0.5*pi*inj_time/inj_t_upramp(iw)))**2.
-          else if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)) then
-            time_env = 1.0
-          else
-            time_env = (cos(0.5*pi*(inj_time-inj_t_upramp(iw)-inj_t_flat(iw))/inj_t_downramp(iw)))**2.
-          endif 
 
-          kz = inj_wave_cycles(iw) * kzmin
-          if (inj_wave_pol(iw)==0) then  ! x-pol
-            bx_ = inj_dB_B0(iw)*B0*time_env*sin(kz*inj_time)
-          else if (inj_wave_pol(iw)==1) then ! y-pol, left-hand pol
-            by_ = inj_dB_B0(iw)*B0*time_env*cos(kz*inj_time)
-          else if (inj_wave_pol(iw)==-1) then ! y-pol, right-hand pol
-            by_ = -inj_dB_B0(iw)*B0*time_env*cos(kz*inj_time)
-          endif
-        endif 
+        if (inj_time <=inj_t_upramp(iw)) then
+          time_env = (sin(0.5*pi*inj_time/inj_t_upramp(iw)))**2.
+        else if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)) then
+          time_env = 1.0
+        else if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)+inj_t_downramp(iw)) then
+          time_env = (cos(0.5*pi*(inj_time-inj_t_upramp(iw)-inj_t_flat(iw))/inj_t_downramp(iw)))**2.
+        else 
+          time_env = 0.0
+        endif
+
+        kz = inj_wave_cycles(iw) * kzmin
+        if (inj_wave_pol(iw)==0) then  ! x-pol
+          bx_ = inj_dB_B0(iw)*B0*time_env*sin(kz*inj_time)
+        else if (inj_wave_pol(iw)==1) then ! y-pol, left-hand pol
+          by_ = inj_dB_B0(iw)*B0*time_env*cos(kz*inj_time)
+        else if (inj_wave_pol(iw)==-1) then ! y-pol, right-hand pol
+          by_ = -inj_dB_B0(iw)*B0*time_env*cos(kz*inj_time)
+        endif
 
         dvx_ = -VA*bx_/B0 * inj_sign_cos(iw) 
         dvy_ = -VA*by_/B0 * inj_sign_cos(iw)
@@ -300,24 +298,25 @@ module m_injection
       ex_ = 0.0; ey_ = 0.0
 
       if ( inj_dB_B0(iw)>0.0 .and. (kb-1)<=inj_z_pos(iw) .and. inj_z_pos(iw)<=ke+1 ) then 
-        if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)+inj_t_downramp(iw)) then
-          if (inj_time <= inj_t_upramp(iw)) then
-            time_env = (sin(0.5*pi*inj_time/inj_t_upramp(iw)))**2.
-          else if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)) then
-            time_env = 1.0
-          else
-            time_env = (cos(0.5*pi*(inj_time-inj_t_upramp(iw)-inj_t_flat(iw))/inj_t_downramp(iw)))**2.
-          endif 
 
-          kz = inj_wave_cycles(iw) * kzmin
-          if (inj_wave_pol(iw)==0) then  ! x-pol
-            ex_ = inj_dB_B0(iw)*B0/wpiwci*time_env*sin(kz*inj_time)
-          else if (inj_wave_pol(iw)==1) then ! y-pol, left-hand pol
-            ey_ = inj_dB_B0(iw)*B0/wpiwci*time_env*cos(kz*inj_time)
-          else if (inj_wave_pol(iw)==-1) then ! y-pol, right-hand pol
-            ey_ = -inj_dB_B0(iw)*B0/wpiwci*time_env*cos(kz*inj_time)
-          endif
-        endif 
+        if (inj_time <=inj_t_upramp(iw)) then
+          time_env = (sin(0.5*pi*inj_time/inj_t_upramp(iw)))**2.
+        else if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)) then
+          time_env = 1.0
+        else if (inj_time <= inj_t_upramp(iw)+inj_t_flat(iw)+inj_t_downramp(iw)) then
+          time_env = (cos(0.5*pi*(inj_time-inj_t_upramp(iw)-inj_t_flat(iw))/inj_t_downramp(iw)))**2.
+        else 
+          time_env = 0.0
+        endif
+
+        kz = inj_wave_cycles(iw) * kzmin
+        if (inj_wave_pol(iw)==0) then  ! x-pol
+          ex_ = inj_dB_B0(iw)*B0/wpiwci*time_env*sin(kz*inj_time)
+        else if (inj_wave_pol(iw)==1) then ! y-pol, left-hand pol
+          ey_ = inj_dB_B0(iw)*B0/wpiwci*time_env*cos(kz*inj_time)
+        else if (inj_wave_pol(iw)==-1) then ! y-pol, right-hand pol
+          ey_ = -inj_dB_B0(iw)*B0/wpiwci*time_env*cos(kz*inj_time)
+        endif
 
         if (inj_wave_radius(iw)==0) then ! inject at all x, y
           do j = jb-1, je+1
@@ -350,12 +349,9 @@ module m_injection
             enddo
           enddo
         endif ! end inj_wave_radius
-
       endif ! end inj_dB_B0(iw)
-
     enddo ! end wave indexing (iw)
 
   end subroutine inject_waves_e
-
 
 end module m_injection
