@@ -368,7 +368,7 @@ module m_init
   subroutine init_rmf_fields
     integer :: i, j
     real*8 :: dx, dy, xc, yc, xp, yp, r2, rho, alpha2, beta, beta2, m, Km, Em
-    real*8 :: loop_r, loop_r2
+    real*8 :: loop_r, loop_r2, wire_r
 
     if (myid==0) then
       print*
@@ -381,32 +381,50 @@ module m_init
     yc = ymax/2.0
     loop_r = inj_wave_radius(1)*dx
     loop_r2 = loop_r**2.0
+    wire_r = 3.0*dx
 
+    ! current loop #1 fields
     do j = jb-1, je+1
       do i = 1, nx2
         xp = i*dx - xc  ! x position relative to the center
         yp = j*dy - yc  ! y position relative to the center
-        r2 = xp**2.0 + yp**2.0
-        ! current loop #1 fields
-        rho = abs(yp)
-        alpha2 = loop_r2 + r2 - 2*loop_r*rho
-        beta2  = loop_r2 + r2 + 2*loop_r*rho
-        beta = sqrt(beta2)
-        m = 1.0 - alpha2/beta2
-        Km = ellipk(m)
-        Em = ellipe(m)
-        rmf_bx1(i,j) = 0.5/(alpha2*beta)*((loop_r2-r2)*Em+alpha2*Km)
-        rmf_by1(i,j) = 0.5*xp*yp/(alpha2*beta*yp**2)*((loop_r2+r2)*Em-alpha2*Km)
-        ! current loop #2 fields
-        rho = abs(xp)
-        alpha2 = loop_r2 + r2 - 2*loop_r*rho
-        beta2  = loop_r2 + r2 + 2*loop_r*rho
-        beta = sqrt(beta2)
-        m = 1.0 - alpha2/beta2
-        Km = ellipk(m)
-        Em = ellipe(m)
-        rmf_bx2(i,j) = 0.5*xp*yp/(alpha2*beta*xp**2)*((loop_r2+r2)*Em-alpha2*Km)
-        rmf_by2(i,j) = 0.5/(alpha2*beta)*((loop_r2-r2)*Em+alpha2*Km)
+        if ( (xp**2.0+(yp-wire_r)**2.0>wire_r**2.0) .and. (xp**2.0+(yp+wire_r)**2.0>wire_r**2.0)  ) then
+          r2 = xp**2.0 + yp**2.0
+          rho = abs(yp)
+          alpha2 = loop_r2 + r2 - 2*loop_r*rho
+          beta2  = loop_r2 + r2 + 2*loop_r*rho
+          beta = sqrt(beta2)
+          m = 1.0 - alpha2/beta2
+          Km = ellipk(m)
+          Em = ellipe(m)
+          rmf_bx1(i,j) = 0.5/(alpha2*beta)*((loop_r2-r2)*Em+alpha2*Km)
+          rmf_by1(i,j) = 0.5*xp*yp/(alpha2*beta*yp**2)*((loop_r2+r2)*Em-alpha2*Km)
+        else 
+          rmf_bx1(i,j) = 0.0
+          rmf_by1(i,j) = 0.0
+        endif 
+      enddo 
+    enddo 
+
+    ! current loop #2 fields
+    do j = jb-1, je+1
+      do i = 1, nx2
+        xp = i*dx - xc  ! x position relative to the center
+        yp = j*dy - yc  ! y position relative to the center
+        if ( ((xp-wire_r)**2.0+yp**2.0>wire_r**2.0) .and. ((xp+wire_r)**2.0+yp**2.0>wire_r**2.0)  ) then    
+          rho = abs(xp)
+          alpha2 = loop_r2 + r2 - 2*loop_r*rho
+          beta2  = loop_r2 + r2 + 2*loop_r*rho
+          beta = sqrt(beta2)
+          m = 1.0 - alpha2/beta2
+          Km = ellipk(m)
+          Em = ellipe(m)
+          rmf_bx2(i,j) = 0.5*xp*yp/(alpha2*beta*xp**2)*((loop_r2+r2)*Em-alpha2*Km)
+          rmf_by2(i,j) = 0.5/(alpha2*beta)*((loop_r2-r2)*Em+alpha2*Km)
+        else
+          rmf_bx2(i,j) = 0.0
+          rmf_by2(i,j) = 0.0
+        endif 
       enddo 
     enddo 
 
