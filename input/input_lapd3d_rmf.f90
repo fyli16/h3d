@@ -1,7 +1,7 @@
 &input
 
 ! ------------------ global simulation info -----------!
-tmax = 3000.0, ! max sim. time, in units of 1/wci
+tmax = 2000.0, ! max sim. time, in units of 1/wci
 dtwci = 0.01,  ! value of dt*wci
 restart = .false.,  ! whether to restart from 'restart' directory
 MPI_IO_format = .true., ! use MPI IO (one file only) instead of traditional binary output
@@ -43,18 +43,12 @@ sign_cos      = 1.0, ! sign of cos\theta which determines wave propagation direc
 inj_waves_b = .false., ! inject waves via B field
 inj_waves_bv = .false.,  ! inject waves via BV field
 inj_waves_e = .false.,  ! inject waves via E field
-! inject 3d RMF antenna waves via B field
-!   in this case, allowing to inject 2 waves 
-!   the two waves have the same current loop radius: inj_wave_radius(1)
-inj_waves_b_rmf = .true.,  
-inj_rmf_ampl_corr = 0.31892948790361647, ! wave amplitude correction factor, 
-                                        !to make sure amplitude at wave center is gieven by inj_dB_B0
 
-! currently, allowing to inject 4 waves. 
-! waves that are injected at the location position should be placed next to 
-!    each other in the array, so their V, B will be added up during initialization
+inj_waves_b_rmf = .true.,  ! inject 3d RMF antenna waves via B field; all waves share the same loop radius inj_wave_radius(1)
+inj_rmf_ampl_corr = 0.31892948790361647, ! amplitude correction to let amplitude at wave center = inj_dB_B0
 
-! wave properties
+! inject max. 4 waves; waves that are injected at the same location should be placed next to 
+!    each other in the array, so their V, B will be added up during injection
 inj_dB_B0(1:4)       = 1e-2,    1e-2,    0.0,    0.0,   ! injection wave amplitude
 inj_wave_cycles(1:4) = 9.0,     9.0,     30.0,   30.0,  ! number of wave cycles used to determine kz
 inj_sign_cos(1:4)    = 1.0,     1.0,     -1.0,    -1.0,  ! sign of cos\theta which determines wave propagation dir.
