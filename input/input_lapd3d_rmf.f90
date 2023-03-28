@@ -57,7 +57,7 @@ inj_wave_radius(1:4) = 10,        10,       0,       0, ! raidus of wave injecti
 
 ! injection properties
 inj_z_pos(1:4)       = 70,    70,      0,      0,   ! injection z position (in cell)
-inj_t_upramp(1:4)    = 50.0   50.0,  200.0,  200.0,  ! injection upramp time (in 1/wci)
+inj_t_upramp(1:4)    = 50.0,   50.0,  200.0,  200.0,  ! injection upramp time (in 1/wci)
 inj_t_flat(1:4)      = 1e8,   1e8,  200.0,  200.0,  ! injection flat time (in 1/wci)
 inj_t_downramp(1:4)  = 200.0, 200.0,  200.0,  200.0,  ! injection downramp time (in 1/wci)
 
@@ -82,7 +82,7 @@ n_sort = 10, ! frequency at which to sort particles
 ieta   = 0,      ! available models ieta=1,2,3,4,5,6
 resis  = 1.0e-5,  ! for ieta=0: constant resisitivity 
 netax  = 10,     ! for ieta=1   
-netay  = 2 
+netay  = 2, 
 etamin = 1.0e-6, ! for ieta>0
 etamax = 5.0e-5,
 eta_zs = 200,    ! for ieta=6: z scale length (in cell) of the resistive layers
