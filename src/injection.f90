@@ -47,8 +47,10 @@ module m_injection
           time_env = 0.0
         endif 
 
-        bx_ = inj_dB_B0(iw)*B0*time_env*inj_rmf_ampl_corr 
-        by_ = inj_dB_B0(iw)*B0*time_env*inj_rmf_ampl_corr
+        ! bx_ = inj_dB_B0(iw)*B0*time_env*inj_rmf_ampl_corr 
+        ! by_ = inj_dB_B0(iw)*B0*time_env*inj_rmf_ampl_corr
+        bx_ = inj_dB_B0(iw)*B0*time_env
+        by_ = inj_dB_B0(iw)*B0*time_env
 
         kz = inj_wave_cycles(iw) * kzmin
         do j = jb, je
