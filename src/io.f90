@@ -71,7 +71,7 @@ module m_io
     integer*8 :: i, lenrec
   
     lenrec = (nxmax-2)*recl_for_single
-    do i = 1, 25
+    do i = 1, 28
       file_unit(i) = 250 + i
     enddo
 
