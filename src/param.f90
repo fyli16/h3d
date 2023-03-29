@@ -626,8 +626,9 @@ module m_parameter
       vixo  (nxmax,jb-1:je+1,kb-1:ke+1), viyo   (nxmax,jb-1:je+1,kb-1:ke+1), vizo   (nxmax,jb-1:je+1,kb-1:ke+1), & 
       curlbx(nxmax,jb-1:je+1,kb-1:ke+1), curlby (nxmax,jb-1:je+1,kb-1:ke+1), curlbz (nxmax,jb-1:je+1,kb-1:ke+1), & 
       pe    (nxmax,jb-1:je+1,kb-1:ke+1), eta    (nxmax,jb-1:je+1,kb-1:ke+1), eta_times_b_dot_j(nxmax,jb-1:je+1,kb-1:ke+1), &
-      rmf_bx1(nxmax, jb-1:je+1), rmf_by1(nxmax, jb-1:je+1), &
-      rmf_bx2(nxmax, jb-1:je+1), rmf_by2(nxmax, jb-1:je+1) )
+      rmf_bx1(nx, ny), rmf_by1(nx, ny), rmf_bx2(nx, ny), rmf_by2(nx, ny) ) 
+      ! rmf_bx1(nxmax, jb-1:je+1), rmf_by1(nxmax, jb-1:je+1), &
+      ! rmf_bx2(nxmax, jb-1:je+1), rmf_by2(nxmax, jb-1:je+1) )
 
     allocate ( dns(nxmax,jb-1:je+1,kb-1:ke+1,nspec), &
                dnsh(nxmax,jb-1:je+1,kb-1:ke+1,nspec), &

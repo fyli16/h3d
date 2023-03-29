@@ -366,71 +366,85 @@ module m_init
   !   RMF antenna injection
   !---------------------------------------------------------------------
   subroutine init_rmf_fields
-    integer :: i, j
-    real*8 :: dx, dy, xc, yc, xp, yp, r2, rho, alpha2, beta, beta2, m, Km, Em
-    real*8 :: loop_r, loop_r2, wire_r
-
-    if (myid==0) then
-      print*
-      print*, 'Init B fields for RMF antenna injection'
-      print*, "-------------------------------------------------" 
-    endif 
-
-    dx = xmax/(nx+1)
-    dy = ymax/(ny-1)
-    xc = xmax/2.0
-    yc = ymax/2.0
-    loop_r = inj_wave_radius(1)*dx
-    loop_r2 = loop_r**2.0
-    wire_r = 3.0*dx
-    
-    ! current loop #1 fields
-    do j = jb-1, je+1
-      do i = 1, nx2
-        xp = (i-1)*dx - xc  ! x position relative to the center
-        yp = (j-1)*dy - yc  ! y position relative to the center
-        if ( (xp**2.0+(yp-loop_r)**2.0>wire_r**2.0) .and. (xp**2.0+(yp+loop_r)**2.0>wire_r**2.0)  ) then
-          r2 = xp**2.0 + yp**2.0
-          rho = abs(yp)
-          alpha2 = loop_r2 + r2 - 2*loop_r*rho
-          beta2  = loop_r2 + r2 + 2*loop_r*rho
-          beta = sqrt(beta2)
-          m = 1.0 - alpha2/beta2
-          Km = ellipk(m)
-          Em = ellipe(m)
-          rmf_bx1(i,j) = 0.5/(alpha2*beta)*((loop_r2-r2)*Em+alpha2*Km)
-          rmf_by1(i,j) = 0.5*xp*yp/(alpha2*beta*yp**2)*((loop_r2+r2)*Em-alpha2*Km)
-        else 
-          rmf_bx1(i,j) = 0.0
-          rmf_by1(i,j) = 0.0
-        endif     
-      enddo 
-    enddo 
-
-    ! current loop #2 fields
-    do j = jb-1, je+1
-      do i = 1, nx2
-        xp = (i-1)*dx - xc  ! x position relative to the center
-        yp = (j-1)*dy - yc  ! y position relative to the center
-        if ( ((xp-loop_r)**2.0+yp**2.0>wire_r**2.0) .and. ((xp+loop_r)**2.0+yp**2.0>wire_r**2.0)  ) then   
-          r2 = xp**2.0 + yp**2.0 
-          rho = abs(xp)
-          alpha2 = loop_r2 + r2 - 2*loop_r*rho
-          beta2  = loop_r2 + r2 + 2*loop_r*rho
-          beta = sqrt(beta2)
-          m = 1.0 - alpha2/beta2
-          Km = ellipk(m)
-          Em = ellipe(m)
-          rmf_bx2(i,j) = 0.5*xp*yp/(alpha2*beta*xp**2)*((loop_r2+r2)*Em-alpha2*Km)
-          rmf_by2(i,j) = 0.5/(alpha2*beta)*((loop_r2-r2)*Em+alpha2*Km)
-        else
-          rmf_bx2(i,j) = 0.0
-          rmf_by2(i,j) = 0.0
-        endif 
-      enddo 
-    enddo 
-
-    return
+    open(329, FILE="bx1.txt")
+    read(329,*) rmf_bx1
+    close(329)
+    open(329, FILE="by1.txt")
+    read(329,*) rmf_by1
+    close(329)
+    open(329, FILE="bx2.txt")
+    read(329,*) rmf_bx2
+    close(329)
+    open(329, FILE="by2.txt")
+    read(329,*) rmf_by2
+    close(329)
   end subroutine init_rmf_fields
+  ! subroutine init_rmf_fields
+  !   integer :: i, j
+  !   real*8 :: dx, dy, xc, yc, xp, yp, r2, rho, alpha2, beta, beta2, m, Km, Em
+  !   real*8 :: loop_r, loop_r2, wire_r
+
+  !   if (myid==0) then
+  !     print*
+  !     print*, 'Init B fields for RMF antenna injection'
+  !     print*, "-------------------------------------------------" 
+  !   endif 
+
+  !   dx = xmax/(nx+1)
+  !   dy = ymax/(ny-1)
+  !   xc = xmax/2.0
+  !   yc = ymax/2.0
+  !   loop_r = inj_wave_radius(1)*dx
+  !   loop_r2 = loop_r**2.0
+  !   wire_r = 3.0*dx
+    
+  !   ! current loop #1 fields
+  !   do j = jb-1, je+1
+  !     do i = 1, nx2
+  !       xp = (i-1)*dx - xc  ! x position relative to the center
+  !       yp = (j-1)*dy - yc  ! y position relative to the center
+  !       if ( (xp**2.0+(yp-loop_r)**2.0>wire_r**2.0) .and. (xp**2.0+(yp+loop_r)**2.0>wire_r**2.0)  ) then
+  !         r2 = xp**2.0 + yp**2.0
+  !         rho = abs(yp)
+  !         alpha2 = loop_r2 + r2 - 2*loop_r*rho
+  !         beta2  = loop_r2 + r2 + 2*loop_r*rho
+  !         beta = sqrt(beta2)
+  !         m = 1.0 - alpha2/beta2
+  !         Km = ellipk(m)
+  !         Em = ellipe(m)
+  !         rmf_bx1(i,j) = 0.5/(alpha2*beta)*((loop_r2-r2)*Em+alpha2*Km)
+  !         rmf_by1(i,j) = 0.5*xp*yp/(alpha2*beta*yp**2)*((loop_r2+r2)*Em-alpha2*Km)
+  !       else 
+  !         rmf_bx1(i,j) = 0.0
+  !         rmf_by1(i,j) = 0.0
+  !       endif     
+  !     enddo 
+  !   enddo 
+
+  !   ! current loop #2 fields
+  !   do j = jb-1, je+1
+  !     do i = 1, nx2
+  !       xp = (i-1)*dx - xc  ! x position relative to the center
+  !       yp = (j-1)*dy - yc  ! y position relative to the center
+  !       if ( ((xp-loop_r)**2.0+yp**2.0>wire_r**2.0) .and. ((xp+loop_r)**2.0+yp**2.0>wire_r**2.0)  ) then   
+  !         r2 = xp**2.0 + yp**2.0 
+  !         rho = abs(xp)
+  !         alpha2 = loop_r2 + r2 - 2*loop_r*rho
+  !         beta2  = loop_r2 + r2 + 2*loop_r*rho
+  !         beta = sqrt(beta2)
+  !         m = 1.0 - alpha2/beta2
+  !         Km = ellipk(m)
+  !         Em = ellipe(m)
+  !         rmf_bx2(i,j) = 0.5*xp*yp/(alpha2*beta*xp**2)*((loop_r2+r2)*Em-alpha2*Km)
+  !         rmf_by2(i,j) = 0.5/(alpha2*beta)*((loop_r2-r2)*Em+alpha2*Km)
+  !       else
+  !         rmf_bx2(i,j) = 0.0
+  !         rmf_by2(i,j) = 0.0
+  !       endif 
+  !     enddo 
+  !   enddo 
+
+  !   return
+  ! end subroutine init_rmf_fields
 
 end module m_init 

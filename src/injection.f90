@@ -51,8 +51,8 @@ module m_injection
         by_ = inj_dB_B0(iw)*B0*time_env*inj_rmf_ampl_corr
 
         kz = inj_wave_cycles(iw) * kzmin
-        do j = jb-1, je+1
-          do i = 1, nx2
+        do j = jb, je
+          do i = 1, nx
             if (inj_wave_pol(iw)==0) then  ! x-pol
               bx(i,j,inj_z_pos(iw)) = bx_*rmf_bx1(i,j)*sin(kz*inj_time)
               by(i,j,inj_z_pos(iw)) = by_*rmf_by1(i,j)*sin(kz*inj_time)
@@ -65,6 +65,20 @@ module m_injection
             endif 
           enddo
         enddo
+        ! do j = jb-1, je+1
+        !   do i = 1, nx2
+        !     if (inj_wave_pol(iw)==0) then  ! x-pol
+        !       bx(i,j,inj_z_pos(iw)) = bx_*rmf_bx1(i,j)*sin(kz*inj_time)
+        !       by(i,j,inj_z_pos(iw)) = by_*rmf_by1(i,j)*sin(kz*inj_time)
+        !     else if (inj_wave_pol(iw)==1) then  ! left-hand
+        !       bx(i,j,inj_z_pos(iw)) = bx_*rmf_bx1(i,j)*sin(kz*inj_time) + bx_*rmf_bx2(i,j)*cos(kz*inj_time)
+        !       by(i,j,inj_z_pos(iw)) = by_*rmf_by1(i,j)*sin(kz*inj_time) + by_*rmf_by2(i,j)*cos(kz*inj_time)
+        !     else if (inj_wave_pol(iw)==-1) then  ! right-hand
+        !       bx(i,j,inj_z_pos(iw)) = bx_*rmf_bx1(i,j)*cos(kz*inj_time) + bx_*rmf_bx2(i,j)*sin(kz*inj_time)
+        !       by(i,j,inj_z_pos(iw)) = by_*rmf_by1(i,j)*cos(kz*inj_time) + by_*rmf_by2(i,j)*sin(kz*inj_time)
+        !     endif 
+        !   enddo
+        ! enddo
 
       endif ! end inj_dB_B0(iw)
     enddo ! end wave indexing (iw)
