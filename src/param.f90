@@ -103,7 +103,7 @@ module m_parameter
   real*8 ::  hx, hy, hz, hxi, hyi, hzi, dtxi, dtyi, dtzi, &
             efld, bfld, efluid, ethermal, eptcl, time, te0
 
-  integer*8 :: nsteps0, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(25), &
+  integer*8 :: nsteps0, iwt=0, nx1, nx2, ny1, ny2, nz1, nz2, iopen, file_unit(28), &
               file_unit_read(20), nptot, npleaving, npentering, iclock_speed, nptotp
 
   real*8, dimension(:), allocatable :: dfac
