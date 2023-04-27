@@ -5,7 +5,7 @@
 #SBATCH -N 1
 #SBATCH -n 56
 #SBATCH -t 01:00:00
-#SBATCH -A PHY20020     
+#SBATCH -A ATM21003     
 
 module purge
 module load gcc/9.1.0 impi/19.0.9
@@ -23,6 +23,7 @@ mkdir -p data; mkdir -p restart
 mkdir -p data/bx;  mkdir -p data/by;  mkdir -p data/bz
 mkdir -p data/ex;  mkdir -p data/ey;  mkdir -p data/ez
 mkdir -p data/den; mkdir -p data/eta; mkdir -p data/eta_par
+mkdir -p data/jx;  mkdir -p data/jy;  mkdir -p data/jz
 
 mkdir -p data/particle; mkdir -p data/probes
 

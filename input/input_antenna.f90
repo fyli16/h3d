@@ -49,7 +49,6 @@ inj_waves = .true., ! whether injection or not
 ! wave properties
 inj_dB_B0(1:4)       = 3e-3,    3e-3,    0.0,    0.0,   ! injection wave amplitude
 inj_wave_cycles(1:4) = 16.0,   16.0,     30.0,   30.0,  ! number of wave cycles used to determine kz
-inj_sign_cos(1:4)    = 1.0,     1.0,     -1.0,    -1.0,  ! sign of cos\theta which determines wave propagation dir.
 inj_wave_pol(1:4)    = 0,         1,       0,      1, ! polarization; 0:x, 1:y (left-hand), -1:y (right-hand)
 
 ! injection properties

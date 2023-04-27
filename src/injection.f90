@@ -47,26 +47,28 @@ module m_injection
           time_env = 0.0
         endif 
 
-        ! bx_ = inj_dB_B0(iw)*B0*time_env*inj_rmf_ampl_corr 
-        ! by_ = inj_dB_B0(iw)*B0*time_env*inj_rmf_ampl_corr
         bx_ = inj_dB_B0(iw)*B0*time_env
         by_ = inj_dB_B0(iw)*B0*time_env
 
         kz = inj_wave_cycles(iw) * kzmin
         do j = jb, je
           do i = 1, nx
-            if (inj_wave_pol(iw)==0) then  ! x-pol
+            if (inj_wave_pol(iw)==0) then  ! linear x
               bx(i,j,inj_z_pos(iw)) = bx_*rmf_bx1(i,j)*sin(kz*inj_time)
               by(i,j,inj_z_pos(iw)) = by_*rmf_by1(i,j)*sin(kz*inj_time)
-            else if (inj_wave_pol(iw)==1) then  ! left-hand
-              bx(i,j,inj_z_pos(iw)) = bx_*rmf_bx1(i,j)*sin(kz*inj_time) + bx_*rmf_bx2(i,j)*cos(kz*inj_time)
-              by(i,j,inj_z_pos(iw)) = by_*rmf_by1(i,j)*sin(kz*inj_time) + by_*rmf_by2(i,j)*cos(kz*inj_time)
-            else if (inj_wave_pol(iw)==-1) then  ! right-hand
+            else if (inj_wave_pol(iw)==1) then  ! linear y
+              bx(i,j,inj_z_pos(iw)) = bx_*rmf_bx2(i,j)*sin(kz*inj_time)
+              by(i,j,inj_z_pos(iw)) = by_*rmf_by2(i,j)*sin(kz*inj_time)
+            else if (inj_wave_pol(iw)==2) then  ! c-pol, left-hand
+              bx(i,j,inj_z_pos(iw)) = bx_*rmf_bx1(i,j)*cos(kz*inj_time) - bx_*rmf_bx2(i,j)*sin(kz*inj_time)
+              by(i,j,inj_z_pos(iw)) = by_*rmf_by1(i,j)*cos(kz*inj_time) - by_*rmf_by2(i,j)*sin(kz*inj_time)
+            else if (inj_wave_pol(iw)==3) then  ! c-pol, right-hand
               bx(i,j,inj_z_pos(iw)) = bx_*rmf_bx1(i,j)*cos(kz*inj_time) + bx_*rmf_bx2(i,j)*sin(kz*inj_time)
               by(i,j,inj_z_pos(iw)) = by_*rmf_by1(i,j)*cos(kz*inj_time) + by_*rmf_by2(i,j)*sin(kz*inj_time)
             endif 
           enddo
         enddo
+        
         ! do j = jb-1, je+1
         !   do i = 1, nx2
         !     if (inj_wave_pol(iw)==0) then  ! x-pol
@@ -131,47 +133,33 @@ module m_injection
         endif 
 
         kz = inj_wave_cycles(iw) * kzmin
-        if (inj_wave_pol(iw)==0) then  ! x-pol
+        if (inj_wave_pol(iw)==0) then  ! linear x
           bx_ = inj_dB_B0(iw)*B0*time_env*sin(kz*inj_time)
-        else if (inj_wave_pol(iw)==1) then ! y-pol, left-hand pol
+          by_ = 0.0
+        else if (inj_wave_pol(iw)==1) then  ! linear y
+          bx_ = 0.0
+          by_ = inj_dB_B0(iw)*B0*time_env*sin(kz*inj_time)
+        else if (inj_wave_pol(iw)==2) then  ! c-pol, left-hand
+          bx_ = inj_dB_B0(iw)*B0*time_env*sin(kz*inj_time)
           by_ = inj_dB_B0(iw)*B0*time_env*cos(kz*inj_time)
-        else if (inj_wave_pol(iw)==-1) then ! y-pol, right-hand pol
+        else if (inj_wave_pol(iw)==3) then  ! c-pol, right-hand
+          bx_ = inj_dB_B0(iw)*B0*time_env*sin(kz*inj_time)
           by_ = -inj_dB_B0(iw)*B0*time_env*cos(kz*inj_time)
-        endif
+        endif 
 
-        if (inj_wave_radius(iw)==0) then ! inject at all x, y
-          do j = jb-1, je+1
-            do i = 1, nx2
-              ! add injection value to previous wave if they have the same injection position
-              if ( iw>1 .and. inj_z_pos(iw)==inj_z_pos(iw-1) ) then
-                bx(i,j,inj_z_pos(iw)) = bx(i,j,inj_z_pos(iw)) + bx_
-                by(i,j,inj_z_pos(iw)) = by(i,j,inj_z_pos(iw)) + by_
-              else ! injection at a new position, simply replace with the injection value
-                bx(i,j,inj_z_pos(iw)) = bx_
-                by(i,j,inj_z_pos(iw)) = by_
-              endif 
-            enddo
+        do j = jb-1, je+1
+          do i = 1, nx2
+            if (inj_wave_radius(iw)==0) then ! inject at all x, y
+              radial_env = 1.0
+            else if ( sqrt((i-nxmax/2.0)**2.0+(j-nymax/2.0)**2.0)<=inj_wave_radius(iw) ) then
+              radial_env = cos(0.5*pi*(i-nxmax/2)/inj_wave_radius(iw))*cos(0.5*pi*(j-nymax/2)/inj_wave_radius(iw))
+            endif              
+            bx(i,j,inj_z_pos(iw)) = bx_*radial_env
+            by(i,j,inj_z_pos(iw)) = by_*radial_env
           enddo
-        else ! inj_wave_radius(iw)>0, and selectively apply to x, y
-          do j = jb-1, je+1
-            do i = 1, nx2
-              if ( sqrt((i-nxmax/2.0)**2.0+(j-nymax/2.0)**2.0)<=inj_wave_radius(iw) ) then
-                ! add radial envelope
-                radial_env = cos(0.5*pi*(i-nxmax/2)/inj_wave_radius(iw))*cos(0.5*pi*(j-nymax/2)/inj_wave_radius(iw))
-                ! add injection value to previous wave if they have the same injection position
-                if ( iw>1 .and. inj_z_pos(iw)==inj_z_pos(iw-1) ) then
-                  bx(i,j,inj_z_pos(iw)) = bx(i,j,inj_z_pos(iw)) + bx_*radial_env
-                  by(i,j,inj_z_pos(iw)) = by(i,j,inj_z_pos(iw)) + by_*radial_env
-                else ! injection at a new position, simply replace with the injection value
-                  bx(i,j,inj_z_pos(iw)) = bx_*radial_env
-                  by(i,j,inj_z_pos(iw)) = by_*radial_env
-                endif 
-              endif 
-            enddo
-          enddo
-        endif ! end inj_wave_radius
-
-      endif ! end inj_dB_B0(iw)
+        enddo
+      
+      endif
 
     enddo ! end wave indexing (iw)
 
@@ -222,60 +210,36 @@ module m_injection
         endif
 
         kz = inj_wave_cycles(iw) * kzmin
-        if (inj_wave_pol(iw)==0) then  ! x-pol
+        if (inj_wave_pol(iw)==0) then  ! linear x
           bx_ = inj_dB_B0(iw)*B0*time_env*sin(kz*inj_time)
-        else if (inj_wave_pol(iw)==1) then ! y-pol, left-hand pol
+          by_ = 0.0
+        else if (inj_wave_pol(iw)==1) then  ! linear y
+          bx_ = 0.0
+          by_ = inj_dB_B0(iw)*B0*time_env*sin(kz*inj_time)
+        else if (inj_wave_pol(iw)==2) then  ! c-pol, left-hand
+          bx_ = inj_dB_B0(iw)*B0*time_env*sin(kz*inj_time)
           by_ = inj_dB_B0(iw)*B0*time_env*cos(kz*inj_time)
-        else if (inj_wave_pol(iw)==-1) then ! y-pol, right-hand pol
+        else if (inj_wave_pol(iw)==3) then  ! c-pol, right-hand
+          bx_ = inj_dB_B0(iw)*B0*time_env*sin(kz*inj_time)
           by_ = -inj_dB_B0(iw)*B0*time_env*cos(kz*inj_time)
-        endif
+        endif 
 
-        dvx_ = -VA*bx_/B0 * inj_sign_cos(iw) 
-        dvy_ = -VA*by_/B0 * inj_sign_cos(iw)
+        dvx_ = -VA*bx_/B0 
+        dvy_ = -VA*by_/B0 
 
-        if (inj_wave_radius(iw)==0) then ! inject at all x, y
-          do j = jb-1, je+1
-            do i = 1, nx2
-              ! add injection value to previous wave if they have the same injection position
-              if ( iw>1 .and. inj_z_pos(iw)==inj_z_pos(iw-1) ) then
-                bx(i,j,inj_z_pos(iw)) = bx(i,j,inj_z_pos(iw)) + bx_
-                by(i,j,inj_z_pos(iw)) = by(i,j,inj_z_pos(iw)) + by_
-                ! use vix to temporarily store values of V on the grid
-                vix(i,j,inj_z_pos(iw)) = vix(i,j,inj_z_pos(iw)) + dvx_
-                viy(i,j,inj_z_pos(iw)) = viy(i,j,inj_z_pos(iw)) + dvy_
-              else ! injection at a new position, simply replace with the injection value
-                bx(i,j,inj_z_pos(iw)) = bx_
-                by(i,j,inj_z_pos(iw)) = by_
-                ! use vix to temporarily store values of V on the grid
-                vix(i,j,inj_z_pos(iw)) = dvx_
-                viy(i,j,inj_z_pos(iw)) = dvy_
-              endif 
-            enddo
+        do j = jb-1, je+1
+          do i = 1, nx2
+            if (inj_wave_radius(iw)==0) then ! inject at all x, y
+              radial_env = 1.0
+            else if ( sqrt((i-nxmax/2.0)**2.0+(j-nymax/2.0)**2.0)<=inj_wave_radius(iw) ) then
+              radial_env = cos(0.5*pi*(i-nxmax/2)/inj_wave_radius(iw))*cos(0.5*pi*(j-nymax/2)/inj_wave_radius(iw))
+            endif              
+            bx(i,j,inj_z_pos(iw)) = bx_*radial_env
+            by(i,j,inj_z_pos(iw)) = by_*radial_env
+            vix(i,j,inj_z_pos(iw)) = dvx_*radial_env
+            viy(i,j,inj_z_pos(iw)) = dvy_*radial_env
           enddo
-        else ! inj_wave_radius(iw)>0, and selectively apply to x, y
-          do j = jb-1, je+1
-            do i = 1, nx2
-              if ( sqrt((i-nxmax/2.0)**2.0+(j-nymax/2.0)**2.0)<=inj_wave_radius(iw) ) then
-                ! add radial envelope
-                radial_env = cos(0.5*pi*(i-nxmax/2)/inj_wave_radius(iw))*cos(0.5*pi*(j-nymax/2)/inj_wave_radius(iw))
-                ! add injection value to previous wave if they have the same injection position
-                if ( iw>1 .and. inj_z_pos(iw)==inj_z_pos(iw-1) ) then
-                  bx(i,j,inj_z_pos(iw)) = bx(i,j,inj_z_pos(iw)) + bx_*radial_env
-                  by(i,j,inj_z_pos(iw)) = by(i,j,inj_z_pos(iw)) + by_*radial_env
-                  ! use vix to temporarily store values of V on the grid
-                  vix(i,j,inj_z_pos(iw)) = vix(i,j,inj_z_pos(iw)) + dvx_*radial_env
-                  viy(i,j,inj_z_pos(iw)) = viy(i,j,inj_z_pos(iw)) + dvy_*radial_env
-                else ! injection at a new position, simply replace with the injection value
-                  bx(i,j,inj_z_pos(iw)) = bx_*radial_env
-                  by(i,j,inj_z_pos(iw)) = by_*radial_env
-                  ! use vix to temporarily store values of V on the grid
-                  vix(i,j,inj_z_pos(iw)) = dvx_*radial_env
-                  viy(i,j,inj_z_pos(iw)) = dvy_*radial_env
-                endif 
-              endif 
-            enddo
-          enddo
-        endif ! end inj_wave_radius
+        enddo
 
       endif ! end inj_dB_B0(iw)
 
@@ -326,46 +290,34 @@ module m_injection
         endif
 
         kz = inj_wave_cycles(iw) * kzmin
-        if (inj_wave_pol(iw)==0) then  ! x-pol
+        if (inj_wave_pol(iw)==0) then  ! linear x
           ex_ = inj_dB_B0(iw)*B0/wpiwci*time_env*sin(kz*inj_time)
-        else if (inj_wave_pol(iw)==1) then ! y-pol, left-hand pol
+          ey_ = 0.0
+        else if (inj_wave_pol(iw)==1) then  ! linear y
+          ex_ = 0.0
+          ey_ = inj_dB_B0(iw)*B0/wpiwci*time_env*sin(kz*inj_time)
+        else if (inj_wave_pol(iw)==2) then  ! c-pol, left-hand
+          ex_ = inj_dB_B0(iw)*B0/wpiwci*time_env*sin(kz*inj_time)
           ey_ = inj_dB_B0(iw)*B0/wpiwci*time_env*cos(kz*inj_time)
-        else if (inj_wave_pol(iw)==-1) then ! y-pol, right-hand pol
+        else if (inj_wave_pol(iw)==3) then  ! c-pol, right-hand
+          ex_ = inj_dB_B0(iw)*B0/wpiwci*time_env*sin(kz*inj_time)
           ey_ = -inj_dB_B0(iw)*B0/wpiwci*time_env*cos(kz*inj_time)
-        endif
+        endif 
 
-        if (inj_wave_radius(iw)==0) then ! inject at all x, y
-          do j = jb-1, je+1
-            do i = 1, nx2
-              ! add injection value to previous wave if they have the same injection position
-              if ( iw>1 .and. inj_z_pos(iw)==inj_z_pos(iw-1) ) then
-                ex(i,j,inj_z_pos(iw)) = ex(i,j,inj_z_pos(iw)) + ex_
-                ey(i,j,inj_z_pos(iw)) = ey(i,j,inj_z_pos(iw)) + ey_     
-              else ! injection at a new position, simply replace with the injection value
-                ex(i,j,inj_z_pos(iw)) = ex_
-                ey(i,j,inj_z_pos(iw)) = ey_
-              endif 
-            enddo
+        do j = jb-1, je+1
+          do i = 1, nx2
+            if (inj_wave_radius(iw)==0) then ! inject at all x, y
+              radial_env = 1.0
+            else if ( sqrt((i-nxmax/2.0)**2.0+(j-nymax/2.0)**2.0)<=inj_wave_radius(iw) ) then
+              radial_env = cos(0.5*pi*(i-nxmax/2)/inj_wave_radius(iw))*cos(0.5*pi*(j-nymax/2)/inj_wave_radius(iw))
+            endif              
+            ex(i,j,inj_z_pos(iw)) = ex_*radial_env
+            ey(i,j,inj_z_pos(iw)) = ey_*radial_env
           enddo
-        else ! inj_wave_radius(iw)>0, and selectively apply to x, y
-          do j = jb-1, je+1
-            do i = 1, nx2
-              if ( sqrt((i-nxmax/2.0)**2.0+(j-nymax/2.0)**2.0)<=inj_wave_radius(iw) ) then
-                ! add radial envelope
-                radial_env = cos(0.5*pi*(i-nxmax/2)/inj_wave_radius(iw))*cos(0.5*pi*(j-nymax/2)/inj_wave_radius(iw))
-                ! add injection value to previous wave if they have the same injection position
-                if ( iw>1 .and. inj_z_pos(iw)==inj_z_pos(iw-1) ) then
-                  ex(i,j,inj_z_pos(iw)) = ex(i,j,inj_z_pos(iw)) + ex_*radial_env
-                  ey(i,j,inj_z_pos(iw)) = ey(i,j,inj_z_pos(iw)) + ey_*radial_env
-                else ! injection at a new position, simply replace with the injection value
-                  ex(i,j,inj_z_pos(iw)) = ex_*radial_env
-                  ey(i,j,inj_z_pos(iw)) = ey_*radial_env
-                endif 
-              endif 
-            enddo
-          enddo
-        endif ! end inj_wave_radius
+        enddo
+
       endif ! end inj_dB_B0(iw)
+
     enddo ! end wave indexing (iw)
 
   end subroutine inject_waves_e
