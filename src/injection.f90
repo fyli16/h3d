@@ -151,8 +151,10 @@ module m_injection
           do i = 1, nx2
             if (inj_wave_radius(iw)==0) then ! inject at all x, y
               radial_env = 1.0
-            else if ( sqrt((i-nxmax/2.0)**2.0+(j-nymax/2.0)**2.0)<=inj_wave_radius(iw) ) then
+            else if ( sqrt((i-nxmax/2.0)**2.0+(j-nymax/2.0)**2.0)<=inj_wave_radius(iw) ) then ! inside injection spot
               radial_env = cos(0.5*pi*(i-nxmax/2)/inj_wave_radius(iw))*cos(0.5*pi*(j-nymax/2)/inj_wave_radius(iw))
+            else  ! outside injection spot
+              radial_env = 0.0
             endif              
             bx(i,j,inj_z_pos(iw)) = bx_*radial_env
             by(i,j,inj_z_pos(iw)) = by_*radial_env
@@ -233,6 +235,8 @@ module m_injection
               radial_env = 1.0
             else if ( sqrt((i-nxmax/2.0)**2.0+(j-nymax/2.0)**2.0)<=inj_wave_radius(iw) ) then
               radial_env = cos(0.5*pi*(i-nxmax/2)/inj_wave_radius(iw))*cos(0.5*pi*(j-nymax/2)/inj_wave_radius(iw))
+            else  ! outside injection spot
+              radial_env = 0.0
             endif              
             bx(i,j,inj_z_pos(iw)) = bx_*radial_env
             by(i,j,inj_z_pos(iw)) = by_*radial_env
@@ -310,6 +314,8 @@ module m_injection
               radial_env = 1.0
             else if ( sqrt((i-nxmax/2.0)**2.0+(j-nymax/2.0)**2.0)<=inj_wave_radius(iw) ) then
               radial_env = cos(0.5*pi*(i-nxmax/2)/inj_wave_radius(iw))*cos(0.5*pi*(j-nymax/2)/inj_wave_radius(iw))
+            else  ! outside injection spot
+              radial_env = 0.0
             endif              
             ex(i,j,inj_z_pos(iw)) = ex_*radial_env
             ey(i,j,inj_z_pos(iw)) = ey_*radial_env
