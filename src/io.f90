@@ -57,8 +57,8 @@ module m_io
       ! open(unit=103,file=trim(data_directory)//filename3,status='unknown')
       ! write(filename3,"(a,i4.4,a)") 'ecal/ecal_ez_pass4_', myid, '.dat' 
       ! open(unit=104,file=trim(data_directory)//filename3,status='unknown')
-      write(filename3,"(a,i4.4,a)") 'ecal/ecal_ez_pass5_', myid, '.dat' 
-      open(unit=100,file=trim(data_directory)//filename3,status='unknown')
+      ! write(filename3,"(a,i4.4,a)") 'ecal/ecal_ez_pass5_', myid, '.dat' 
+      ! open(unit=100,file=trim(data_directory)//filename3,status='unknown')
     endif
 
   end subroutine open_hist_files
