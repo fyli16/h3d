@@ -130,7 +130,7 @@ module m_particle
     call date_and_time(values=time_begin(:,36))
     if (mod(it,n_sort) == 0) call sort  
     call date_and_time(values=time_end(:,36))
-    call add_time(time_begin(1,4),time_end(1,4),time_elapsed(36))
+    call add_time(time_begin(1,36),time_end(1,36),time_elapsed(36))
 
     return
   end subroutine update_particles
