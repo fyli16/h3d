@@ -8,7 +8,8 @@
 ! v7.0: 01/2021 onward, by Feiyu Li (fyli.acad@gmail.com)
 !       refactored the codes and input decks; 
 !       implemented field masks for absorbing Alfven waves on sides;
-!       03/2023: implemented 3D rotating magnetic field (RMF) type 
+!
+! v7.1: 03/2023: implemented 3D rotating magnetic field (RMF) type 
 !                 Alfven wave injection;  
 !---------------------------------------------------------------------
 

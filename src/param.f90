@@ -316,12 +316,52 @@ module m_parameter
     it = 0; itrestart = 0; 
     itstart = it; itfinish = tmax/dtwci
 
-    ! set output directories
+    ! set and create output directories
     data_directory = 'data/'
     restart_directory = 'restart/'
     restart_index_suffix(1) = '.1'
     restart_index_suffix(2) = '.2'
-
+    call system('mkdir -p data')
+    if (n_write_restart > 0) call system('mkdir -p restart')
+    if (n_diag_mesh > 0) then
+      call system('mkdir -p data/bx')
+      call system('mkdir -p data/by')
+      call system('mkdir -p data/bz')
+      call system('mkdir -p data/ex')
+      call system('mkdir -p data/ey')
+      call system('mkdir -p data/ez')
+      call system('mkdir -p data/den')
+      if (ieta >0) call system('mkdir -p data/eta') ! ieta=0 refers to uniform eta which is trivial
+      if (eta_par > 0) call system('mkdir -p data/eta_par')
+      call system('mkdir -p data/jx')
+      call system('mkdir -p data/jy')
+      call system('mkdir -p data/jz')
+      if (ieta >0) then ! ieta=0 refers to uniform eta; fox=eta*jx which is also trivial
+        call system('mkdir -p data/fox')
+        call system('mkdir -p data/foy')
+        call system('mkdir -p data/foz')
+      endif 
+      ! call system('mkdir -p data/p-xx') ! these can be turned on if truly needed
+      ! call system('mkdir -p data/p-xy')
+      ! call system('mkdir -p data/p-xz')
+      ! call system('mkdir -p data/p-yy')
+      ! call system('mkdir -p data/p-yz')
+      ! call system('mkdir -p data/p-zz')
+      call system('mkdir -p data/tpar')
+      call system('mkdir -p data/tperp')
+      call system('mkdir -p data/vix')
+      call system('mkdir -p data/viy')
+      call system('mkdir -p data/viz')
+      if (nspec > 1) then  ! velocity field for individual ion species
+        call system('mkdir -p data/vxs')
+        call system('mkdir -p data/vys')
+        call system('mkdir -p data/vzs')
+      endif 
+    endif ! end creating directories for mesh quantities
+    if (n_diag_particle > 0) call system('mkdir -p data/particle')
+    if (n_diag_probe > 0) call system('mkdir -p data/probes')
+    if (n_diag_tracking > 0) call system('mkdir -p data/tracking')
+    
     ! specify decomposition along y, z; no decomposition along x 
     if (nz==1 .and. ny==1) then ! only nx>=1 and 1 rank will be used  
       ndim=0; dims(1)=1; dims(2)=1

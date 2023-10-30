@@ -21,7 +21,7 @@ uniform_load_logical = .false.,
 
 ! ------------------ field solver ----------------!
 n_sub_b = 5, ! number of subcycles for advancing B field
-eta_par = 0, ! ? options: 0, 1, 2; used in 'ecal'
+eta_par = 0, ! ? options: 0, 1, 2; used in 'ecalc' field.f90
 
 ! field masking
 mask = .true., ! if to perform field masking
@@ -48,7 +48,7 @@ inj_waves_b_rmf = .true.,  ! inject 3d RMF antenna waves via B field (read in fr
 ! inject max. 4 waves, each having its own amplitude, frequency, polarization, source size, etc.
 inj_dB_B0(1:4)       = 1e-2,    0.0,    0.0,    0.0,   ! wave amplitude
 inj_wave_cycles(1:4) = 10.0,    10.0,   10.0,   10.0,  ! number of wave cycles used to determine frequency
-inj_wave_pol(1:4)    = 1,       1,      0,      1,     ! polarization; 0:l-x, 1:l-y, 2:c-left, 3:c-right 
+inj_wave_pol(1:4)    = 2,       1,      0,      1,     ! polarization; 0:l-x, 1:l-y, 2:c-left, 3:c-right 
 inj_wave_radius(1:4) = 10,      10,     0,      0,     ! raidus of wave injection (in cell)
 
 ! injection properties
@@ -94,23 +94,39 @@ smooth_pass = 1,
 ! ------------------ diagnostic control ----------------!
 n_print = 100,  ! frequency at which to print simulation progression
 
+! dump mesh quantities
 n_diag_mesh = 1000, ! frequency at which to write mesh data 
+! will find better ways to control each of the following
+! n_diag_bx = 1000, n_diag_by = 1000, n_diag_bz = 1000,
+! n_diag_ex = 1000, n_diag_ey = 1000, n_diag_ez = 1000,
+! n_diag_jx = 1000, n_diag_jy = 1000, n_diag_jz = 1000,
+! n_diag_vix = 1000, n_diag_viy = 1000, n_diag_viz = 1000,
+! n_diag_den = 1000, n_diag_tpar = 1000, n_diag_tperp = 1000, 
+! n_diag_eta = 0, n_diag_eta_par = 0,
+! n_diag_fox = 0, n_diag_foy = 0, n_diag_foz = 0,
+! n_diag_vxs = 0, n_diag_vys = 0, n_diag_vzs = 0,
+! n_diag_p_xx = 0, n_diag_p_xy = 0, n_diag_p_xz = 0,
+! n_diag_p_yy = 0, n_diag_p_yz = 0, n_diag_p_zz = 0,
+
+! integrated energy
 n_diag_energy = 100, ! frequency at which to write integrated energy data
 
+! probe fields at given locations
 n_diag_probe = 50, ! frequency at which to write field probe data
 probe_x = 40, ! x location (in cell) of the probes
 
+! particle tracking
 n_diag_tracking = 0, ! frequency at which to write tracking particle data
-n_diag_particle = 0, ! frequency at which to write particles within a volume
-
-n_write_restart = 0, ! frequency at which to write restart files
-
 tracking_binary = .true., ! write tracking data in binary (unformatted) or formatted form
 tracking_mpi = .true., ! write tracking data by mpi rank
 
-! volume within which particles will be dumped
-xbox_l = 0., xbox_r = 4.0,
+! dump raw particles
+n_diag_particle = 0, ! frequency at which to write particles within a volume
+xbox_l = 0., xbox_r = 4.0, ! volume within which particles will be dumped
 ybox_l = 0., ybox_r = 4.0, 
 zbox_l = 0., zbox_r = 100.0,
+
+! write restart
+n_write_restart = 0, ! frequency at which to write restart files
 
 /

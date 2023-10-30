@@ -23,7 +23,7 @@ module m_io
             open(unit=13,file=trim(data_directory)//'tracking.dat',status='old',position='append')
           endif
         endif
-      else
+      else ! for a new run
         open(unit=11,file=trim(data_directory)//'energy.dat' ,status='unknown')
         ! open(unit=14,file=trim(data_directory)//'time.dat' ,status='unknown')
         if (.not. tracking_mpi)then
@@ -47,18 +47,6 @@ module m_io
         open(unit=12,file=trim(data_directory)//filename1,status='unknown')
         open(unit=13,file=trim(data_directory)//filename2,form='unformatted',status='unknown')
       endif
-
-      ! for debug 'ez' purpose
-      ! write(filename3,"(a,i4.4,a)") 'ecal/ecal_ez_pass1_', myid, '.dat' 
-      ! open(unit=101,file=trim(data_directory)//filename3,status='unknown')
-      ! write(filename3,"(a,i4.4,a)") 'ecal/ecal_ez_pass2_', myid, '.dat' 
-      ! open(unit=102,file=trim(data_directory)//filename3,status='unknown')
-      ! write(filename3,"(a,i4.4,a)") 'ecal/ecal_ez_pass3_', myid, '.dat' 
-      ! open(unit=103,file=trim(data_directory)//filename3,status='unknown')
-      ! write(filename3,"(a,i4.4,a)") 'ecal/ecal_ez_pass4_', myid, '.dat' 
-      ! open(unit=104,file=trim(data_directory)//filename3,status='unknown')
-      ! write(filename3,"(a,i4.4,a)") 'ecal/ecal_ez_pass5_', myid, '.dat' 
-      ! open(unit=100,file=trim(data_directory)//filename3,status='unknown')
     endif
 
   end subroutine open_hist_files
@@ -317,134 +305,235 @@ module m_io
         call write_file_non_mpio(uniform_mesh,rnorm,file_unit(12),irec_start,ny,nz)
       endif
 
-      rnorm = wpiwci
-      uniform_mesh=vxs(:,:,:,is)
+      ! rnorm = wpiwci
+      ! uniform_mesh=vxs(:,:,:,is)
+      ! if (MPI_IO_format) then
+      !   filename= trim(trim(data_directory)//'vxs/vxs_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+      !   call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      ! else
+      !   call write_file_non_mpio(uniform_mesh,rnorm,file_unit(23),irec_start,ny,nz)
+      ! endif
+
+      ! rnorm = wpiwci
+      ! uniform_mesh=vys(:,:,:,is)
+      ! if (MPI_IO_format) then
+      !   filename= trim(trim(data_directory)//'vys/vys_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+      !   call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      ! else
+      !   call write_file_non_mpio(uniform_mesh,rnorm,file_unit(24),irec_start,ny,nz)
+      ! endif
+
+      ! rnorm = wpiwci
+      ! uniform_mesh=vzs(:,:,:,is)
+      ! if (MPI_IO_format) then
+      !   filename= trim(trim(data_directory)//'vzs/vzs_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+      !   call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      ! else
+      !   call write_file_non_mpio(uniform_mesh,rnorm,file_unit(25),irec_start,ny,nz)
+      ! endif
+
+      ! moved the following to outside 
+      ! rnorm = one/(tx0(is)*frac(is))
+      ! uniform_mesh=p_xx(:,:,:,is)
+      ! if (MPI_IO_format) then
+      !   filename= trim(trim(data_directory)//'p-xx/p-xx_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+      !   call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      ! else
+      !   call write_file_non_mpio(uniform_mesh,rnorm,file_unit(14),irec_start,ny,nz)
+      ! endif
+
+      ! rnorm = one/(tx0(is)*frac(is))
+      ! uniform_mesh=p_xy(:,:,:,is)
+      ! if (MPI_IO_format) then
+      !   filename= trim(trim(data_directory)//'p-xy/p-xy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+      !   call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      ! else
+      !   call write_file_non_mpio(uniform_mesh,rnorm,file_unit(15),irec_start,ny,nz)
+      ! endif
+
+      ! rnorm = one/(tx0(is)*frac(is))
+      ! uniform_mesh=p_xz(:,:,:,is)
+      ! if (MPI_IO_format) then
+      !   filename= trim(trim(data_directory)//'p-xz/p-xz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+      !   call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      ! else
+      !   call write_file_non_mpio(uniform_mesh,rnorm,file_unit(16),irec_start,ny,nz)
+      ! endif
+
+      ! rnorm = one/(tx0(is)*frac(is))
+      ! uniform_mesh=p_yy(:,:,:,is)
+      ! if (MPI_IO_format) then
+      !   filename= trim(trim(data_directory)//'p-yy/p-yy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+      !   call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      ! else
+      !   call write_file_non_mpio(uniform_mesh,rnorm,file_unit(17),irec_start,ny,nz)
+      ! endif
+
+      ! rnorm = one/(tx0(is)*frac(is))
+      ! uniform_mesh=p_yz(:,:,:,is)
+      ! if (MPI_IO_format) then
+      !   filename= trim(trim(data_directory)//'p-yz/p-yz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+      !   call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      ! else
+      !   call write_file_non_mpio(uniform_mesh,rnorm,file_unit(18),irec_start,ny,nz)
+      ! endif
+
+      ! rnorm = one/(tx0(is)*frac(is))
+      ! uniform_mesh=p_zz(:,:,:,is)
+      ! if (MPI_IO_format) then
+      !   filename= trim(trim(data_directory)//'p-zz/p-zz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+      !   call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      ! else
+      !   call write_file_non_mpio(uniform_mesh,rnorm,file_unit(19),irec_start,ny,nz)
+      ! endif
+    enddo ! end loop over ion species
+
+    ! turn on these diagnostics only when more than one ion species are used; 
+    ! for only ion species, vxs is essentially the same as vix (except for that the latter might be smoothed)
+    if (nspec>1) then 
+      do is=1,nspec
+        write(specname,'(I1,A)') is, '_'
+        rnorm = wpiwci
+        uniform_mesh=vxs(:,:,:,is)
+        if (MPI_IO_format) then
+          filename= trim(trim(data_directory)//'vxs/vxs_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+          call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+        else
+          call write_file_non_mpio(uniform_mesh,rnorm,file_unit(23),irec_start,ny,nz)
+        endif
+
+        rnorm = wpiwci
+        uniform_mesh=vys(:,:,:,is)
+        if (MPI_IO_format) then
+          filename= trim(trim(data_directory)//'vys/vys_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+          call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+        else
+          call write_file_non_mpio(uniform_mesh,rnorm,file_unit(24),irec_start,ny,nz)
+        endif
+
+        rnorm = wpiwci
+        uniform_mesh=vzs(:,:,:,is)
+        if (MPI_IO_format) then
+          filename= trim(trim(data_directory)//'vzs/vzs_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+          call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+        else
+          call write_file_non_mpio(uniform_mesh,rnorm,file_unit(25),irec_start,ny,nz)
+        endif
+      enddo
+    endif ! end if 'nspec>1'
+
+    ! temporaily turn off these 'pressure' diagnostics
+    ! turn on when truly necessary
+    ! do is=1,nspec
+    !   write(specname,'(I1,A)') is, '_'
+    !   rnorm = one/(tx0(is)*frac(is))
+    !   uniform_mesh=p_xx(:,:,:,is)
+    !   if (MPI_IO_format) then
+    !     filename= trim(trim(data_directory)//'p-xx/p-xx_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+    !     call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    !   else
+    !     call write_file_non_mpio(uniform_mesh,rnorm,file_unit(14),irec_start,ny,nz)
+    !   endif
+
+    !   rnorm = one/(tx0(is)*frac(is))
+    !   uniform_mesh=p_xy(:,:,:,is)
+    !   if (MPI_IO_format) then
+    !     filename= trim(trim(data_directory)//'p-xy/p-xy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+    !     call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    !   else
+    !     call write_file_non_mpio(uniform_mesh,rnorm,file_unit(15),irec_start,ny,nz)
+    !   endif
+
+    !   rnorm = one/(tx0(is)*frac(is))
+    !   uniform_mesh=p_xz(:,:,:,is)
+    !   if (MPI_IO_format) then
+    !     filename= trim(trim(data_directory)//'p-xz/p-xz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+    !     call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    !   else
+    !     call write_file_non_mpio(uniform_mesh,rnorm,file_unit(16),irec_start,ny,nz)
+    !   endif
+
+    !   rnorm = one/(tx0(is)*frac(is))
+    !   uniform_mesh=p_yy(:,:,:,is)
+    !   if (MPI_IO_format) then
+    !     filename= trim(trim(data_directory)//'p-yy/p-yy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+    !     call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    !   else
+    !     call write_file_non_mpio(uniform_mesh,rnorm,file_unit(17),irec_start,ny,nz)
+    !   endif
+
+    !   rnorm = one/(tx0(is)*frac(is))
+    !   uniform_mesh=p_yz(:,:,:,is)
+    !   if (MPI_IO_format) then
+    !     filename= trim(trim(data_directory)//'p-yz/p-yz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+    !     call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    !   else
+    !     call write_file_non_mpio(uniform_mesh,rnorm,file_unit(18),irec_start,ny,nz)
+    !   endif
+
+    !   rnorm = one/(tx0(is)*frac(is))
+    !   uniform_mesh=p_zz(:,:,:,is)
+    !   if (MPI_IO_format) then
+    !     filename= trim(trim(data_directory)//'p-zz/p-zz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+    !     call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    !   else
+    !     call write_file_non_mpio(uniform_mesh,rnorm,file_unit(19),irec_start,ny,nz)
+    !   endif
+    ! enddo ! end loop over ion species
+
+    ! temporarily turn off friction force diagnostics which is trivial if ieta=0, 
+    ! i.e. force = - eta * J
+    if (ieta >0) then
+      rnorm=1.
+      uniform_mesh=fox
       if (MPI_IO_format) then
-        filename= trim(trim(data_directory)//'vxs/vxs_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+        filename= trim(trim(data_directory)//'fox/fox_'//trim(adjustl(cycle_ascii)))//'.gda'
         call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
       else
-        call write_file_non_mpio(uniform_mesh,rnorm,file_unit(23),irec_start,ny,nz)
+        call write_file_non_mpio(uniform_mesh,rnorm,file_unit(20),irec_start,ny,nz)
       endif
 
-      rnorm = wpiwci
-      uniform_mesh=vys(:,:,:,is)
+      rnorm=1.
+      uniform_mesh=foy
       if (MPI_IO_format) then
-        filename= trim(trim(data_directory)//'vys/vys_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+        filename= trim(trim(data_directory)//'foy/foy_'//trim(adjustl(cycle_ascii)))//'.gda'
         call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
       else
-        call write_file_non_mpio(uniform_mesh,rnorm,file_unit(24),irec_start,ny,nz)
+        call write_file_non_mpio(uniform_mesh,rnorm,file_unit(21),irec_start,ny,nz)
       endif
 
-      rnorm = wpiwci
-      uniform_mesh=vzs(:,:,:,is)
+      rnorm=1.
+      uniform_mesh=foz
       if (MPI_IO_format) then
-        filename= trim(trim(data_directory)//'vzs/vzs_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
+        filename= trim(trim(data_directory)//'foz/foz_'//trim(adjustl(cycle_ascii)))//'.gda'
         call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
       else
-        call write_file_non_mpio(uniform_mesh,rnorm,file_unit(25),irec_start,ny,nz)
+        call write_file_non_mpio(uniform_mesh,rnorm,file_unit(22),irec_start,ny,nz)
       endif
+    endif 
 
-      rnorm = one/(tx0(is)*frac(is))
-      uniform_mesh=p_xx(:,:,:,is)
-      if (MPI_IO_format) then
-        filename= trim(trim(data_directory)//'p-xx/p-xx_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-        call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    ! temporaily turn off 'eta' diagnostics if 'ieta==0' which results in trivial eta distributions
+    if (ieta >0) then 
+      if (eta_par == 0) then
+        rnorm = 1.
+        uniform_mesh=eta
+        if (MPI_IO_format) then
+          filename= trim(trim(data_directory)//'eta/eta_'//trim(adjustl(cycle_ascii)))//'.gda'
+          call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+        else
+          call write_file_non_mpio(uniform_mesh,rnorm,file_unit(13),irec_start,ny,nz)
+        endif
       else
-        call write_file_non_mpio(uniform_mesh,rnorm,file_unit(14),irec_start,ny,nz)
-      endif
-
-      rnorm = one/(tx0(is)*frac(is))
-      uniform_mesh=p_xy(:,:,:,is)
-      if (MPI_IO_format) then
-        filename= trim(trim(data_directory)//'p-xy/p-xy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-        call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
-      else
-        call write_file_non_mpio(uniform_mesh,rnorm,file_unit(15),irec_start,ny,nz)
-      endif
-
-      rnorm = one/(tx0(is)*frac(is))
-      uniform_mesh=p_xz(:,:,:,is)
-      if (MPI_IO_format) then
-        filename= trim(trim(data_directory)//'p-xz/p-xz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-        call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
-      else
-        call write_file_non_mpio(uniform_mesh,rnorm,file_unit(16),irec_start,ny,nz)
-      endif
-
-      rnorm = one/(tx0(is)*frac(is))
-      uniform_mesh=p_yy(:,:,:,is)
-      if (MPI_IO_format) then
-        filename= trim(trim(data_directory)//'p-yy/p-yy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-        call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
-      else
-        call write_file_non_mpio(uniform_mesh,rnorm,file_unit(17),irec_start,ny,nz)
-      endif
-
-      rnorm = one/(tx0(is)*frac(is))
-      uniform_mesh=p_yz(:,:,:,is)
-      if (MPI_IO_format) then
-        filename= trim(trim(data_directory)//'p-yz/p-yz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-        call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
-      else
-        call write_file_non_mpio(uniform_mesh,rnorm,file_unit(18),irec_start,ny,nz)
-      endif
-
-      rnorm = one/(tx0(is)*frac(is))
-      uniform_mesh=p_zz(:,:,:,is)
-      if (MPI_IO_format) then
-        filename= trim(trim(data_directory)//'p-zz/p-zz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-        call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
-      else
-        call write_file_non_mpio(uniform_mesh,rnorm,file_unit(19),irec_start,ny,nz)
-      endif
-    enddo
-
-    rnorm=1.
-    uniform_mesh=fox
-    if (MPI_IO_format) then
-      filename= trim(trim(data_directory)//'fox/fox_'//trim(adjustl(cycle_ascii)))//'.gda'
-      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
-    else
-      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(20),irec_start,ny,nz)
-    endif
-
-    rnorm=1.
-    uniform_mesh=foy
-    if (MPI_IO_format) then
-      filename= trim(trim(data_directory)//'foy/foy_'//trim(adjustl(cycle_ascii)))//'.gda'
-      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
-    else
-      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(21),irec_start,ny,nz)
-    endif
-
-    rnorm=1.
-    uniform_mesh=foz
-    if (MPI_IO_format) then
-      filename= trim(trim(data_directory)//'foz/foz_'//trim(adjustl(cycle_ascii)))//'.gda'
-      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
-    else
-      call write_file_non_mpio(uniform_mesh,rnorm,file_unit(22),irec_start,ny,nz)
-    endif
-
-    if (eta_par == 0) then
-      rnorm = 1.
-      uniform_mesh=eta
-      if (MPI_IO_format) then
-        filename= trim(trim(data_directory)//'eta/eta_'//trim(adjustl(cycle_ascii)))//'.gda'
-        call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
-      else
-        call write_file_non_mpio(uniform_mesh,rnorm,file_unit(13),irec_start,ny,nz)
-      endif
-    else
-      rnorm = 1.
-      uniform_mesh=eta_times_b_dot_j
-      if (MPI_IO_format) then
-        filename= trim(trim(data_directory)//'eta_par/eta_par_'//trim(adjustl(cycle_ascii)))//'.gda'
-        call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
-      else
-        call write_file_non_mpio(uniform_mesh,rnorm,file_unit(13),irec_start,ny,nz)
-      endif
-    endif
+        rnorm = 1.
+        uniform_mesh=eta_times_b_dot_j
+        if (MPI_IO_format) then
+          filename= trim(trim(data_directory)//'eta_par/eta_par_'//trim(adjustl(cycle_ascii)))//'.gda'
+          call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+        else
+          call write_file_non_mpio(uniform_mesh,rnorm,file_unit(13),irec_start,ny,nz)
+        endif
+      endif ! end if 'eta_par==0'
+    endif ! end if 'ieta>0'
 
     irec_num = irec_num + irec_del
 
@@ -741,7 +830,7 @@ module m_io
     do k = kb, ke
       do j = jb,je
         do i = 2, nxmax-1
-          stemp(i-1,j,k) = rnorm*dat(i,j,k)
+          stemp(i-1,j,k) = rnorm * dat(i,j,k)
         enddo
       enddo
     enddo
@@ -778,10 +867,10 @@ module m_io
 
     if (iErr1.ne.MPI_SUCCESS) then
       call MPI_Error_string(iErr1,eStr,eStrLen,iErr2)
-      write(0,*)'Error: Could not write to file ',fileName
+      write(0,*) 'Error: Could not write to file ',fileName
       write(0,*) eStr(1:eStrLen)
       write(0,*) 'Write aborted by rank',myid
-      write(0,*)'Write aborted.'
+      write(0,*) 'Write aborted.'
     endif
 
     return
