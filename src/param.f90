@@ -141,6 +141,7 @@ module m_parameter
   integer :: n_print, n_diag_mesh, n_diag_energy, n_diag_probe, n_diag_tracking, &
             n_diag_particle, n_write_restart
   integer :: probe_x
+  logical :: probe_mpi
   ! integer :: n_debug_ez=100
 
   ! some constant parameters
@@ -175,7 +176,7 @@ module m_parameter
       ! diagnostics
       n_print, n_diag_mesh, n_diag_energy, n_diag_probe, & 
       n_diag_tracking, n_write_restart, n_diag_particle, &  
-      probe_x, &
+      probe_x, probe_mpi, &
       tracking_binary, tracking_mpi, &
       xbox_l, xbox_r, ybox_l, ybox_r, zbox_l, zbox_r
 
@@ -290,6 +291,7 @@ module m_parameter
     call MPI_BCAST(n_diag_energy          ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_diag_probe           ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(probe_x                ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(probe_mpi              ,1     ,MPI_LOGICAL          ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_diag_tracking        ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_diag_particle        ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(n_write_restart        ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)

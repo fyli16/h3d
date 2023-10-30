@@ -114,6 +114,7 @@ n_diag_energy = 100, ! frequency at which to write integrated energy data
 ! probe fields at given locations
 n_diag_probe = 50, ! frequency at which to write field probe data
 probe_x = 40, ! x location (in cell) of the probes
+probe_mpi = .true. ! dump probe file by mpi ranks
 
 ! particle tracking
 n_diag_tracking = 0, ! frequency at which to write tracking particle data

@@ -26,7 +26,7 @@ module m_io
       else ! for a new run
         open(unit=11,file=trim(data_directory)//'energy.dat' ,status='unknown')
         ! open(unit=14,file=trim(data_directory)//'time.dat' ,status='unknown')
-        if (.not. tracking_mpi)then
+        if (.not. tracking_mpi)then ! dump into single file
           open(unit=12,file=trim(data_directory)//'probes.dat' ,status='unknown')
           if (tracking_binary) then
             open(unit=13,file=trim(data_directory)//'tracking_b.dat' ,form='unformatted',status='unknown')
@@ -37,14 +37,20 @@ module m_io
       endif
     endif
 
-    if (tracking_mpi) then
+    if (n_diag_probe>0 .and. probe_mpi) then ! dump field probe by mpi ranks
       write(filename1,"(a,i4.4,a)") 'probes/probes_', myid, '.dat'
-      write(filename2,"(a,i4.4,a)") 'tracking/tracking_', myid, '.dat'
       if (restart) then
         open(unit=12,file=trim(data_directory)//filename1,status='old',position='append')
-        open(unit=13,file=trim(data_directory)//filename2,form='unformatted',status='old',access='append')
       else
         open(unit=12,file=trim(data_directory)//filename1,status='unknown')
+      endif
+    endif
+
+    if (n_diag_tracking>0 .and. tracking_mpi) then ! dump particle tracking by mpi ranks
+      write(filename2,"(a,i4.4,a)") 'tracking/tracking_', myid, '.dat'
+      if (restart) then
+        open(unit=13,file=trim(data_directory)//filename2,form='unformatted',status='old',access='append')
+      else
         open(unit=13,file=trim(data_directory)//filename2,form='unformatted',status='unknown')
       endif
     endif
