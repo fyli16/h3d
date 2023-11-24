@@ -361,8 +361,8 @@ module m_parameter
       endif 
     endif ! end creating directories for mesh quantities
     if (n_diag_particle > 0) call system('mkdir -p data/particle')
-    if (n_diag_probe > 0) call system('mkdir -p data/probes')
-    if (n_diag_tracking > 0) call system('mkdir -p data/tracking')
+    if (n_diag_probe > 0 .and. probe_mpi) call system('mkdir -p data/probes')
+    if (n_diag_tracking > 0 .and. tracking_mpi) call system('mkdir -p data/tracking')
     
     ! specify decomposition along y, z; no decomposition along x 
     if (nz==1 .and. ny==1) then ! only nx>=1 and 1 rank will be used  

@@ -118,7 +118,7 @@ probe_mpi = .true. ! dump probe file by mpi ranks
 
 ! particle tracking
 n_diag_tracking = 0, ! frequency at which to write tracking particle data
-tracking_binary = .true., ! write tracking data in binary (unformatted) or formatted form
+tracking_binary = .false., ! write tracking data in binary (unformatted) or formatted form
 tracking_mpi = .true., ! write tracking data by mpi rank
 
 ! dump raw particles
