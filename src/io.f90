@@ -15,27 +15,34 @@ module m_io
       if (restart) then
         open(unit=11,file=trim(data_directory)//'energy.dat' ,status='old',position='append')
         ! open(unit=14,file=trim(data_directory)//'time.dat' ,status='old',position='append')
-        if (.not. tracking_mpi)then
-          open(unit=12,file=trim(data_directory)//'probes.dat' ,status='old',position='append')
+        
+        if (.not. probe_mpi) open(unit=12,file=trim(data_directory)//'probes.dat' ,status='old',position='append')
+
+        if (.not. tracking_mpi)then  
           if (tracking_binary) then
             open(unit=13,file=trim(data_directory)//'tracking_b.dat',form='unformatted',status='old',position='append')
           else
             open(unit=13,file=trim(data_directory)//'tracking.dat',status='old',position='append')
           endif
         endif
+      
       else ! for a new run
         open(unit=11,file=trim(data_directory)//'energy.dat' ,status='unknown')
         ! open(unit=14,file=trim(data_directory)//'time.dat' ,status='unknown')
+        
+        if (.not. probe_mpi) open(unit=12,file=trim(data_directory)//'probes.dat' ,status='unknown')
+        
         if (.not. tracking_mpi)then ! dump into single file
-          open(unit=12,file=trim(data_directory)//'probes.dat' ,status='unknown')
           if (tracking_binary) then
             open(unit=13,file=trim(data_directory)//'tracking_b.dat' ,form='unformatted',status='unknown')
           else
             open(unit=13,file=trim(data_directory)//'tracking.dat' ,status='unknown')
           endif
         endif
+
       endif
-    endif
+
+    endif ! end if 'myid==0'
 
     if (n_diag_probe>0 .and. probe_mpi) then ! dump field probe by mpi ranks
       write(filename1,"(a,i4.4,a)") 'probes/probes_', myid, '.dat'
