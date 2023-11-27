@@ -130,8 +130,8 @@ module m_diag
     integer :: i
 
     if ( n_diag_mesh>0 .and. mod(it,n_diag_mesh)==0 ) then
-      ! this block is not executed when MPI_IO_format=.true.
-      if (myid==0 .and. .not.MPI_IO_format) then
+      ! this block is not executed when mesh_mpi_io=.true.
+      if (myid==0 .and. .not.mesh_mpi_io) then
         call open_files
       endif 
 
@@ -145,8 +145,8 @@ module m_diag
       ! write data
       call write_mesh
 
-      ! this block is not executed when MPI_IO_format=.true.
-      if (myid==0 .and. .not.MPI_IO_format) then
+      ! this block is not executed when mesh_mpi_io=.true.
+      if (myid==0 .and. .not.mesh_mpi_io) then
         do i = 1, 28
           close(file_unit(i))
         enddo

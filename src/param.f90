@@ -6,7 +6,7 @@ module m_parameter
   save
 
   ! global 
-  logical :: restart, uniform_load_logical, MPI_IO_format 
+  logical :: restart, uniform_load_logical, mesh_mpi_io 
   logical :: periods(2), reorder=.true.
 
   integer :: it, itstart, itfinish, itrestart, my_short_int 
@@ -156,7 +156,7 @@ module m_parameter
   subroutine read_input
     integer :: i 
 
-    namelist /input/ tmax, dtwci, restart, MPI_IO_format, & 
+    namelist /input/ tmax, dtwci, restart, mesh_mpi_io, & 
       ! simulation domain
       nx, ny, nz, xmax, ymax, zmax, ppcx, ppcy, ppcz, node_conf, periods, &  
       ! xaa, xbb, nax, nbx, yaa, ybb, nay, nby, zaa, zbb, naz, nbz, &
@@ -212,7 +212,7 @@ module m_parameter
     call MPI_BCAST(tmax                   ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(dtwci                  ,1     ,MPI_DOUBLE_PRECISION ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(restart                ,1     ,MPI_LOGICAL          ,0,MPI_COMM_WORLD,IERR)
-    call MPI_BCAST(MPI_IO_format          ,1     ,MPI_LOGICAL          ,0,MPI_COMM_WORLD,IERR)
+    call MPI_BCAST(mesh_mpi_io            ,1     ,MPI_LOGICAL          ,0,MPI_COMM_WORLD,IERR)
     ! sim. domain
     call MPI_BCAST(nx                     ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
     call MPI_BCAST(ny                     ,1     ,MPI_INTEGER8         ,0,MPI_COMM_WORLD,IERR)
