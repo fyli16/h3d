@@ -147,7 +147,7 @@ module m_diag
 
       ! this block is not executed when MPI_IO_format=.true.
       if (myid==0 .and. .not.MPI_IO_format) then
-        do i = 1, 25
+        do i = 1, 28
           close(file_unit(i))
         enddo
       endif

@@ -790,7 +790,7 @@ module m_io
 
 
   !---------------------------------------------------------------------
-  ! write file
+  ! write file (MPI-IO)
   !---------------------------------------------------------------------
   subroutine write_file(dat,rnorm,fileName,irec_start,ny1m,nz1m)
 
@@ -836,22 +836,22 @@ module m_io
 
     !  begin by converting data to REAL*4
     !
-    !  do k = kb-1, ke+1
-    !    do j = jb-1,je+1
-    !      do i = 1, nxmax
-    !        sdat(i,j,k) = rnorm*dat(i,j,k)
-    !      enddo
-    !    enddo
-    !  enddo
+     do k = kb-1, ke+1
+       do j = jb-1,je+1
+         do i = 1, nxmax
+           sdat(i,j,k) = rnorm*dat(i,j,k)
+         enddo
+       enddo
+     enddo
 
     ! print *,kb,ke,jb,je
-    do k = kb, ke
-      do j = jb,je
-        do i = 2, nxmax-1
-          stemp(i-1,j,k) = rnorm * dat(i,j,k)
-        enddo
-      enddo
-    enddo
+    ! do k = kb, ke
+    !   do j = jb,je
+    !     do i = 2, nxmax-1
+    !       stemp(i-1,j,k) = rnorm * dat(i,j,k)
+    !     enddo
+    !   enddo
+    ! enddo
 
     dilo = 1
     dihi = nxmax-2
@@ -916,18 +916,18 @@ module m_io
     do k = kb-1, ke+1
       do j = jb-1,je+1
         do i = 1, nxmax
-          sdat(i,j,k) = rnorm*dat(i,j,k)
+          sdat(i,j,k) = rnorm * dat(i,j,k)
         enddo
       enddo
     enddo
 
     ! send data to myid = 0
-    num_sdat = nxmax*(nylmax+2)*(nzlmax + 2)
+    num_sdat = nxmax*(nylmax+2) * (nzlmax + 2)
     if(myid.ne.0) then
       call MPI_ISEND(sdat(1,jb-1,kb-1),num_sdat,MPI_REAL4,&
           0   ,1,MPI_COMM_WORLD,req(1),IERR)
       call MPI_WAITALL(1,req,status_array,IERR)
-    else
+    else  ! rank 0
       do ip = 0, nprocs-1
         keg = keglobal(ip)
         kbg = kbglobal(ip)
@@ -993,9 +993,10 @@ module m_io
             write(filenum, rec=recnum) (sdat(i,iry-jbg+1,irz-kbg+1),i=1   +1,nxmax    -1)
           enddo
         enddo
-      enddo
+        
+      enddo ! do ip = 0, nprocs-1
 
-      write(6,*) " number of records written = ", icount
+      ! write(6,*) "number of records written = ", icount
 
     endif
 
