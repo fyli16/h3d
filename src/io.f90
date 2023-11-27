@@ -190,7 +190,7 @@ module m_io
     uniform_mesh = bx 
     if (mesh_mpio) then
       filename= trim(trim(data_directory)//'bx/bx_'//trim(adjustl(cycle_ascii)))//'.gda'
-      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
       call write_file_non_mpio(uniform_mesh,rnorm,file_unit(1),irec_start,ny,nz)
     endif
@@ -199,7 +199,7 @@ module m_io
     uniform_mesh = by 
     if (mesh_mpio) then
       filename = trim(trim(data_directory)//'by/by_'//trim(adjustl(cycle_ascii)))//'.gda'
-      call write_file(uniform_mesh, rnorm, trim(adjustl(filename)), irec_start, ny, nz)
+      call write_file_mpio(uniform_mesh, rnorm, trim(adjustl(filename)), irec_start, ny, nz)
     else
       call write_file_non_mpio(uniform_mesh, rnorm, file_unit(2), irec_start, ny, nz)
     endif
@@ -208,7 +208,7 @@ module m_io
     uniform_mesh=bz
     if (mesh_mpio) then
       filename= trim(trim(data_directory)//'bz/bz_'//trim(adjustl(cycle_ascii)))//'.gda'
-      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
       call write_file_non_mpio(uniform_mesh,rnorm,file_unit(3),irec_start,ny,nz)
     endif
@@ -217,7 +217,7 @@ module m_io
     uniform_mesh = jx 
     if (mesh_mpio) then
       filename= trim(trim(data_directory)//'jx/jx_'//trim(adjustl(cycle_ascii)))//'.gda'
-      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
       call write_file_non_mpio(uniform_mesh,rnorm,file_unit(26),irec_start,ny,nz)
     endif
@@ -226,7 +226,7 @@ module m_io
     uniform_mesh = jy 
     if (mesh_mpio) then
       filename= trim(trim(data_directory)//'jy/jy_'//trim(adjustl(cycle_ascii)))//'.gda'
-      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
       call write_file_non_mpio(uniform_mesh,rnorm,file_unit(27),irec_start,ny,nz)
     endif
@@ -235,7 +235,7 @@ module m_io
     uniform_mesh = jz
     if (mesh_mpio) then
       filename= trim(trim(data_directory)//'jz/jz_'//trim(adjustl(cycle_ascii)))//'.gda'
-      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
       call write_file_non_mpio(uniform_mesh,rnorm,file_unit(28),irec_start,ny,nz)
     endif
@@ -244,7 +244,7 @@ module m_io
     uniform_mesh=den
     if (mesh_mpio) then
       filename= trim(trim(data_directory)//'den/den_'//trim(adjustl(cycle_ascii)))//'.gda'
-      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
       call write_file_non_mpio(uniform_mesh,rnorm,file_unit(4),irec_start,ny,nz)
     endif
@@ -253,7 +253,7 @@ module m_io
     uniform_mesh=ex 
     if (mesh_mpio) then
       filename= trim(trim(data_directory)//'ex/ex_'//trim(adjustl(cycle_ascii)))//'.gda'
-      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
       call write_file_non_mpio(uniform_mesh,rnorm,file_unit(5),irec_start,ny,nz)
     endif
@@ -262,7 +262,7 @@ module m_io
     uniform_mesh=ey 
     if (mesh_mpio) then
       filename= trim(trim(data_directory)//'ey/ey_'//trim(adjustl(cycle_ascii)))//'.gda'
-      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
       call write_file_non_mpio(uniform_mesh,rnorm,file_unit(6),irec_start,ny,nz)
     endif
@@ -271,7 +271,7 @@ module m_io
     uniform_mesh=ez 
     if (mesh_mpio) then
       filename= trim(trim(data_directory)//'ez/ez_'//trim(adjustl(cycle_ascii)))//'.gda'
-      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
       call write_file_non_mpio(uniform_mesh,rnorm,file_unit(7),irec_start,ny,nz)
     endif
@@ -280,7 +280,7 @@ module m_io
     uniform_mesh=vix
     if (mesh_mpio) then
       filename= trim(trim(data_directory)//'vix/vix_'//trim(adjustl(cycle_ascii)))//'.gda'
-      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
       call write_file_non_mpio(uniform_mesh,rnorm,file_unit(8),irec_start,ny,nz)
     endif
@@ -289,7 +289,7 @@ module m_io
     uniform_mesh=viy
     if (mesh_mpio) then
       filename= trim(trim(data_directory)//'viy/viy_'//trim(adjustl(cycle_ascii)))//'.gda'
-      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
       call write_file_non_mpio(uniform_mesh,rnorm,file_unit(9),irec_start,ny,nz)
     endif
@@ -298,7 +298,7 @@ module m_io
     uniform_mesh=viz
     if (mesh_mpio) then
       filename= trim(trim(data_directory)//'viz/viz_'//trim(adjustl(cycle_ascii)))//'.gda'
-      call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     else
       call write_file_non_mpio(uniform_mesh,rnorm,file_unit(10),irec_start,ny,nz)
     endif
@@ -309,7 +309,7 @@ module m_io
       uniform_mesh=tpar(:,:,:,is)
       if (mesh_mpio) then
         filename= trim(trim(data_directory)//'tpar/tpar_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-        call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+        call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
       else
         call write_file_non_mpio(uniform_mesh,rnorm,file_unit(11),irec_start,ny,nz)
       endif
@@ -318,7 +318,7 @@ module m_io
       uniform_mesh=tperp(:,:,:,is)
       if (mesh_mpio) then
         filename= trim(trim(data_directory)//'tperp/tperp_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-        call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+        call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
       else
         call write_file_non_mpio(uniform_mesh,rnorm,file_unit(12),irec_start,ny,nz)
       endif
@@ -327,7 +327,7 @@ module m_io
       ! uniform_mesh=vxs(:,:,:,is)
       ! if (mesh_mpio) then
       !   filename= trim(trim(data_directory)//'vxs/vxs_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      !   call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      !   call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
       ! else
       !   call write_file_non_mpio(uniform_mesh,rnorm,file_unit(23),irec_start,ny,nz)
       ! endif
@@ -336,7 +336,7 @@ module m_io
       ! uniform_mesh=vys(:,:,:,is)
       ! if (mesh_mpio) then
       !   filename= trim(trim(data_directory)//'vys/vys_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      !   call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      !   call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
       ! else
       !   call write_file_non_mpio(uniform_mesh,rnorm,file_unit(24),irec_start,ny,nz)
       ! endif
@@ -345,7 +345,7 @@ module m_io
       ! uniform_mesh=vzs(:,:,:,is)
       ! if (mesh_mpio) then
       !   filename= trim(trim(data_directory)//'vzs/vzs_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      !   call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      !   call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
       ! else
       !   call write_file_non_mpio(uniform_mesh,rnorm,file_unit(25),irec_start,ny,nz)
       ! endif
@@ -355,7 +355,7 @@ module m_io
       ! uniform_mesh=p_xx(:,:,:,is)
       ! if (mesh_mpio) then
       !   filename= trim(trim(data_directory)//'p-xx/p-xx_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      !   call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      !   call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
       ! else
       !   call write_file_non_mpio(uniform_mesh,rnorm,file_unit(14),irec_start,ny,nz)
       ! endif
@@ -364,7 +364,7 @@ module m_io
       ! uniform_mesh=p_xy(:,:,:,is)
       ! if (mesh_mpio) then
       !   filename= trim(trim(data_directory)//'p-xy/p-xy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      !   call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      !   call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
       ! else
       !   call write_file_non_mpio(uniform_mesh,rnorm,file_unit(15),irec_start,ny,nz)
       ! endif
@@ -373,7 +373,7 @@ module m_io
       ! uniform_mesh=p_xz(:,:,:,is)
       ! if (mesh_mpio) then
       !   filename= trim(trim(data_directory)//'p-xz/p-xz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      !   call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      !   call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
       ! else
       !   call write_file_non_mpio(uniform_mesh,rnorm,file_unit(16),irec_start,ny,nz)
       ! endif
@@ -382,7 +382,7 @@ module m_io
       ! uniform_mesh=p_yy(:,:,:,is)
       ! if (mesh_mpio) then
       !   filename= trim(trim(data_directory)//'p-yy/p-yy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      !   call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      !   call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
       ! else
       !   call write_file_non_mpio(uniform_mesh,rnorm,file_unit(17),irec_start,ny,nz)
       ! endif
@@ -391,7 +391,7 @@ module m_io
       ! uniform_mesh=p_yz(:,:,:,is)
       ! if (mesh_mpio) then
       !   filename= trim(trim(data_directory)//'p-yz/p-yz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      !   call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      !   call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
       ! else
       !   call write_file_non_mpio(uniform_mesh,rnorm,file_unit(18),irec_start,ny,nz)
       ! endif
@@ -400,7 +400,7 @@ module m_io
       ! uniform_mesh=p_zz(:,:,:,is)
       ! if (mesh_mpio) then
       !   filename= trim(trim(data_directory)//'p-zz/p-zz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-      !   call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+      !   call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
       ! else
       !   call write_file_non_mpio(uniform_mesh,rnorm,file_unit(19),irec_start,ny,nz)
       ! endif
@@ -415,7 +415,7 @@ module m_io
         uniform_mesh=vxs(:,:,:,is)
         if (mesh_mpio) then
           filename= trim(trim(data_directory)//'vxs/vxs_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-          call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+          call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
         else
           call write_file_non_mpio(uniform_mesh,rnorm,file_unit(23),irec_start,ny,nz)
         endif
@@ -424,7 +424,7 @@ module m_io
         uniform_mesh=vys(:,:,:,is)
         if (mesh_mpio) then
           filename= trim(trim(data_directory)//'vys/vys_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-          call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+          call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
         else
           call write_file_non_mpio(uniform_mesh,rnorm,file_unit(24),irec_start,ny,nz)
         endif
@@ -433,7 +433,7 @@ module m_io
         uniform_mesh=vzs(:,:,:,is)
         if (mesh_mpio) then
           filename= trim(trim(data_directory)//'vzs/vzs_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-          call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+          call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
         else
           call write_file_non_mpio(uniform_mesh,rnorm,file_unit(25),irec_start,ny,nz)
         endif
@@ -448,7 +448,7 @@ module m_io
     !   uniform_mesh=p_xx(:,:,:,is)
     !   if (mesh_mpio) then
     !     filename= trim(trim(data_directory)//'p-xx/p-xx_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-    !     call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    !     call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     !   else
     !     call write_file_non_mpio(uniform_mesh,rnorm,file_unit(14),irec_start,ny,nz)
     !   endif
@@ -457,7 +457,7 @@ module m_io
     !   uniform_mesh=p_xy(:,:,:,is)
     !   if (mesh_mpio) then
     !     filename= trim(trim(data_directory)//'p-xy/p-xy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-    !     call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    !     call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     !   else
     !     call write_file_non_mpio(uniform_mesh,rnorm,file_unit(15),irec_start,ny,nz)
     !   endif
@@ -466,7 +466,7 @@ module m_io
     !   uniform_mesh=p_xz(:,:,:,is)
     !   if (mesh_mpio) then
     !     filename= trim(trim(data_directory)//'p-xz/p-xz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-    !     call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    !     call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     !   else
     !     call write_file_non_mpio(uniform_mesh,rnorm,file_unit(16),irec_start,ny,nz)
     !   endif
@@ -475,7 +475,7 @@ module m_io
     !   uniform_mesh=p_yy(:,:,:,is)
     !   if (mesh_mpio) then
     !     filename= trim(trim(data_directory)//'p-yy/p-yy_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-    !     call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    !     call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     !   else
     !     call write_file_non_mpio(uniform_mesh,rnorm,file_unit(17),irec_start,ny,nz)
     !   endif
@@ -484,7 +484,7 @@ module m_io
     !   uniform_mesh=p_yz(:,:,:,is)
     !   if (mesh_mpio) then
     !     filename= trim(trim(data_directory)//'p-yz/p-yz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-    !     call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    !     call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     !   else
     !     call write_file_non_mpio(uniform_mesh,rnorm,file_unit(18),irec_start,ny,nz)
     !   endif
@@ -493,7 +493,7 @@ module m_io
     !   uniform_mesh=p_zz(:,:,:,is)
     !   if (mesh_mpio) then
     !     filename= trim(trim(data_directory)//'p-zz/p-zz_'//specname//trim(adjustl(cycle_ascii)))//'.gda'
-    !     call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+    !     call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
     !   else
     !     call write_file_non_mpio(uniform_mesh,rnorm,file_unit(19),irec_start,ny,nz)
     !   endif
@@ -506,7 +506,7 @@ module m_io
       uniform_mesh=fox
       if (mesh_mpio) then
         filename= trim(trim(data_directory)//'fox/fox_'//trim(adjustl(cycle_ascii)))//'.gda'
-        call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+        call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
       else
         call write_file_non_mpio(uniform_mesh,rnorm,file_unit(20),irec_start,ny,nz)
       endif
@@ -515,7 +515,7 @@ module m_io
       uniform_mesh=foy
       if (mesh_mpio) then
         filename= trim(trim(data_directory)//'foy/foy_'//trim(adjustl(cycle_ascii)))//'.gda'
-        call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+        call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
       else
         call write_file_non_mpio(uniform_mesh,rnorm,file_unit(21),irec_start,ny,nz)
       endif
@@ -524,7 +524,7 @@ module m_io
       uniform_mesh=foz
       if (mesh_mpio) then
         filename= trim(trim(data_directory)//'foz/foz_'//trim(adjustl(cycle_ascii)))//'.gda'
-        call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+        call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
       else
         call write_file_non_mpio(uniform_mesh,rnorm,file_unit(22),irec_start,ny,nz)
       endif
@@ -537,7 +537,7 @@ module m_io
         uniform_mesh=eta
         if (mesh_mpio) then
           filename= trim(trim(data_directory)//'eta/eta_'//trim(adjustl(cycle_ascii)))//'.gda'
-          call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+          call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
         else
           call write_file_non_mpio(uniform_mesh,rnorm,file_unit(13),irec_start,ny,nz)
         endif
@@ -546,7 +546,7 @@ module m_io
         uniform_mesh=eta_times_b_dot_j
         if (mesh_mpio) then
           filename= trim(trim(data_directory)//'eta_par/eta_par_'//trim(adjustl(cycle_ascii)))//'.gda'
-          call write_file(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
+          call write_file_mpio(uniform_mesh,rnorm,trim(adjustl(filename)),irec_start,ny,nz)
         else
           call write_file_non_mpio(uniform_mesh,rnorm,file_unit(13),irec_start,ny,nz)
         endif
@@ -790,9 +790,9 @@ module m_io
 
 
   !---------------------------------------------------------------------
-  ! write file (MPI-IO)
+  ! write file (MPI I/O)
   !---------------------------------------------------------------------
-  subroutine write_file(dat,rnorm,fileName,irec_start,ny1m,nz1m)
+  subroutine write_file_mpio(dat,rnorm,fileName,irec_start,ny1m,nz1m)
 
     integer :: num_sdat
     integer*8 :: filenum,irec_start,iry1,iry2,irz1,irz2
@@ -891,11 +891,11 @@ module m_io
     endif
 
     return
-  end subroutine write_file
+  end subroutine write_file_mpio
 
 
   !---------------------------------------------------------------------
-  ! write file (non MPI-IO)
+  ! write file (non MPI I/O)
   !---------------------------------------------------------------------
   subroutine write_file_non_mpio(dat,rnorm,filenum,irec_start,ny1m,nz1m)
 
