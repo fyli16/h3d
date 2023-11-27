@@ -797,8 +797,7 @@ module m_io
     integer :: num_sdat
     integer*8 :: filenum,irec_start,iry1,iry2,irz1,irz2
     real*8, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: dat
-    ! real*4, dimension(1:nxmax-2,jb:je,kb:ke) :: stemp
-    real*4, dimension(nxmax,jb-1:je+1,kb-1:ke+1) :: stemp
+    real*4, dimension(1:nxmax-2,jb:je,kb:ke) :: stemp
     integer :: ip, iry, irz, i, j, k, recnum, ii
     integer*8 :: keg, kbg, jeg, jbg, icount,ny1m,nz1m
     real*8 :: rnorm
@@ -836,24 +835,22 @@ module m_io
     endif
 
     !  begin by converting data to REAL*4
-    !
-     do k = kb-1, ke+1
-       do j = jb-1,je+1
-         do i = 1, nxmax
-          !  sdat(i,j,k) = rnorm*dat(i,j,k)
-          stemp(i,j,k) = rnorm * dat(i,j,k)
-         enddo
-       enddo
-     enddo
-
-    ! print *,kb,ke,jb,je
-    ! do k = kb, ke
-    !   do j = jb,je
-    !     do i = 2, nxmax-1
-    !       stemp(i-1,j,k) = rnorm * dat(i,j,k)
+    ! do k = kb-1, ke+1
+    !   do j = jb-1,je+1
+    !     do i = 1, nxmax
+    !       sdat(i,j,k) = rnorm*dat(i,j,k)
     !     enddo
     !   enddo
     ! enddo
+    
+    ! print *,kb,ke,jb,je
+    do k = kb, ke
+      do j = jb,je
+        do i = 2, nxmax-1
+          stemp(i-1,j,k) = rnorm * dat(i,j,k)
+        enddo
+      enddo
+    enddo
 
     dilo = 1
     dihi = nxmax-2
