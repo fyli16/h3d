@@ -113,11 +113,11 @@ module m_io
           file= trim(trim(data_directory)//'tperp/tperp_'//trim(adjustl(cycle_ascii)))//'.gda', &
           form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
 
-    if (eta_par == 0) then
+    if (ieta>0 .and. eta_par == 0) then
       open (file_unit(13),                                                                         &
             file= trim(trim(data_directory)//'eta/eta_'//trim(adjustl(cycle_ascii)))//'.gda', &
             form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)
-    else
+    else if (eta_par>0) then
       open (file_unit(13),                                                                             &
             file= trim(trim(data_directory)//'eta_par/eta_par_'//trim(adjustl(cycle_ascii)))//'.gda', &
             form='unformatted',action='write',access='direct', status='unknown',recl=lenrec)

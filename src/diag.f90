@@ -198,6 +198,7 @@ module m_diag
     buf(5,i)=by(2,jb,kb)
     buf(6,i)=bz(2,jb,kb)
     buftime(i)=it  ! TBF: in fact, only run 0 needs this
+    
     if (i==nbufsteps .or. it==itrestart) then
       if (myid==0) then
         do j=1,nbufsteps
@@ -205,6 +206,7 @@ module m_diag
             buf2(k,j)=buf(k,j)*factor(k)
           enddo
         enddo
+        
         ! receive data from other processes
         do m=1, nprocs-1
           call MPI_Recv(buf, bufsize, MPI_DOUBLE, m, 1, MPI_COMM_WORLD, status, ierr)
@@ -214,6 +216,7 @@ module m_diag
             enddo
           enddo
         enddo
+        
         do j=1,nbufsteps
           write(12,'(I6,1x)',advance='no')buftime(j)
           do k=1,nprobes*nprocs
@@ -221,8 +224,8 @@ module m_diag
           enddo
           write(12,*)
         enddo
-      else
-        ! send data to root 
+      
+      else ! other processors send data to root
         call MPI_Send(buf, bufsize, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, ierr)
       endif
     endif

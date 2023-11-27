@@ -4,7 +4,6 @@
 tmax = 3000.0, ! max sim. time, in units of 1/wci
 dtwci = 0.01,  ! value of dt*wci
 restart = .false.,  ! whether to restart from 'restart' directory
-MPI_IO_format = .true., ! use MPI IO (one file only) instead of traditional binary output
 
 ! MPI nodes(ranks) configuration along y, z (no decompostion along x)
 ! and whether the ranks are treated periodic in either directions
@@ -95,18 +94,8 @@ smooth_pass = 1,
 n_print = 100,  ! frequency at which to print simulation progression
 
 ! dump mesh quantities
-n_diag_mesh = 1000, ! frequency at which to write mesh data 
-! will find better ways to control each of the following
-! n_diag_bx = 1000, n_diag_by = 1000, n_diag_bz = 1000,
-! n_diag_ex = 1000, n_diag_ey = 1000, n_diag_ez = 1000,
-! n_diag_jx = 1000, n_diag_jy = 1000, n_diag_jz = 1000,
-! n_diag_vix = 1000, n_diag_viy = 1000, n_diag_viz = 1000,
-! n_diag_den = 1000, n_diag_tpar = 1000, n_diag_tperp = 1000, 
-! n_diag_eta = 0, n_diag_eta_par = 0,
-! n_diag_fox = 0, n_diag_foy = 0, n_diag_foz = 0,
-! n_diag_vxs = 0, n_diag_vys = 0, n_diag_vzs = 0,
-! n_diag_p_xx = 0, n_diag_p_xy = 0, n_diag_p_xz = 0,
-! n_diag_p_yy = 0, n_diag_p_yz = 0, n_diag_p_zz = 0,
+n_diag_mesh = 1000, ! frequency at which to write mesh data
+MPI_IO_format = .true., ! use MPI IO (one file only) instead of traditional binary output
 
 ! integrated energy
 n_diag_energy = 100, ! frequency at which to write integrated energy data
