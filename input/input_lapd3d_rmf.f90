@@ -95,7 +95,7 @@ n_print = 100,  ! frequency at which to print simulation progression
 
 ! dump mesh quantities
 n_diag_mesh = 1000, ! frequency at which to write mesh data
-mesh_mpi_io = .true., ! use MPI IO (one file only) instead of traditional binary output
+mesh_mpio = .true., ! use MPI/IO to write mesh files
 
 ! integrated energy
 n_diag_energy = 100, ! frequency at which to write integrated energy data
